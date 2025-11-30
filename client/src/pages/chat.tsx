@@ -79,27 +79,6 @@ export default function Chat() {
     setMessages([...messages, newMessage]);
     setInput("");
     setTextFormat("normal");
-
-    // Simulate provider response after 2 seconds
-    setTimeout(() => {
-      const responses = [
-        "That's a great question! Let me provide more details...",
-        "I'm glad you asked. We can definitely help with that.",
-        "Thanks for reaching out. We have availability for move-in dates you're interested in.",
-        "Perfect! We'd love to have you tour our facility. Would you like to schedule a time?",
-        "Your background sounds like a great fit for our community!",
-      ];
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      
-      const providerMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        sender: "provider",
-        senderName: "Listing Manager",
-        text: randomResponse,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, providerMessage]);
-    }, 2000);
   };
 
   const formatTextDisplay = (text: string) => {

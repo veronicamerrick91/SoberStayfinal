@@ -13,7 +13,8 @@ import { AuthPage } from "@/pages/auth";
 import PropertyDetails from "@/pages/property-details";
 import ApplicationForm from "@/pages/application-form";
 import Chat from "@/pages/chat";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { isAuthenticated, getAuth } from "./lib/auth";
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -25,10 +26,29 @@ function ScrollToTop() {
   return null;
 }
 
+function SessionRestorer() {
+  const [location, setLocation] = useLocation();
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    // Check if user has valid session on app load
+    const user = getAuth();
+    if (user && !isAuthenticated()) {
+      // Session data corrupted, redirect to login
+      setLocation("/login");
+    }
+    setIsReady(true);
+  }, [setLocation]);
+
+  if (!isReady) return null;
+  return null;
+}
+
 function Router() {
   return (
     <>
       <ScrollToTop />
+      <SessionRestorer />
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/browse" component={Browse} />
