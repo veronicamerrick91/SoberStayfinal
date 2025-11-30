@@ -8,13 +8,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { useLocation, useRoute } from "wouter";
 import { ArrowLeft, CheckCircle2, Upload } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { isAuthenticated } from "@/lib/auth";
 
 export default function ApplicationForm() {
   const [match, params] = useRoute("/apply/:id");
   const [location, setLocation] = useLocation();
   const [idUploaded, setIdUploaded] = useState(false);
   const property = MOCK_PROPERTIES.find(p => p.id === params?.id);
+
+  useEffect(() => {
+    // Redirect to login if not authenticated
+    if (!isAuthenticated()) {
+      setLocation(`/login?returnPath=/apply/${params?.id}`);
+    }
+  }, [params?.id, setLocation]);
 
   if (!property) return <Layout><div className="text-center py-12">Property not found</div></Layout>;
 

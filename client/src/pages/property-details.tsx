@@ -8,7 +8,8 @@ import {
   Wifi, Car, Utensils, Tv, Dumbbell, Calendar,
   Info
 } from "lucide-react";
-import { useRoute, Link } from "wouter";
+import { useRoute, Link, useLocation } from "wouter";
+import { isAuthenticated } from "@/lib/auth";
 import {
   Tooltip,
   TooltipContent,
@@ -19,7 +20,16 @@ import mapPlaceholder from "@assets/generated_images/map_view_of_a_neighborhood_
 
 export default function PropertyDetails() {
   const [match, params] = useRoute("/property/:id");
+  const [location, setLocation] = useLocation();
   const property = MOCK_PROPERTIES.find(p => p.id === params?.id);
+
+  const handleApply = () => {
+    if (!isAuthenticated()) {
+      setLocation(`/login?returnPath=/apply/${property?.id}`);
+    } else {
+      setLocation(`/apply/${property?.id}`);
+    }
+  };
 
   if (!property) return <Layout><div>Property not found</div></Layout>;
 
@@ -155,11 +165,9 @@ export default function PropertyDetails() {
                    </div>
 
                    <div className="space-y-3 pt-4">
-                     <Link href={`/apply/${property.id}`}>
-                       <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg shadow-lg shadow-primary/20">
-                         Apply Now
-                       </Button>
-                     </Link>
+                     <Button onClick={handleApply} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg shadow-lg shadow-primary/20">
+                       Apply Now
+                     </Button>
                      <Button variant="outline" className="w-full border-border hover:bg-white/5">
                        Contact Provider
                      </Button>

@@ -1,12 +1,22 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import logo from "@assets/C442C7B9-08EE-40E8-9A2E-1D38827FBB5B_1764526673965.jpeg";
+import { isAuthenticated, getAuth, clearAuth } from "@/lib/auth";
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const user = getAuth();
+  const authenticated = isAuthenticated();
+
+  const handleSignOut = () => {
+    clearAuth();
+    setLocation("/");
+    setMenuOpen(false);
+  };
 
   const isActive = (path: string) => location === path;
 
@@ -45,20 +55,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                Log in
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                Sign up
-              </Button>
-            </Link>
+            {authenticated ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">Welcome, {user?.name}</span>
+                <Button onClick={handleSignOut} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-2">
+                  <LogOut className="w-4 h-4" /> Sign Out
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                    Log in
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                    Sign up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Nav */}
-          <Sheet>
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon">
                 <Menu className="h-5 w-5" />
@@ -69,6 +90,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {navLinks.map((link) => (
                   <Link key={link.href} href={link.href}>
                     <a
+                      onClick={() => setMenuOpen(false)}
                       className={`text-lg font-medium transition-colors hover:text-primary ${
                         isActive(link.href) ? "text-primary" : "text-muted-foreground"
                       }`}
@@ -78,12 +100,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </Link>
                 ))}
                 <div className="flex flex-col gap-2 mt-4">
-                  <Link href="/login">
-                    <Button variant="outline" className="w-full justify-start">Log in</Button>
-                  </Link>
-                  <Link href="/signup">
-                    <Button className="w-full justify-start bg-primary text-primary-foreground">Sign up</Button>
-                  </Link>
+                  {authenticated ? (
+                    <Button onClick={handleSignOut} className="w-full justify-start gap-2 bg-red-600/20 text-red-500 hover:bg-red-600/30">
+                      <LogOut className="w-4 h-4" /> Sign Out
+                    </Button>
+                  ) : (
+                    <>
+                      <Link href="/login">
+                        <Button variant="outline" className="w-full justify-start" onClick={() => setMenuOpen(false)}>Log in</Button>
+                      </Link>
+                      <Link href="/signup">
+                        <Button className="w-full justify-start bg-primary text-primary-foreground" onClick={() => setMenuOpen(false)}>Sign up</Button>
+                      </Link>
+                    </>
+                  )}
                 </div>
               </nav>
             </SheetContent>

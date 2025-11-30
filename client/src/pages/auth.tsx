@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShieldCheck } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
+import { saveAuth } from "@/lib/auth";
 
 interface AuthPageProps {
   type: "login" | "signup";
@@ -16,12 +17,24 @@ interface AuthPageProps {
 export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [location, setLocation] = useLocation();
   const [role, setRole] = useState<"tenant" | "provider">(defaultRole);
+  const [email, setEmail] = useState("");
+
+  const getReturnPath = () => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("returnPath") || (role === "tenant" ? "/tenant-dashboard" : "/provider-dashboard");
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login redirect
-    if (role === "tenant") setLocation("/tenant-dashboard");
-    else setLocation("/provider-dashboard");
+    // Mock login - save session to localStorage
+    saveAuth({
+      id: Math.random().toString(36).substr(2, 9),
+      email: email || "user@example.com",
+      role: role,
+      name: role === "tenant" ? "Applicant" : "Provider"
+    });
+    // Redirect to return path or dashboard
+    setLocation(getReturnPath());
   };
 
   return (
@@ -65,7 +78,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
               
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="m@example.com" className="bg-background/50" />
+                <Input id="email" type="email" placeholder="m@example.com" className="bg-background/50" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               
               <div className="space-y-2">
