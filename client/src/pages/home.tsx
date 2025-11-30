@@ -3,16 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, CheckCircle2, ShieldCheck, FileCheck, HeartHandshake } from "lucide-react";
+import { Search, MapPin, CheckCircle2, ShieldCheck, FileCheck, HeartHandshake, ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import heroBg from "@assets/generated_images/dark_navy_and_teal_abstract_background_for_hero_section.png";
+import pathBg from "@assets/generated_images/abstract_glowing_path_representing_recovery_journey.png";
+import tenantBg from "@assets/generated_images/calm_safe_abstract_background_for_tenants.png";
+import providerBg from "@assets/generated_images/professional_geometric_background_for_providers.png";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
 
 export default function Home() {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
         <div 
           className="absolute inset-0 z-0"
           style={{
@@ -25,47 +28,47 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background z-0" />
         
         <div className="container relative z-10 px-4 py-20 text-center md:text-left md:flex md:items-center md:gap-12">
-          <div className="md:w-1/2 space-y-6 animate-in slide-in-from-bottom-8 duration-700 fade-in">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium backdrop-blur-sm">
+          <div className="md:w-1/2 space-y-8 animate-in slide-in-from-bottom-8 duration-700 fade-in">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium backdrop-blur-sm shadow-[0_0_15px_rgba(16,185,129,0.2)]">
               <ShieldCheck className="w-4 h-4" />
               <span>Verified Safe & Supportive Housing</span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-heading font-bold tracking-tight text-white leading-tight">
+            <h1 className="text-5xl md:text-7xl font-heading font-bold tracking-tight text-white leading-[1.1]">
               Where Healing <br />
-              <span className="text-primary">Finds Home</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">Finds Home</span>
             </h1>
             
-            <p className="text-lg md:text-xl text-gray-300 max-w-lg">
+            <p className="text-xl text-gray-300 max-w-lg leading-relaxed">
               Connect with verified sober living homes that provide the safety, structure, and community you need for your recovery journey.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link href="/browse">
-                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg h-12 px-8 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all hover:scale-105">
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg h-14 px-8 rounded-full shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(16,185,129,0.6)]">
                   Search Homes
                 </Button>
               </Link>
               <Link href="/for-providers">
-                <Button size="lg" variant="outline" className="text-lg h-12 px-8 rounded-full border-white/20 text-white hover:bg-white/10 hover:text-white hover:border-white/40">
+                <Button size="lg" variant="outline" className="text-lg h-14 px-8 rounded-full border-white/20 text-white hover:bg-white/10 hover:text-white hover:border-white/40 backdrop-blur-sm">
                   List Your Home
                 </Button>
               </Link>
             </div>
 
             {/* Search Bar Widget */}
-            <div className="mt-8 p-4 bg-card/80 backdrop-blur-md border border-border/50 rounded-2xl shadow-xl max-w-md">
+            <div className="mt-8 p-4 bg-card/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl max-w-md hover:border-primary/30 transition-colors">
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input 
                     placeholder="City, State, or Zip" 
-                    className="pl-9 bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
+                    className="pl-10 h-12 text-lg bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20 rounded-xl"
                   />
                 </div>
                 <Link href="/browse">
-                  <Button size="icon" className="bg-primary hover:bg-primary/90 shrink-0">
-                    <Search className="w-4 h-4" />
+                  <Button size="icon" className="h-12 w-12 bg-primary hover:bg-primary/90 shrink-0 rounded-xl shadow-lg">
+                    <Search className="w-6 h-6" />
                   </Button>
                 </Link>
               </div>
@@ -73,24 +76,25 @@ export default function Home() {
           </div>
           
           {/* Hero Visual/Stats (Hidden on mobile, visible on desktop) */}
-          <div className="hidden md:block md:w-1/2 relative">
-            <div className="grid grid-cols-2 gap-4">
-              <Card className="bg-card/40 backdrop-blur border-white/10 p-6 transform translate-y-8 animate-in fade-in slide-in-from-right-8 duration-1000 delay-200">
-                <div className="text-3xl font-bold text-primary mb-1">100%</div>
-                <div className="text-sm text-muted-foreground">Verified Providers</div>
+          <div className="hidden md:block md:w-1/2 relative perspective-[1000px]">
+            <div className="grid grid-cols-2 gap-6 transform rotate-y-[-5deg] hover:rotate-y-0 transition-transform duration-700">
+              <Card className="bg-card/30 backdrop-blur-xl border-white/10 p-8 transform hover:-translate-y-2 transition-transform duration-500 shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
+                <div className="text-4xl font-bold text-primary mb-2">100%</div>
+                <div className="text-sm text-gray-300 font-medium">Verified Providers</div>
               </Card>
-              <Card className="bg-card/40 backdrop-blur border-white/10 p-6 animate-in fade-in slide-in-from-right-8 duration-1000 delay-300">
-                <div className="text-3xl font-bold text-white mb-1">500+</div>
-                <div className="text-sm text-muted-foreground">Available Beds</div>
+              <Card className="bg-card/30 backdrop-blur-xl border-white/10 p-8 transform translate-y-12 hover:translate-y-10 transition-transform duration-500 shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
+                <div className="text-4xl font-bold text-white mb-2">500+</div>
+                <div className="text-sm text-gray-300 font-medium">Available Beds</div>
               </Card>
-              <Card className="bg-card/40 backdrop-blur border-white/10 p-6 col-span-2 transform -translate-y-4 animate-in fade-in slide-in-from-right-8 duration-1000 delay-500">
-                <div className="flex items-center gap-4">
-                  <div className="bg-primary/20 p-3 rounded-full">
-                    <HeartHandshake className="w-6 h-6 text-primary" />
+              <Card className="bg-gradient-to-br from-primary/20 to-card/30 backdrop-blur-xl border-white/10 p-8 col-span-2 mt-8 shadow-[0_20px_40px_rgba(0,0,0,0.3)] relative overflow-hidden group">
+                <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors duration-500" />
+                <div className="relative z-10 flex items-center gap-6">
+                  <div className="bg-primary p-4 rounded-2xl shadow-lg shadow-primary/20">
+                    <HeartHandshake className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <div className="font-bold text-white">Community First</div>
-                    <div className="text-xs text-muted-foreground">Built by people in recovery, for people in recovery.</div>
+                    <div className="font-bold text-xl text-white mb-1">Community First</div>
+                    <div className="text-sm text-gray-300">Built by people in recovery, for people in recovery.</div>
                   </div>
                 </div>
               </Card>
@@ -99,118 +103,179 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">How Sober Stay Works</h2>
-            <p className="text-muted-foreground">Finding a safe environment shouldn't be harder than the recovery itself. We've simplified the process.</p>
+      {/* How It Works - Redesigned */}
+      <section className="relative py-32 bg-background overflow-hidden">
+        {/* Background Path Visual */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+           <img src={pathBg} className="w-full h-full object-cover" alt="" />
+           <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <Badge variant="outline" className="mb-4 border-primary/50 text-primary px-4 py-1 text-sm uppercase tracking-widest">Simple Process</Badge>
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-white tracking-tight">
+              Your Journey to <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">Safe Living</span>
+            </h2>
+            <p className="text-xl text-muted-foreground">Finding a safe environment shouldn't be harder than the recovery itself. We've simplified the process into three seamless steps.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 relative">
-            {/* Connecting Line (Desktop only) */}
-            <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-border to-transparent -translate-y-1/2 z-0" />
-
+          <div className="grid md:grid-cols-3 gap-12 relative">
             {[
-              { icon: Search, title: "1. Search Verified Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit." },
-              { icon: FileCheck, title: "2. Apply Securely", desc: "Fill out one detailed application and submit it to multiple homes instantly." },
-              { icon: CheckCircle2, title: "3. Connect & Move In", desc: "Chat directly with providers, schedule visits, and secure your spot." }
+              { icon: Search, title: "Search Verified Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit.", step: "01" },
+              { icon: FileCheck, title: "Apply Securely", desc: "Fill out one detailed application and submit it to multiple homes instantly.", step: "02" },
+              { icon: CheckCircle2, title: "Connect & Move In", desc: "Chat directly with providers, schedule visits, and secure your spot.", step: "03" }
             ].map((step, i) => (
-              <div key={i} className="relative z-10 bg-card border border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors group">
-                <div className="w-16 h-16 mx-auto bg-secondary rounded-full flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                  <step.icon className="w-8 h-8 text-primary" />
+              <div key={i} className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-emerald-600/50 rounded-2xl blur opacity-20 group-hover:opacity-70 transition duration-500"></div>
+                <div className="relative h-full bg-card border border-white/10 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-500">
+                  <div className="absolute top-0 right-0 p-6 text-6xl font-bold text-white/5 select-none font-heading">{step.step}</div>
+                  
+                  <div className="w-20 h-20 mb-8 rounded-2xl bg-gradient-to-br from-primary/20 to-background border border-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                    <step.icon className="w-10 h-10 text-primary" />
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-primary transition-colors">{step.title}</h3>
+                  <p className="text-gray-400 leading-relaxed text-lg">{step.desc}</p>
+                  
+                  <div className="mt-8 flex items-center text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                    Learn more <ArrowRight className="w-4 h-4 ml-2" />
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-white">{step.title}</h3>
-                <p className="text-muted-foreground">{step.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* For Tenants & Providers Split */}
-      <section className="py-20 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
-            {/* Tenants */}
-            <div className="space-y-6 p-8 rounded-2xl bg-gradient-to-br from-card to-background border border-border">
-              <h3 className="text-2xl font-bold text-white">For Tenants</h3>
-              <ul className="space-y-4">
-                {["Verified safe environments", "Direct chat with providers", "Secure document storage", "Track application status"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-gray-300">
-                    <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <Button className="w-full bg-white text-background hover:bg-gray-200 font-semibold">
-                Create Tenant Account
-              </Button>
+      {/* For Tenants & Providers Split - Creative Redesign */}
+      <section className="py-0 bg-background">
+        <div className="grid lg:grid-cols-2 min-h-[800px]">
+          
+          {/* Tenants Side */}
+          <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full">
+            <div className="absolute inset-0">
+              <img src={tenantBg} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
+              <div className="absolute inset-0 bg-blue-950/80 mix-blend-multiply" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90" />
             </div>
-
-            {/* Providers */}
-            <div className="space-y-6 p-8 rounded-2xl bg-gradient-to-tl from-card to-background border border-border">
-              <h3 className="text-2xl font-bold text-white">For Providers</h3>
-              <ul className="space-y-4">
-                {["Fill vacancies faster", "Streamlined application management", "Marketing & SEO included", "Digital resident files"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-gray-300">
-                    <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+            
+            <div className="relative z-10 h-full flex flex-col justify-center p-12 lg:p-20 max-w-2xl mx-auto lg:mx-0 lg:ml-auto">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-400/10 border border-blue-400/20 text-blue-300 text-sm font-medium mb-6 w-fit">
+                <Sparkles className="w-4 h-4" /> For Tenants
+              </div>
+              <h3 className="text-4xl md:text-5xl font-bold text-white mb-6">Find Your Safe Haven</h3>
+              <p className="text-xl text-blue-100 mb-10 leading-relaxed">
+                Your recovery deserves a supportive environment. Browse verified homes, chat directly with providers, and manage your applications in one secure place.
+              </p>
+              
+              <ul className="space-y-5 mb-12">
+                {["Verified safe environments", "Direct chat with providers", "Secure document storage", "Track application status"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-4 text-lg text-white">
+                    <div className="bg-blue-500/20 p-2 rounded-full">
+                      <CheckCircle2 className="w-5 h-5 text-blue-400" />
+                    </div>
                     {item}
                   </li>
                 ))}
               </ul>
-              <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
-                Create Provider Account
-              </Button>
+              
+              <Link href="/for-tenants">
+                <Button size="lg" className="bg-white text-blue-950 hover:bg-blue-50 text-lg h-14 px-10 rounded-full w-fit shadow-xl transition-all hover:translate-x-2">
+                  Start Your Search <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
             </div>
           </div>
+
+          {/* Providers Side */}
+          <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full border-t lg:border-t-0 lg:border-l border-white/10">
+            <div className="absolute inset-0">
+              <img src={providerBg} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
+              <div className="absolute inset-0 bg-emerald-950/80 mix-blend-multiply" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90" />
+            </div>
+            
+            <div className="relative z-10 h-full flex flex-col justify-center p-12 lg:p-20 max-w-2xl mx-auto lg:mx-0 lg:mr-auto">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-emerald-300 text-sm font-medium mb-6 w-fit">
+                <Building className="w-4 h-4" /> For Providers
+              </div>
+              <h3 className="text-4xl md:text-5xl font-bold text-white mb-6">Grow Your Community</h3>
+              <p className="text-xl text-emerald-100 mb-10 leading-relaxed">
+                Fill vacancies faster with qualified applicants. Manage listings, screen residents, and streamline your intake process with our powerful tools.
+              </p>
+              
+              <ul className="space-y-5 mb-12">
+                {["Fill vacancies faster", "Streamlined application management", "Marketing & SEO included", "Digital resident files"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-4 text-lg text-white">
+                    <div className="bg-emerald-500/20 p-2 rounded-full">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              
+              <Link href="/for-providers">
+                <Button size="lg" className="bg-emerald-500 text-white hover:bg-emerald-600 text-lg h-14 px-10 rounded-full w-fit shadow-xl shadow-emerald-900/20 transition-all hover:translate-x-2">
+                  List Your Property <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+
         </div>
       </section>
 
       {/* Featured Homes */}
-      <section className="py-20 bg-background">
+      <section className="py-32 bg-background relative">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-end mb-12">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-16 gap-6">
             <div>
-              <h2 className="text-3xl font-bold mb-2 text-white">Featured Homes</h2>
-              <p className="text-muted-foreground">Top-rated sober living environments near you.</p>
+              <h2 className="text-4xl font-bold mb-4 text-white">Featured Homes</h2>
+              <p className="text-xl text-muted-foreground">Top-rated sober living environments near you.</p>
             </div>
             <Link href="/browse">
-              <Button variant="ghost" className="text-primary hover:text-primary/80">View All &rarr;</Button>
+              <Button variant="outline" className="text-primary border-primary/30 hover:bg-primary/10 text-lg px-6 h-12 rounded-full">
+                View All Listings <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
             </Link>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {MOCK_PROPERTIES.map((home) => (
               <Link key={home.id} href={`/browse`}>
-                <Card className="h-full overflow-hidden bg-card border-border hover:border-primary/50 transition-all hover:-translate-y-1 cursor-pointer group">
-                  <div className="relative h-48 overflow-hidden">
+                <Card className="h-full overflow-hidden bg-card border-border hover:border-primary/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] cursor-pointer group rounded-2xl">
+                  <div className="relative h-64 overflow-hidden">
                     <img 
                       src={home.image} 
                       alt={home.name} 
-                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    <div className="absolute top-3 left-3 flex gap-2">
+                    <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-90" />
+                    
+                    <div className="absolute top-4 left-4 flex gap-2">
                       {home.isVerified && (
-                        <Badge className="bg-primary/90 text-white border-none flex gap-1 items-center">
+                        <Badge className="bg-emerald-500/90 backdrop-blur text-white border-none flex gap-1 items-center px-3 py-1 shadow-lg">
                           <ShieldCheck className="w-3 h-3" /> Verified
                         </Badge>
                       )}
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
-                      <div className="text-white font-bold">${home.price}/{home.pricePeriod}</div>
+                    <div className="absolute bottom-4 left-4 right-4">
+                       <div className="text-2xl font-bold text-white mb-1">{home.name}</div>
+                       <div className="text-emerald-400 font-bold text-lg">${home.price}<span className="text-sm font-normal text-gray-300">/{home.pricePeriod}</span></div>
                     </div>
                   </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-bold text-lg text-white mb-1 truncate">{home.name}</h3>
-                    <div className="flex items-center text-sm text-muted-foreground mb-3">
-                      <MapPin className="w-3 h-3 mr-1" />
+                  <CardContent className="p-6">
+                    <div className="flex items-center text-sm text-muted-foreground mb-4">
+                      <MapPin className="w-4 h-4 mr-2 text-primary" />
                       {home.city}, {home.state}
                     </div>
                     <div className="flex gap-2 text-xs flex-wrap">
-                      <Badge variant="secondary" className="bg-secondary/50">{home.gender}</Badge>
-                      {home.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary">MAT Friendly</Badge>}
-                      <Badge variant="outline" className="border-white/10">{home.bedsAvailable} Beds Open</Badge>
+                      <Badge variant="secondary" className="bg-secondary/50 py-1 px-2">{home.gender}</Badge>
+                      {home.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary py-1 px-2">MAT Friendly</Badge>}
+                      <Badge variant="outline" className="border-white/10 py-1 px-2">{home.bedsAvailable} Beds Open</Badge>
                     </div>
                   </CardContent>
                 </Card>
@@ -220,17 +285,24 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Newsletter */}
-      <section className="py-20 border-t border-border bg-card/30">
-        <div className="container mx-auto px-4 text-center max-w-xl">
-          <h2 className="text-2xl font-bold mb-4 text-white">Stay Connected</h2>
-          <p className="text-muted-foreground mb-8">Get updates on new openings, recovery resources, and community events.</p>
-          <div className="flex gap-2">
-            <Input placeholder="Enter your email" className="bg-background border-border" />
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Subscribe</Button>
+      {/* Newsletter - Redesigned */}
+      <section className="py-32 border-t border-border relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-card to-background z-0" />
+        <div className="container mx-auto px-4 text-center max-w-2xl relative z-10">
+          <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-8">
+             <Sparkles className="w-8 h-8 text-primary" />
+          </div>
+          <h2 className="text-4xl font-bold mb-6 text-white">Stay Connected to Recovery</h2>
+          <p className="text-xl text-muted-foreground mb-10">Get updates on new openings, recovery resources, and community events delivered to your inbox.</p>
+          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+            <Input placeholder="Enter your email address" className="bg-background/50 border-white/10 h-12 text-lg rounded-xl" />
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 text-lg rounded-xl shadow-lg shadow-primary/20">Subscribe</Button>
           </div>
         </div>
       </section>
     </Layout>
   );
 }
+
+// Add missing import for Building icon if needed
+import { Building } from "lucide-react";
