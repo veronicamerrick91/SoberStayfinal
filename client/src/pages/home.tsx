@@ -103,6 +103,26 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Stats Banner */}
+      <section className="relative py-16 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border-y border-primary/20">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-12 text-center">
+            <div className="space-y-2">
+              <div className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">100+</div>
+              <p className="text-lg text-gray-300 font-medium">Sober Living Homes</p>
+            </div>
+            <div className="space-y-2">
+              <div className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">50</div>
+              <p className="text-lg text-gray-300 font-medium">States Covered</p>
+            </div>
+            <div className="space-y-2">
+              <div className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">5k+</div>
+              <p className="text-lg text-gray-300 font-medium">People Helped</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works - Redesigned */}
       <section className="relative py-32 bg-background overflow-hidden">
         {/* Background Path Visual */}
