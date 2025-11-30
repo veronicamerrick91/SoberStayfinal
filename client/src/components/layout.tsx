@@ -1,8 +1,9 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Shield, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import logo from "@assets/C442C7B9-08EE-40E8-9A2E-1D38827FBB5B_1764525843785.png";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -23,13 +24,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/">
-            <a className="flex items-center gap-2 font-heading font-bold text-2xl text-foreground hover:opacity-90 transition-opacity">
-              <div className="bg-primary/20 p-1.5 rounded-lg">
-                <Shield className="h-6 w-6 text-primary" />
-              </div>
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">
-                Sober Stay
-              </span>
+            <a className="flex items-center hover:opacity-90 transition-opacity">
+              <img src={logo} alt="Sober Stay" className="h-12 w-auto" />
             </a>
           </Link>
 
@@ -105,9 +101,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-4">
-              <div className="flex items-center gap-2 font-heading font-bold text-xl">
-                <Shield className="h-5 w-5 text-primary" />
-                <span>Sober Stay</span>
+              <div className="flex items-center">
+                <img src={logo} alt="Sober Stay" className="h-10 w-auto" />
               </div>
               <p className="text-sm text-muted-foreground">
                 Connecting individuals in recovery with safe, supportive, and verified sober living environments.
