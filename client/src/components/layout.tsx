@@ -25,7 +25,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/">
             <a className="flex items-center hover:opacity-90 transition-opacity">
-              <img src={logo} alt="Sober Stay" className="h-28 w-auto" />
+              <img src={logo} alt="Sober Stay" className="h-24 w-auto" />
             </a>
           </Link>
 
