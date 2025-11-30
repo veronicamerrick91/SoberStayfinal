@@ -47,6 +47,28 @@ export default function PropertyDetails() {
     }
   };
 
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/property/${property?.id}`;
+    const shareText = `Check out ${property?.name} on Sober Stay - A safe, supportive sober living home in ${property?.city}, ${property?.state}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: property?.name,
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (err) {
+        // User cancelled share
+      }
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(shareUrl);
+      // Show feedback
+      alert("Link copied to clipboard!");
+    }
+  };
+
   if (!property) return <Layout><div>Property not found</div></Layout>;
 
   return (
@@ -75,7 +97,7 @@ export default function PropertyDetails() {
                 )}
               </div>
               <div className="absolute bottom-4 right-4 flex gap-2">
-                 <Button size="icon" variant="secondary" className="rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur">
+                 <Button onClick={handleShare} size="icon" variant="secondary" className="rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur" title="Share this listing">
                    <Share2 className="w-4 h-4" />
                  </Button>
                  <Button onClick={handleFavorite} size="icon" variant="secondary" className={`rounded-full backdrop-blur ${isFav ? "bg-primary/90 hover:bg-primary text-white" : "bg-black/50 hover:bg-black/70 text-white"}`}>
