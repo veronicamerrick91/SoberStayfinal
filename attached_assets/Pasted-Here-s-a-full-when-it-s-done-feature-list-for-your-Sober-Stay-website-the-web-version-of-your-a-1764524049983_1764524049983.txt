@@ -1,0 +1,367 @@
+Here’s a full, “when it’s done” feature list for your Sober Stay website – the web version of your app – based on everything you said:
+	•	connects tenants to sober living providers
+	•	tenant + provider portals
+	•	detailed online applications with photo ID
+	•	chat / email / text / call options
+	•	admin can see everything
+	•	marketing tools built in
+	•	same style as the screenshot (dark, modern, teal/green accents)
+
+You can treat this like your master checklist / requirements doc when you finish building in Base44 or hire help later.
+
+⸻
+
+1. Overall Site Structure (Public-Facing)
+
+Top navigation:
+	•	Home
+	•	Browse Sober Homes
+	•	How It Works (Tenants / Providers)
+	•	For Tenants
+	•	For Providers
+	•	Resources / Blog
+	•	About Sober Stay
+	•	Contact / Support
+	•	Login / Sign Up (Tenant / Provider)
+
+Footer:
+	•	About
+	•	FAQ
+	•	Privacy Policy
+	•	Terms of Use
+	•	Disclaimer
+	•	Safety & Reporting
+	•	Contact info
+	•	Social links
+
+⸻
+
+2. Home Page (styled like your screenshot)
+
+Hero section (dark background, teal-green accents like your image):
+	•	Logo: Sober Stay
+	•	Tagline: “Where Healing Finds Home”
+	•	Sub-heading: “Find Your Safe Haven”
+	•	Short description: 1–2 lines about connecting people to safe, supportive sober living
+	•	Primary CTA button: “Search Homes”
+	•	Secondary CTA: “List Your Home” (for providers)
+	•	Search bar (city, state, filter button) directly in the hero
+
+Below hero:
+	1.	How Sober Stay Works (3 steps)
+	•	Step 1: Search verified sober living homes
+	•	Step 2: Apply securely online
+	•	Step 3: Connect & move in
+	2.	For Tenants section
+	•	Benefits (safe, verified, structured homes)
+	•	“Create Tenant Account” button
+	3.	For Providers section
+	•	Benefits (more visibility, fill beds faster)
+	•	“Create Provider Account” button
+	4.	Safety & Verification strip
+	•	Icons for: Verified Homes, Secure Applications, Safety Reporting
+	5.	Testimonials / Success Stories
+	6.	Newsletter / lead capture
+	•	“Get resources and openings updates” (email opt-in)
+
+⸻
+
+3. Tenant Experience (Tenant Portal)
+
+3.1 Tenant Account & Dashboard
+
+After sign up / login, tenant portal includes:
+	•	Tenant Dashboard
+	•	Welcome message
+	•	Quick link: “Browse Homes”
+	•	Status cards:
+	•	Applications in progress
+	•	Applications submitted
+	•	Accepted / Denied
+	•	Notifications (new messages, application updates)
+	•	Profile
+	•	Full name
+	•	Date of birth
+	•	Phone
+	•	Email
+	•	Emergency contact info
+	•	Preferred communication method (chat / SMS / email / call)
+	•	Saved Homes
+	•	List of favorite homes
+	•	One-click “Apply” button
+	•	Messages
+	•	In-app chat with providers
+	•	Separate tab per home
+	•	Message history visible to admin (read-only)
+	•	Applications Center
+	•	Start new application
+	•	Continue unfinished application
+	•	See application timeline and status per home
+
+⸻
+
+3.2 Tenant Application Form (Detailed, with Photo ID)
+
+Sections you’ll want:
+	1.	Personal Info
+	•	Full name
+	•	Date of birth
+	•	Gender
+	•	Phone
+	•	Email
+	•	Current address
+	2.	Recovery & Treatment Background
+	•	Primary substance(s)
+	•	Date of last use
+	•	Current level of care (detox, inpatient, outpatient, none)
+	•	Treatment center name (if applicable)
+	•	Medications, including MAT (Suboxone, Methadone, etc.)
+	3.	Legal / Safety
+	•	Any open cases or probation/parole?
+	•	Probation/parole officer contact (if applicable)
+	•	Any restrictions (e.g., stay-away orders, curfew by court)
+	4.	Employment / Income
+	•	Job status
+	•	Income source (job, disability, family support, etc.)
+	•	Ability to pay rent (weekly/monthly budget field)
+	5.	Housing Preferences
+	•	City / area
+	•	Gender-specific home (men, women, co-ed)
+	•	Private vs shared room
+	•	MAT-friendly required?
+	•	Pet-friendly required?
+	•	Desired move-in date
+	6.	References
+	•	Clinical reference (counselor, case manager)
+	•	Personal reference
+	7.	Emergency Contact
+	•	Name, relationship, phone
+	8.	Upload Section
+	•	Photo ID upload (driver’s license, state ID, passport)
+	•	Optional: treatment discharge paperwork, court orders, etc.
+	9.	Consent & Agreements
+	•	Checkbox: consent to share info with selected providers
+	•	Checkbox: agree to Sober Stay terms & privacy policy
+	•	Checkbox: acknowledge non-emergency nature of platform
+
+Admin + Provider visibility:
+	•	Admin can see every application
+	•	Provider can see applications only for their property
+	•	Tenant can always see what they submitted
+
+⸻
+
+4. Provider Experience (Provider Portal)
+
+4.1 Provider Account & Dashboard
+
+After sign up / login, provider portal includes:
+	•	Provider Dashboard
+	•	Overview: total inquiries, total applications, beds filled vs available
+	•	Alerts: new applications, new messages, missing documents
+	•	Profile & Verification
+	•	Organization name
+	•	Contact name
+	•	Phone, email
+	•	Address
+	•	Upload verification documents (licenses, insurance, proof of property, policies)
+	•	Verification status display (Pending / Verified / Needs More Info)
+
+4.2 Property / Listing Management
+	•	My Properties
+	•	List of all homes
+	•	Status (Active / Hidden / Pending Approval)
+	•	Edit / View / Duplicate listing buttons
+	•	Add/Edit Property Listing
+	•	Name of home
+	•	Full address (with map)
+	•	Gender (men / women / co-ed)
+	•	MAT-friendly toggle
+	•	Number of beds total
+	•	Number of beds available
+	•	Room types (private/shared)
+	•	House rules overview
+	•	Amenities checklist (WiFi, parking, meals, etc.)
+	•	Description (long text)
+	•	Pricing (weekly, monthly, deposits)
+	•	Photos upload (multiple)
+	•	Availability Manager
+	•	Quickly update beds available
+	•	Mark future openings (e.g., “1 bed opening on [date]”)
+
+4.3 Applications & Communication
+	•	Applications Inbox
+	•	List of tenant applications per property
+	•	Filters: new, in review, accepted, declined
+	•	One-click to open full tenant application
+	•	Buttons: “Request more info”, “Schedule call”, “Accept”, “Decline”
+	•	Messages
+	•	In-app chat with tenants (per application)
+	•	History log accessible to admin
+	•	Contact Tools (Email / Text / Call)
+	•	Click-to-call (using their phone)
+	•	Click-to-email (opens default mail, or email relay)
+	•	Optional SMS via integration (Twilio, etc.)
+	•	All contact attempts can be logged as “contacted / follow-up” notes
+
+⸻
+
+5. Communication Features (Chat, Email, Text, Call)
+
+In-app chat:
+	•	Tenant ↔ Provider messaging under each application or inquiry
+	•	Typing indicators, timestamps
+	•	Admin can view but not impersonate either side
+
+Email:
+	•	Automatic emails:
+	•	Account creation confirmations
+	•	Application received
+	•	Application status changes
+	•	New message alerts
+	•	Option for email relay (so they don’t have to expose personal email addresses)
+
+Text (SMS):
+	•	Optional feature:
+	•	SMS notifications: “You have a new message from [Home Name] on Sober Stay”
+	•	Appointment reminders
+
+Call:
+	•	Click-to-call buttons showing provider’s phone number
+	•	Option to use masked numbers (through a telephony provider)
+
+Notification Center (inside portals):
+	•	Bell icon with new messages, status changes and alerts
+
+⸻
+
+6. Admin Panel (You See Everything)
+
+Admin portal should let you:
+
+6.1 Users & Roles
+	•	View all tenants
+	•	View all providers
+	•	Edit, deactivate, or suspend accounts
+	•	Reset passwords if needed
+	•	Assign roles (tenant, provider, admin)
+
+6.2 Applications
+	•	View every application submitted
+	•	Filter by status, home, city, date range
+	•	Export applications (CSV)
+	•	Add internal notes (visible only to admin)
+
+6.3 Listings & Verification
+	•	See all property listings
+	•	Approve or reject new listings
+	•	Toggle “Verified Home” badge
+	•	Mark homes as flagged or hidden based on safety issues
+
+6.4 Communication Monitoring
+	•	Read-only access to all in-app chats
+	•	Log of email & SMS notifications sent
+	•	Audit trail of important actions (status changes, suspensions, etc.)
+
+6.5 Marketing & Analytics
+	•	Dashboard with:
+	•	New users per week (tenants & providers)
+	•	Views per property
+	•	Search trends (cities, filters used)
+	•	Conversion from search → view → apply
+	•	Marketing tools:
+	•	Email campaigns (to tenants / providers)
+	•	Push or SMS campaigns (if enabled)
+	•	Lead capture list (newsletter, guides)
+	•	Blog / resource article manager
+	•	Ability to highlight “Featured Homes” or “New Listings” on homepage
+
+⸻
+
+7. Public “Browse Homes” & Property Pages
+
+Browse page:
+	•	Search bar (city, state, zip)
+	•	Filters:
+	•	Gender (men/women/co-ed)
+	•	MAT-friendly
+	•	Price range
+	•	Private/shared room
+	•	Verified only
+	•	Cards for each property with:
+	•	Name
+	•	City, state
+	•	Thumbnail photo
+	•	Price starting at…
+	•	Beds available
+	•	Badge: Verified / MAT-friendly / Women-only, etc.
+	•	“View Home” button
+
+Home detail page:
+	•	Full photo gallery
+	•	House description
+	•	Highlights and amenities
+	•	Rules summary
+	•	Pricing details
+	•	Bed availability
+	•	Map
+	•	Provider contact information
+	•	Buttons:
+	•	“Apply Now”
+	•	“Chat with Provider”
+	•	“Call”
+	•	“Save Home” (tenants only)
+
+⸻
+
+8. Marketing & SEO Features
+	•	SEO-ready blog with categories (Recovery Tips, Sober Living Guides, Provider Tips)
+	•	Meta titles & descriptions per page
+	•	Clean URLs (e.g., /sober-living/los-angeles or /home/[slug])
+	•	Lead magnets:
+	•	“Sober Living Checklist” download
+	•	“How to Choose a Safe Sober Home” guide (email capture)
+	•	Tracking:
+	•	Google Analytics / similar
+	•	Optional Facebook / TikTok pixel
+
+⸻
+
+9. Design & Style (Matching Your Screenshot)
+
+To keep the style exactly like the image:
+	•	Color palette:
+	•	Dark navy / charcoal background
+	•	Teal / green accent (like your logo and CTA buttons)
+	•	White text for contrast
+	•	Hero layout:
+	•	Left: logo + tagline
+	•	Center/right: bold headline (“Find Your Safe Haven”)
+	•	Subtext paragraph
+	•	Large rounded CTA button (green)
+	•	Search bar sitting just below CTA
+	•	Typography:
+	•	Clean sans-serif fonts (e.g., bold for headlines, regular for body)
+	•	Buttons:
+	•	Rounded corners
+	•	Solid teal/green with white text
+	•	Hover states (slight brightness / shadow)
+	•	Overall feel:
+	•	Calm, safe, modern, professional
+	•	Mobile-first (looks great on phones like in your screenshot)
+
+⸻
+
+10. Security & Privacy (Important for Photo IDs & Recovery Info)
+	•	HTTPS / SSL everywhere
+	•	Encrypted storage of ID documents
+	•	Role-based access (tenant sees their info; providers see only what’s shared with them; admin sees all)
+	•	Clear consent language before collecting sensitive data
+	•	Log out / session timeout features
+	•	Strong password rules or social login (optional)
+
+⸻
+
+If you’d like, next I can:
+	•	Turn this into a simple checklist you can tick off as you build in Base44, or
+	•	Help you prioritize MVP vs later features so you don’t overwhelm yourself with everything at once.
