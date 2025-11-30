@@ -11,6 +11,7 @@ import { ProviderDashboard } from "@/pages/provider-dashboard";
 import { AdminDashboard } from "@/pages/admin-dashboard";
 import { AuthPage } from "@/pages/auth";
 import PropertyDetails from "@/pages/property-details";
+import ApplicationForm from "@/pages/application-form";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/browse" component={Browse} />
       <Route path="/property/:id" component={PropertyDetails} />
+      <Route path="/apply/:id" component={ApplicationForm} />
       <Route path="/tenant-dashboard" component={TenantDashboard} />
       <Route path="/provider-dashboard" component={ProviderDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />

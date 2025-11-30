@@ -19,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default function Browse() {
   const [priceRange, setPriceRange] = useState([500]);
@@ -66,22 +67,26 @@ export default function Browse() {
                 <div className="space-y-2 pt-4 border-t border-border">
                   <div className="flex items-center gap-2">
                     <Label className="text-white font-semibold">Supervision</Label>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button className="p-1 hover:bg-primary/10 rounded transition-colors">
                           <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-primary" />
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-sm p-4">
-                           <ul className="space-y-2 text-xs">
-                             {Object.entries(SUPERVISION_DEFINITIONS).map(([type, def]) => (
-                               <li key={type}>
-                                 <span className="font-bold text-primary">{type}:</span> {def}
-                               </li>
-                             ))}
-                           </ul>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-card border-border max-w-md">
+                        <DialogHeader>
+                          <DialogTitle className="text-white">Supervision Types Explained</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                          {Object.entries(SUPERVISION_DEFINITIONS).map(([type, def]) => (
+                            <div key={type} className="border-b border-border pb-3 last:border-0">
+                              <div className="font-bold text-primary text-sm">{type}</div>
+                              <div className="text-xs text-muted-foreground leading-relaxed mt-1">{def}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                   <div className="space-y-2">
                     {Object.keys(SUPERVISION_DEFINITIONS).map((type) => (

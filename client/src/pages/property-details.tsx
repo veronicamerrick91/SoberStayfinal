@@ -155,7 +155,7 @@ export default function PropertyDetails() {
                    </div>
 
                    <div className="space-y-3 pt-4">
-                     <Link href="/login">
+                     <Link href={`/apply/${property.id}`}>
                        <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg shadow-lg shadow-primary/20">
                          Apply Now
                        </Button>
