@@ -1,0 +1,156 @@
+
+⸻
+
+1. Personal Information
+	•	Full Legal Name
+	•	Date of Birth
+	•	Gender
+	•	Phone Number
+	•	Email Address
+	•	Current Address
+	•	Emergency Contact (Name, Phone, Relationship)
+
+⸻
+
+2. Identification Uploads
+	•	Upload Photo ID (Driver’s License, State ID, Passport)
+	•	Upload Selfie for Verification (optional but recommended)
+	•	Upload Proof of Insurance (if used)
+
+⸻
+
+3. Substance Use History
+	•	Primary substance(s) used
+	•	Age of first use
+	•	Last date of use
+	•	Length of current sobriety
+	•	History of overdose? (Yes/No + Date)
+	•	Have you ever been on MAT? (Methadone, Suboxone, Vivitrol)
+	•	Current MAT status
+	•	Previous treatment attempts (rehabs, detox, therapy, outpatient)
+	•	Triggers or high-risk factors
+
+⸻
+
+4. Recovery & Program Requirements
+	•	Are you willing to attend required meetings?
+	•	Are you willing to submit to random drug testing?
+	•	Are you willing to follow house rules?
+	•	Do you agree to sober-living curfew?
+	•	Do you agree to participate in chores?
+	•	Do you have a sponsor? (Name & number optional)
+
+⸻
+
+5. Medical & Mental Health Information
+	•	Current medical conditions
+	•	Current mental health diagnosis(es)
+	•	Are you currently taking medication? (list all)
+	•	Allergies
+	•	Any mobility issues or disabilities?
+	•	History of seizures or medical emergencies?
+	•	Are you pregnant? (Yes/No)
+
+⸻
+
+6. Legal & Probation/Parole Info
+	•	Are you on probation or parole? (Yes/No)
+	•	Officer’s name, phone number
+	•	Court requirements (drug testing, classes, mandated treatment)
+	•	Any pending court cases?
+	•	Any restraining orders?
+	•	Any violent or sexual offenses? (Some homes require disclosure)
+
+⸻
+
+7. Employment & Income
+	•	Current employment status
+	•	Current employer (if applicable)
+	•	Occupation
+	•	Income source (job, family, disability, unemployment)
+	•	Ability to pay weekly rent
+	•	Are you looking for employment?
+	•	Are you willing to follow home’s employment requirements?
+
+⸻
+
+8. Housing Background
+	•	Why are you leaving your current living situation?
+	•	Previous sober livings
+	•	Any evictions from sober living?
+	•	Any housing violations?
+	•	Do you need ADA accommodations?
+
+⸻
+
+9. Personal Needs & Preferences
+	•	Preferred room type (private/shared)
+	•	Gender-specific housing?
+	•	LGBTQ+ friendly housing required?
+	•	Pet-friendly housing needed?
+	•	Smoking/vaping status
+	•	Transportation needs (rides, bus route, etc.)
+	•	Support animal documentation (if applicable)
+
+⸻
+
+10. Behavioral Agreement Section
+
+Applicant agrees to:
+	•	No drugs, alcohol, or mind-altering substances
+	•	Random UAs/breathalyzers
+	•	No violence or threats
+	•	No stealing
+	•	No overnight guests
+	•	Curfew compliance
+	•	Mandatory meetings
+	•	No harassment or discrimination
+	•	Immediate discharge for rule violations
+
+Signature + Date field
+
+⸻
+
+11. Detailed Background Questions (Optional but recommended)
+	•	Describe your recovery goals
+	•	What support do you need from the home?
+	•	What challenges are you currently facing?
+	•	Have you relapsed in the last 30 days?
+	•	How do you handle conflict or stress?
+
+⸻
+
+12. Upload Supporting Files
+	•	Treatment discharge paperwork
+	•	Medication list
+	•	Court paperwork
+	•	Sponsor verification
+	•	Previous sober living reference letter
+
+⸻
+
+13. Consent & Agreements
+
+Applicant must agree to:
+	•	Consent to drug testing
+	•	Consent to share information with probation/parole
+	•	Consent for emergency medical treatment
+	•	Consent to house cameras in common areas
+	•	Privacy & confidentiality policy
+	•	Acknowledgment of resident handbook
+	•	Acknowledgment of financial responsibility
+
+Signature + Date fields
+
+⸻
+
+14. Final Step — Photo & E-Signature
+	•	Upload headshot for roster
+	•	Digital signature
+	•	Date submitted
+
+⸻
+
+Want me to build this into a fillable PDF, website application, or app onboarding form for Sober Stay?
+
+I can format it clean, modern, teal & white, Apartments.com-style — ready to plug into your site.
