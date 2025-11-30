@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { 
   Users, Building, MessageSquare, AlertCircle, 
-  Plus, Check, X, MoreHorizontal, Search
+  Plus, Check, X, MoreHorizontal, Search, ChevronRight
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { MOCK_PROPERTIES, SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
@@ -19,8 +19,59 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { HelpCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+
+interface ChatMessage {
+  sender: "tenant" | "provider";
+  text: string;
+  timestamp: Date;
+}
+
+interface Conversation {
+  propertyId: string;
+  propertyName: string;
+  tenantName: string;
+  lastMessage: string;
+  lastMessageTime: Date;
+  unreadCount: number;
+}
 
 export function ProviderDashboard() {
+  const [location, setLocation] = useLocation();
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+
+  useEffect(() => {
+    // Load all conversations from localStorage
+    const allConversations: Conversation[] = [];
+    
+    MOCK_PROPERTIES.forEach(property => {
+      const key = `chat_${property.id}`;
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        try {
+          const messages = JSON.parse(stored) as ChatMessage[];
+          if (messages.length > 0) {
+            const lastMsg = messages[messages.length - 1];
+            const unreadFromTenant = messages.filter(m => m.sender === "tenant" && m.text).length;
+            allConversations.push({
+              propertyId: property.id,
+              propertyName: property.name,
+              tenantName: "Interested Tenant",
+              lastMessage: lastMsg.text.substring(0, 60),
+              lastMessageTime: new Date(lastMsg.timestamp),
+              unreadCount: unreadFromTenant,
+            });
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+      }
+    });
+
+    setConversations(allConversations.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime()));
+  }, []);
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
@@ -38,6 +89,7 @@ export function ProviderDashboard() {
           <TabsList className="bg-card border border-border p-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="properties">Properties</TabsTrigger>
+            <TabsTrigger value="messages">Messages ({conversations.length})</TabsTrigger>
             <TabsTrigger value="inbox">Applications & Inbox</TabsTrigger>
           </TabsList>
 
@@ -82,15 +134,15 @@ export function ProviderDashboard() {
                 <CardContent className="pt-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Messages</p>
-                      <h3 className="text-3xl font-bold text-white">8</h3>
+                      <p className="text-sm font-medium text-muted-foreground">Active Chats</p>
+                      <h3 className="text-3xl font-bold text-white">{conversations.length}</h3>
                     </div>
                     <div className="p-2 bg-primary/10 rounded-lg">
                       <MessageSquare className="w-5 h-5 text-primary" />
                     </div>
                   </div>
                   <div className="text-xs text-primary font-bold">
-                    3 new today
+                    {conversations.length > 0 ? `${conversations.filter(c => c.unreadCount > 0).length} active` : "Start connecting"}
                   </div>
                 </CardContent>
               </Card>
@@ -112,6 +164,35 @@ export function ProviderDashboard() {
                 </CardContent>
               </Card>
             </div>
+
+            <h3 className="text-xl font-bold text-white mt-8 mb-4">Recent Messages</h3>
+            <Card className="bg-card border-border">
+              <CardContent className="pt-6">
+                {conversations.length > 0 ? (
+                  <div className="space-y-3">
+                    {conversations.slice(0, 5).map((conv) => (
+                      <div key={conv.propertyId} className="flex gap-4 p-3 rounded-lg hover:bg-white/5 cursor-pointer transition-colors" onClick={() => setLocation(`/chat/${conv.propertyId}`)}>
+                        <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center shrink-0">
+                          <MessageSquare className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-center mb-1">
+                            <h4 className="font-medium text-white text-sm">{conv.propertyName}</h4>
+                            {conv.unreadCount > 0 && (
+                              <Badge className="bg-primary text-white text-xs">{conv.unreadCount}</Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">{conv.lastMessage}</p>
+                          <p className="text-xs text-muted-foreground/60 mt-1">{conv.lastMessageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm text-center py-4">No active conversations yet. Wait for tenants to chat!</p>
+                )}
+              </CardContent>
+            </Card>
 
             <h3 className="text-xl font-bold text-white mt-8 mb-4">Recent Applications</h3>
             <Card className="bg-card border-border overflow-hidden">
@@ -224,6 +305,67 @@ export function ProviderDashboard() {
                 </div>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* MESSAGES TAB */}
+          <TabsContent value="messages">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white">Tenant Conversations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {conversations.length > 0 ? (
+                  <div className="space-y-3">
+                    {conversations.map((conv) => (
+                      <div key={conv.propertyId} className="flex gap-4 p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-white/5 transition-all cursor-pointer" onClick={() => setLocation(`/chat/${conv.propertyId}`)}>
+                        <div className="w-16 h-16 bg-primary/20 rounded-lg flex items-center justify-center shrink-0">
+                          <MessageSquare className="w-8 h-8 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h4 className="font-bold text-white text-lg">{conv.propertyName}</h4>
+                              <p className="text-sm text-muted-foreground">{conv.tenantName}</p>
+                              <p className="text-xs text-muted-foreground mt-1">{conv.lastMessage}</p>
+                            </div>
+                            {conv.unreadCount > 0 && (
+                              <Badge className="bg-primary text-white">{conv.unreadCount} new</Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Last message {conv.lastMessageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                    <p>No active conversations yet. Tenants will start chatting when they're interested!</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* APPLICATIONS & INBOX TAB */}
+          <TabsContent value="inbox">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white">Applications & Inbox</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                   {/* Mock detailed list would go here */}
+                   <div className="text-center py-12 text-muted-foreground">
+                     <AlertCircle className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                     <p>Check your messages tab for tenant conversations.</p>
+                   </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
