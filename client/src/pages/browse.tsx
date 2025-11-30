@@ -1,5 +1,5 @@
 import { Layout } from "@/components/layout";
-import { MOCK_PROPERTIES } from "@/lib/mock-data";
+import { MOCK_PROPERTIES, SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { 
-  Search, MapPin, ShieldCheck, Filter, LayoutGrid, List 
+  Search, MapPin, ShieldCheck, Filter, LayoutGrid, List,
+  Info, HelpCircle
 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "wouter";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function Browse() {
   const [priceRange, setPriceRange] = useState([500]);
@@ -26,7 +34,7 @@ export default function Browse() {
 
       <div className="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
         {/* Sidebar Filters */}
-        <aside className="w-full lg:w-64 space-y-8 shrink-0">
+        <aside className="w-full lg:w-72 space-y-8 shrink-0">
           {/* Mobile Search (visible on all) */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -34,48 +42,92 @@ export default function Browse() {
           </div>
 
           {/* Filter Groups */}
-          <div className="space-y-6">
+          <div className="space-y-6 bg-card/50 p-4 rounded-xl border border-border">
             <div>
               <h3 className="font-bold text-white mb-4 flex items-center gap-2">
                 <Filter className="w-4 h-4" /> Filters
               </h3>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
+                {/* Gender */}
                 <div className="space-y-2">
-                  <Label>Gender</Label>
+                  <Label className="text-white font-semibold">Gender</Label>
                   <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="men" />
-                      <Label htmlFor="men" className="font-normal">Men Only</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="women" />
-                      <Label htmlFor="women" className="font-normal">Women Only</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="coed" />
-                      <Label htmlFor="coed" className="font-normal">Co-ed</Label>
-                    </div>
+                    {["Men Only", "Women Only", "Co-ed"].map((g) => (
+                      <div key={g} className="flex items-center space-x-2">
+                        <Checkbox id={g} />
+                        <Label htmlFor={g} className="font-normal text-muted-foreground">{g}</Label>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
+                {/* Supervision Type */}
                 <div className="space-y-2 pt-4 border-t border-border">
-                  <Label>Support Level</Label>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-white font-semibold">Supervision</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-sm p-4">
+                           <ul className="space-y-2 text-xs">
+                             {Object.entries(SUPERVISION_DEFINITIONS).map(([type, def]) => (
+                               <li key={type}>
+                                 <span className="font-bold text-primary">{type}:</span> {def}
+                               </li>
+                             ))}
+                           </ul>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="mat" />
-                      <Label htmlFor="mat" className="font-normal">MAT Friendly</Label>
-                    </div>
+                    {Object.keys(SUPERVISION_DEFINITIONS).map((type) => (
+                      <div key={type} className="flex items-center space-x-2">
+                        <Checkbox id={type} />
+                        <Label htmlFor={type} className="font-normal text-muted-foreground">{type}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Other Filters */}
+                <div className="space-y-2 pt-4 border-t border-border">
+                  <Label className="text-white font-semibold">Features & Support</Label>
+                  <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <Checkbox id="verified" checked />
-                      <Label htmlFor="verified" className="font-normal">Verified Only</Label>
+                      <Label htmlFor="verified" className="font-normal text-muted-foreground">Verified Only</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="mat" />
+                      <Label htmlFor="mat" className="font-normal text-muted-foreground">MAT Friendly</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="pet" />
+                      <Label htmlFor="pet" className="font-normal text-muted-foreground">Pet Friendly</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="lgbtq" />
+                      <Label htmlFor="lgbtq" className="font-normal text-muted-foreground">LGBTQ Friendly</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="faith" />
+                      <Label htmlFor="faith" className="font-normal text-muted-foreground">Faith Based</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="insurance" />
+                      <Label htmlFor="insurance" className="font-normal text-muted-foreground">Accepts Insurance</Label>
                     </div>
                   </div>
                 </div>
 
+                {/* Price */}
                 <div className="space-y-4 pt-4 border-t border-border">
                   <div className="flex justify-between">
-                    <Label>Max Price (Weekly)</Label>
+                    <Label className="text-white font-semibold">Max Price (Weekly)</Label>
                     <span className="text-sm text-primary font-bold">${priceRange[0]}</span>
                   </div>
                   <Slider 
@@ -110,63 +162,68 @@ export default function Browse() {
 
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
             {MOCK_PROPERTIES.map((home) => (
-              <Card key={home.id} className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-                <div className="relative h-56 overflow-hidden">
-                  <img 
-                    src={home.image} 
-                    alt={home.name} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
-                  
-                  <div className="absolute top-3 left-3 flex gap-2">
-                    {home.isVerified && (
-                      <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md bg-opacity-90">
-                        <ShieldCheck className="w-3 h-3" /> Verified
+              <Link key={home.id} href={`/property/${home.id}`}>
+                <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] cursor-pointer h-full flex flex-col">
+                  <div className="relative h-56 overflow-hidden shrink-0">
+                    <img 
+                      src={home.image} 
+                      alt={home.name} 
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
+                    
+                    <div className="absolute top-3 left-3 flex flex-col gap-2">
+                      {home.isVerified && (
+                        <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md bg-opacity-90">
+                          <ShieldCheck className="w-3 h-3" /> Verified
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+                      <div className="text-2xl font-bold text-white drop-shadow-md">
+                        ${home.price}<span className="text-sm font-normal text-gray-200">/{home.pricePeriod}</span>
+                      </div>
+                      <Badge variant="secondary" className="bg-black/50 backdrop-blur text-xs">
+                         {home.supervisionType}
                       </Badge>
-                    )}
-                  </div>
-                  
-                  <div className="absolute bottom-3 left-3">
-                    <div className="text-2xl font-bold text-white drop-shadow-md">
-                      ${home.price}<span className="text-sm font-normal text-gray-200">/{home.pricePeriod}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <CardContent className="p-5 space-y-4">
-                  <div>
-                    <div className="flex justify-between items-start mb-1">
-                      <h3 className="font-bold text-xl text-white line-clamp-1 group-hover:text-primary transition-colors">{home.name}</h3>
-                    </div>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="w-3 h-3 mr-1 text-primary" />
-                      {home.address}, {home.city}, {home.state}
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary" className="bg-secondary/60 hover:bg-secondary">{home.gender}</Badge>
-                    {home.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary">MAT</Badge>}
-                    <Badge variant="outline" className={home.bedsAvailable > 0 ? "border-green-500/30 text-green-500" : "border-red-500/30 text-red-500"}>
-                      {home.bedsAvailable > 0 ? `${home.bedsAvailable} Beds` : "Waitlist"}
-                    </Badge>
-                  </div>
+                  <CardContent className="p-5 space-y-4 flex-1 flex flex-col">
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start mb-1">
+                        <h3 className="font-bold text-xl text-white line-clamp-1 group-hover:text-primary transition-colors">{home.name}</h3>
+                      </div>
+                      <div className="flex items-center text-sm text-muted-foreground mb-3">
+                        <MapPin className="w-3 h-3 mr-1 text-primary" />
+                        {home.address}, {home.city}, {home.state}
+                      </div>
+                      
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                        {home.description}
+                      </p>
 
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {home.description}
-                  </p>
-                  
-                  <div className="pt-4 border-t border-border/50 flex gap-2">
-                    <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
-                      Details
-                    </Button>
-                    <Button variant="outline" className="border-primary/20 text-primary hover:bg-primary/10">
-                      Apply
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant="secondary" className="bg-secondary/60 hover:bg-secondary">{home.gender}</Badge>
+                        {home.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary">MAT</Badge>}
+                        <Badge variant="outline" className={home.bedsAvailable > 0 ? "border-green-500/30 text-green-500" : "border-red-500/30 text-red-500"}>
+                          {home.bedsAvailable > 0 ? `${home.bedsAvailable} Beds` : "Waitlist"}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="pt-4 border-t border-border/50 flex gap-2 mt-auto">
+                      <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
+                        Details
+                      </Button>
+                      <Button variant="outline" className="border-primary/20 text-primary hover:bg-primary/10">
+                        Apply
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>

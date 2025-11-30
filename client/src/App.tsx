@@ -10,12 +10,14 @@ import { TenantDashboard } from "@/pages/tenant-dashboard";
 import { ProviderDashboard } from "@/pages/provider-dashboard";
 import { AdminDashboard } from "@/pages/admin-dashboard";
 import { AuthPage } from "@/pages/auth";
+import PropertyDetails from "@/pages/property-details";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/browse" component={Browse} />
+      <Route path="/property/:id" component={PropertyDetails} />
       <Route path="/tenant-dashboard" component={TenantDashboard} />
       <Route path="/provider-dashboard" component={ProviderDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />

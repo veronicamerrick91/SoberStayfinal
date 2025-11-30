@@ -8,7 +8,17 @@ import {
   Plus, Check, X, MoreHorizontal, Search
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { MOCK_PROPERTIES } from "@/lib/mock-data";
+import { MOCK_PROPERTIES, SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { HelpCircle } from "lucide-react";
 
 export function ProviderDashboard() {
   return (
@@ -166,12 +176,52 @@ export function ProviderDashboard() {
                 </Card>
               ))}
               
-              <Card className="bg-card border-border border-dashed flex flex-col items-center justify-center h-full min-h-[250px] cursor-pointer hover:bg-white/5 transition-colors">
+              <Card className="bg-card border-border border-dashed flex flex-col items-center justify-center h-full min-h-[250px] cursor-pointer hover:bg-white/5 transition-colors p-6">
                 <div className="bg-white/10 p-4 rounded-full mb-4">
                   <Plus className="w-8 h-8 text-primary" />
                 </div>
-                <h3 className="font-bold text-white">Add Property</h3>
-                <p className="text-sm text-muted-foreground">List a new home</p>
+                <h3 className="font-bold text-white mb-1">Add Property</h3>
+                <p className="text-sm text-muted-foreground mb-6">List a new home</p>
+                
+                {/* Mock Form Preview (Visual only for prototype) */}
+                <div className="w-full text-left space-y-4 border-t border-white/10 pt-4 opacity-50 hover:opacity-100 transition-opacity">
+                  <div className="text-xs font-bold text-primary uppercase tracking-wider">New Listing Options</div>
+                  
+                  {/* Supervision Type Selection */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-white flex items-center gap-1">
+                      Supervision Type 
+                      <HelpCircle className="w-3 h-3 text-muted-foreground" />
+                    </Label>
+                    <div className="grid grid-cols-1 gap-2">
+                       {Object.keys(SUPERVISION_DEFINITIONS).map(type => (
+                         <div key={type} className="flex items-center space-x-2">
+                           <RadioGroupItem value={type} id={`new-${type}`} className="h-3 w-3" />
+                           <Label htmlFor={`new-${type}`} className="text-xs font-normal text-muted-foreground">{type}</Label>
+                         </div>
+                       ))}
+                    </div>
+                  </div>
+
+                  {/* Filters Selection */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-white">Features</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                       <div className="flex items-center space-x-2">
+                         <Checkbox id="new-mat" className="h-3 w-3" />
+                         <Label htmlFor="new-mat" className="text-xs font-normal text-muted-foreground">MAT Friendly</Label>
+                       </div>
+                       <div className="flex items-center space-x-2">
+                         <Checkbox id="new-pet" className="h-3 w-3" />
+                         <Label htmlFor="new-pet" className="text-xs font-normal text-muted-foreground">Pet Friendly</Label>
+                       </div>
+                       <div className="flex items-center space-x-2">
+                         <Checkbox id="new-insurance" className="h-3 w-3" />
+                         <Label htmlFor="new-insurance" className="text-xs font-normal text-muted-foreground">Accepts Insurance</Label>
+                       </div>
+                    </div>
+                  </div>
+                </div>
               </Card>
             </div>
           </TabsContent>

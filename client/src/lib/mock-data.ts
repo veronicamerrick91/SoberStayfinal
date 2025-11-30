@@ -1,3 +1,12 @@
+export type SupervisionType = "Peer Ran" | "Supervised" | "Integrated Treatment" | "Monitored";
+
+export const SUPERVISION_DEFINITIONS: Record<SupervisionType, string> = {
+  "Peer Ran": " democratically run by the residents themselves, with no paid staff living on-site. Rules are enforced by the community.",
+  "Supervised": "House manager or senior resident lives on-site to enforce rules, provide support, and ensure safety.",
+  "Monitored": "Staff are present during specific hours or check in regularly, but may not live on-site 24/7.",
+  "Integrated Treatment": "Clinical services (therapy, counseling) are provided in-house or closely coordinated with a treatment center."
+};
+
 export interface Property {
   id: string;
   name: string;
@@ -10,7 +19,16 @@ export interface Property {
   totalBeds: number;
   gender: "Men" | "Women" | "Co-ed";
   isVerified: boolean;
+  
+  // Filters
   isMatFriendly: boolean;
+  isPetFriendly: boolean;
+  isLgbtqFriendly: boolean;
+  isFaithBased: boolean;
+  acceptsInsurance: boolean;
+  
+  supervisionType: SupervisionType;
+  
   image: string;
   description: string;
   amenities: string[];
@@ -35,6 +53,11 @@ export const MOCK_PROPERTIES: Property[] = [
     gender: "Men",
     isVerified: true,
     isMatFriendly: true,
+    isPetFriendly: false,
+    isLgbtqFriendly: true,
+    isFaithBased: false,
+    acceptsInsurance: false,
+    supervisionType: "Supervised",
     image: home3,
     description: "A structured, supportive environment for men in early recovery. Located near public transit and meetings.",
     amenities: ["WiFi", "Cable TV", "Gym Access", "House Meetings", "Drug Testing"]
@@ -52,6 +75,11 @@ export const MOCK_PROPERTIES: Property[] = [
     gender: "Women",
     isVerified: true,
     isMatFriendly: false,
+    isPetFriendly: true,
+    isLgbtqFriendly: true,
+    isFaithBased: false,
+    acceptsInsurance: true,
+    supervisionType: "Integrated Treatment",
     image: home1,
     description: "Quiet, comfortable home for women. Focus on trauma-informed care and community building.",
     amenities: ["Private Rooms Available", "Garden", "Weekly Dinners", "Transport Assistance"]
@@ -69,6 +97,11 @@ export const MOCK_PROPERTIES: Property[] = [
     gender: "Co-ed",
     isVerified: false,
     isMatFriendly: true,
+    isPetFriendly: false,
+    isLgbtqFriendly: true,
+    isFaithBased: true,
+    acceptsInsurance: false,
+    supervisionType: "Peer Ran",
     image: home4,
     description: "Affordable sober living with a strong community focus. Large backyard and shared living spaces.",
     amenities: ["WiFi", "Laundry", "Parking", "Close to Bus Line"]
@@ -86,6 +119,11 @@ export const MOCK_PROPERTIES: Property[] = [
     gender: "Men",
     isVerified: true,
     isMatFriendly: true,
+    isPetFriendly: false,
+    isLgbtqFriendly: false,
+    isFaithBased: true,
+    acceptsInsurance: true,
+    supervisionType: "Monitored",
     image: home2,
     description: "Upscale sober living environment with executive amenities. Perfect for professionals.",
     amenities: ["Private Rooms", "Chef Kitchen", "Pool", "Home Office"]
