@@ -8,6 +8,7 @@ import Home from "@/pages/home";
 import Browse from "@/pages/browse";
 import { TenantDashboard } from "@/pages/tenant-dashboard";
 import { ProviderDashboard } from "@/pages/provider-dashboard";
+import { AdminDashboard } from "@/pages/admin-dashboard";
 import { AuthPage } from "@/pages/auth";
 
 function Router() {
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/browse" component={Browse} />
       <Route path="/tenant-dashboard" component={TenantDashboard} />
       <Route path="/provider-dashboard" component={ProviderDashboard} />
+      <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/login">
         <AuthPage type="login" />
       </Route>

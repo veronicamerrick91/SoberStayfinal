@@ -25,7 +25,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/">
             <a className="flex items-center hover:opacity-90 transition-opacity">
-              <img src={logo} alt="Sober Stay" className="h-12 w-auto" />
+              <img src={logo} alt="Sober Stay" className="h-20 w-auto" />
             </a>
           </Link>
 
@@ -102,7 +102,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-4">
               <div className="flex items-center">
-                <img src={logo} alt="Sober Stay" className="h-10 w-auto" />
+                <img src={logo} alt="Sober Stay" className="h-14 w-auto" />
               </div>
               <p className="text-sm text-muted-foreground">
                 Connecting individuals in recovery with safe, supportive, and verified sober living environments.

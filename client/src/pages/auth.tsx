@@ -87,6 +87,13 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                 </a>
               </Link>
             </p>
+            <div className="w-full text-center mt-4 pt-4 border-t border-border flex flex-col gap-2">
+               <Link href="/admin-dashboard">
+                 <a className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                   Admin Access (Demo)
+                 </a>
+               </Link>
+            </div>
           </CardFooter>
         </Card>
       </div>
