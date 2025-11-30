@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   MapPin, ShieldCheck, Check, ArrowLeft, Share2, Heart, 
   Wifi, Car, Utensils, Tv, Dumbbell, Calendar,
-  Info, Mail, Phone, MessageSquare
+  Info, Mail, Phone, MessageSquare, Bus, ShoppingCart, Stethoscope, Users
 } from "lucide-react";
 import { useRoute, Link, useLocation } from "wouter";
 import { isAuthenticated } from "@/lib/auth";
@@ -138,6 +138,42 @@ export default function PropertyDetails() {
                     {amenity}
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Nearby Amenities */}
+            <div>
+              <h3 className="text-xl font-bold text-white mb-6">Nearby Services & Support</h3>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {property.nearbyAmenities.map((amenity, idx) => {
+                  const getCategoryIcon = (category: string) => {
+                    switch(category) {
+                      case "Transportation": return <Bus className="w-5 h-5" />;
+                      case "Food": return <Utensils className="w-5 h-5" />;
+                      case "Groceries": return <ShoppingCart className="w-5 h-5" />;
+                      case "Therapy/IOP": return <Stethoscope className="w-5 h-5" />;
+                      case "Recovery Meetings": return <Users className="w-5 h-5" />;
+                      default: return <Check className="w-5 h-5" />;
+                    }
+                  };
+
+                  return (
+                    <div key={idx} className="rounded-lg bg-card/30 border border-border/50 p-4 space-y-3 hover:border-primary/50 transition-colors">
+                      <div className="flex items-center gap-3 text-primary font-semibold">
+                        {getCategoryIcon(amenity.category)}
+                        <span>{amenity.category}</span>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        {amenity.items.map((item, i) => (
+                          <div key={i} className="flex justify-between items-start text-gray-300">
+                            <span className="flex-1">{item.name}</span>
+                            <span className="text-muted-foreground text-xs ml-2 whitespace-nowrap">{item.distance}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
             
