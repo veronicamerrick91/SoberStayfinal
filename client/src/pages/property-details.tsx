@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { useRoute, Link, useLocation } from "wouter";
 import { isAuthenticated } from "@/lib/auth";
+import { useState, useEffect } from "react";
+import { isFavorite, toggleFavorite } from "@/lib/favorites";
 import {
   Tooltip,
   TooltipContent,
@@ -21,13 +23,27 @@ import mapPlaceholder from "@assets/generated_images/map_view_of_a_neighborhood_
 export default function PropertyDetails() {
   const [match, params] = useRoute("/property/:id");
   const [location, setLocation] = useLocation();
+  const [isFav, setIsFav] = useState(false);
   const property = MOCK_PROPERTIES.find(p => p.id === params?.id);
+
+  useEffect(() => {
+    if (property?.id) {
+      setIsFav(isFavorite(property.id));
+    }
+  }, [property?.id]);
 
   const handleApply = () => {
     if (!isAuthenticated()) {
       setLocation(`/login?returnPath=/apply/${property?.id}`);
     } else {
       setLocation(`/apply/${property?.id}`);
+    }
+  };
+
+  const handleFavorite = () => {
+    if (property?.id) {
+      const newState = toggleFavorite(property.id);
+      setIsFav(newState);
     }
   };
 
@@ -62,8 +78,8 @@ export default function PropertyDetails() {
                  <Button size="icon" variant="secondary" className="rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur">
                    <Share2 className="w-4 h-4" />
                  </Button>
-                 <Button size="icon" variant="secondary" className="rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur">
-                   <Heart className="w-4 h-4" />
+                 <Button onClick={handleFavorite} size="icon" variant="secondary" className={`rounded-full backdrop-blur ${isFav ? "bg-primary/90 hover:bg-primary text-white" : "bg-black/50 hover:bg-black/70 text-white"}`}>
+                   <Heart className={`w-4 h-4 ${isFav ? "fill-current" : ""}`} />
                  </Button>
               </div>
             </div>
