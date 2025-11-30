@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   MapPin, ShieldCheck, Check, ArrowLeft, Share2, Heart, 
   Wifi, Car, Utensils, Tv, Dumbbell, Calendar,
-  Info
+  Info, Mail, Phone, MessageSquare
 } from "lucide-react";
 import { useRoute, Link, useLocation } from "wouter";
 import { isAuthenticated } from "@/lib/auth";
@@ -184,9 +184,36 @@ export default function PropertyDetails() {
                      <Button onClick={handleApply} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg shadow-lg shadow-primary/20">
                        Apply Now
                      </Button>
-                     <Button variant="outline" className="w-full border-border hover:bg-white/5">
-                       Contact Provider
-                     </Button>
+                     
+                     {/* Contact Options */}
+                     <div className="pt-2 space-y-2 border-t border-border">
+                       <p className="text-xs text-muted-foreground font-semibold">Connect with Provider</p>
+                       <div className="grid grid-cols-3 gap-2">
+                         <Button 
+                           onClick={() => window.location.href = "tel:+1234567890"}
+                           variant="outline" 
+                           className="border-border hover:bg-white/5 gap-2 h-10"
+                         >
+                           <Phone className="w-4 h-4" />
+                           <span className="hidden sm:inline text-xs">Call</span>
+                         </Button>
+                         <Button 
+                           onClick={() => window.location.href = `mailto:provider@sobestay.com?subject=Inquiry about ${property.name}`}
+                           variant="outline" 
+                           className="border-border hover:bg-white/5 gap-2 h-10"
+                         >
+                           <Mail className="w-4 h-4" />
+                           <span className="hidden sm:inline text-xs">Email</span>
+                         </Button>
+                         <Button 
+                           onClick={() => setLocation(`/chat/${property.id}`)}
+                           className="bg-primary/20 text-primary hover:bg-primary/30 gap-2 h-10 border border-primary/50"
+                         >
+                           <MessageSquare className="w-4 h-4" />
+                           <span className="hidden sm:inline text-xs">Chat</span>
+                         </Button>
+                       </div>
+                     </div>
                    </div>
                    
                    <div className="text-xs text-center text-muted-foreground pt-2">

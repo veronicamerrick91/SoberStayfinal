@@ -12,6 +12,7 @@ import { AdminDashboard } from "@/pages/admin-dashboard";
 import { AuthPage } from "@/pages/auth";
 import PropertyDetails from "@/pages/property-details";
 import ApplicationForm from "@/pages/application-form";
+import Chat from "@/pages/chat";
 import { useEffect } from "react";
 
 function ScrollToTop() {
@@ -33,6 +34,7 @@ function Router() {
         <Route path="/browse" component={Browse} />
         <Route path="/property/:id" component={PropertyDetails} />
         <Route path="/apply/:id" component={ApplicationForm} />
+        <Route path="/chat/:propertyId" component={Chat} />
         <Route path="/tenant-dashboard" component={TenantDashboard} />
         <Route path="/provider-dashboard" component={ProviderDashboard} />
         <Route path="/admin-dashboard" component={AdminDashboard} />
