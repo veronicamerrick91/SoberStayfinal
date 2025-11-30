@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import logo from "@assets/C442C7B9-08EE-40E8-9A2E-1D38827FBB5B_1764525843785.png";
+import logo from "@assets/C442C7B9-08EE-40E8-9A2E-1D38827FBB5B_1764526673965.jpeg";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -25,7 +25,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/">
             <a className="flex items-center hover:opacity-90 transition-opacity">
-              <img src={logo} alt="Sober Stay" className="h-20 w-auto" />
+              <img src={logo} alt="Sober Stay" className="h-28 w-auto" />
             </a>
           </Link>
 
@@ -102,7 +102,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-4">
               <div className="flex items-center">
-                <img src={logo} alt="Sober Stay" className="h-14 w-auto" />
+                <img src={logo} alt="Sober Stay" className="h-20 w-auto" />
               </div>
               <p className="text-sm text-muted-foreground">
                 Connecting individuals in recovery with safe, supportive, and verified sober living environments.
