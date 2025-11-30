@@ -8,7 +8,7 @@ import { Link } from "wouter";
 import heroBg from "@assets/generated_images/dark_navy_and_teal_abstract_background_for_hero_section.png";
 import pathBg from "@assets/generated_images/abstract_glowing_path_representing_recovery_journey.png";
 import tenantBg from "@assets/generated_images/calm_safe_abstract_background_for_tenants.png";
-import providerBg from "@assets/generated_images/professional_geometric_background_for_providers.png";
+import providerBg from "@assets/generated_images/professional_geometric_background_for_providers_without_text.png";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
 
 export default function Home() {
