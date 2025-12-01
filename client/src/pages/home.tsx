@@ -343,6 +343,3 @@ export default function Home() {
     </Layout>
   );
 }
-
-// Add missing import for Building icon if needed
-import { Building } from "lucide-react";

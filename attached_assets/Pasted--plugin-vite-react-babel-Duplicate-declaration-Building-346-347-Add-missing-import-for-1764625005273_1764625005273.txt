@@ -1,0 +1,43 @@
+[plugin:vite:react-babel] Duplicate declaration "Building"
+  346 |
+  347 | // Add missing import for Building icon if needed
+> 348 | import { Building } from "lucide-react";
+      |          ^^^^^^^^
+  349 |
+/home/runner/workspace/client/src/pages/home.tsx
+    at File.buildCodeFrameError (/home/runner/workspace/node_modules/@babel/core/lib/transformation/file/file.js:200:12)
+    at Scope.checkBlockScopedCollisions (/home/runner/workspace/node_modules/@babel/traverse/lib/scope/index.js:439:27)
+    at Scope.registerBinding (/home/runner/workspace/node_modules/@babel/traverse/lib/scope/index.js:540:16)
+    at Scope.registerDeclaration (/home/runner/workspace/node_modules/@babel/traverse/lib/scope/index.js:500:14)
+    at Object.ImportDeclaration (/home/runner/workspace/node_modules/@babel/traverse/lib/scope/index.js:212:12)
+    at NodePath._call (/home/runner/workspace/node_modules/@babel/traverse/lib/path/context.js:49:20)
+    at NodePath.call (/home/runner/workspace/node_modules/@babel/traverse/lib/path/context.js:39:18)
+    at NodePath.visit (/home/runner/workspace/node_modules/@babel/traverse/lib/path/context.js:88:31)
+    at TraversalContext.visitQueue (/home/runner/workspace/node_modules/@babel/traverse/lib/context.js:90:16)
+    at TraversalContext.visitMultiple (/home/runner/workspace/node_modules/@babel/traverse/lib/context.js:62:17)
+    at TraversalContext.visit (/home/runner/workspace/node_modules/@babel/traverse/lib/context.js:111:19)
+    at traverseNode (/home/runner/workspace/node_modules/@babel/traverse/lib/traverse-node.js:131:17)
+    at traverse (/home/runner/workspace/node_modules/@babel/traverse/lib/index.js:53:34)
+    at NodePath.traverse (/home/runner/workspace/node_modules/@babel/traverse/lib/path/index.js:121:24)
+    at Scope.crawl (/home/runner/workspace/node_modules/@babel/traverse/lib/scope/index.js:712:10)
+    at Scope.init (/home/runner/workspace/node_modules/@babel/traverse/lib/scope/index.js:675:12)
+    at NodePath.setScope (/home/runner/workspace/node_modules/@babel/traverse/lib/path/context.js:126:53)
+    at NodePath.setContext (/home/runner/workspace/node_modules/@babel/traverse/lib/path/context.js:138:12)
+    at new File (/home/runner/workspace/node_modules/@babel/core/lib/transformation/file/file.js:88:8)
+    at normalizeFile (/home/runner/workspace/node_modules/@babel/core/lib/transformation/normalize-file.js:98:10)
+    at normalizeFile.next (<anonymous>)
+    at run (/home/runner/workspace/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/home/runner/workspace/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (/home/runner/workspace/node_modules/gensync/index.js:261:32)
+    at /home/runner/workspace/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/runner/workspace/node_modules/gensync/index.js:223:11)
+    at /home/runner/workspace/node_modules/gensync/index.js:189:28
+    at /home/runner/workspace/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+    at /home/runner/workspace/node_modules/gensync/index.js:113:33
+    at step (/home/runner/workspace/node_modules/gensync/index.js:287:14)
+    at /home/runner/workspace/node_modules/gensync/index.js:273:13
+    at async.call.result.err.err (/home/runner/workspace/node_modules/gensync/index.js:223:11)
+Click outside, press Esc key, or fix the code to dismiss.
+You can also disable this overlay by setting server.hmr.overlay to false in vite.config.ts.
