@@ -13,6 +13,9 @@ import { AuthPage } from "@/pages/auth";
 import PropertyDetails from "@/pages/property-details";
 import ApplicationForm from "@/pages/application-form";
 import Chat from "@/pages/chat";
+import { PrivacyPolicy } from "@/pages/privacy-policy";
+import { TermsOfUse } from "@/pages/terms-of-use";
+import { Disclaimer } from "@/pages/disclaimer";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
 
