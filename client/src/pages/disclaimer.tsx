@@ -8,7 +8,7 @@ export function Disclaimer() {
         <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="text-3xl font-heading text-white mb-2">Disclaimer - Comprehensive Liability Release</CardTitle>
-            <p className="text-muted-foreground">Last Updated: December 2024</p>
+            <p className="text-muted-foreground">Last Updated: October 2025</p>
           </CardHeader>
           <CardContent className="space-y-8 text-sm text-gray-300">
             <section className="space-y-4">

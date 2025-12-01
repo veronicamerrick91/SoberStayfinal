@@ -130,7 +130,7 @@ export function HelpCenter() {
                 <CardContent className="pt-6">
                   <div className="text-4xl mb-2">{item.icon}</div>
                   <p className="text-white font-bold">{item.title}</p>
-                  <p className="text-sm text-muted-foreground">{item.text}</p>
+                  <p className="text-sm text-muted-foreground">October 2025</p>
                 </CardContent>
               </Card>
             ))}
