@@ -4,10 +4,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, AlertCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { saveAuth } from "@/lib/auth";
+
+const VALID_CREDENTIALS = {
+  tenant: {
+    email: "tenant@soberstay.com",
+    password: "demo123"
+  },
+  provider: {
+    email: "provider@soberstay.com",
+    password: "demo123"
+  },
+  admin: {
+    email: "admin@soberstay.com",
+    password: "admin123"
+  }
+};
 
 interface AuthPageProps {
   type: "login" | "signup";
@@ -18,6 +33,8 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [location, setLocation] = useLocation();
   const [role, setRole] = useState<"tenant" | "provider" | "admin">(defaultRole as any);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
 
   const getReturnPath = () => {
     const params = new URLSearchParams(window.location.search);
@@ -27,14 +44,25 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login - save session to localStorage
+    setLoginError("");
+    
+    const creds = VALID_CREDENTIALS[role as keyof typeof VALID_CREDENTIALS];
+    
+    if (type === "login") {
+      // Validate credentials for login
+      if (email !== creds.email || password !== creds.password) {
+        setLoginError("Invalid email or password");
+        return;
+      }
+    }
+    
+    // Save session and redirect
     saveAuth({
       id: Math.random().toString(36).substr(2, 9),
-      email: email || "user@example.com",
+      email: email || creds.email,
       role: role,
-      name: role === "tenant" ? "Applicant" : role === "provider" ? "Provider" : "Administrator"
+      name: role === "tenant" ? "Test Tenant" : role === "provider" ? "Test Provider" : "Test Administrator"
     });
-    // Redirect to return path or dashboard
     setLocation(getReturnPath());
   };
 
@@ -64,6 +92,21 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
               </TabsList>
             </Tabs>
 
+            {type === "login" && (
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 mb-4">
+                <p className="text-xs text-blue-300 mb-2 font-semibold">Demo Credentials:</p>
+                <p className="text-xs text-blue-300/70 mb-1">Email: {VALID_CREDENTIALS[role as keyof typeof VALID_CREDENTIALS].email}</p>
+                <p className="text-xs text-blue-300/70">Password: {VALID_CREDENTIALS[role as keyof typeof VALID_CREDENTIALS].password}</p>
+              </div>
+            )}
+            
+            {loginError && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex gap-2">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <p className="text-sm text-red-300">{loginError}</p>
+              </div>
+            )}
+            
             <form onSubmit={handleLogin} className="space-y-4">
               {type === "signup" && (
                 <div className="grid grid-cols-2 gap-4">
@@ -85,7 +128,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
               
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" className="bg-background/50" />
+                <Input id="password" type="password" className="bg-background/50" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
 
               <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
