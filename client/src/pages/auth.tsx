@@ -97,9 +97,10 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue={role} onValueChange={(v) => setRole(v as any)} className="w-full mb-6">
-              <TabsList className="grid w-full grid-cols-2 bg-background/50">
+              <TabsList className={`grid w-full ${type === "login" ? "grid-cols-3" : "grid-cols-2"} bg-background/50`}>
                 <TabsTrigger value="tenant">I'm a Tenant</TabsTrigger>
                 <TabsTrigger value="provider">I'm a Provider</TabsTrigger>
+                {type === "login" && <TabsTrigger value="admin" className="text-xs">Admin</TabsTrigger>}
               </TabsList>
             </Tabs>
 
