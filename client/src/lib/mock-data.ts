@@ -46,30 +46,7 @@ import home2 from "@assets/stock_images/modern_comfortable_l_54ef374c.jpg";
 import home3 from "@assets/stock_images/suburban_house_exter_44ed1d5c.jpg";
 import home4 from "@assets/stock_images/suburban_house_exter_a5a19182.jpg";
 
-export const MOCK_PROPERTIES: Property[] = [
-  {
-    id: "1",
-    name: "Serenity House",
-    address: "123 Maple Street",
-    city: "Austin",
-    state: "TX",
-    price: 250,
-    pricePeriod: "weekly",
-    bedsAvailable: 2,
-    totalBeds: 8,
-    gender: "Men",
-    isVerified: true,
-    roomType: "Shared Room",
-    isMatFriendly: true,
-    isPetFriendly: false,
-    isLgbtqFriendly: true,
-    isFaithBased: false,
-    acceptsInsurance: false,
-    supervisionType: "Supervised",
-    image: home3,
-    description: "A structured, supportive environment for men in early recovery. Located near public transit and meetings.",
-    amenities: ["WiFi", "Cable TV", "Gym Access", "House Meetings", "Drug Testing"],
-    nearbyAmenities: [
+export const MOCK_PROPERTIES: Property[] = [];
       {
         category: "Transportation",
         items: [

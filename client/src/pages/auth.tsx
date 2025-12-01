@@ -11,16 +11,16 @@ import { saveAuth } from "@/lib/auth";
 
 const VALID_CREDENTIALS = {
   tenant: {
-    email: "tenant@soberstay.com",
-    password: "demo123"
+    email: "contact@soberstay.com",
+    password: "contact@soberstay.com"
   },
   provider: {
-    email: "provider@soberstay.com",
-    password: "demo123"
+    email: "contact@soberstay.com",
+    password: "contact@soberstay.com"
   },
   admin: {
-    email: "admin@soberstay.com",
-    password: "admin123"
+    email: "contact@soberstay.com",
+    password: "contact@soberstay.com"
   }
 };
 
