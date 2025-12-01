@@ -30,55 +30,26 @@ interface User {
 export function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [reports, setReports] = useState<any[]>([]);
-  const [users, setUsers] = useState<User[]>([
-    { id: "1", name: "Sarah Connor", role: "Tenant", email: "sarah@example.com", phone: "+1 (512) 555-0001", status: "Active", verified: true },
-    { id: "2", name: "Recovery First LLC", role: "Provider", email: "recovery@example.com", phone: "+1 (512) 555-0002", status: "Active", verified: true },
-    { id: "3", name: "John Doe", role: "Tenant", email: "john@example.com", phone: "+1 (512) 555-0003", status: "Suspended", verified: false },
-    { id: "4", name: "Hope House", role: "Provider", email: "hopehouse@example.com", phone: "+1 (512) 555-0004", status: "Pending", verified: false },
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [listings, setListings] = useState<any[]>(MOCK_PROPERTIES.map(p => ({ ...p, status: "Pending" })));
   const [reviewingListing, setReviewingListing] = useState<any | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [applications, setApplications] = useState<any[]>([
-    { id: "app1", tenantName: "Michael Johnson", email: "michael@example.com", phone: "+1 (512) 555-1001", propertyName: "Serenity House", status: "Pending Review", completeness: 100, submittedDate: new Date(Date.now() - 2*60*60*1000).toISOString(), photoID: true, sobrietyStatus: "6 months clean", yearsClean: 0.5, treatmentHistory: "Completed inpatient program at Austin Recovery Center", emergencyContact: "John Johnson", emergencyPhone: "+1 (512) 555-1002", housing: "Looking for supportive environment with structure", insurance: "Blue Cross Blue Shield" },
-    { id: "app2", tenantName: "Emma Wilson", email: "emma@example.com", phone: "+1 (512) 555-2001", propertyName: "New Beginnings Cottage", status: "Needs Info", completeness: 75, submittedDate: new Date(Date.now() - 24*60*60*1000).toISOString(), photoID: true, sobrietyStatus: "1 year clean", yearsClean: 1, treatmentHistory: "Outpatient counseling ongoing", emergencyContact: "Sarah Wilson", emergencyPhone: "+1 (512) 555-2002" },
-    { id: "app3", tenantName: "James Martinez", email: "james@example.com", phone: "+1 (512) 555-3001", propertyName: "The Harbor", status: "Approved", completeness: 100, submittedDate: new Date(Date.now() - 72*60*60*1000).toISOString(), photoID: true, sobrietyStatus: "2 years clean", yearsClean: 2, treatmentHistory: "Completed residential program, strong recovery network", emergencyContact: "Maria Martinez", emergencyPhone: "+1 (512) 555-3002", housing: "Seeking community-based recovery home", insurance: "Self-pay" },
-    { id: "app4", tenantName: "Lisa Chen", email: "lisa@example.com", phone: "+1 (512) 555-4001", propertyName: "Pathway Home", status: "Pending Review", completeness: 85, submittedDate: new Date(Date.now() - 6*60*60*1000).toISOString(), photoID: true, sobrietyStatus: "3 months clean", yearsClean: 0.25, treatmentHistory: "Recently discharged from IOP program", emergencyContact: "David Chen", emergencyPhone: "+1 (512) 555-4002", housing: "First time in sober living, need guidance" },
-  ]);
+  const [applications, setApplications] = useState<any[]>([]);
   const [viewingApplication, setViewingApplication] = useState<any | null>(null);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
-  const [messages, setMessages] = useState<any[]>([
-    { id: "msg1", tenant: "John Smith", provider: "Serenity House", preview: "Can I apply even though...", flagged: true, reason: "Potential trigger mention" },
-    { id: "msg2", tenant: "Sarah Connor", provider: "New Beginnings", preview: "Thank you for accepting my application!", flagged: false, reason: null },
-    { id: "msg3", tenant: "Mike Chen", provider: "The Harbor", preview: "Where can I find...", flagged: true, reason: "Outside communication attempt" },
-  ]);
-  const [documents, setDocuments] = useState<any[]>([
-    { id: "doc1", provider: "Recovery First LLC", providerEmail: "recovery@example.com", documentName: "Business License", uploadedDate: new Date(Date.now() - 5*24*60*60*1000).toISOString(), status: "Pending Review", documentType: "License" },
-    { id: "doc2", provider: "Recovery First LLC", providerEmail: "recovery@example.com", documentName: "Insurance Certificate", uploadedDate: new Date(Date.now() - 3*24*60*60*1000).toISOString(), status: "Approved", documentType: "Insurance" },
-    { id: "doc3", provider: "Hope House", providerEmail: "hopehouse@example.com", documentName: "Facility Photos", uploadedDate: new Date(Date.now() - 1*24*60*60*1000).toISOString(), status: "Pending Review", documentType: "Photos" },
-    { id: "doc4", provider: "New Beginnings Cottage", providerEmail: "newbeginnings@example.com", documentName: "Safety Compliance Report", uploadedDate: new Date(Date.now() - 2*24*60*60*1000).toISOString(), status: "Rejected", documentType: "Compliance" },
-  ]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<any[]>([]);
   const [safetySettings, setSafetySettings] = useState<any[]>([
     { id: 1, label: "Auto-flag drug references", enabled: true },
     { id: 2, label: "Monitor external contact attempts", enabled: true },
     { id: 3, label: "Require provider verification", enabled: true },
     { id: 4, label: "Enable duplicate account detection", enabled: true },
   ]);
-  const [campaigns, setCampaigns] = useState<any[]>([
-    { name: "Provider Onboarding Series", status: "Active", recipients: 145 },
-    { name: "Tenant Recovery Resources", status: "Scheduled", recipients: 320 },
-    { name: "Featured Listing Promotion", status: "Draft", recipients: 0 },
-  ]);
-  const [promoCodes, setPromoCodes] = useState<any[]>([
-    { code: "WELCOME25", discount: "25% off", target: "New Providers", used: 34 },
-    { code: "RECOVERY20", discount: "20% off", target: "Tenants", used: 128 },
-  ]);
-  const [adCampaigns, setAdCampaigns] = useState<any[]>([
-    { home: "Downtown Recovery Center", duration: "30 days", cost: "$199", status: "Active" },
-    { home: "Supportive Living Homes", duration: "7 days", cost: "$49", status: "Expiring Soon" },
-  ]);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [promoCodes, setPromoCodes] = useState<any[]>([]);
+  const [adCampaigns, setAdCampaigns] = useState<any[]>([]);
   const [showBlogModal, setShowBlogModal] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<any | null>(null);
   const [editingListing, setEditingListing] = useState<any | null>(null);
