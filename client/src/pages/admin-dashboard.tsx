@@ -49,6 +49,11 @@ export function AdminDashboard() {
   ]);
   const [viewingApplication, setViewingApplication] = useState<any | null>(null);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const [messages, setMessages] = useState<any[]>([
+    { id: "msg1", tenant: "John Smith", provider: "Serenity House", preview: "Can I apply even though...", flagged: true, reason: "Potential trigger mention" },
+    { id: "msg2", tenant: "Sarah Connor", provider: "New Beginnings", preview: "Thank you for accepting my application!", flagged: false, reason: null },
+    { id: "msg3", tenant: "Mike Chen", provider: "The Harbor", preview: "Where can I find...", flagged: true, reason: "Outside communication attempt" },
+  ]);
 
   useEffect(() => {
     setReports(getReports());
@@ -102,6 +107,14 @@ export function AdminDashboard() {
 
   const handleRequestApplicationInfo = (appId: string, message: string) => {
     setApplications(applications.map(a => a.id === appId ? { ...a, status: "Needs Info", infoRequest: message } : a));
+  };
+
+  const handleClearFlag = (msgId: string) => {
+    setMessages(messages.map(m => m.id === msgId ? { ...m, flagged: false, reason: null } : m));
+  };
+
+  const handleBanUser = (msgId: string) => {
+    setMessages(messages.filter(m => m.id !== msgId));
   };
 
   return (
@@ -382,36 +395,39 @@ export function AdminDashboard() {
             <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5" /> Message Moderation
+                  <MessageSquare className="w-5 h-5" /> Message Moderation ({messages.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { tenant: "John Smith", provider: "Serenity House", preview: "Can I apply even though...", flagged: true, reason: "Potential trigger mention" },
-                    { tenant: "Sarah Connor", provider: "New Beginnings", preview: "Thank you for accepting my application!", flagged: false, reason: null },
-                    { tenant: "Mike Chen", provider: "The Harbor", preview: "Where can I find...", flagged: true, reason: "Outside communication attempt" },
-                  ].map((msg, i) => (
-                    <div key={i} className={`p-4 rounded-lg border ${msg.flagged ? "bg-red-500/10 border-red-500/20" : "bg-white/5 border-border/50"}`}>
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <p className="text-white font-medium text-sm">{msg.tenant} → {msg.provider}</p>
-                          <p className="text-xs text-muted-foreground">{msg.preview}</p>
+                {messages.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                    <p>All messages are clean</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {messages.map((msg) => (
+                      <div key={msg.id} className={`p-4 rounded-lg border ${msg.flagged ? "bg-red-500/10 border-red-500/20" : "bg-white/5 border-border/50"}`}>
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <p className="text-white font-medium text-sm">{msg.tenant} → {msg.provider}</p>
+                            <p className="text-xs text-muted-foreground">{msg.preview}</p>
+                          </div>
+                          {msg.flagged && <Badge className="bg-red-500/80 text-xs">{msg.reason}</Badge>}
                         </div>
-                        {msg.flagged && <Badge className="bg-red-500/80 text-xs">{msg.reason}</Badge>}
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="h-7 text-xs">View Thread</Button>
+                          {msg.flagged && (
+                            <>
+                              <Button size="sm" onClick={() => handleClearFlag(msg.id)} variant="ghost" className="h-7 text-xs text-green-500 hover:bg-green-500/10">Clear</Button>
+                              <Button size="sm" onClick={() => handleBanUser(msg.id)} variant="ghost" className="h-7 text-xs text-red-500 hover:bg-red-500/10">Ban User</Button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="h-7 text-xs">View Thread</Button>
-                        {msg.flagged && (
-                          <>
-                            <Button size="sm" variant="ghost" className="h-7 text-xs text-green-500 hover:bg-green-500/10">Clear</Button>
-                            <Button size="sm" variant="ghost" className="h-7 text-xs text-red-500 hover:bg-red-500/10">Ban User</Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
