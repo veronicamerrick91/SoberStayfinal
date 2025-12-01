@@ -473,7 +473,6 @@ export function AdminDashboard() {
                     "Insurance Certificate",
                     "Facility Photos",
                     "Safety Compliance Report",
-                    "Staff Background Checks",
                     "Property Inspection Report"
                   ].map((doc, i) => (
                     <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-border/50">
