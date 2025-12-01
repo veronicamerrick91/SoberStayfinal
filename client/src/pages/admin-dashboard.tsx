@@ -14,6 +14,7 @@ import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { getReports, updateReportStatus } from "@/lib/reports";
 import { UserEditModal } from "@/components/user-edit-modal";
 import { ListingReviewModal } from "@/components/listing-review-modal";
+import { ApplicationDetailsModal } from "@/components/application-details-modal";
 import { useState, useEffect } from "react";
 
 interface User {
@@ -40,6 +41,14 @@ export function AdminDashboard() {
   const [listings, setListings] = useState<any[]>(MOCK_PROPERTIES.map(p => ({ ...p, status: "Pending" })));
   const [reviewingListing, setReviewingListing] = useState<any | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [applications, setApplications] = useState<any[]>([
+    { id: "app1", tenantName: "Michael Johnson", email: "michael@example.com", phone: "+1 (512) 555-1001", propertyName: "Serenity House", status: "Pending Review", completeness: 100, submittedDate: new Date(Date.now() - 2*60*60*1000).toISOString(), photoID: true, sobrietyStatus: "6 months clean", yearsClean: 0.5, treatmentHistory: "Completed inpatient program at Austin Recovery Center", emergencyContact: "John Johnson", emergencyPhone: "+1 (512) 555-1002", housing: "Looking for supportive environment with structure", insurance: "Blue Cross Blue Shield" },
+    { id: "app2", tenantName: "Emma Wilson", email: "emma@example.com", phone: "+1 (512) 555-2001", propertyName: "New Beginnings Cottage", status: "Needs Info", completeness: 75, submittedDate: new Date(Date.now() - 24*60*60*1000).toISOString(), photoID: true, sobrietyStatus: "1 year clean", yearsClean: 1, treatmentHistory: "Outpatient counseling ongoing", emergencyContact: "Sarah Wilson", emergencyPhone: "+1 (512) 555-2002" },
+    { id: "app3", tenantName: "James Martinez", email: "james@example.com", phone: "+1 (512) 555-3001", propertyName: "The Harbor", status: "Approved", completeness: 100, submittedDate: new Date(Date.now() - 72*60*60*1000).toISOString(), photoID: true, sobrietyStatus: "2 years clean", yearsClean: 2, treatmentHistory: "Completed residential program, strong recovery network", emergencyContact: "Maria Martinez", emergencyPhone: "+1 (512) 555-3002", housing: "Seeking community-based recovery home", insurance: "Self-pay" },
+    { id: "app4", tenantName: "Lisa Chen", email: "lisa@example.com", phone: "+1 (512) 555-4001", propertyName: "Pathway Home", status: "Pending Review", completeness: 85, submittedDate: new Date(Date.now() - 6*60*60*1000).toISOString(), photoID: true, sobrietyStatus: "3 months clean", yearsClean: 0.25, treatmentHistory: "Recently discharged from IOP program", emergencyContact: "David Chen", emergencyPhone: "+1 (512) 555-4002", housing: "First time in sober living, need guidance" },
+  ]);
+  const [viewingApplication, setViewingApplication] = useState<any | null>(null);
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
 
   useEffect(() => {
     setReports(getReports());
@@ -76,6 +85,23 @@ export function AdminDashboard() {
   const handleDenyListing = (listingId: string, reason: string) => {
     setListings(listings.map(l => l.id === listingId ? { ...l, status: "Rejected", denialReason: reason } : l));
     setShowReviewModal(false);
+  };
+
+  const handleViewApplication = (app: any) => {
+    setViewingApplication(app);
+    setShowApplicationModal(true);
+  };
+
+  const handleApproveApplication = (appId: string) => {
+    setApplications(applications.map(a => a.id === appId ? { ...a, status: "Approved" } : a));
+  };
+
+  const handleDenyApplication = (appId: string, reason: string) => {
+    setApplications(applications.map(a => a.id === appId ? { ...a, status: "Denied", denialReason: reason } : a));
+  };
+
+  const handleRequestApplicationInfo = (appId: string, message: string) => {
+    setApplications(applications.map(a => a.id === appId ? { ...a, status: "Needs Info", infoRequest: message } : a));
   };
 
   return (
@@ -312,34 +338,38 @@ export function AdminDashboard() {
           <TabsContent value="applications" className="space-y-6">
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-white">Application Review System</CardTitle>
+                <CardTitle className="text-white">Tenant Applications ({applications.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { name: "Michael Johnson", property: "Serenity House", status: "Pending Review", date: "2 hours ago", completeness: 100 },
-                    { name: "Emma Wilson", property: "New Beginnings", status: "Needs Info", date: "1 day ago", completeness: 75 },
-                    { name: "James Martinez", property: "The Harbor", status: "Approved", date: "3 days ago", completeness: 100 },
-                  ].map((app, i) => (
-                    <div key={i} className="p-4 rounded-lg bg-white/5 border border-border/50">
+                <div className="space-y-3">
+                  {applications.map((app) => (
+                    <div key={app.id} className={`p-4 rounded-lg border cursor-pointer transition-all hover:border-primary/50 ${
+                      app.status === "Approved" ? "bg-green-500/10 border-green-500/20" :
+                      app.status === "Denied" ? "bg-red-500/10 border-red-500/20" :
+                      app.status === "Needs Info" ? "bg-blue-500/10 border-blue-500/20" :
+                      "bg-amber-500/10 border-amber-500/20"
+                    }`}
+                    onClick={() => handleViewApplication(app)}>
                       <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <p className="text-white font-medium">{app.name}</p>
-                          <p className="text-xs text-muted-foreground">{app.property} • {app.date}</p>
+                        <div className="flex-1">
+                          <p className="text-white font-medium">{app.tenantName}</p>
+                          <p className="text-xs text-muted-foreground">{app.propertyName} • {new Date(app.submittedDate).toLocaleDateString()}</p>
+                          <p className="text-xs text-muted-foreground">{app.email} • {app.phone}</p>
                         </div>
-                        <Badge className={app.status === "Approved" ? "bg-green-500/80" : app.status === "Pending Review" ? "bg-amber-500/80" : "bg-blue-500/80"}>{app.status}</Badge>
-                      </div>
-                      <div className="mb-3 space-y-1">
-                        <p className="text-xs text-muted-foreground">Form Completeness: {app.completeness}%</p>
-                        <div className="w-full h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                          <div className="h-full bg-primary" style={{ width: `${app.completeness}%` }} />
+                        <div className="flex flex-col items-end gap-2">
+                          <Badge className={
+                            app.status === "Approved" ? "bg-green-500/80" :
+                            app.status === "Denied" ? "bg-red-500/80" :
+                            app.status === "Needs Info" ? "bg-blue-500/80" :
+                            "bg-amber-500/80"
+                          }>{app.status}</Badge>
+                          <Badge variant="outline" className="text-xs border-primary/30 text-primary">{app.completeness}% Complete</Badge>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" className="bg-green-500/20 text-green-500 hover:bg-green-500/30">Approve</Button>
-                        <Button size="sm" variant="outline" className="border-primary/20">Request Info</Button>
-                        <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10">Deny</Button>
+                      <div className="w-full h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary" style={{ width: `${app.completeness}%` }} />
                       </div>
+                      <div className="text-xs text-muted-foreground mt-2">Click to view full application and take action</div>
                     </div>
                   ))}
                 </div>
@@ -730,6 +760,17 @@ export function AdminDashboard() {
             listing={reviewingListing}
             onApprove={handleApproveListing}
             onDeny={handleDenyListing}
+          />
+        )}
+
+        {viewingApplication && (
+          <ApplicationDetailsModal
+            open={showApplicationModal}
+            onClose={() => setShowApplicationModal(false)}
+            application={viewingApplication}
+            onApprove={handleApproveApplication}
+            onDeny={handleDenyApplication}
+            onRequestInfo={handleRequestApplicationInfo}
           />
         )}
       </div>
