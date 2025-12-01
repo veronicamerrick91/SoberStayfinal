@@ -1,933 +1,160 @@
 import { Layout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { 
-  Users, Building, FileText, Activity, 
-  Check, X, Eye, ShieldAlert, BarChart3, AlertTriangle,
-  Mail, MessageSquare, Settings, DollarSign, TrendingUp,
-  Search, Download, Flag, Lock, Clock, Upload, Shield
-} from "lucide-react";
-import { MOCK_PROPERTIES } from "@/lib/mock-data";
-import { getReports, updateReportStatus } from "@/lib/reports";
-import { UserEditModal } from "@/components/user-edit-modal";
-import { ListingReviewModal } from "@/components/listing-review-modal";
-import { ApplicationDetailsModal } from "@/components/application-details-modal";
-import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Calendar, User } from "lucide-react";
 
-interface User {
-  id: string;
-  name: string;
-  role: "Tenant" | "Provider";
-  email: string;
-  phone?: string;
-  status: "Active" | "Suspended" | "Pending";
-  verified: boolean;
-}
-
-export function AdminDashboard() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [reports, setReports] = useState<any[]>([]);
-  const [users, setUsers] = useState<User[]>([
-    { id: "1", name: "Sarah Connor", role: "Tenant", email: "sarah@example.com", phone: "+1 (512) 555-0001", status: "Active", verified: true },
-    { id: "2", name: "Recovery First LLC", role: "Provider", email: "recovery@example.com", phone: "+1 (512) 555-0002", status: "Active", verified: true },
-    { id: "3", name: "John Doe", role: "Tenant", email: "john@example.com", phone: "+1 (512) 555-0003", status: "Suspended", verified: false },
-    { id: "4", name: "Hope House", role: "Provider", email: "hopehouse@example.com", phone: "+1 (512) 555-0004", status: "Pending", verified: false },
-  ]);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [listings, setListings] = useState<any[]>(MOCK_PROPERTIES.map(p => ({ ...p, status: "Pending" })));
-  const [reviewingListing, setReviewingListing] = useState<any | null>(null);
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [applications, setApplications] = useState<any[]>([
-    { id: "app1", tenantName: "Michael Johnson", email: "michael@example.com", phone: "+1 (512) 555-1001", propertyName: "Serenity House", status: "Pending Review", completeness: 100, submittedDate: new Date(Date.now() - 2*60*60*1000).toISOString(), photoID: true, sobrietyStatus: "6 months clean", yearsClean: 0.5, treatmentHistory: "Completed inpatient program at Austin Recovery Center", emergencyContact: "John Johnson", emergencyPhone: "+1 (512) 555-1002", housing: "Looking for supportive environment with structure", insurance: "Blue Cross Blue Shield" },
-    { id: "app2", tenantName: "Emma Wilson", email: "emma@example.com", phone: "+1 (512) 555-2001", propertyName: "New Beginnings Cottage", status: "Needs Info", completeness: 75, submittedDate: new Date(Date.now() - 24*60*60*1000).toISOString(), photoID: true, sobrietyStatus: "1 year clean", yearsClean: 1, treatmentHistory: "Outpatient counseling ongoing", emergencyContact: "Sarah Wilson", emergencyPhone: "+1 (512) 555-2002" },
-    { id: "app3", tenantName: "James Martinez", email: "james@example.com", phone: "+1 (512) 555-3001", propertyName: "The Harbor", status: "Approved", completeness: 100, submittedDate: new Date(Date.now() - 72*60*60*1000).toISOString(), photoID: true, sobrietyStatus: "2 years clean", yearsClean: 2, treatmentHistory: "Completed residential program, strong recovery network", emergencyContact: "Maria Martinez", emergencyPhone: "+1 (512) 555-3002", housing: "Seeking community-based recovery home", insurance: "Self-pay" },
-    { id: "app4", tenantName: "Lisa Chen", email: "lisa@example.com", phone: "+1 (512) 555-4001", propertyName: "Pathway Home", status: "Pending Review", completeness: 85, submittedDate: new Date(Date.now() - 6*60*60*1000).toISOString(), photoID: true, sobrietyStatus: "3 months clean", yearsClean: 0.25, treatmentHistory: "Recently discharged from IOP program", emergencyContact: "David Chen", emergencyPhone: "+1 (512) 555-4002", housing: "First time in sober living, need guidance" },
-  ]);
-  const [viewingApplication, setViewingApplication] = useState<any | null>(null);
-  const [showApplicationModal, setShowApplicationModal] = useState(false);
-  const [messages, setMessages] = useState<any[]>([
-    { id: "msg1", tenant: "John Smith", provider: "Serenity House", preview: "Can I apply even though...", flagged: true, reason: "Potential trigger mention" },
-    { id: "msg2", tenant: "Sarah Connor", provider: "New Beginnings", preview: "Thank you for accepting my application!", flagged: false, reason: null },
-    { id: "msg3", tenant: "Mike Chen", provider: "The Harbor", preview: "Where can I find...", flagged: true, reason: "Outside communication attempt" },
-  ]);
-  const [documents, setDocuments] = useState<any[]>([
-    { id: "doc1", provider: "Recovery First LLC", providerEmail: "recovery@example.com", documentName: "Business License", uploadedDate: new Date(Date.now() - 5*24*60*60*1000).toISOString(), status: "Pending Review", documentType: "License" },
-    { id: "doc2", provider: "Recovery First LLC", providerEmail: "recovery@example.com", documentName: "Insurance Certificate", uploadedDate: new Date(Date.now() - 3*24*60*60*1000).toISOString(), status: "Approved", documentType: "Insurance" },
-    { id: "doc3", provider: "Hope House", providerEmail: "hopehouse@example.com", documentName: "Facility Photos", uploadedDate: new Date(Date.now() - 1*24*60*60*1000).toISOString(), status: "Pending Review", documentType: "Photos" },
-    { id: "doc4", provider: "New Beginnings Cottage", providerEmail: "newbeginnings@example.com", documentName: "Safety Compliance Report", uploadedDate: new Date(Date.now() - 2*24*60*60*1000).toISOString(), status: "Rejected", documentType: "Compliance" },
-  ]);
-  const [safetySettings, setSafetySettings] = useState<any[]>([
-    { id: 1, label: "Auto-flag drug references", enabled: true },
-    { id: 2, label: "Monitor external contact attempts", enabled: true },
-    { id: 3, label: "Require provider verification", enabled: true },
-    { id: 4, label: "Enable duplicate account detection", enabled: true },
-  ]);
-
-  useEffect(() => {
-    setReports(getReports());
-  }, []);
-
-  const handleEditUser = (user: User) => {
-    setEditingUser(user);
-    setShowEditModal(true);
-  };
-
-  const handleSaveUser = (updatedUser: User) => {
-    setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
-    setShowEditModal(false);
-  };
-
-  const handleSuspendUser = (userId: string) => {
-    setUsers(users.map(u => 
-      u.id === userId 
-        ? { ...u, status: u.status === "Suspended" ? "Active" : "Suspended" }
-        : u
-    ));
-  };
-
-  const handleReviewListing = (listing: any) => {
-    setReviewingListing(listing);
-    setShowReviewModal(true);
-  };
-
-  const handleApproveListing = (listingId: string) => {
-    setListings(listings.map(l => l.id === listingId ? { ...l, status: "Approved" } : l));
-    setShowReviewModal(false);
-  };
-
-  const handleDenyListing = (listingId: string, reason: string) => {
-    setListings(listings.map(l => l.id === listingId ? { ...l, status: "Rejected", denialReason: reason } : l));
-    setShowReviewModal(false);
-  };
-
-  const handleViewApplication = (app: any) => {
-    setViewingApplication(app);
-    setShowApplicationModal(true);
-  };
-
-  const handleApproveApplication = (appId: string) => {
-    setApplications(applications.map(a => a.id === appId ? { ...a, status: "Approved" } : a));
-  };
-
-  const handleDenyApplication = (appId: string, reason: string) => {
-    setApplications(applications.map(a => a.id === appId ? { ...a, status: "Denied", denialReason: reason } : a));
-  };
-
-  const handleRequestApplicationInfo = (appId: string, message: string) => {
-    setApplications(applications.map(a => a.id === appId ? { ...a, status: "Needs Info", infoRequest: message } : a));
-  };
-
-  const handleClearFlag = (msgId: string) => {
-    setMessages(messages.map(m => m.id === msgId ? { ...m, flagged: false, reason: null } : m));
-  };
-
-  const handleBanUser = (msgId: string) => {
-    setMessages(messages.filter(m => m.id !== msgId));
-  };
-
-  const handleApproveDocument = (docId: string) => {
-    setDocuments(documents.map(d => d.id === docId ? { ...d, status: "Approved" } : d));
-  };
-
-  const handleRejectDocument = (docId: string) => {
-    setDocuments(documents.map(d => d.id === docId ? { ...d, status: "Rejected" } : d));
-  };
-
-  const toggleSafetySettings = (settingId: number) => {
-    setSafetySettings(safetySettings.map(s => s.id === settingId ? { ...s, enabled: !s.enabled } : s));
-  };
-
-  const handleSaveSettings = () => {
-    alert("✓ Platform settings saved successfully!");
-  };
-
-  const handleResetSettings = () => {
-    setSafetySettings([
-      { id: 1, label: "Auto-flag drug references", enabled: true },
-      { id: 2, label: "Monitor external contact attempts", enabled: true },
-      { id: 3, label: "Require provider verification", enabled: true },
-      { id: 4, label: "Enable duplicate account detection", enabled: true },
-    ]);
-    alert("✓ Settings reset to default values!");
-  };
-
-  const handleExportData = () => {
-    const data = {
-      exportDate: new Date().toISOString(),
-      users: users.length,
-      listings: listings.length,
-      applications: applications.length,
-      documents: documents.length,
-      reports: reports.length,
-    };
-    const jsonString = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `admin-export-${new Date().toISOString().split("T")[0]}.json`;
-    link.click();
-    alert("✓ Platform data exported successfully!");
-  };
+export function Blog() {
+  const blogPosts = [
+    {
+      id: 1,
+      title: "Understanding Sober Living Homes: What to Expect",
+      excerpt: "A comprehensive guide to what sober living homes are, how they differ from treatment facilities, and what you can expect when moving in.",
+      author: "Recovery Coach Emma",
+      date: "December 15, 2024",
+      category: "Recovery",
+      readTime: 5,
+      featured: true
+    },
+    {
+      id: 2,
+      title: "Building a Strong Recovery Network",
+      excerpt: "Tips and strategies for developing meaningful connections that support long-term recovery. Learn how community can be your greatest asset.",
+      author: "Peer Support Specialist Alex",
+      date: "December 10, 2024",
+      category: "Peer Support",
+      readTime: 7
+    },
+    {
+      id: 3,
+      title: "Navigating Housing Applications: A Step-by-Step Guide",
+      excerpt: "Everything you need to know about applying to sober living homes, what information to prepare, and how to present yourself to providers.",
+      author: "Recovery Coach Emma",
+      date: "December 5, 2024",
+      category: "Housing",
+      readTime: 6
+    },
+    {
+      id: 4,
+      title: "Managing Triggers in Early Recovery",
+      excerpt: "Identify common triggers and learn practical coping strategies to stay strong during challenging moments in your recovery journey.",
+      author: "Licensed Therapist James",
+      date: "November 28, 2024",
+      category: "Wellness",
+      readTime: 8
+    },
+    {
+      id: 5,
+      title: "The Importance of Routine in Recovery",
+      excerpt: "Discover how establishing healthy daily routines supports accountability, stability, and long-term recovery success.",
+      author: "Recovery Coach Emma",
+      date: "November 20, 2024",
+      category: "Wellness",
+      readTime: 5
+    },
+    {
+      id: 6,
+      title: "Provider Spotlight: Best Practices in Sober Living Management",
+      excerpt: "Learn from successful sober living providers about creating supportive, safe environments that foster recovery and community.",
+      author: "Platform Admin",
+      date: "November 15, 2024",
+      category: "Provider Resources",
+      readTime: 6
+    }
+  ];
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-heading font-bold text-white">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Platform overview, management & controls</p>
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-5xl mx-auto space-y-12">
+          {/* Header */}
+          <div className="text-center space-y-4">
+            <h1 className="text-4xl font-heading font-bold text-white">Sober Stay Blog</h1>
+            <p className="text-lg text-muted-foreground">
+              Resources, insights, and stories to support your recovery journey
+            </p>
           </div>
-          <div className="flex gap-2">
-             <Badge variant="outline" className="border-red-500 text-red-500 px-3 py-1">
-                <ShieldAlert className="w-3 h-3 mr-1" /> Admin Mode
-             </Badge>
-          </div>
-        </div>
 
-        <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="bg-card border border-border p-1 grid w-full grid-cols-7 lg:grid-cols-12 gap-1">
-            <TabsTrigger value="overview" className="text-xs">Dashboard</TabsTrigger>
-            <TabsTrigger value="users" className="text-xs">Users</TabsTrigger>
-            <TabsTrigger value="listings" className="text-xs">Listings</TabsTrigger>
-            <TabsTrigger value="applications" className="text-xs">Apps</TabsTrigger>
-            <TabsTrigger value="messaging" className="text-xs">Messages</TabsTrigger>
-            <TabsTrigger value="verification" className="text-xs">Verification</TabsTrigger>
-            <TabsTrigger value="reports" className="text-xs">Reports ({reports.length})</TabsTrigger>
-            <TabsTrigger value="compliance" className="text-xs">Safety</TabsTrigger>
-            <TabsTrigger value="billing" className="text-xs">Billing</TabsTrigger>
-            <TabsTrigger value="analytics" className="text-xs">Analytics</TabsTrigger>
-            <TabsTrigger value="support" className="text-xs">Support</TabsTrigger>
-            <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
-          </TabsList>
-
-          {/* DASHBOARD OVERVIEW */}
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                      <h3 className="text-3xl font-bold text-white">1,240</h3>
-                    </div>
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Users className="w-5 h-5 text-primary" />
-                    </div>
+          {/* Featured Post */}
+          {blogPosts.find(p => p.featured) && (
+            <Card className="bg-gradient-to-r from-primary/20 to-primary/5 border-primary/30">
+              <CardContent className="p-8">
+                <Badge className="bg-primary text-primary-foreground mb-4">Featured</Badge>
+                <h2 className="text-2xl font-heading font-bold text-white mb-3">
+                  {blogPosts.find(p => p.featured)?.title}
+                </h2>
+                <p className="text-gray-300 mb-4">
+                  {blogPosts.find(p => p.featured)?.excerpt}
+                </p>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    {blogPosts.find(p => p.featured)?.date}
                   </div>
-                  <div className="text-xs text-muted-foreground">850 Tenants • 390 Providers</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Active Listings</p>
-                      <h3 className="text-3xl font-bold text-white">145</h3>
-                    </div>
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Building className="w-5 h-5 text-primary" />
-                    </div>
+                  <div className="flex items-center gap-1">
+                    <User className="w-4 h-4" />
+                    {blogPosts.find(p => p.featured)?.author}
                   </div>
-                  <div className="text-xs text-primary font-bold">12 pending verification</div>
-                </CardContent>
-              </Card>
+                  <span>{blogPosts.find(p => p.featured)?.readTime} min read</span>
+                </div>
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  Read Article
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Applications</p>
-                      <h3 className="text-3xl font-bold text-white">892</h3>
-                    </div>
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <FileText className="w-5 h-5 text-primary" />
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">+45 this week</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Revenue</p>
-                      <h3 className="text-3xl font-bold text-primary">$12.4k</h3>
-                    </div>
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <DollarSign className="w-5 h-5 text-primary" />
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">From subscriptions this month</div>
-                </CardContent>
-              </Card>
-            </div>
-
+          {/* Blog Posts Grid */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-heading font-bold text-white">Latest Articles</h2>
             <div className="grid md:grid-cols-2 gap-6">
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center justify-between">
-                    <span>Alerts & Flags</span>
-                    <Badge className="bg-red-500/20 text-red-500">3 Critical</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {[
-                    { icon: AlertTriangle, title: "Suspicious Activity", desc: "Multiple failed logins", color: "red" },
-                    { icon: Flag, title: "Inappropriate Message", desc: "Flagged by AI moderation", color: "amber" },
-                    { icon: Lock, title: "Payment Failed", desc: "Provider account suspended", color: "red" },
-                  ].map((alert, i) => (
-                    <div key={i} className={`flex items-start gap-3 p-3 rounded-lg bg-${alert.color}-500/10 border border-${alert.color}-500/20`}>
-                      <alert.icon className={`w-5 h-5 text-${alert.color}-500 mt-0.5 shrink-0`} />
-                      <div className="flex-1">
-                        <p className="text-white font-medium text-sm">{alert.title}</p>
-                        <p className="text-xs text-muted-foreground">{alert.desc}</p>
+              {blogPosts.filter(p => !p.featured).map((post) => (
+                <Card key={post.id} className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer">
+                  <CardHeader>
+                    <div className="flex items-start justify-between mb-3">
+                      <Badge variant="outline" className="border-primary/30 text-primary">
+                        {post.category}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">{post.readTime} min read</span>
+                    </div>
+                    <CardTitle className="text-white text-lg">{post.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-gray-300">{post.excerpt}</p>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground pt-4 border-t border-border">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {post.date}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <User className="w-3 h-3" />
+                        {post.author}
                       </div>
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-white">Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {[
-                    { action: "Provider Verified", user: "Recovery First LLC", time: "10 mins ago" },
-                    { action: "Application Approved", user: "John Smith → Serenity House", time: "1 hour ago" },
-                    { action: "Listing Published", user: "New Beginnings Cottage", time: "3 hours ago" },
-                    { action: "Support Ticket Resolved", user: "#2341", time: "5 hours ago" },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between text-sm border-b border-border/50 pb-3 last:border-0">
-                      <div>
-                        <p className="text-white font-medium">{item.action}</p>
-                        <p className="text-xs text-muted-foreground">{item.user}</p>
-                      </div>
-                      <span className="text-xs text-muted-foreground">{item.time}</span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </TabsContent>
+          </div>
 
-          {/* USERS MANAGEMENT */}
-          <TabsContent value="users" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-white">User Management ({users.length})</CardTitle>
-                  <div className="flex gap-2">
-                    <Input placeholder="Search users..." className="bg-background/50 border-white/10 w-64" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                    <Button size="sm" variant="outline">Filter</Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {users.filter(user => 
-                    user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                    user.email.toLowerCase().includes(searchQuery.toLowerCase())
-                  ).map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border/50 hover:border-primary/30 transition-colors">
-                      <div className="flex-1">
-                        <p className="text-white font-medium">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Badge variant={user.role === "Provider" ? "default" : "secondary"}>{user.role}</Badge>
-                        <Badge variant={user.status === "Active" ? "default" : "outline"} className={user.status === "Active" ? "bg-green-500/80" : user.status === "Suspended" ? "bg-red-500/80" : "bg-amber-500/80"}>{user.status}</Badge>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="ghost" className="h-8 text-primary hover:bg-primary/10" onClick={() => handleEditUser(user)}>Edit</Button>
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
-                            className={`h-8 ${user.status === "Suspended" ? "text-green-500 hover:bg-green-500/10" : "text-red-500 hover:bg-red-500/10"}`}
-                            onClick={() => handleSuspendUser(user.id)}
-                          >
-                            {user.status === "Suspended" ? "Unsuspend" : "Suspend"}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* LISTINGS MANAGEMENT */}
-          <TabsContent value="listings" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white">Listing Management ({listings.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {listings.map((listing) => (
-                    <div key={listing.id} className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
-                      listing.status === "Pending" ? "bg-amber-500/10 border-amber-500/20" :
-                      listing.status === "Approved" ? "bg-green-500/10 border-green-500/20" :
-                      "bg-red-500/10 border-red-500/20"
-                    }`}>
-                      <div className="flex gap-4 flex-1">
-                        <img src={listing.image} className="w-16 h-16 rounded object-cover" />
-                        <div>
-                          <p className="text-white font-medium">{listing.name}</p>
-                          <p className="text-xs text-muted-foreground">{listing.address}, {listing.city}</p>
-                          <div className="flex gap-2 mt-2">
-                            {listing.isVerified && <Badge className="bg-green-500/80 text-xs">Verified</Badge>}
-                            <Badge variant="outline" className="text-xs">${listing.price}/{listing.pricePeriod}</Badge>
-                            <Badge variant="secondary" className="text-xs">{listing.bedsAvailable} beds</Badge>
-                            <Badge className={
-                              listing.status === "Pending" ? "bg-amber-500/80" :
-                              listing.status === "Approved" ? "bg-green-500/80" :
-                              "bg-red-500/80"
-                            }>{listing.status}</Badge>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => handleReviewListing(listing)} className="bg-primary/20 text-primary hover:bg-primary/30">Review</Button>
-                        <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10">Flag</Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* APPLICATIONS REVIEW */}
-          <TabsContent value="applications" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white">Tenant Applications ({applications.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {applications.map((app) => (
-                    <div key={app.id} className={`p-4 rounded-lg border cursor-pointer transition-all hover:border-primary/50 ${
-                      app.status === "Approved" ? "bg-green-500/10 border-green-500/20" :
-                      app.status === "Denied" ? "bg-red-500/10 border-red-500/20" :
-                      app.status === "Needs Info" ? "bg-blue-500/10 border-blue-500/20" :
-                      "bg-amber-500/10 border-amber-500/20"
-                    }`}
-                    onClick={() => handleViewApplication(app)}>
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex-1">
-                          <p className="text-white font-medium">{app.tenantName}</p>
-                          <p className="text-xs text-muted-foreground">{app.propertyName} • {new Date(app.submittedDate).toLocaleDateString()}</p>
-                          <p className="text-xs text-muted-foreground">{app.email} • {app.phone}</p>
-                        </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <Badge className={
-                            app.status === "Approved" ? "bg-green-500/80" :
-                            app.status === "Denied" ? "bg-red-500/80" :
-                            app.status === "Needs Info" ? "bg-blue-500/80" :
-                            "bg-amber-500/80"
-                          }>{app.status}</Badge>
-                          <Badge variant="outline" className="text-xs border-primary/30 text-primary">{app.completeness}% Complete</Badge>
-                        </div>
-                      </div>
-                      <div className="w-full h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: `${app.completeness}%` }} />
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-2">Click to view full application and take action</div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* PROVIDER VERIFICATION CENTER */}
-          <TabsContent value="verification" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Shield className="w-5 h-5" /> Provider Document Verification ({documents.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {documents.map((doc) => (
-                    <div key={doc.id} className={`p-4 rounded-lg border transition-colors ${
-                      doc.status === "Approved" ? "bg-green-500/10 border-green-500/20" :
-                      doc.status === "Rejected" ? "bg-red-500/10 border-red-500/20" :
-                      "bg-amber-500/10 border-amber-500/20"
-                    }`}>
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <p className="text-white font-bold">{doc.documentName}</p>
-                          <p className="text-sm text-muted-foreground">Provider: {doc.provider}</p>
-                          <p className="text-xs text-muted-foreground">{doc.providerEmail}</p>
-                          <div className="flex gap-2 mt-2">
-                            <Badge variant="outline" className="text-xs border-primary/30 text-primary gap-1"><FileText className="w-3 h-3" /> {doc.documentType}</Badge>
-                            <Badge className="text-xs bg-gray-500/80">Submitted: {new Date(doc.uploadedDate).toLocaleDateString()}</Badge>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <Badge className={
-                            doc.status === "Approved" ? "bg-green-500/80" :
-                            doc.status === "Rejected" ? "bg-red-500/80" :
-                            "bg-amber-500/80"
-                          }>{doc.status}</Badge>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="h-8 gap-1 text-xs">
-                          <Download className="w-3 h-3" /> Download
-                        </Button>
-                        {doc.status === "Pending Review" && (
-                          <>
-                            <Button size="sm" onClick={() => handleApproveDocument(doc.id)} className="h-8 bg-green-500/20 text-green-500 hover:bg-green-500/30 gap-1 text-xs">
-                              <Check className="w-3 h-3" /> Approve
-                            </Button>
-                            <Button size="sm" onClick={() => handleRejectDocument(doc.id)} variant="outline" className="h-8 border-red-500/30 text-red-500 hover:bg-red-500/10 gap-1 text-xs">
-                              <X className="w-3 h-3" /> Reject
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Upload className="w-5 h-5" /> Required Documents Checklist
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {[
-                    "Business License",
-                    "Insurance Certificate",
-                    "Facility Photos",
-                    "Safety Compliance Report",
-                    "Property Inspection Report"
-                  ].map((doc, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-border/50">
-                      <div className="w-4 h-4 rounded border border-primary/50 flex items-center justify-center">
-                        <div className="w-2 h-2 bg-primary rounded-sm" />
-                      </div>
-                      <span className="text-sm text-white">{doc}</span>
-                      <span className="text-xs text-muted-foreground ml-auto">Required for all providers</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* MESSAGING OVERSIGHT */}
-          <TabsContent value="messaging" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <MessageSquare className="w-5 h-5" /> Message Moderation ({messages.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {messages.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <MessageSquare className="w-12 h-12 mx-auto mb-2 opacity-20" />
-                    <p>All messages are clean</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {messages.map((msg) => (
-                      <div key={msg.id} className={`p-4 rounded-lg border ${msg.flagged ? "bg-red-500/10 border-red-500/20" : "bg-white/5 border-border/50"}`}>
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <p className="text-white font-medium text-sm">{msg.tenant} → {msg.provider}</p>
-                            <p className="text-xs text-muted-foreground">{msg.preview}</p>
-                          </div>
-                          {msg.flagged && <Badge className="bg-red-500/80 text-xs">{msg.reason}</Badge>}
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="h-7 text-xs">View Thread</Button>
-                          {msg.flagged && (
-                            <>
-                              <Button size="sm" onClick={() => handleClearFlag(msg.id)} variant="ghost" className="h-7 text-xs text-green-500 hover:bg-green-500/10">Clear</Button>
-                              <Button size="sm" onClick={() => handleBanUser(msg.id)} variant="ghost" className="h-7 text-xs text-red-500 hover:bg-red-500/10">Ban User</Button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* LISTING REPORTS */}
-          <TabsContent value="reports" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Flag className="w-5 h-5" /> Listing Reports ({reports.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {reports.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Flag className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                    <p>No reports yet</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {reports.map((report) => (
-                      <div key={report.id} className={`p-4 rounded-lg border ${
-                        report.status === "New" ? "bg-red-500/10 border-red-500/20" :
-                        report.status === "Investigating" ? "bg-amber-500/10 border-amber-500/20" :
-                        "bg-green-500/10 border-green-500/20"
-                      }`}>
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <p className="text-white font-bold">{report.propertyName}</p>
-                            <p className="text-sm text-muted-foreground">Reported by: {report.userName}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{new Date(report.createdAt).toLocaleString()}</p>
-                          </div>
-                          <div className="flex flex-col items-end gap-2">
-                            <Badge className={
-                              report.category === "Safety" ? "bg-red-500/80" :
-                              report.category === "Scam" ? "bg-orange-500/80" :
-                              report.category === "Inappropriate Content" ? "bg-purple-500/80" :
-                              report.category === "Contact Issues" ? "bg-blue-500/80" :
-                              "bg-gray-500/80"
-                            }>{report.category}</Badge>
-                            <Badge className={
-                              report.status === "New" ? "bg-red-500/80" :
-                              report.status === "Investigating" ? "bg-amber-500/80" :
-                              "bg-green-500/80"
-                            }>{report.status}</Badge>
-                          </div>
-                        </div>
-                        <div className="bg-black/20 p-3 rounded mb-3 max-h-24 overflow-y-auto">
-                          <p className="text-sm text-gray-300">{report.description}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          {report.status === "New" && (
-                            <>
-                              <Button size="sm" className="bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 h-8 text-xs" 
-                                onClick={() => {
-                                  updateReportStatus(report.id, "Investigating");
-                                  setReports(getReports());
-                                }}>
-                                Investigate
-                              </Button>
-                              <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10 h-8 text-xs">
-                                Dismiss
-                              </Button>
-                            </>
-                          )}
-                          {report.status === "Investigating" && (
-                            <>
-                              <Button size="sm" className="bg-green-500/20 text-green-500 hover:bg-green-500/30 h-8 text-xs"
-                                onClick={() => {
-                                  updateReportStatus(report.id, "Resolved");
-                                  setReports(getReports());
-                                }}>
-                                Resolve
-                              </Button>
-                              <Button size="sm" variant="outline" className="border-primary/20 h-8 text-xs">Contact Provider</Button>
-                            </>
-                          )}
-                          {report.status === "Resolved" && (
-                            <span className="text-xs text-green-500 font-medium">✓ Marked as Resolved</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* COMPLIANCE & SAFETY */}
-          <TabsContent value="compliance" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <ShieldAlert className="w-5 h-5" /> Safety & Compliance Center
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4 mb-4">
-                    <Card className="bg-white/5 border-border">
-                      <CardContent className="pt-4">
-                        <p className="text-xs font-bold text-primary mb-3">Incident Reports</p>
-                        <div className="text-3xl font-bold text-white mb-1">7</div>
-                        <p className="text-xs text-muted-foreground">3 pending review</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="bg-white/5 border-border">
-                      <CardContent className="pt-4">
-                        <p className="text-xs font-bold text-primary mb-3">Compliance Issues</p>
-                        <div className="text-3xl font-bold text-white mb-1">2</div>
-                        <p className="text-xs text-muted-foreground">Missing fire inspection</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  {[
-                    { property: "Serenity House", issue: "Expired Fire Inspection", dueDate: "Jan 15, 2025", severity: "high" },
-                    { property: "New Beginnings", issue: "Insurance Certificate Needed", dueDate: "Feb 1, 2025", severity: "high" },
-                    { property: "The Harbor", issue: "Background Check Update", dueDate: "March 1, 2025", severity: "medium" },
-                  ].map((item, i) => (
-                    <div key={i} className={`p-4 rounded-lg border ${item.severity === "high" ? "bg-red-500/10 border-red-500/20" : "bg-amber-500/10 border-amber-500/20"}`}>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-white font-medium text-sm">{item.property}</p>
-                          <p className="text-xs text-muted-foreground">{item.issue} • Due: {item.dueDate}</p>
-                        </div>
-                        <Button size="sm" variant="outline" className="h-8 text-xs">Request Docs</Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* BILLING & PAYMENTS */}
-          <TabsContent value="billing" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <DollarSign className="w-5 h-5" /> Billing & Subscriptions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-3 gap-4 mb-6">
-                  <Card className="bg-white/5 border-border">
-                    <CardContent className="pt-4">
-                      <p className="text-xs font-bold text-primary mb-2">Monthly Revenue</p>
-                      <p className="text-2xl font-bold text-white">$12,450</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-white/5 border-border">
-                    <CardContent className="pt-4">
-                      <p className="text-xs font-bold text-primary mb-2">Active Subscriptions</p>
-                      <p className="text-2xl font-bold text-white">127</p>
-                    </CardContent>
-                  </Card>
-                  <Card className="bg-white/5 border-border">
-                    <CardContent className="pt-4">
-                      <p className="text-xs font-bold text-primary mb-2">Failed Payments</p>
-                      <p className="text-2xl font-bold text-red-500">3</p>
-                    </CardContent>
-                  </Card>
-                </div>
-                <div className="space-y-3">
-                  {[
-                    { provider: "Recovery First LLC", plan: "$49/month × 3 listings", status: "Active", nextBilling: "Jan 15, 2025" },
-                    { provider: "Hope House", plan: "$49/month × 1 listing", status: "Overdue", nextBilling: "Dec 28, 2024" },
-                    { provider: "Serenity Homes", plan: "$49/month × 2 listings", status: "Active", nextBilling: "Jan 10, 2025" },
-                  ].map((sub, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border/50">
-                      <div>
-                        <p className="text-white font-medium text-sm">{sub.provider}</p>
-                        <p className="text-xs text-muted-foreground">{sub.plan}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">{sub.nextBilling}</p>
-                          <Badge className={sub.status === "Active" ? "bg-green-500/80" : "bg-red-500/80"}>{sub.status}</Badge>
-                        </div>
-                        <Button size="sm" variant="outline" className="h-8 text-xs">Details</Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* ANALYTICS */}
-          <TabsContent value="analytics" className="space-y-6">
-            <div className="grid md:grid-cols-3 gap-4">
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <p className="text-xs font-bold text-primary mb-2 flex items-center gap-1"><TrendingUp className="w-4 h-4" /> Conversion Rate</p>
-                  <p className="text-3xl font-bold text-white">24%</p>
-                  <p className="text-xs text-green-500 mt-2">↑ 3% vs last week</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <p className="text-xs font-bold text-primary mb-2">Avg. Response Time</p>
-                  <p className="text-3xl font-bold text-white">4.2h</p>
-                  <p className="text-xs text-muted-foreground mt-2">Provider to tenant</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <p className="text-xs font-bold text-primary mb-2">Platform Traffic</p>
-                  <p className="text-3xl font-bold text-white">8.5k</p>
-                  <p className="text-xs text-muted-foreground mt-2">Unique visitors this week</p>
-                </CardContent>
-              </Card>
-            </div>
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white">Top Performing Listings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { name: "Serenity House", views: 1240, applications: 45, conversionRate: "3.6%" },
-                    { name: "New Beginnings Cottage", views: 980, applications: 32, conversionRate: "3.3%" },
-                    { name: "The Harbor", views: 742, applications: 28, conversionRate: "3.8%" },
-                  ].map((listing, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-border/50">
-                      <div>
-                        <p className="text-white text-sm font-medium">{listing.name}</p>
-                      </div>
-                      <div className="flex gap-6 text-xs">
-                        <div className="text-center">
-                          <p className="text-muted-foreground">Views</p>
-                          <p className="text-white font-bold">{listing.views}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-muted-foreground">Apps</p>
-                          <p className="text-white font-bold">{listing.applications}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-muted-foreground">Conv. Rate</p>
-                          <p className="text-primary font-bold">{listing.conversionRate}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* SUPPORT TICKETS */}
-          <TabsContent value="support" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white">Support Tickets</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { id: "#2451", user: "John Doe (Tenant)", subject: "Payment issue on application", status: "Open", priority: "high", created: "2 hours ago" },
-                    { id: "#2450", user: "Recovery LLC (Provider)", subject: "Can't upload photos", status: "In Progress", priority: "medium", created: "4 hours ago" },
-                    { id: "#2449", user: "Sarah Connor (Tenant)", subject: "Message notification not working", status: "Resolved", priority: "low", created: "1 day ago" },
-                  ].map((ticket, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border/50">
-                      <div>
-                        <p className="text-white font-medium text-sm">{ticket.id} • {ticket.subject}</p>
-                        <p className="text-xs text-muted-foreground">{ticket.user} • {ticket.created}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Badge className={ticket.priority === "high" ? "bg-red-500/80" : ticket.priority === "medium" ? "bg-amber-500/80" : "bg-gray-500/80"}>{ticket.priority}</Badge>
-                        <Badge className={ticket.status === "Open" ? "bg-blue-500/80" : ticket.status === "In Progress" ? "bg-amber-500/80" : "bg-green-500/80"}>{ticket.status}</Badge>
-                        <Button size="sm" variant="outline" className="h-8 text-xs">View</Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* SETTINGS */}
-          <TabsContent value="settings" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Settings className="w-5 h-5" /> Platform Settings
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-white font-bold">Application Requirements</h3>
-                  {[
-                    { field: "Photo ID", required: true },
-                    { field: "Sobriety Status", required: true },
-                    { field: "Treatment History", required: true },
-                    { field: "Emergency Contact", required: true },
-                    { field: "Insurance Info", required: false },
-                  ].map((req, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-border/50">
-                      <span className="text-white text-sm">{req.field}</span>
-                      <Badge className={req.required ? "bg-green-500/80" : "bg-gray-500/80"}>{req.required ? "Required" : "Optional"}</Badge>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="border-t border-border pt-6 space-y-4">
-                  <h3 className="text-white font-bold">Safety Settings</h3>
-                  <div className="space-y-2">
-                    {safetySettings.map((setting) => (
-                      <div key={setting.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5 cursor-pointer hover:bg-white/10 transition-colors" onClick={() => toggleSafetySettings(setting.id)}>
-                        <span className="text-white text-sm">{setting.label}</span>
-                        <div className={`w-10 h-6 rounded-full ${setting.enabled ? "bg-primary" : "bg-gray-600"} transition-colors`} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="border-t border-border pt-6 flex gap-2">
-                  <Button onClick={handleSaveSettings} className="bg-primary text-primary-foreground hover:bg-primary/90">Save Changes</Button>
-                  <Button onClick={handleResetSettings} variant="outline">Reset to Default</Button>
-                  <Button onClick={handleExportData} variant="ghost" className="text-red-500 hover:bg-red-500/10 ml-auto">Export Data</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {editingUser && (
-          <UserEditModal
-            open={showEditModal}
-            onClose={() => setShowEditModal(false)}
-            user={editingUser}
-            onSave={handleSaveUser}
-          />
-        )}
-
-        {reviewingListing && (
-          <ListingReviewModal
-            open={showReviewModal}
-            onClose={() => setShowReviewModal(false)}
-            listing={reviewingListing}
-            onApprove={handleApproveListing}
-            onDeny={handleDenyListing}
-          />
-        )}
-
-        {viewingApplication && (
-          <ApplicationDetailsModal
-            open={showApplicationModal}
-            onClose={() => {
-              setShowApplicationModal(false);
-              setViewingApplication(null);
-            }}
-            application={viewingApplication}
-            onApprove={handleApproveApplication}
-            onDeny={handleDenyApplication}
-            onRequestInfo={handleRequestApplicationInfo}
-          />
-        )}
+          {/* Newsletter Signup */}
+          <Card className="bg-white/5 border-border">
+            <CardHeader>
+              <CardTitle className="text-white">Stay Updated</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-300">Subscribe to our newsletter for weekly tips, resources, and recovery insights delivered to your inbox.</p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="flex-1 px-4 py-2 rounded-lg bg-background/50 border border-white/10 text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+                />
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Subscribe</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </Layout>
   );
