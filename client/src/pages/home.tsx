@@ -3,15 +3,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, CheckCircle2, ShieldCheck, FileCheck, HeartHandshake, ArrowRight, Sparkles } from "lucide-react";
-import { Link } from "wouter";
+import { Search, MapPin, CheckCircle2, ShieldCheck, FileCheck, HeartHandshake, ArrowRight, Sparkles, Building } from "lucide-react";
+import { Link, useLocation } from "wouter";
 import heroBg from "@assets/generated_images/dark_navy_and_teal_abstract_background_for_hero_section.png";
 import pathBg from "@assets/generated_images/abstract_glowing_path_representing_recovery_journey.png";
 import tenantBg from "@assets/generated_images/calm_safe_abstract_background_for_tenants.png";
 import providerBg from "@assets/generated_images/professional_geometric_background_for_providers_without_text.png";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
+import { useState } from "react";
 
 export default function Home() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [, setLocation] = useLocation();
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      setLocation(`/browse?search=${encodeURIComponent(searchQuery)}`);
+    } else {
+      setLocation("/browse");
+    }
+  };
   return (
     <Layout>
       {/* Hero Section */}
@@ -63,14 +74,19 @@ export default function Home() {
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input 
                     placeholder="City, State, or Zip" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     className="pl-10 h-12 text-lg bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20 rounded-xl"
                   />
                 </div>
-                <Link href="/browse">
-                  <Button size="icon" className="h-12 w-12 bg-primary hover:bg-primary/90 shrink-0 rounded-xl shadow-lg">
-                    <Search className="w-6 h-6" />
-                  </Button>
-                </Link>
+                <Button 
+                  size="icon" 
+                  onClick={handleSearch}
+                  className="h-12 w-12 bg-primary hover:bg-primary/90 shrink-0 rounded-xl shadow-lg"
+                >
+                  <Search className="w-6 h-6" />
+                </Button>
               </div>
             </div>
           </div>

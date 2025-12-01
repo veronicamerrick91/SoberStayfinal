@@ -11,8 +11,8 @@ import {
   Search, MapPin, ShieldCheck, Filter, LayoutGrid, List,
   Info, HelpCircle
 } from "lucide-react";
-import { useState } from "react";
-import { Link } from "wouter";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "wouter";
 import {
   Tooltip,
   TooltipContent,
@@ -24,6 +24,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 export default function Browse() {
   const [priceRange, setPriceRange] = useState([500]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [searchLocation, setSearchLocation] = useState("");
+  const [location] = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const search = params.get("search");
+    if (search) {
+      setSearchLocation(decodeURIComponent(search));
+    }
+  }, [location]);
   
   return (
     <Layout>
@@ -40,7 +50,12 @@ export default function Browse() {
           {/* Mobile Search (visible on all) */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="City, zip, or name" className="pl-9 bg-card border-border" />
+            <Input 
+              placeholder="City, zip, or name" 
+              value={searchLocation}
+              onChange={(e) => setSearchLocation(e.target.value)}
+              className="pl-9 bg-card border-border" 
+            />
           </div>
 
           {/* Filter Groups */}
