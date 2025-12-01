@@ -13,6 +13,7 @@ import {
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { getReports, updateReportStatus } from "@/lib/reports";
 import { UserEditModal } from "@/components/user-edit-modal";
+import { ListingReviewModal } from "@/components/listing-review-modal";
 import { useState, useEffect } from "react";
 
 interface User {
@@ -36,6 +37,9 @@ export function AdminDashboard() {
   ]);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [listings, setListings] = useState<any[]>(MOCK_PROPERTIES.map(p => ({ ...p, status: "Pending" })));
+  const [reviewingListing, setReviewingListing] = useState<any | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   useEffect(() => {
     setReports(getReports());
@@ -57,6 +61,21 @@ export function AdminDashboard() {
         ? { ...u, status: u.status === "Suspended" ? "Active" : "Suspended" }
         : u
     ));
+  };
+
+  const handleReviewListing = (listing: any) => {
+    setReviewingListing(listing);
+    setShowReviewModal(true);
+  };
+
+  const handleApproveListing = (listingId: string) => {
+    setListings(listings.map(l => l.id === listingId ? { ...l, status: "Approved" } : l));
+    setShowReviewModal(false);
+  };
+
+  const handleDenyListing = (listingId: string, reason: string) => {
+    setListings(listings.map(l => l.id === listingId ? { ...l, status: "Rejected", denialReason: reason } : l));
+    setShowReviewModal(false);
   };
 
   return (
@@ -251,26 +270,35 @@ export function AdminDashboard() {
           <TabsContent value="listings" className="space-y-6">
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-white">Listing Management</CardTitle>
+                <CardTitle className="text-white">Listing Management ({listings.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {MOCK_PROPERTIES.map((prop) => (
-                    <div key={prop.id} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border/50 hover:border-primary/30 transition-colors">
+                  {listings.map((listing) => (
+                    <div key={listing.id} className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
+                      listing.status === "Pending" ? "bg-amber-500/10 border-amber-500/20" :
+                      listing.status === "Approved" ? "bg-green-500/10 border-green-500/20" :
+                      "bg-red-500/10 border-red-500/20"
+                    }`}>
                       <div className="flex gap-4 flex-1">
-                        <img src={prop.image} className="w-16 h-16 rounded object-cover" />
+                        <img src={listing.image} className="w-16 h-16 rounded object-cover" />
                         <div>
-                          <p className="text-white font-medium">{prop.name}</p>
-                          <p className="text-xs text-muted-foreground">{prop.address}, {prop.city}</p>
+                          <p className="text-white font-medium">{listing.name}</p>
+                          <p className="text-xs text-muted-foreground">{listing.address}, {listing.city}</p>
                           <div className="flex gap-2 mt-2">
-                            {prop.isVerified && <Badge className="bg-green-500/80 text-xs">Verified</Badge>}
-                            <Badge variant="outline" className="text-xs">${prop.price}/{prop.pricePeriod}</Badge>
-                            <Badge variant="secondary" className="text-xs">{prop.bedsAvailable} beds</Badge>
+                            {listing.isVerified && <Badge className="bg-green-500/80 text-xs">Verified</Badge>}
+                            <Badge variant="outline" className="text-xs">${listing.price}/{listing.pricePeriod}</Badge>
+                            <Badge variant="secondary" className="text-xs">{listing.bedsAvailable} beds</Badge>
+                            <Badge className={
+                              listing.status === "Pending" ? "bg-amber-500/80" :
+                              listing.status === "Approved" ? "bg-green-500/80" :
+                              "bg-red-500/80"
+                            }>{listing.status}</Badge>
                           </div>
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">Review</Button>
+                        <Button size="sm" onClick={() => handleReviewListing(listing)} className="bg-primary/20 text-primary hover:bg-primary/30">Review</Button>
                         <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10">Flag</Button>
                       </div>
                     </div>
@@ -692,6 +720,16 @@ export function AdminDashboard() {
             onClose={() => setShowEditModal(false)}
             user={editingUser}
             onSave={handleSaveUser}
+          />
+        )}
+
+        {reviewingListing && (
+          <ListingReviewModal
+            open={showReviewModal}
+            onClose={() => setShowReviewModal(false)}
+            listing={reviewingListing}
+            onApprove={handleApproveListing}
+            onDeny={handleDenyListing}
           />
         )}
       </div>
