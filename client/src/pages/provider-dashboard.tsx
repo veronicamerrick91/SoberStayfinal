@@ -22,6 +22,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { HelpCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { PaymentModal } from "@/components/payment-modal";
+import { isSubscriptionActive, getProviderSubscription } from "@/lib/subscriptions";
+import { getAuth } from "@/lib/auth";
 
 interface ChatMessage {
   sender: "tenant" | "provider";
@@ -41,6 +44,10 @@ interface Conversation {
 export function ProviderDashboard() {
   const [location, setLocation] = useLocation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
+  const user = getAuth();
 
   useEffect(() => {
     // Load all conversations from localStorage
@@ -71,7 +78,15 @@ export function ProviderDashboard() {
     });
 
     setConversations(allConversations.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime()));
-  }, []);
+
+    // Check subscription status
+    if (user?.id) {
+      const isActive = isSubscriptionActive(user.id);
+      setHasActiveSubscription(isActive);
+      const sub = getProviderSubscription(user.id);
+      setSubscriptionStatus(sub);
+    }
+  }, [user?.id]);
 
   return (
     <Layout>
@@ -80,9 +95,26 @@ export function ProviderDashboard() {
           <div>
             <h1 className="text-3xl font-heading font-bold text-white">Provider Portal</h1>
             <p className="text-muted-foreground">Manage your properties and connect with tenants.</p>
+            {subscriptionStatus && (
+              <div className="mt-2 text-sm">
+                <Badge className={subscriptionStatus.subscriptionStatus === "active" ? "bg-green-500/80" : "bg-amber-500/80"}>
+                  {subscriptionStatus.subscriptionStatus === "active" ? `✓ Subscription Active · $${subscriptionStatus.monthlyFee}/month` : "No Active Subscription"}
+                </Badge>
+              </div>
+            )}
           </div>
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-            <Plus className="w-4 h-4" /> List New Property
+          <Button 
+            onClick={() => {
+              if (!hasActiveSubscription) {
+                setShowPaymentModal(true);
+              } else {
+                // In real app, would navigate to listing creation
+                alert("Create new listing feature coming soon!");
+              }
+            }}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+          >
+            <Plus className="w-4 h-4" /> {hasActiveSubscription ? "List New Property" : "Subscribe to List"}
           </Button>
         </div>
 
@@ -533,6 +565,19 @@ export function ProviderDashboard() {
             </div>
           </TabsContent>
         </Tabs>
+
+        <PaymentModal 
+          open={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          onSuccess={() => {
+            setHasActiveSubscription(true);
+            if (user?.id) {
+              const sub = getProviderSubscription(user.id);
+              setSubscriptionStatus(sub);
+            }
+          }}
+          providerId={user?.id || ""}
+        />
       </div>
     </Layout>
   );
