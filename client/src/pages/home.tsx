@@ -191,7 +191,7 @@ export default function Home() {
               </p>
               
               <ul className="space-y-5 mb-12">
-                {["Quality recovery environments", "Direct chat with providers", "Secure document storage", "Track application status"].map((item, i) => (
+                {["Browse trusted recovery environments", "Direct chat with providers", "Secure document storage", "Track application status in real-time"].map((item, i) => (
                   <li key={i} className="flex items-center gap-4 text-lg text-white">
                     <div className="bg-blue-500/20 p-2 rounded-full">
                       <CheckCircle2 className="w-5 h-5 text-blue-400" />
