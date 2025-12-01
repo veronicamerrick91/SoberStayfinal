@@ -152,19 +152,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div>
               <h3 className="font-bold mb-4">Support</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a onClick={() => alert("Help Center - Contact support@soberstay.com for assistance")} className="hover:text-primary cursor-pointer">Help Center</a></li>
+                <li><a onClick={() => alert("Help Center - Contact support@sobersta.com for assistance")} className="hover:text-primary cursor-pointer">Help Center</a></li>
                 <li><a onClick={() => alert("Safety & Reporting - Use the flag icon on any listing to report concerns")} className="hover:text-primary cursor-pointer">Safety & Reporting</a></li>
                 <li><a onClick={() => alert("Contact Us - Email: info@soberstay.com | Phone: 1-800-SOBER-STAY")} className="hover:text-primary cursor-pointer">Contact Us</a></li>
-                <li><a onClick={() => alert("Crisis Resources:\nSAMHSA: 1-800-662-4357\nSuicide Prevention: 988\nCrisis Text Line: Text HOME to 741741")} className="hover:text-primary cursor-pointer">Crisis Resources</a></li>
+                <li><a onClick={() => alert("Crisis Resources:\nNADC: 1-800-548-2424\nSAMHSA: 1-800-662-4357\nSuicide Prevention: 988")} className="hover:text-primary cursor-pointer">Crisis Resources</a></li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-bold mb-4">Legal</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/privacy-policy"><a className="hover:text-primary">Privacy Policy</a></Link></li>
-                <li><Link href="/terms-of-use"><a className="hover:text-primary">Terms of Use</a></Link></li>
-                <li><Link href="/disclaimer"><a className="hover:text-primary">Disclaimer</a></Link></li>
+                <li><a onClick={() => alert("Privacy Policy - Your data is encrypted and never shared with third parties")} className="hover:text-primary cursor-pointer">Privacy Policy</a></li>
+                <li><a onClick={() => alert("Terms of Use - Please review our full terms at soberstay.com/terms")} className="hover:text-primary cursor-pointer">Terms of Use</a></li>
+                <li><a onClick={() => alert("Disclaimer - Sober Stay is a platform connector and not a treatment provider")} className="hover:text-primary cursor-pointer">Disclaimer</a></li>
               </ul>
             </div>
           </div>
