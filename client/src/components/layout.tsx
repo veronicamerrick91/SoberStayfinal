@@ -23,9 +23,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/browse", label: "Browse Homes" },
-    { href: "/blog", label: "Blog" },
     { href: "/for-tenants", label: "Tenants" },
     { href: "/for-providers", label: "Providers" },
+    { href: "/blog", label: "Blog" },
   ];
 
   return (
@@ -132,9 +132,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <h3 className="font-bold mb-4">Platform</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/browse" className="hover:text-primary">Browse Homes</Link></li>
-                <li><Link href="/blog" className="hover:text-primary">Blog</Link></li>
                 <li><Link href="/for-tenants" className="hover:text-primary">For Tenants</Link></li>
                 <li><Link href="/for-providers" className="hover:text-primary">For Providers</Link></li>
+                <li><Link href="/blog" className="hover:text-primary">Blog</Link></li>
               </ul>
             </div>
 

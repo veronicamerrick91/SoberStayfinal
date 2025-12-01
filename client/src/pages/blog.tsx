@@ -605,11 +605,14 @@ export function Blog() {
 
   return (
     <Layout>
-      <div className="bg-gradient-to-b from-primary/5 to-transparent pt-12 pb-8">
+      <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background pt-16 pb-12 border-b border-primary/20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">Sober Stay Blog</h1>
-            <p className="text-lg text-muted-foreground">Resources, stories, and guidance for your recovery journey</p>
+          <div className="text-center mb-2">
+            <div className="inline-block mb-4">
+              <span className="text-xs font-semibold text-primary bg-primary/10 px-4 py-1 rounded-full uppercase tracking-wider">Recovery Resources</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 leading-tight">Sober Stay Blog</h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Expert insights, real stories, and practical guidance for your recovery journey. Learn from those who've walked this path.</p>
           </div>
         </div>
       </div>
@@ -674,27 +677,43 @@ export function Blog() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {filteredPosts.map((post) => (
-                  <Card key={post.id} className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer overflow-hidden group" onClick={() => setSelectedPost(post)}>
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-xs bg-primary/20 text-primary px-3 py-1 rounded-full">{post.category}</span>
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Calendar className="w-3 h-3" /> {post.date}
-                            </span>
+                  <article 
+                    key={post.id} 
+                    className="bg-card border border-border/50 rounded-lg overflow-hidden hover:border-primary/50 transition-all duration-300 cursor-pointer group shadow-sm hover:shadow-md hover:shadow-primary/10"
+                    onClick={() => setSelectedPost(post)}
+                  >
+                    <div className="p-8">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded uppercase tracking-wider">{post.category}</span>
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Calendar className="w-4 h-4" /> 
+                            <time>{post.date}</time>
                           </div>
-                          <h2 className="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors">{post.title}</h2>
-                          <p className="text-muted-foreground mb-4 line-clamp-2">{post.excerpt}</p>
-                          <div className="flex items-center gap-2 text-sm text-primary font-medium group-hover:gap-3 transition-all">
-                            Read Article <ArrowRight className="w-4 h-4" />
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground ml-auto">
+                            <User className="w-4 h-4" /> 
+                            <span>{post.author}</span>
                           </div>
                         </div>
+                        
+                        <div>
+                          <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 group-hover:text-primary transition-colors leading-tight">
+                            {post.title}
+                          </h2>
+                          <p className="text-muted-foreground text-base leading-relaxed line-clamp-2">
+                            {post.excerpt}
+                          </p>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-sm text-primary font-semibold group-hover:gap-3 transition-all pt-2">
+                          Read Full Article 
+                          <ArrowRight className="w-4 h-4" />
+                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </article>
                 ))}
               </div>
             )}
