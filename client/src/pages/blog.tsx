@@ -337,7 +337,7 @@ The best sober living home for you might not be the "best" one overall. It's the
 
 ## Start Your Search Today
 
-Contact local treatment centers, recovery organizations, or use Sober Stay to browse verified sober living homes in your area. The perfect recovery home is waiting for you.`,
+Contact local treatment centers, recovery organizations, or use Sober Stay to browse quality sober living homes in your area. The perfect recovery home is waiting for you.`,
     author: "Marcus Johnson, Recovery Coach",
     date: "Nov 22, 2025",
     category: "Guidance",

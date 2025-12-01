@@ -31,7 +31,7 @@ export default function Home() {
           <div className="md:w-1/2 space-y-8 animate-in slide-in-from-bottom-8 duration-700 fade-in">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium backdrop-blur-sm shadow-[0_0_15px_rgba(16,185,129,0.2)]">
               <ShieldCheck className="w-4 h-4" />
-              <span>Verified Safe & Supportive Housing</span>
+              <span>Quality Sober Living Communities</span>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-heading font-bold tracking-tight text-white leading-[1.1]">
@@ -40,7 +40,7 @@ export default function Home() {
             </h1>
             
             <p className="text-xl text-gray-300 max-w-lg leading-relaxed">
-              Connect with verified sober living homes that provide the safety, structure, and community you need for your recovery journey.
+              Connect with trusted sober living homes that provide the safety, structure, and community you need for your recovery journey.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -143,7 +143,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-12 relative">
             {[
-              { icon: Search, title: "Search Verified Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit.", step: "01" },
+              { icon: Search, title: "Search Quality Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit.", step: "01" },
               { icon: FileCheck, title: "Apply Securely", desc: "Fill out one detailed application and submit it to multiple homes instantly.", step: "02" },
               { icon: CheckCircle2, title: "Connect & Move In", desc: "Chat directly with providers, schedule visits, and secure your spot.", step: "03" }
             ].map((step, i) => (
@@ -187,11 +187,11 @@ export default function Home() {
               </div>
               <h3 className="text-4xl md:text-5xl font-bold text-white mb-6">Find Your Safe Haven</h3>
               <p className="text-xl text-blue-100 mb-10 leading-relaxed">
-                Your recovery deserves a supportive environment. Browse verified homes, chat directly with providers, and manage your applications in one secure place.
+                Your recovery deserves a supportive environment. Browse quality homes, chat directly with providers, and manage your applications in one secure place.
               </p>
               
               <ul className="space-y-5 mb-12">
-                {["Verified safe environments", "Direct chat with providers", "Secure document storage", "Track application status"].map((item, i) => (
+                {["Quality recovery environments", "Direct chat with providers", "Secure document storage", "Track application status"].map((item, i) => (
                   <li key={i} className="flex items-center gap-4 text-lg text-white">
                     <div className="bg-blue-500/20 p-2 rounded-full">
                       <CheckCircle2 className="w-5 h-5 text-blue-400" />
