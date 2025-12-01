@@ -579,21 +579,9 @@ export function Blog() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(BLOG_POSTS);
 
   useEffect(() => {
-    // Load articles from localStorage or save default articles
-    const savedArticles = localStorage.getItem("sober-stay-blog-articles");
-    if (savedArticles) {
-      try {
-        setBlogPosts(JSON.parse(savedArticles));
-      } catch (e) {
-        // If parsing fails, use default articles and save them
-        localStorage.setItem("sober-stay-blog-articles", JSON.stringify(BLOG_POSTS));
-        setBlogPosts(BLOG_POSTS);
-      }
-    } else {
-      // First time - save default articles
-      localStorage.setItem("sober-stay-blog-articles", JSON.stringify(BLOG_POSTS));
-      setBlogPosts(BLOG_POSTS);
-    }
+    // Always use the latest BLOG_POSTS from code (clear old cache)
+    localStorage.setItem("sober-stay-blog-articles", JSON.stringify(BLOG_POSTS));
+    setBlogPosts(BLOG_POSTS);
   }, []);
 
   const categories = ["All", "Recovery Tips", "Education", "Community", "Guidance", "Mental Health", "Stories"];
