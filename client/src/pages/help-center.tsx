@@ -59,7 +59,7 @@ export function HelpCenter() {
         },
         {
           q: "How much does a listing cost?",
-          a: "$49/month per property listing. This includes unlimited messages, application management, and platform access. You can cancel anytime."
+          a: "$49/month per property listing. This includes your property listing, access to thousands of clients seeking sober living, direct messaging with tenants, and application management tools. You can cancel anytime."
         },
         {
           q: "How do I review tenant applications?",
