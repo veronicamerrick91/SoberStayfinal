@@ -60,6 +60,12 @@ export function AdminDashboard() {
     { id: "doc3", provider: "Hope House", providerEmail: "hopehouse@example.com", documentName: "Facility Photos", uploadedDate: new Date(Date.now() - 1*24*60*60*1000).toISOString(), status: "Pending Review", documentType: "Photos" },
     { id: "doc4", provider: "New Beginnings Cottage", providerEmail: "newbeginnings@example.com", documentName: "Safety Compliance Report", uploadedDate: new Date(Date.now() - 2*24*60*60*1000).toISOString(), status: "Rejected", documentType: "Compliance" },
   ]);
+  const [safetySettings, setSafetySettings] = useState<any[]>([
+    { id: 1, label: "Auto-flag drug references", enabled: true },
+    { id: 2, label: "Monitor external contact attempts", enabled: true },
+    { id: 3, label: "Require provider verification", enabled: true },
+    { id: 4, label: "Enable duplicate account detection", enabled: true },
+  ]);
 
   useEffect(() => {
     setReports(getReports());
@@ -129,6 +135,43 @@ export function AdminDashboard() {
 
   const handleRejectDocument = (docId: string) => {
     setDocuments(documents.map(d => d.id === docId ? { ...d, status: "Rejected" } : d));
+  };
+
+  const toggleSafetySettings = (settingId: number) => {
+    setSafetySettings(safetySettings.map(s => s.id === settingId ? { ...s, enabled: !s.enabled } : s));
+  };
+
+  const handleSaveSettings = () => {
+    alert("✓ Platform settings saved successfully!");
+  };
+
+  const handleResetSettings = () => {
+    setSafetySettings([
+      { id: 1, label: "Auto-flag drug references", enabled: true },
+      { id: 2, label: "Monitor external contact attempts", enabled: true },
+      { id: 3, label: "Require provider verification", enabled: true },
+      { id: 4, label: "Enable duplicate account detection", enabled: true },
+    ]);
+    alert("✓ Settings reset to default values!");
+  };
+
+  const handleExportData = () => {
+    const data = {
+      exportDate: new Date().toISOString(),
+      users: users.length,
+      listings: listings.length,
+      applications: applications.length,
+      documents: documents.length,
+      reports: reports.length,
+    };
+    const jsonString = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `admin-export-${new Date().toISOString().split("T")[0]}.json`;
+    link.click();
+    alert("✓ Platform data exported successfully!");
   };
 
   return (
@@ -834,13 +877,8 @@ export function AdminDashboard() {
                 <div className="border-t border-border pt-6 space-y-4">
                   <h3 className="text-white font-bold">Safety Settings</h3>
                   <div className="space-y-2">
-                    {[
-                      { label: "Auto-flag drug references", enabled: true },
-                      { label: "Monitor external contact attempts", enabled: true },
-                      { label: "Require provider verification", enabled: true },
-                      { label: "Enable duplicate account detection", enabled: true },
-                    ].map((setting, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                    {safetySettings.map((setting) => (
+                      <div key={setting.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5 cursor-pointer hover:bg-white/10 transition-colors" onClick={() => toggleSafetySettings(setting.id)}>
                         <span className="text-white text-sm">{setting.label}</span>
                         <div className={`w-10 h-6 rounded-full ${setting.enabled ? "bg-primary" : "bg-gray-600"} transition-colors`} />
                       </div>
@@ -849,9 +887,9 @@ export function AdminDashboard() {
                 </div>
 
                 <div className="border-t border-border pt-6 flex gap-2">
-                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Save Changes</Button>
-                  <Button variant="outline">Reset to Default</Button>
-                  <Button variant="ghost" className="text-red-500 hover:bg-red-500/10 ml-auto">Export Data</Button>
+                  <Button onClick={handleSaveSettings} className="bg-primary text-primary-foreground hover:bg-primary/90">Save Changes</Button>
+                  <Button onClick={handleResetSettings} variant="outline">Reset to Default</Button>
+                  <Button onClick={handleExportData} variant="ghost" className="text-red-500 hover:bg-red-500/10 ml-auto">Export Data</Button>
                 </div>
               </CardContent>
             </Card>
