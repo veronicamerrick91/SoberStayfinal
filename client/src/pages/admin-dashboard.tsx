@@ -155,7 +155,7 @@ export function AdminDashboard() {
   };
 
   const handleSaveSettings = () => {
-    alert("✓ Platform settings saved successfully!");
+    // Settings saved
   };
 
   const handleResetSettings = () => {
@@ -165,7 +165,6 @@ export function AdminDashboard() {
       { id: 3, label: "Require provider verification", enabled: true },
       { id: 4, label: "Enable duplicate account detection", enabled: true },
     ]);
-    alert("✓ Settings reset to default values!");
   };
 
   const handleExportData = () => {
@@ -184,7 +183,6 @@ export function AdminDashboard() {
     link.href = url;
     link.download = `admin-export-${new Date().toISOString().split("T")[0]}.json`;
     link.click();
-    alert("✓ Platform data exported successfully!");
   };
 
   const handleSendCampaign = () => {
@@ -1022,7 +1020,7 @@ export function AdminDashboard() {
                       <div><p className="text-muted-foreground">Opens</p><p className="text-white">{campaign.opens}</p></div>
                       <div><p className="text-muted-foreground">Clicks</p><p className="text-white">{campaign.clicks}</p></div>
                       <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
+                        <Button onClick={() => {}} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
                         <Button size="sm" variant="ghost" className="text-xs h-7 text-red-500" onClick={() => handleDeleteCampaign(i)}>Delete</Button>
                       </div>
                     </div>
@@ -1079,7 +1077,7 @@ export function AdminDashboard() {
                       <p className="text-white text-sm font-medium">{template.name}</p>
                       <p className="text-xs text-muted-foreground">{template.type} • Used {template.uses} times</p>
                     </div>
-                    <Button size="sm" variant="ghost" className="text-xs">Use</Button>
+                    <Button onClick={() => {}} size="sm" variant="ghost" className="text-xs">Use</Button>
                   </div>
                 ))}
               </CardContent>
