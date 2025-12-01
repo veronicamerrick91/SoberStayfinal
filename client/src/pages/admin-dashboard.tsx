@@ -67,6 +67,8 @@ export function AdminDashboard() {
   const [newWorkflowName, setNewWorkflowName] = useState("");
   const [newWorkflowTrigger, setNewWorkflowTrigger] = useState("onSignup");
   const [newWorkflowTemplate, setNewWorkflowTemplate] = useState("welcome");
+  const [newWorkflowSubject, setNewWorkflowSubject] = useState("");
+  const [newWorkflowBody, setNewWorkflowBody] = useState("");
 
   useEffect(() => {
     setReports(getReports());
@@ -1439,11 +1441,11 @@ export function AdminDashboard() {
         </Tabs>
 
         {showWorkflowModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-lg w-full mx-4 max-h-96 overflow-y-auto">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-2xl w-full mx-4 my-8">
               <h2 className="text-xl font-bold text-white mb-4">Create Email Workflow</h2>
               
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-96 overflow-y-auto">
                 <div>
                   <label className="text-xs font-semibold text-muted-foreground mb-2 block">Workflow Name</label>
                   <input 
@@ -1487,6 +1489,30 @@ export function AdminDashboard() {
                   </select>
                 </div>
 
+                <div className="border-t border-border pt-4">
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Email Subject Line</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., Welcome to Sober Stay!" 
+                    value={newWorkflowSubject}
+                    onChange={(e) => setNewWorkflowSubject(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">This is what recipients see in their inbox</p>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Email Content</label>
+                  <textarea 
+                    placeholder="Write your email content here. You can use HTML or plain text. Variables: {{name}}, {{email}}, {{role}}, {{property}}" 
+                    value={newWorkflowBody}
+                    onChange={(e) => setNewWorkflowBody(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm font-mono"
+                    rows={6}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Use {{variable}} syntax to personalize emails. Supports HTML formatting.</p>
+                </div>
+
                 <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
                   <p className="text-xs text-primary font-medium">Preview: This workflow will send emails when a user {newWorkflowTrigger === 'onSignup' ? 'signs up' : newWorkflowTrigger === 'onApplicationApproved' ? 'has an approved application' : 'triggers this event'}.</p>
                 </div>
@@ -1495,16 +1521,20 @@ export function AdminDashboard() {
               <div className="flex gap-2 mt-6">
                 <Button 
                   onClick={() => {
-                    if (newWorkflowName.trim()) {
+                    if (newWorkflowName.trim() && newWorkflowSubject.trim() && newWorkflowBody.trim()) {
                       setWorkflows([...workflows, { 
                         name: newWorkflowName, 
                         trigger: newWorkflowTrigger, 
                         template: newWorkflowTemplate,
+                        subject: newWorkflowSubject,
+                        body: newWorkflowBody,
                         status: "Active",
                         created: new Date().toLocaleDateString()
                       }]);
                       setShowWorkflowModal(false);
                       setNewWorkflowName("");
+                      setNewWorkflowSubject("");
+                      setNewWorkflowBody("");
                     }
                   }} 
                   className="flex-1 bg-primary hover:bg-primary/90"
@@ -1512,7 +1542,12 @@ export function AdminDashboard() {
                   Create Workflow
                 </Button>
                 <Button 
-                  onClick={() => setShowWorkflowModal(false)} 
+                  onClick={() => {
+                    setShowWorkflowModal(false);
+                    setNewWorkflowName("");
+                    setNewWorkflowSubject("");
+                    setNewWorkflowBody("");
+                  }} 
                   variant="outline"
                 >
                   Cancel
