@@ -313,14 +313,16 @@ export function ProviderDashboard() {
                       Supervision Type 
                       <HelpCircle className="w-3 h-3 text-muted-foreground" />
                     </Label>
-                    <div className="grid grid-cols-1 gap-2">
-                       {Object.keys(SUPERVISION_DEFINITIONS).map(type => (
-                         <div key={type} className="flex items-center space-x-2">
-                           <RadioGroupItem value={type} id={`new-${type}`} className="h-3 w-3" />
-                           <Label htmlFor={`new-${type}`} className="text-xs font-normal text-muted-foreground">{type}</Label>
-                         </div>
-                       ))}
-                    </div>
+                    <RadioGroup defaultValue="Supported">
+                      <div className="grid grid-cols-1 gap-2">
+                         {Object.keys(SUPERVISION_DEFINITIONS).map(type => (
+                           <div key={type} className="flex items-center space-x-2">
+                             <RadioGroupItem value={type} id={`new-${type}`} className="h-3 w-3" />
+                             <Label htmlFor={`new-${type}`} className="text-xs font-normal text-muted-foreground">{type}</Label>
+                           </div>
+                         ))}
+                      </div>
+                    </RadioGroup>
                   </div>
 
                   {/* Filters Selection */}
