@@ -79,6 +79,10 @@ export function AdminDashboard() {
     { home: "Downtown Recovery Center", duration: "30 days", cost: "$199", status: "Active" },
     { home: "Supportive Living Homes", duration: "7 days", cost: "$49", status: "Expiring Soon" },
   ]);
+  const [showBlogModal, setShowBlogModal] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState<any | null>(null);
+  const [editingListing, setEditingListing] = useState<any | null>(null);
+  const [newBlogTitle, setNewBlogTitle] = useState("");
 
   useEffect(() => {
     setReports(getReports());
@@ -202,11 +206,16 @@ export function AdminDashboard() {
   };
 
   const handleCreateBlog = () => {
-    // Blog editor opens
+    setShowBlogModal(true);
+    setNewBlogTitle("");
+  };
+
+  const handleSaveBlog = () => {
+    setShowBlogModal(false);
   };
 
   const handlePublishBlog = () => {
-    // Blog published
+    setShowBlogModal(false);
   };
 
   const handleCreatePromo = () => {
@@ -217,8 +226,20 @@ export function AdminDashboard() {
     setAdCampaigns([...adCampaigns, { home: "New Ad Campaign", duration: "14 days", cost: "$299", status: "Active" }]);
   };
 
+  const handleEditCampaign = (idx: number) => {
+    setEditingCampaign(campaigns[idx]);
+  };
+
+  const handleSaveCampaign = () => {
+    setEditingCampaign(null);
+  };
+
   const handleManageListing = () => {
-    // Featured listing management opens
+    setEditingListing({ provider: "Recovery First LLC", listing: "Downtown Recovery Center" });
+  };
+
+  const handleCloseListing = () => {
+    setEditingListing(null);
   };
 
   const handleSaveMarketing = () => {
@@ -1020,7 +1041,7 @@ export function AdminDashboard() {
                       <div><p className="text-muted-foreground">Opens</p><p className="text-white">{campaign.opens}</p></div>
                       <div><p className="text-muted-foreground">Clicks</p><p className="text-white">{campaign.clicks}</p></div>
                       <div className="flex gap-1">
-                        <Button onClick={() => {}} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
+                        <Button onClick={() => handleEditCampaign(i)} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
                         <Button size="sm" variant="ghost" className="text-xs h-7 text-red-500" onClick={() => handleDeleteCampaign(i)}>Delete</Button>
                       </div>
                     </div>
@@ -1077,7 +1098,7 @@ export function AdminDashboard() {
                       <p className="text-white text-sm font-medium">{template.name}</p>
                       <p className="text-xs text-muted-foreground">{template.type} • Used {template.uses} times</p>
                     </div>
-                    <Button onClick={() => {}} size="sm" variant="ghost" className="text-xs">Use</Button>
+                    <Button onClick={() => handleEditCampaign(0)} size="sm" variant="ghost" className="text-xs">Use</Button>
                   </div>
                 ))}
               </CardContent>
@@ -1164,7 +1185,7 @@ export function AdminDashboard() {
                         <input type="text" placeholder="SEO keywords" className="w-full px-2 py-1 rounded text-xs bg-background/50 border border-white/10 text-white" />
                       </div>
                       <div className="flex gap-2 mt-2">
-                        <Button size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
+                        <Button onClick={handleCreateBlog} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
                         <Button onClick={handlePublishBlog} size="sm" variant="ghost" className="text-xs h-7">Publish</Button>
                       </div>
                     </div>
@@ -1320,6 +1341,86 @@ export function AdminDashboard() {
             onDeny={handleDenyApplication}
             onRequestInfo={handleRequestApplicationInfo}
           />
+        )}
+
+        {showBlogModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
+              <h2 className="text-xl font-bold text-white mb-4">Create Blog Post</h2>
+              <input 
+                type="text" 
+                placeholder="Blog title" 
+                value={newBlogTitle}
+                onChange={(e) => setNewBlogTitle(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-4"
+              />
+              <textarea 
+                placeholder="Blog content" 
+                className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-4 h-24"
+              />
+              <div className="flex gap-2">
+                <Button onClick={handleSaveBlog} className="flex-1 bg-primary hover:bg-primary/90">Save as Draft</Button>
+                <Button onClick={handlePublishBlog} className="flex-1 bg-green-600 hover:bg-green-700">Publish</Button>
+                <Button onClick={() => setShowBlogModal(false)} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingCampaign && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
+              <h2 className="text-xl font-bold text-white mb-4">Edit Campaign</h2>
+              <p className="text-white mb-2">Campaign: {editingCampaign.name}</p>
+              <input 
+                type="text" 
+                placeholder="Campaign name" 
+                defaultValue={editingCampaign.name}
+                className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-4"
+              />
+              <select className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-4">
+                <option>Active</option>
+                <option>Scheduled</option>
+                <option>Draft</option>
+              </select>
+              <div className="flex gap-2">
+                <Button onClick={handleSaveCampaign} className="flex-1 bg-primary hover:bg-primary/90">Save</Button>
+                <Button onClick={() => setEditingCampaign(null)} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingListing && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
+              <h2 className="text-xl font-bold text-white mb-4">Manage Featured Listing</h2>
+              <p className="text-white mb-2">{editingListing.provider}</p>
+              <p className="text-gray-400 mb-4 text-sm">{editingListing.listing}</p>
+              <div className="space-y-3 mb-4">
+                <div>
+                  <label className="text-xs text-muted-foreground">Boost Level</label>
+                  <select className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mt-1">
+                    <option>2x Visibility - $49/week</option>
+                    <option>3x Visibility - $99/week</option>
+                    <option>Top Placement - $149/week</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Duration</label>
+                  <select className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mt-1">
+                    <option>7 days</option>
+                    <option>14 days</option>
+                    <option>30 days</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleCloseListing} className="flex-1 bg-primary hover:bg-primary/90">Apply</Button>
+                <Button onClick={() => setEditingListing(null)} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </Layout>
