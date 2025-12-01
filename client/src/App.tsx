@@ -20,6 +20,7 @@ import { LiabilityWaiver } from "@/pages/liability-waiver";
 import { HelpCenter } from "@/pages/help-center";
 import { CrisisResources } from "@/pages/crisis-resources";
 import { SafetyReporting } from "@/pages/safety-reporting";
+import { Blog } from "@/pages/blog";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
 
@@ -84,6 +85,7 @@ function Router() {
         <Route path="/help-center" component={HelpCenter} />
         <Route path="/crisis-resources" component={CrisisResources} />
         <Route path="/safety-reporting" component={SafetyReporting} />
+        <Route path="/blog" component={Blog} />
         <Route component={NotFound} />
       </Switch>
     </>
