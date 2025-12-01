@@ -19,7 +19,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import mapPlaceholder from "@assets/generated_images/map_view_of_a_neighborhood_with_location_pin.png";
 
 export default function PropertyDetails() {
   const [match, params] = useRoute("/property/:id");
@@ -209,7 +208,16 @@ export default function PropertyDetails() {
             <div>
               <h3 className="text-xl font-bold text-white mb-6">Location</h3>
               <div className="rounded-xl overflow-hidden border border-border/50 relative h-[300px]">
-                <img src={mapPlaceholder} className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" alt="Map location" />
+                <iframe
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                  src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBxjXHZ1yc_0dXcjVEbJwdaLPWR5V8eZwI&q=${encodeURIComponent(property.address + ' ' + property.city + ' ' + property.state)}`}
+                  title="Property Location Map"
+                />
                 <div className="absolute bottom-4 left-4 bg-card/90 backdrop-blur p-3 rounded-lg border border-white/10 shadow-xl max-w-xs">
                   <div className="font-bold text-white text-sm">{property.address}</div>
                   <div className="text-xs text-muted-foreground">{property.city}, {property.state}</div>
