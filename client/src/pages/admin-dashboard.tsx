@@ -8,7 +8,7 @@ import {
   Users, Building, FileText, Activity, 
   Check, X, Eye, ShieldAlert, BarChart3, AlertTriangle,
   Mail, MessageSquare, Settings, DollarSign, TrendingUp,
-  Search, Download, Flag, Lock, Clock
+  Search, Download, Flag, Lock, Clock, Upload, Shield
 } from "lucide-react";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { getReports, updateReportStatus } from "@/lib/reports";
@@ -53,6 +53,12 @@ export function AdminDashboard() {
     { id: "msg1", tenant: "John Smith", provider: "Serenity House", preview: "Can I apply even though...", flagged: true, reason: "Potential trigger mention" },
     { id: "msg2", tenant: "Sarah Connor", provider: "New Beginnings", preview: "Thank you for accepting my application!", flagged: false, reason: null },
     { id: "msg3", tenant: "Mike Chen", provider: "The Harbor", preview: "Where can I find...", flagged: true, reason: "Outside communication attempt" },
+  ]);
+  const [documents, setDocuments] = useState<any[]>([
+    { id: "doc1", provider: "Recovery First LLC", providerEmail: "recovery@example.com", documentName: "Business License", uploadedDate: new Date(Date.now() - 5*24*60*60*1000).toISOString(), status: "Pending Review", documentType: "License" },
+    { id: "doc2", provider: "Recovery First LLC", providerEmail: "recovery@example.com", documentName: "Insurance Certificate", uploadedDate: new Date(Date.now() - 3*24*60*60*1000).toISOString(), status: "Approved", documentType: "Insurance" },
+    { id: "doc3", provider: "Hope House", providerEmail: "hopehouse@example.com", documentName: "Facility Photos", uploadedDate: new Date(Date.now() - 1*24*60*60*1000).toISOString(), status: "Pending Review", documentType: "Photos" },
+    { id: "doc4", provider: "New Beginnings Cottage", providerEmail: "newbeginnings@example.com", documentName: "Safety Compliance Report", uploadedDate: new Date(Date.now() - 2*24*60*60*1000).toISOString(), status: "Rejected", documentType: "Compliance" },
   ]);
 
   useEffect(() => {
@@ -117,6 +123,14 @@ export function AdminDashboard() {
     setMessages(messages.filter(m => m.id !== msgId));
   };
 
+  const handleApproveDocument = (docId: string) => {
+    setDocuments(documents.map(d => d.id === docId ? { ...d, status: "Approved" } : d));
+  };
+
+  const handleRejectDocument = (docId: string) => {
+    setDocuments(documents.map(d => d.id === docId ? { ...d, status: "Rejected" } : d));
+  };
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
@@ -133,12 +147,13 @@ export function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="bg-card border border-border p-1 grid w-full grid-cols-7 lg:grid-cols-11 gap-1">
+          <TabsList className="bg-card border border-border p-1 grid w-full grid-cols-7 lg:grid-cols-12 gap-1">
             <TabsTrigger value="overview" className="text-xs">Dashboard</TabsTrigger>
             <TabsTrigger value="users" className="text-xs">Users</TabsTrigger>
             <TabsTrigger value="listings" className="text-xs">Listings</TabsTrigger>
             <TabsTrigger value="applications" className="text-xs">Apps</TabsTrigger>
             <TabsTrigger value="messaging" className="text-xs">Messages</TabsTrigger>
+            <TabsTrigger value="verification" className="text-xs">Verification</TabsTrigger>
             <TabsTrigger value="reports" className="text-xs">Reports ({reports.length})</TabsTrigger>
             <TabsTrigger value="compliance" className="text-xs">Safety</TabsTrigger>
             <TabsTrigger value="billing" className="text-xs">Billing</TabsTrigger>
@@ -383,6 +398,90 @@ export function AdminDashboard() {
                         <div className="h-full bg-primary" style={{ width: `${app.completeness}%` }} />
                       </div>
                       <div className="text-xs text-muted-foreground mt-2">Click to view full application and take action</div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* PROVIDER VERIFICATION CENTER */}
+          <TabsContent value="verification" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Shield className="w-5 h-5" /> Provider Document Verification ({documents.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {documents.map((doc) => (
+                    <div key={doc.id} className={`p-4 rounded-lg border transition-colors ${
+                      doc.status === "Approved" ? "bg-green-500/10 border-green-500/20" :
+                      doc.status === "Rejected" ? "bg-red-500/10 border-red-500/20" :
+                      "bg-amber-500/10 border-amber-500/20"
+                    }`}>
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <p className="text-white font-bold">{doc.documentName}</p>
+                          <p className="text-sm text-muted-foreground">Provider: {doc.provider}</p>
+                          <p className="text-xs text-muted-foreground">{doc.providerEmail}</p>
+                          <div className="flex gap-2 mt-2">
+                            <Badge variant="outline" className="text-xs border-primary/30 text-primary gap-1"><FileText className="w-3 h-3" /> {doc.documentType}</Badge>
+                            <Badge className="text-xs bg-gray-500/80">Submitted: {new Date(doc.uploadedDate).toLocaleDateString()}</Badge>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <Badge className={
+                            doc.status === "Approved" ? "bg-green-500/80" :
+                            doc.status === "Rejected" ? "bg-red-500/80" :
+                            "bg-amber-500/80"
+                          }>{doc.status}</Badge>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" className="h-8 gap-1 text-xs">
+                          <Download className="w-3 h-3" /> Download
+                        </Button>
+                        {doc.status === "Pending Review" && (
+                          <>
+                            <Button size="sm" onClick={() => handleApproveDocument(doc.id)} className="h-8 bg-green-500/20 text-green-500 hover:bg-green-500/30 gap-1 text-xs">
+                              <Check className="w-3 h-3" /> Approve
+                            </Button>
+                            <Button size="sm" onClick={() => handleRejectDocument(doc.id)} variant="outline" className="h-8 border-red-500/30 text-red-500 hover:bg-red-500/10 gap-1 text-xs">
+                              <X className="w-3 h-3" /> Reject
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Upload className="w-5 h-5" /> Required Documents Checklist
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {[
+                    "Business License",
+                    "Insurance Certificate",
+                    "Facility Photos",
+                    "Safety Compliance Report",
+                    "Staff Background Checks",
+                    "Property Inspection Report"
+                  ].map((doc, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-border/50">
+                      <div className="w-4 h-4 rounded border border-primary/50 flex items-center justify-center">
+                        <div className="w-2 h-2 bg-primary rounded-sm" />
+                      </div>
+                      <span className="text-sm text-white">{doc}</span>
+                      <span className="text-xs text-muted-foreground ml-auto">Required for all providers</span>
                     </div>
                   ))}
                 </div>
