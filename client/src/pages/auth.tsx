@@ -105,6 +105,14 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
             </Tabs>
 
             
+            {role === "admin" && type === "login" && (
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 mb-4">
+                <p className="text-xs text-blue-300 mb-2 font-semibold">Admin Login:</p>
+                <p className="text-xs text-blue-300/70 mb-1">Email: contact@soberstay.com</p>
+                <p className="text-xs text-blue-300/70">Password: contact@soberstay.com</p>
+              </div>
+            )}
+            
             {loginError && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex gap-2">
                 <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
