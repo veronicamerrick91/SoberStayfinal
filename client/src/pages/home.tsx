@@ -222,9 +222,13 @@ export default function Home() {
                 <Building className="w-4 h-4" /> For Providers
               </div>
               <h3 className="text-4xl md:text-5xl font-bold text-white mb-6">Grow Your Community</h3>
-              <p className="text-xl text-emerald-100 mb-10 leading-relaxed">
+              <p className="text-xl text-emerald-100 mb-4 leading-relaxed">
                 Fill vacancies faster with qualified applicants. Manage listings, screen residents, and streamline your intake process with our powerful tools.
               </p>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-semibold mb-10 w-fit">
+                <span>💰</span>
+                <span>$49/month per listing</span>
+              </div>
               
               <ul className="space-y-5 mb-12">
                 {["Fill vacancies faster", "Streamlined application management", "Marketing & SEO included", "Digital resident files"].map((item, i) => (
