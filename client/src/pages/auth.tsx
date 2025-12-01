@@ -97,20 +97,12 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue={role} onValueChange={(v) => setRole(v as any)} className="w-full mb-6">
-              <TabsList className="grid w-full grid-cols-3 bg-background/50">
+              <TabsList className="grid w-full grid-cols-2 bg-background/50">
                 <TabsTrigger value="tenant">I'm a Tenant</TabsTrigger>
                 <TabsTrigger value="provider">I'm a Provider</TabsTrigger>
-                <TabsTrigger value="admin" className="text-xs">Admin</TabsTrigger>
               </TabsList>
             </Tabs>
 
-            {type === "login" && (
-              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 mb-4">
-                <p className="text-xs text-blue-300 mb-2 font-semibold">Demo Credentials:</p>
-                <p className="text-xs text-blue-300/70 mb-1">Email: {VALID_CREDENTIALS[role as keyof typeof VALID_CREDENTIALS].email}</p>
-                <p className="text-xs text-blue-300/70">Password: {VALID_CREDENTIALS[role as keyof typeof VALID_CREDENTIALS].password}</p>
-              </div>
-            )}
             
             {loginError && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex gap-2">
