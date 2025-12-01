@@ -24,6 +24,7 @@ export interface Property {
   totalBeds: number;
   gender: "Men" | "Women" | "Co-ed";
   isVerified: boolean;
+  roomType: "Private Room" | "Shared Room";
   
   // Filters
   isMatFriendly: boolean;
@@ -58,6 +59,7 @@ export const MOCK_PROPERTIES: Property[] = [
     totalBeds: 8,
     gender: "Men",
     isVerified: true,
+    roomType: "Shared Room",
     isMatFriendly: true,
     isPetFriendly: false,
     isLgbtqFriendly: true,
@@ -119,6 +121,7 @@ export const MOCK_PROPERTIES: Property[] = [
     totalBeds: 6,
     gender: "Women",
     isVerified: true,
+    roomType: "Private Room",
     isMatFriendly: false,
     isPetFriendly: true,
     isLgbtqFriendly: true,
@@ -180,6 +183,7 @@ export const MOCK_PROPERTIES: Property[] = [
     totalBeds: 12,
     gender: "Co-ed",
     isVerified: false,
+    roomType: "Shared Room",
     isMatFriendly: true,
     isPetFriendly: false,
     isLgbtqFriendly: true,
@@ -241,6 +245,7 @@ export const MOCK_PROPERTIES: Property[] = [
     totalBeds: 5,
     gender: "Men",
     isVerified: true,
+    roomType: "Private Room",
     isMatFriendly: true,
     isPetFriendly: false,
     isLgbtqFriendly: false,

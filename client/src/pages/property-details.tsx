@@ -122,6 +122,7 @@ export default function PropertyDetails() {
 
               <div className="flex flex-wrap gap-3">
                  <Badge variant="secondary" className="text-sm px-3 py-1">{property.gender} Only</Badge>
+                 <Badge variant="outline" className="text-sm px-3 py-1 border-primary/30 text-primary">{property.roomType}</Badge>
                  <Badge variant={property.bedsAvailable > 0 ? "default" : "destructive"} className="text-sm px-3 py-1">
                    {property.bedsAvailable > 0 ? `${property.bedsAvailable} Beds Available` : "Waitlist Only"}
                  </Badge>

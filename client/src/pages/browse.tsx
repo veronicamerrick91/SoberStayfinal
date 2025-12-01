@@ -213,6 +213,7 @@ export default function Browse() {
                         
                         <div className="flex flex-wrap gap-1">
                           <Badge variant="secondary" className="bg-secondary/60 text-xs py-0 px-2">{home.gender}</Badge>
+                          <Badge variant="outline" className="border-primary/30 text-primary text-xs py-0 px-2">{home.roomType}</Badge>
                           {home.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary text-xs py-0 px-2">MAT</Badge>}
                         </div>
                       </div>
@@ -270,6 +271,7 @@ export default function Browse() {
 
                           <div className="flex flex-wrap gap-2">
                             <Badge variant="secondary" className="bg-secondary/60">{home.gender}</Badge>
+                            <Badge variant="outline" className="border-primary/30 text-primary text-xs">{home.roomType}</Badge>
                             <Badge variant="outline" className="border-primary/30 text-primary text-xs">{home.supervisionType}</Badge>
                             {home.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary">MAT Friendly</Badge>}
                             <Badge variant="outline" className={home.bedsAvailable > 0 ? "border-green-500/30 text-green-500" : "border-red-500/30 text-red-500"}>
