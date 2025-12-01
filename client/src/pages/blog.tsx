@@ -627,14 +627,13 @@ export function Blog() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {categories.map(category => (
-                  <Button
+                  <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
-                    variant={selectedCategory === category ? "default" : "outline"}
-                    className="w-full justify-start"
+                    className={`w-full px-4 py-2 text-left rounded-md transition-all ${selectedCategory === category ? 'bg-primary text-primary-foreground' : 'bg-transparent text-foreground hover:bg-white/10'}`}
                   >
                     {category}
-                  </Button>
+                  </button>
                 ))}
               </CardContent>
             </Card>
@@ -645,13 +644,12 @@ export function Blog() {
             {selectedPost ? (
               <Card className="bg-card border-border mb-8">
                 <CardContent className="pt-8">
-                  <Button 
+                  <button 
                     onClick={() => setSelectedPost(null)} 
-                    variant="ghost" 
-                    className="mb-4 text-primary hover:text-primary/80"
+                    className="mb-4 px-3 py-2 text-primary hover:text-primary/80 hover:bg-white/5 rounded-md transition-all"
                   >
                     ← Back to Articles
-                  </Button>
+                  </button>
                   <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">{selectedPost.title}</h1>
                   <div className="flex items-center gap-4 mb-6 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
@@ -670,9 +668,9 @@ export function Blog() {
                   </div>
                   <div className="mt-8 pt-8 border-t border-border">
                     <p className="text-sm text-muted-foreground mb-4">Share your recovery journey or ask questions in our community forum.</p>
-                    <Button onClick={handleJoinConversation} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    <button onClick={handleJoinConversation} className="px-6 py-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-medium transition-all">
                       Join the Conversation
-                    </Button>
+                    </button>
                   </div>
                 </CardContent>
               </Card>
@@ -736,7 +734,7 @@ export function Blog() {
                 onKeyPress={(e) => e.key === "Enter" && handleSubscribe()}
                 className="flex-1 px-4 py-2 rounded-lg bg-background/50 border border-white/10 text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
               />
-              <Button onClick={handleSubscribe} className="bg-primary text-primary-foreground hover:bg-primary/90">Subscribe</Button>
+              <button onClick={handleSubscribe} className="px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-medium transition-all">Subscribe</button>
             </div>
             {subscriptionMessage && (
               <p className="text-sm text-green-400">{subscriptionMessage}</p>
