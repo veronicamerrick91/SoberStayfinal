@@ -74,8 +74,8 @@ export function ApplicationDetailsModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-card border-border max-h-96 overflow-y-auto">
+    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
+      <DialogContent className="max-w-2xl bg-card border-border max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center justify-between">
             <span>Application from {application.tenantName}</span>

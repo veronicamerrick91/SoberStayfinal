@@ -782,7 +782,10 @@ export function AdminDashboard() {
         {viewingApplication && (
           <ApplicationDetailsModal
             open={showApplicationModal}
-            onClose={() => setShowApplicationModal(false)}
+            onClose={() => {
+              setShowApplicationModal(false);
+              setViewingApplication(null);
+            }}
             application={viewingApplication}
             onApprove={handleApproveApplication}
             onDeny={handleDenyApplication}
