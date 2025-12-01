@@ -119,7 +119,7 @@ export default function Browse() {
                   <Label className="text-white font-semibold">Features & Support</Label>
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="verified" checked />
+                      <Checkbox id="verified" />
                       <Label htmlFor="verified" className="font-normal text-muted-foreground">Verified Only</Label>
                     </div>
                     <div className="flex items-center space-x-2">
