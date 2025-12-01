@@ -2,7 +2,7 @@ import { Layout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, User } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface BlogPost {
   id: string;
@@ -77,12 +77,31 @@ export function Blog() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [subscribedEmail, setSubscribedEmail] = useState("");
   const [subscriptionMessage, setSubscriptionMessage] = useState("");
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(BLOG_POSTS);
+
+  useEffect(() => {
+    // Load articles from localStorage or save default articles
+    const savedArticles = localStorage.getItem("sober-stay-blog-articles");
+    if (savedArticles) {
+      try {
+        setBlogPosts(JSON.parse(savedArticles));
+      } catch (e) {
+        // If parsing fails, use default articles and save them
+        localStorage.setItem("sober-stay-blog-articles", JSON.stringify(BLOG_POSTS));
+        setBlogPosts(BLOG_POSTS);
+      }
+    } else {
+      // First time - save default articles
+      localStorage.setItem("sober-stay-blog-articles", JSON.stringify(BLOG_POSTS));
+      setBlogPosts(BLOG_POSTS);
+    }
+  }, []);
 
   const categories = ["All", "Recovery Tips", "Education", "Community", "Guidance", "Mental Health", "Stories"];
   
   const filteredPosts = selectedCategory === "All" 
-    ? BLOG_POSTS 
-    : BLOG_POSTS.filter(post => post.category === selectedCategory);
+    ? blogPosts 
+    : blogPosts.filter(post => post.category === selectedCategory);
 
   const handleSubscribe = () => {
     if (subscribedEmail.trim()) {
