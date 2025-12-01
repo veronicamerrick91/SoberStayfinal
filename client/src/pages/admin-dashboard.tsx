@@ -83,6 +83,14 @@ export function AdminDashboard() {
   const [editingCampaign, setEditingCampaign] = useState<any | null>(null);
   const [editingListing, setEditingListing] = useState<any | null>(null);
   const [newBlogTitle, setNewBlogTitle] = useState("");
+  const [newBlogContent, setNewBlogContent] = useState("");
+  const [showNewCampaignModal, setShowNewCampaignModal] = useState(false);
+  const [newCampaignName, setNewCampaignName] = useState("");
+  const [newCampaignRecipients, setNewCampaignRecipients] = useState("All Tenants");
+  const [smsAudience, setSmsAudience] = useState("All Users");
+  const [smsContent, setSmsContent] = useState("");
+  const [showSubscriptionWaiverModal, setShowSubscriptionWaiverModal] = useState(false);
+  const [waivingProvider, setWaivingProvider] = useState("");
 
   useEffect(() => {
     setReports(getReports());
@@ -194,7 +202,17 @@ export function AdminDashboard() {
   };
 
   const handleCreateCampaign = () => {
-    setCampaigns([...campaigns, { name: "New Campaign", status: "Draft", recipients: 0 }]);
+    setShowNewCampaignModal(true);
+    setNewCampaignName("");
+    setNewCampaignRecipients("All Tenants");
+  };
+
+  const handleSaveNewCampaign = () => {
+    if (newCampaignName.trim()) {
+      const recipientCounts: any = { "All Tenants": 520, "All Providers": 145, "Active Subscribers": 312, "Inactive Users": 89 };
+      setCampaigns([...campaigns, { name: newCampaignName, status: "Draft", recipients: recipientCounts[newCampaignRecipients] || 0 }]);
+      setShowNewCampaignModal(false);
+    }
   };
 
   const handleDeleteCampaign = (idx: number) => {
@@ -227,10 +245,13 @@ export function AdminDashboard() {
   };
 
   const handleEditCampaign = (idx: number) => {
-    setEditingCampaign(campaigns[idx]);
+    setEditingCampaign({ ...campaigns[idx], idx });
   };
 
-  const handleSaveCampaign = () => {
+  const handleSaveCampaign = (updates: any) => {
+    if (editingCampaign && editingCampaign.idx !== undefined) {
+      setCampaigns(campaigns.map((c, i) => i === editingCampaign.idx ? { ...c, ...updates } : c));
+    }
     setEditingCampaign(null);
   };
 
@@ -248,6 +269,16 @@ export function AdminDashboard() {
 
   const handleDownloadReport = () => {
     // Report downloaded
+  };
+
+  const handleWaiveSubscription = (providerName: string) => {
+    setWaivingProvider(providerName);
+    setShowSubscriptionWaiverModal(true);
+  };
+
+  const handleConfirmWaiver = () => {
+    setShowSubscriptionWaiverModal(false);
+    setWaivingProvider("");
   };
 
   return (
@@ -931,7 +962,36 @@ export function AdminDashboard() {
             <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Settings className="w-5 h-5" /> Platform Settings
+                  <DollarSign className="w-5 h-5" /> Subscription Waivers
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground mb-4">Grant providers exemption from the $49/month subscription fee for partnerships, promotions, or community benefits.</p>
+                <div className="space-y-2">
+                  {[
+                    { provider: "Recovery First LLC", status: "Active Waiver", reason: "Partnership Agreement", until: "Permanent" },
+                    { provider: "Hope House", status: "No Waiver", reason: "-", until: "-" },
+                  ].map((item, i) => (
+                    <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-white font-medium">{item.provider}</p>
+                        <p className="text-xs text-muted-foreground">{item.reason}</p>
+                      </div>
+                      <div className="text-right">
+                        <Badge className={item.status === "Active Waiver" ? "bg-green-500/80" : "bg-gray-600"}>{item.status}</Badge>
+                        <Button onClick={() => handleWaiveSubscription(item.provider)} size="sm" variant="ghost" className="text-xs mt-2">
+                          {item.status === "Active Waiver" ? "Manage" : "Grant Waiver"}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Settings className="w-5 h-5" /> Safety & Moderation Settings
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -1098,7 +1158,7 @@ export function AdminDashboard() {
                       <p className="text-white text-sm font-medium">{template.name}</p>
                       <p className="text-xs text-muted-foreground">{template.type} • Used {template.uses} times</p>
                     </div>
-                    <Button onClick={() => handleEditCampaign(0)} size="sm" variant="ghost" className="text-xs">Use</Button>
+                    <Button onClick={() => { setNewCampaignName(template.name); setShowNewCampaignModal(true); }} size="sm" variant="ghost" className="text-xs">Use</Button>
                   </div>
                 ))}
               </CardContent>
@@ -1148,10 +1208,29 @@ export function AdminDashboard() {
 
                 <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
                   <p className="text-white font-semibold mb-2">SMS Marketing</p>
-                  <textarea placeholder="SMS message (160 characters max)" maxLength={160} className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm" rows={3} />
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs text-muted-foreground">Select audience: Tenants • Providers • All Users</span>
-                    <Button onClick={handleSendSMS} className="bg-primary text-primary-foreground hover:bg-primary/90">Send SMS</Button>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="text-xs text-muted-foreground">Select Audience</label>
+                      <select value={smsAudience} onChange={(e) => setSmsAudience(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm mt-1">
+                        <option>All Users</option>
+                        <option>All Tenants</option>
+                        <option>All Providers</option>
+                        <option>Active Users</option>
+                        <option>Inactive Users</option>
+                      </select>
+                    </div>
+                    <textarea 
+                      placeholder="SMS message (160 characters max)" 
+                      maxLength={160} 
+                      value={smsContent}
+                      onChange={(e) => setSmsContent(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm" 
+                      rows={3} 
+                    />
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">{smsContent.length}/160 characters</span>
+                      <Button onClick={handleSendSMS} className="bg-primary text-primary-foreground hover:bg-primary/90">Send SMS</Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -1345,18 +1424,27 @@ export function AdminDashboard() {
 
         {showBlogModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
               <h2 className="text-xl font-bold text-white mb-4">Create Blog Post</h2>
               <input 
                 type="text" 
                 placeholder="Blog title" 
                 value={newBlogTitle}
                 onChange={(e) => setNewBlogTitle(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-4"
+                className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-2"
               />
+              <div className="flex gap-1 mb-2 p-2 bg-background/30 rounded-lg">
+                <Button size="sm" variant="ghost" onClick={() => setNewBlogContent(newBlogContent + " **bold** ")} className="text-xs">B</Button>
+                <Button size="sm" variant="ghost" onClick={() => setNewBlogContent(newBlogContent + " *italic* ")} className="text-xs italic">I</Button>
+                <Button size="sm" variant="ghost" onClick={() => setNewBlogContent(newBlogContent + " 😊 ")} className="text-xs">😊</Button>
+                <Button size="sm" variant="ghost" onClick={() => setNewBlogContent(newBlogContent + " 🎉 ")} className="text-xs">🎉</Button>
+                <Button size="sm" variant="ghost" onClick={() => setNewBlogContent(newBlogContent + " ❤️ ")} className="text-xs">❤️</Button>
+              </div>
               <textarea 
-                placeholder="Blog content" 
-                className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-4 h-24"
+                placeholder="Blog content (supports markdown, emojis, and formatting)" 
+                value={newBlogContent}
+                onChange={(e) => setNewBlogContent(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-4 h-32"
               />
               <div className="flex gap-2">
                 <Button onClick={handleSaveBlog} className="flex-1 bg-primary hover:bg-primary/90">Save as Draft</Button>
@@ -1367,24 +1455,74 @@ export function AdminDashboard() {
           </div>
         )}
 
-        {editingCampaign && (
+        {showNewCampaignModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
-              <h2 className="text-xl font-bold text-white mb-4">Edit Campaign</h2>
-              <p className="text-white mb-2">Campaign: {editingCampaign.name}</p>
+              <h2 className="text-xl font-bold text-white mb-4">Create New Campaign</h2>
               <input 
                 type="text" 
                 placeholder="Campaign name" 
-                defaultValue={editingCampaign.name}
-                className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-4"
+                value={newCampaignName}
+                onChange={(e) => setNewCampaignName(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-3"
               />
-              <select className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-4">
-                <option>Active</option>
-                <option>Scheduled</option>
-                <option>Draft</option>
+              <label className="text-xs text-muted-foreground">Recipient Group</label>
+              <select 
+                value={newCampaignRecipients}
+                onChange={(e) => setNewCampaignRecipients(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-4 text-sm"
+              >
+                <option>All Tenants</option>
+                <option>All Providers</option>
+                <option>Active Subscribers</option>
+                <option>Inactive Users</option>
               </select>
               <div className="flex gap-2">
-                <Button onClick={handleSaveCampaign} className="flex-1 bg-primary hover:bg-primary/90">Save</Button>
+                <Button onClick={handleSaveNewCampaign} className="flex-1 bg-primary hover:bg-primary/90">Create</Button>
+                <Button onClick={() => setShowNewCampaignModal(false)} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingCampaign && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4 max-h-96 overflow-y-auto">
+              <h2 className="text-xl font-bold text-white mb-4">Edit Campaign</h2>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-muted-foreground">Campaign Name</label>
+                  <input 
+                    type="text" 
+                    defaultValue={editingCampaign.name}
+                    id="campaign-name"
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Status</label>
+                  <select id="campaign-status" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white" defaultValue={editingCampaign.status}>
+                    <option>Active</option>
+                    <option>Scheduled</option>
+                    <option>Draft</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Recipients: {editingCampaign.recipients}</label>
+                  <select id="campaign-recipients" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mt-1">
+                    <option>All Tenants</option>
+                    <option>All Providers</option>
+                    <option>Active Subscribers</option>
+                    <option>Inactive Users</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Subject/Preview</label>
+                  <input type="text" placeholder="Email subject" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white" />
+                </div>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <Button onClick={() => handleSaveCampaign({ name: (document.getElementById("campaign-name") as HTMLInputElement)?.value, status: (document.getElementById("campaign-status") as HTMLSelectElement)?.value })} className="flex-1 bg-primary hover:bg-primary/90">Save</Button>
                 <Button onClick={() => setEditingCampaign(null)} variant="outline">Cancel</Button>
               </div>
             </div>
@@ -1418,6 +1556,43 @@ export function AdminDashboard() {
               <div className="flex gap-2">
                 <Button onClick={handleCloseListing} className="flex-1 bg-primary hover:bg-primary/90">Apply</Button>
                 <Button onClick={() => setEditingListing(null)} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showSubscriptionWaiverModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
+              <h2 className="text-xl font-bold text-white mb-4">Waive Monthly Subscription</h2>
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mb-4">
+                <p className="text-sm text-amber-200">Admin Action: This provider will be exempt from the $49/month subscription fee.</p>
+              </div>
+              <p className="text-white mb-4">Provider: <span className="font-semibold">{waivingProvider}</span></p>
+              <div className="space-y-2 mb-4">
+                <div>
+                  <label className="text-xs text-muted-foreground">Reason for Waiver</label>
+                  <select className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mt-1">
+                    <option>Partnership Agreement</option>
+                    <option>Promotional Period</option>
+                    <option>Community Benefit</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Duration</label>
+                  <select className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mt-1">
+                    <option>Permanent</option>
+                    <option>1 Month</option>
+                    <option>3 Months</option>
+                    <option>6 Months</option>
+                    <option>1 Year</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleConfirmWaiver} className="flex-1 bg-primary hover:bg-primary/90">Confirm Waiver</Button>
+                <Button onClick={() => setShowSubscriptionWaiverModal(false)} variant="outline">Cancel</Button>
               </div>
             </div>
           </div>
