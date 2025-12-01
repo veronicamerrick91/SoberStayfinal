@@ -202,6 +202,7 @@ export function AdminDashboard() {
             <TabsTrigger value="billing" className="text-xs">Billing</TabsTrigger>
             <TabsTrigger value="analytics" className="text-xs">Analytics</TabsTrigger>
             <TabsTrigger value="support" className="text-xs">Support</TabsTrigger>
+            <TabsTrigger value="marketing" className="text-xs">Marketing</TabsTrigger>
             <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
           </TabsList>
 
@@ -893,6 +894,144 @@ export function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* MARKETING */}
+          <TabsContent value="marketing" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Active Campaigns</p>
+                      <h3 className="text-3xl font-bold text-white">3</h3>
+                    </div>
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Mail className="w-5 h-5 text-primary" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Email Open Rate</p>
+                      <h3 className="text-3xl font-bold text-white">34%</h3>
+                    </div>
+                    <div className="p-2 bg-green-500/10 rounded-lg">
+                      <TrendingUp className="w-5 h-5 text-green-500" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Lead Conversion</p>
+                      <h3 className="text-3xl font-bold text-white">12.5%</h3>
+                    </div>
+                    <div className="p-2 bg-blue-500/10 rounded-lg">
+                      <Users className="w-5 h-5 text-blue-500" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Mail className="w-5 h-5" /> Email Campaigns
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[
+                  { name: "Provider Onboarding Series", status: "Active", recipients: 145, sent: "Dec 1, 2024", opens: "52", clicks: "18" },
+                  { name: "Tenant Recovery Resources", status: "Scheduled", recipients: 320, sent: "Dec 8, 2024", opens: "-", clicks: "-" },
+                  { name: "Featured Listing Promotion", status: "Draft", recipients: 0, sent: "-", opens: "-", clicks: "-" },
+                ].map((campaign, i) => (
+                  <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="text-white font-medium">{campaign.name}</p>
+                        <p className="text-xs text-muted-foreground">{campaign.recipients} recipients</p>
+                      </div>
+                      <Badge className={campaign.status === "Active" ? "bg-green-500/80" : campaign.status === "Scheduled" ? "bg-blue-500/80" : "bg-gray-600"}>{campaign.status}</Badge>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 text-xs">
+                      <div><p className="text-muted-foreground">Sent</p><p className="text-white">{campaign.sent}</p></div>
+                      <div><p className="text-muted-foreground">Opens</p><p className="text-white">{campaign.opens}</p></div>
+                      <div><p className="text-muted-foreground">Clicks</p><p className="text-white">{campaign.clicks}</p></div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
+                        <Button size="sm" variant="ghost" className="text-xs h-7 text-red-500">Delete</Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 mt-4">
+                  <Plus className="w-4 h-4" /> Create Campaign
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Building className="w-5 h-5" /> Featured Listings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-gray-300">Promote provider listings to increase visibility and tenant applications.</p>
+                {[
+                  { provider: "Recovery First LLC", listing: "Downtown Recovery Center", boost: "2x Visibility", spent: "$98" },
+                  { provider: "Hope House", listing: "Supportive Living Home", boost: "3x Visibility", spent: "$147" },
+                ].map((item, i) => (
+                  <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
+                    <div>
+                      <p className="text-white font-medium">{item.provider}</p>
+                      <p className="text-xs text-muted-foreground">{item.listing}</p>
+                      <p className="text-xs text-primary mt-1">{item.boost}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-white font-bold">{item.spent}</p>
+                      <Button size="sm" variant="outline" className="mt-2">Manage</Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Settings className="w-5 h-5" /> Marketing Templates
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[
+                  { name: "Welcome New Providers", type: "Email", uses: 24 },
+                  { name: "Recovery Success Stories", type: "Social Post", uses: 12 },
+                  { name: "Available Listings Alert", type: "SMS", uses: 156 },
+                  { name: "Testimonial Campaign", type: "Email", uses: 8 },
+                ].map((template, i) => (
+                  <div key={i} className="p-3 rounded-lg bg-white/5 flex items-center justify-between">
+                    <div>
+                      <p className="text-white text-sm font-medium">{template.name}</p>
+                      <p className="text-xs text-muted-foreground">{template.type} • Used {template.uses} times</p>
+                    </div>
+                    <Button size="sm" variant="ghost" className="text-xs">Use</Button>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <div className="flex gap-2">
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Save Marketing Plan</Button>
+              <Button variant="outline">Download Report</Button>
+            </div>
           </TabsContent>
         </Tabs>
 
