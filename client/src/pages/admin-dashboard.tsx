@@ -8,7 +8,7 @@ import {
   Users, Building, FileText, Activity, 
   Check, X, Eye, ShieldAlert, BarChart3, AlertTriangle,
   Mail, MessageSquare, Settings, DollarSign, TrendingUp,
-  Search, Download, Flag, Lock, Clock, Upload, Shield
+  Search, Download, Flag, Lock, Clock, Upload, Shield, Plus
 } from "lucide-react";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { getReports, updateReportStatus } from "@/lib/reports";
@@ -1025,6 +1025,205 @@ export function AdminDashboard() {
                     <Button size="sm" variant="ghost" className="text-xs">Use</Button>
                   </div>
                 ))}
+              </CardContent>
+            </Card>
+
+            {/* Email & SMS Marketing */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Mail className="w-5 h-5" /> Email & SMS Marketing
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <p className="text-white font-semibold mb-3">Mass Email Campaign</p>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="text-xs text-muted-foreground">Recipient Group</label>
+                        <select className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm mt-1">
+                          <option>All Tenants</option>
+                          <option>All Providers</option>
+                          <option>Active Subscribers</option>
+                          <option>Inactive Users</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground">Subject</label>
+                        <input type="text" placeholder="Email subject" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm mt-1" />
+                      </div>
+                      <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-2">Send Campaign</Button>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <p className="text-white font-semibold mb-3">Automated Sequences</p>
+                    <div className="space-y-2">
+                      {["New Provider Onboarding (7 emails)", "Tenant Recovery Tips (Weekly)", "Renewal Reminders (30 days before)"].map((seq, i) => (
+                        <div key={i} className="flex items-center justify-between p-2 bg-white/5 rounded">
+                          <span className="text-xs text-gray-300">{seq}</span>
+                          <input type="checkbox" defaultChecked className="w-4 h-4" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                  <p className="text-white font-semibold mb-2">SMS Marketing</p>
+                  <textarea placeholder="SMS message (160 characters max)" maxLength={160} className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm" rows={3} />
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-muted-foreground">Select audience: Tenants • Providers • All Users</span>
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Send SMS</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* SEO Tools */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5" /> SEO & Blog Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { title: "Recovery Tips for New Residents", views: 2400, posts: 12, status: "Published" },
+                    { title: "Understanding Sober Living", views: 1890, posts: 8, status: "Published" },
+                    { title: "Finding the Right Recovery Home", views: 0, posts: 0, status: "Draft" },
+                  ].map((blog, i) => (
+                    <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <p className="text-white font-semibold text-sm">{blog.title}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{blog.posts} articles</p>
+                        </div>
+                        <Badge className={blog.status === "Published" ? "bg-green-500/80" : "bg-gray-600"}>{blog.status}</Badge>
+                      </div>
+                      <div className="text-xs text-gray-300 mb-3">{blog.views.toLocaleString()} views</div>
+                      <div className="space-y-1">
+                        <input type="text" placeholder="Meta description" className="w-full px-2 py-1 rounded text-xs bg-background/50 border border-white/10 text-white" />
+                        <input type="text" placeholder="SEO keywords" className="w-full px-2 py-1 rounded text-xs bg-background/50 border border-white/10 text-white" />
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <Button size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
+                        <Button size="sm" variant="ghost" className="text-xs h-7">Publish</Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
+                  <Plus className="w-4 h-4" /> Create Blog Post
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Promo Codes */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <DollarSign className="w-5 h-5" /> Promo Codes & Discounts
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <p className="text-white font-semibold mb-3">Active Promo Codes</p>
+                    {[
+                      { code: "WELCOME25", discount: "25% off", target: "New Providers", used: "34/100" },
+                      { code: "RECOVERY20", discount: "20% off", target: "Tenants", used: "128/500" },
+                    ].map((promo, i) => (
+                      <div key={i} className="mb-2 p-2 bg-background/50 rounded text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-primary">{promo.code}</span>
+                          <span className="text-gray-300">{promo.used}</span>
+                        </div>
+                        <div className="text-gray-400 text-xs mt-1">{promo.discount} • {promo.target}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <p className="text-white font-semibold mb-3">Create Promo Code</p>
+                    <div className="space-y-2">
+                      <input type="text" placeholder="Code (e.g., SUMMER30)" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm" />
+                      <select className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm">
+                        <option>10% off subscription</option>
+                        <option>25% off subscription</option>
+                        <option>Free featured listing</option>
+                        <option>Free 3x visibility boost</option>
+                      </select>
+                      <input type="number" placeholder="Limit (0 = unlimited)" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm" />
+                      <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">Create Code</Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Ad Management */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" /> Ad Management & Featured Placements
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <p className="text-white font-semibold mb-3">Featured Home Placements</p>
+                    <div className="space-y-2">
+                      {[
+                        { home: "Downtown Recovery Center", duration: "30 days", cost: "$199", status: "Active" },
+                        { home: "Supportive Living Homes", duration: "7 days", cost: "$49", status: "Expiring Soon" },
+                      ].map((ad, i) => (
+                        <div key={i} className="p-2 bg-background/50 rounded-lg text-xs border border-white/10">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-white font-medium">{ad.home}</span>
+                            <Badge className={ad.status === "Active" ? "bg-green-500/80" : "bg-amber-500/80"}>{ad.status}</Badge>
+                          </div>
+                          <div className="text-gray-400">{ad.duration} • {ad.cost}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <p className="text-white font-semibold mb-3">Sponsored Listings</p>
+                    <div className="space-y-2">
+                      {[
+                        { boost: "2x Visibility", price: "$49/week", impressions: "~5,000" },
+                        { boost: "3x Visibility", price: "$99/week", impressions: "~12,000" },
+                        { boost: "Top Placement", price: "$149/week", impressions: "~20,000+" },
+                      ].map((spot, i) => (
+                        <div key={i} className="p-2 bg-background/50 rounded-lg text-xs border border-white/10">
+                          <div className="flex items-center justify-between">
+                            <span className="text-white font-medium">{spot.boost}</span>
+                            <span className="text-primary">{spot.price}</span>
+                          </div>
+                          <div className="text-gray-400 text-xs mt-1">{spot.impressions} estimated impressions</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                  <p className="text-white font-semibold mb-2">Launch New Ad Campaign</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <select className="px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm">
+                      <option>Select Ad Type</option>
+                      <option>Featured Listing</option>
+                      <option>Sponsored Placement</option>
+                      <option>Promoted Home</option>
+                    </select>
+                    <input type="number" placeholder="Budget ($)" className="px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm" />
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 h-10">Launch</Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
