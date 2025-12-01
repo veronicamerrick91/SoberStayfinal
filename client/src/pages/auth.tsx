@@ -11,16 +11,17 @@ import { saveAuth } from "@/lib/auth";
 
 interface AuthPageProps {
   type: "login" | "signup";
-  defaultRole?: "tenant" | "provider";
+  defaultRole?: "tenant" | "provider" | "admin";
 }
 
 export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [location, setLocation] = useLocation();
-  const [role, setRole] = useState<"tenant" | "provider">(defaultRole);
+  const [role, setRole] = useState<"tenant" | "provider" | "admin">(defaultRole as any);
   const [email, setEmail] = useState("");
 
   const getReturnPath = () => {
     const params = new URLSearchParams(window.location.search);
+    if (role === "admin") return "/admin-dashboard";
     return params.get("returnPath") || (role === "tenant" ? "/tenant-dashboard" : "/provider-dashboard");
   };
 
@@ -31,7 +32,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
       id: Math.random().toString(36).substr(2, 9),
       email: email || "user@example.com",
       role: role,
-      name: role === "tenant" ? "Applicant" : "Provider"
+      name: role === "tenant" ? "Applicant" : role === "provider" ? "Provider" : "Administrator"
     });
     // Redirect to return path or dashboard
     setLocation(getReturnPath());
@@ -56,9 +57,10 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue={role} onValueChange={(v) => setRole(v as any)} className="w-full mb-6">
-              <TabsList className="grid w-full grid-cols-2 bg-background/50">
+              <TabsList className="grid w-full grid-cols-3 bg-background/50">
                 <TabsTrigger value="tenant">I'm a Tenant</TabsTrigger>
                 <TabsTrigger value="provider">I'm a Provider</TabsTrigger>
+                <TabsTrigger value="admin" className="text-xs">Admin</TabsTrigger>
               </TabsList>
             </Tabs>
 
