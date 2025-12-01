@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  MapPin, ShieldCheck, Check, ArrowLeft, Share2, Heart, 
+  MapPin, ShieldCheck, Check, ArrowLeft, Share2, Heart, Flag,
   Wifi, Car, Utensils, Tv, Dumbbell, Calendar,
   Info, Mail, Phone, MessageSquare, Bus, ShoppingCart, Stethoscope, Users
 } from "lucide-react";
@@ -12,6 +12,7 @@ import { useRoute, Link, useLocation } from "wouter";
 import { isAuthenticated } from "@/lib/auth";
 import { useState, useEffect } from "react";
 import { isFavorite, toggleFavorite } from "@/lib/favorites";
+import { ReportModal } from "@/components/report-modal";
 import {
   Tooltip,
   TooltipContent,
@@ -24,6 +25,7 @@ export default function PropertyDetails() {
   const [match, params] = useRoute("/property/:id");
   const [location, setLocation] = useLocation();
   const [isFav, setIsFav] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const property = MOCK_PROPERTIES.find(p => p.id === params?.id);
 
   useEffect(() => {
@@ -102,6 +104,9 @@ export default function PropertyDetails() {
                  </Button>
                  <Button onClick={handleFavorite} size="icon" variant="secondary" className={`rounded-full backdrop-blur ${isFav ? "bg-primary/90 hover:bg-primary text-white" : "bg-black/50 hover:bg-black/70 text-white"}`}>
                    <Heart className={`w-4 h-4 ${isFav ? "fill-current" : ""}`} />
+                 </Button>
+                 <Button onClick={() => setShowReportModal(true)} size="icon" variant="secondary" className="rounded-full bg-black/50 hover:bg-red-600 text-white backdrop-blur" title="Report this listing">
+                   <Flag className="w-4 h-4" />
                  </Button>
               </div>
             </div>
@@ -313,6 +318,14 @@ export default function PropertyDetails() {
             </div>
           </div>
         </div>
+
+        <ReportModal 
+          open={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          propertyId={property?.id || ""}
+          propertyName={property?.name || ""}
+          userName={isAuthenticated() ? "Current User" : "Anonymous"}
+        />
       </div>
     </Layout>
   );

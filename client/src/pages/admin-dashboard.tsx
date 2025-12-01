@@ -11,10 +11,16 @@ import {
   Search, Download, Flag, Lock, Clock
 } from "lucide-react";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
-import { useState } from "react";
+import { getReports, updateReportStatus } from "@/lib/reports";
+import { useState, useEffect } from "react";
 
 export function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [reports, setReports] = useState<any[]>([]);
+
+  useEffect(() => {
+    setReports(getReports());
+  }, []);
 
   return (
     <Layout>
@@ -32,12 +38,13 @@ export function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="bg-card border border-border p-1 grid w-full grid-cols-6 lg:grid-cols-10 gap-1">
+          <TabsList className="bg-card border border-border p-1 grid w-full grid-cols-7 lg:grid-cols-11 gap-1">
             <TabsTrigger value="overview" className="text-xs">Dashboard</TabsTrigger>
             <TabsTrigger value="users" className="text-xs">Users</TabsTrigger>
             <TabsTrigger value="listings" className="text-xs">Listings</TabsTrigger>
             <TabsTrigger value="applications" className="text-xs">Apps</TabsTrigger>
             <TabsTrigger value="messaging" className="text-xs">Messages</TabsTrigger>
+            <TabsTrigger value="reports" className="text-xs">Reports ({reports.length})</TabsTrigger>
             <TabsTrigger value="compliance" className="text-xs">Safety</TabsTrigger>
             <TabsTrigger value="billing" className="text-xs">Billing</TabsTrigger>
             <TabsTrigger value="analytics" className="text-xs">Analytics</TabsTrigger>
@@ -305,6 +312,91 @@ export function AdminDashboard() {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* LISTING REPORTS */}
+          <TabsContent value="reports" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Flag className="w-5 h-5" /> Listing Reports ({reports.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {reports.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Flag className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                    <p>No reports yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {reports.map((report) => (
+                      <div key={report.id} className={`p-4 rounded-lg border ${
+                        report.status === "New" ? "bg-red-500/10 border-red-500/20" :
+                        report.status === "Investigating" ? "bg-amber-500/10 border-amber-500/20" :
+                        "bg-green-500/10 border-green-500/20"
+                      }`}>
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <p className="text-white font-bold">{report.propertyName}</p>
+                            <p className="text-sm text-muted-foreground">Reported by: {report.userName}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{new Date(report.createdAt).toLocaleString()}</p>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <Badge className={
+                              report.category === "Safety" ? "bg-red-500/80" :
+                              report.category === "Scam" ? "bg-orange-500/80" :
+                              report.category === "Inappropriate Content" ? "bg-purple-500/80" :
+                              report.category === "Contact Issues" ? "bg-blue-500/80" :
+                              "bg-gray-500/80"
+                            }>{report.category}</Badge>
+                            <Badge className={
+                              report.status === "New" ? "bg-red-500/80" :
+                              report.status === "Investigating" ? "bg-amber-500/80" :
+                              "bg-green-500/80"
+                            }>{report.status}</Badge>
+                          </div>
+                        </div>
+                        <div className="bg-black/20 p-3 rounded mb-3 max-h-24 overflow-y-auto">
+                          <p className="text-sm text-gray-300">{report.description}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          {report.status === "New" && (
+                            <>
+                              <Button size="sm" className="bg-amber-500/20 text-amber-500 hover:bg-amber-500/30 h-8 text-xs" 
+                                onClick={() => {
+                                  updateReportStatus(report.id, "Investigating");
+                                  setReports(getReports());
+                                }}>
+                                Investigate
+                              </Button>
+                              <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10 h-8 text-xs">
+                                Dismiss
+                              </Button>
+                            </>
+                          )}
+                          {report.status === "Investigating" && (
+                            <>
+                              <Button size="sm" className="bg-green-500/20 text-green-500 hover:bg-green-500/30 h-8 text-xs"
+                                onClick={() => {
+                                  updateReportStatus(report.id, "Resolved");
+                                  setReports(getReports());
+                                }}>
+                                Resolve
+                              </Button>
+                              <Button size="sm" variant="outline" className="border-primary/20 h-8 text-xs">Contact Provider</Button>
+                            </>
+                          )}
+                          {report.status === "Resolved" && (
+                            <span className="text-xs text-green-500 font-medium">✓ Marked as Resolved</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
