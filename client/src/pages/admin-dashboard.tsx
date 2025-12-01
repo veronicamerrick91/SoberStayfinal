@@ -378,12 +378,7 @@ export function AdminDashboard() {
                   <CardTitle className="text-white">Recent Activity</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {[
-                    { action: "Provider Verified", user: "Recovery First LLC", time: "10 mins ago" },
-                    { action: "Application Approved", user: "John Smith → Serenity House", time: "1 hour ago" },
-                    { action: "Listing Published", user: "New Beginnings Cottage", time: "3 hours ago" },
-                    { action: "Support Ticket Resolved", user: "#2341", time: "5 hours ago" },
-                  ].map((item, i) => (
+                  {[].map((item, i) => (
                     <div key={i} className="flex items-center justify-between text-sm border-b border-border/50 pb-3 last:border-0">
                       <div>
                         <p className="text-white font-medium">{item.action}</p>
@@ -763,11 +758,7 @@ export function AdminDashboard() {
                       </CardContent>
                     </Card>
                   </div>
-                  {[
-                    { property: "Serenity House", issue: "Expired Fire Inspection", dueDate: "Jan 15, 2025", severity: "high" },
-                    { property: "New Beginnings", issue: "Insurance Certificate Needed", dueDate: "Feb 1, 2025", severity: "high" },
-                    { property: "The Harbor", issue: "Background Check Update", dueDate: "March 1, 2025", severity: "medium" },
-                  ].map((item, i) => (
+                  {[].map((item, i) => (
                     <div key={i} className={`p-4 rounded-lg border ${item.severity === "high" ? "bg-red-500/10 border-red-500/20" : "bg-amber-500/10 border-amber-500/20"}`}>
                       <div className="flex items-center justify-between">
                         <div>
@@ -813,11 +804,7 @@ export function AdminDashboard() {
                   </Card>
                 </div>
                 <div className="space-y-3">
-                  {[
-                    { provider: "Recovery First LLC", plan: "$49/month × 3 listings", status: "Active", nextBilling: "Jan 15, 2025" },
-                    { provider: "Hope House", plan: "$49/month × 1 listing", status: "Overdue", nextBilling: "Dec 28, 2024" },
-                    { provider: "Serenity Homes", plan: "$49/month × 2 listings", status: "Active", nextBilling: "Jan 10, 2025" },
-                  ].map((sub, i) => (
+                  {[].map((sub, i) => (
                     <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border/50">
                       <div>
                         <p className="text-white font-medium text-sm">{sub.provider}</p>
@@ -868,11 +855,7 @@ export function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {[
-                    { name: "Serenity House", views: 1240, applications: 45, conversionRate: "3.6%" },
-                    { name: "New Beginnings Cottage", views: 980, applications: 32, conversionRate: "3.3%" },
-                    { name: "The Harbor", views: 742, applications: 28, conversionRate: "3.8%" },
-                  ].map((listing, i) => (
+                  {[].map((listing, i) => (
                     <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-border/50">
                       <div>
                         <p className="text-white text-sm font-medium">{listing.name}</p>
