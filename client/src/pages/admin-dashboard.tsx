@@ -12,15 +12,52 @@ import {
 } from "lucide-react";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { getReports, updateReportStatus } from "@/lib/reports";
+import { UserEditModal } from "@/components/user-edit-modal";
 import { useState, useEffect } from "react";
+
+interface User {
+  id: string;
+  name: string;
+  role: "Tenant" | "Provider";
+  email: string;
+  phone?: string;
+  status: "Active" | "Suspended" | "Pending";
+  verified: boolean;
+}
 
 export function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [reports, setReports] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([
+    { id: "1", name: "Sarah Connor", role: "Tenant", email: "sarah@example.com", phone: "+1 (512) 555-0001", status: "Active", verified: true },
+    { id: "2", name: "Recovery First LLC", role: "Provider", email: "recovery@example.com", phone: "+1 (512) 555-0002", status: "Active", verified: true },
+    { id: "3", name: "John Doe", role: "Tenant", email: "john@example.com", phone: "+1 (512) 555-0003", status: "Suspended", verified: false },
+    { id: "4", name: "Hope House", role: "Provider", email: "hopehouse@example.com", phone: "+1 (512) 555-0004", status: "Pending", verified: false },
+  ]);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     setReports(getReports());
   }, []);
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setShowEditModal(true);
+  };
+
+  const handleSaveUser = (updatedUser: User) => {
+    setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
+    setShowEditModal(false);
+  };
+
+  const handleSuspendUser = (userId: string) => {
+    setUsers(users.map(u => 
+      u.id === userId 
+        ? { ...u, status: u.status === "Suspended" ? "Active" : "Suspended" }
+        : u
+    ));
+  };
 
   return (
     <Layout>
@@ -170,7 +207,7 @@ export function AdminDashboard() {
             <Card className="bg-card border-border">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-white">User Management</CardTitle>
+                  <CardTitle className="text-white">User Management ({users.length})</CardTitle>
                   <div className="flex gap-2">
                     <Input placeholder="Search users..." className="bg-background/50 border-white/10 w-64" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                     <Button size="sm" variant="outline">Filter</Button>
@@ -179,13 +216,11 @@ export function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[
-                    { name: "Sarah Connor", role: "Tenant", email: "sarah@example.com", status: "Active", verified: true },
-                    { name: "Recovery First LLC", role: "Provider", email: "recovery@example.com", status: "Active", verified: true },
-                    { name: "John Doe", role: "Tenant", email: "john@example.com", status: "Suspended", verified: false },
-                    { name: "Hope House", role: "Provider", email: "hopehouse@example.com", status: "Pending", verified: false },
-                  ].map((user, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border/50 hover:border-primary/30 transition-colors">
+                  {users.filter(user => 
+                    user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+                  ).map((user) => (
+                    <div key={user.id} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border/50 hover:border-primary/30 transition-colors">
                       <div className="flex-1">
                         <p className="text-white font-medium">{user.name}</p>
                         <p className="text-xs text-muted-foreground">{user.email}</p>
@@ -194,8 +229,15 @@ export function AdminDashboard() {
                         <Badge variant={user.role === "Provider" ? "default" : "secondary"}>{user.role}</Badge>
                         <Badge variant={user.status === "Active" ? "default" : "outline"} className={user.status === "Active" ? "bg-green-500/80" : user.status === "Suspended" ? "bg-red-500/80" : "bg-amber-500/80"}>{user.status}</Badge>
                         <div className="flex gap-2">
-                          <Button size="sm" variant="ghost" className="h-8 text-primary hover:bg-primary/10">Edit</Button>
-                          <Button size="sm" variant="ghost" className="h-8 text-red-500 hover:bg-red-500/10">Suspend</Button>
+                          <Button size="sm" variant="ghost" className="h-8 text-primary hover:bg-primary/10" onClick={() => handleEditUser(user)}>Edit</Button>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className={`h-8 ${user.status === "Suspended" ? "text-green-500 hover:bg-green-500/10" : "text-red-500 hover:bg-red-500/10"}`}
+                            onClick={() => handleSuspendUser(user.id)}
+                          >
+                            {user.status === "Suspended" ? "Unsuspend" : "Suspend"}
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -643,6 +685,15 @@ export function AdminDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {editingUser && (
+          <UserEditModal
+            open={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            user={editingUser}
+            onSave={handleSaveUser}
+          />
+        )}
       </div>
     </Layout>
   );
