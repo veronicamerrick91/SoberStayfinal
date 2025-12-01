@@ -75,12 +75,27 @@ const BLOG_POSTS: BlogPost[] = [
 export function Blog() {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [subscribedEmail, setSubscribedEmail] = useState("");
+  const [subscriptionMessage, setSubscriptionMessage] = useState("");
 
   const categories = ["All", "Recovery Tips", "Education", "Community", "Guidance", "Mental Health", "Stories"];
   
   const filteredPosts = selectedCategory === "All" 
     ? BLOG_POSTS 
     : BLOG_POSTS.filter(post => post.category === selectedCategory);
+
+  const handleSubscribe = () => {
+    if (subscribedEmail.trim()) {
+      setSubscriptionMessage(`✓ Subscribed! Check ${subscribedEmail} for updates.`);
+      setSubscribedEmail("");
+      setTimeout(() => setSubscriptionMessage(""), 4000);
+    }
+  };
+
+  const handleJoinConversation = () => {
+    // In a real app, this would navigate to a forum or open a modal
+    window.location.href = "/help-center";
+  };
 
   return (
     <Layout>
@@ -146,7 +161,7 @@ export function Blog() {
                   </div>
                   <div className="mt-8 pt-8 border-t border-border">
                     <p className="text-sm text-muted-foreground mb-4">Share your recovery journey or ask questions in our community forum.</p>
-                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Button onClick={handleJoinConversation} className="bg-primary text-primary-foreground hover:bg-primary/90">
                       Join the Conversation
                     </Button>
                   </div>
@@ -186,13 +201,21 @@ export function Blog() {
         <div className="container mx-auto px-4 max-w-2xl text-center">
           <h2 className="text-2xl font-bold text-white mb-2">Stay Updated</h2>
           <p className="text-muted-foreground mb-6">Subscribe to our newsletter for recovery tips, success stories, and community updates.</p>
-          <div className="flex gap-2">
-            <input 
-              type="email" 
-              placeholder="Enter your email" 
-              className="flex-1 px-4 py-2 rounded-lg bg-background/50 border border-white/10 text-white placeholder:text-muted-foreground"
-            />
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Subscribe</Button>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input 
+                type="email" 
+                placeholder="Enter your email" 
+                value={subscribedEmail}
+                onChange={(e) => setSubscribedEmail(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleSubscribe()}
+                className="flex-1 px-4 py-2 rounded-lg bg-background/50 border border-white/10 text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+              />
+              <Button onClick={handleSubscribe} className="bg-primary text-primary-foreground hover:bg-primary/90">Subscribe</Button>
+            </div>
+            {subscriptionMessage && (
+              <p className="text-sm text-green-400">{subscriptionMessage}</p>
+            )}
           </div>
         </div>
       </div>
