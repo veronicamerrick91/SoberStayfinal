@@ -23,6 +23,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 export default function Browse() {
   const [priceRange, setPriceRange] = useState([500]);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   
   return (
     <Layout>
@@ -156,81 +157,142 @@ export default function Browse() {
               Showing <span className="text-foreground font-bold">{MOCK_PROPERTIES.length}</span> homes
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="icon" className="h-8 w-8 bg-primary/10 border-primary/20 text-primary">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={() => setViewMode("grid")}
+                className={`h-8 w-8 ${viewMode === "grid" ? "bg-primary/10 border-primary/20 text-primary" : ""}`}
+              >
                 <LayoutGrid className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={() => setViewMode("list")}
+                className={`h-8 w-8 ${viewMode === "list" ? "bg-primary/10 border-primary/20 text-primary" : ""}`}
+              >
                 <List className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {MOCK_PROPERTIES.map((home) => (
-              <Link key={home.id} href={`/property/${home.id}`}>
-                <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] cursor-pointer h-full flex flex-col">
-                  <div className="relative h-56 overflow-hidden shrink-0">
-                    <img 
-                      src={home.image} 
-                      alt={home.name} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
-                    
-                    <div className="absolute top-3 left-3 flex flex-col gap-2">
-                      {home.isVerified && (
-                        <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md bg-opacity-90">
-                          <ShieldCheck className="w-3 h-3" /> Verified
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end">
-                      <div className="text-2xl font-bold text-white drop-shadow-md">
-                        ${home.price}<span className="text-sm font-normal text-gray-200">/{home.pricePeriod}</span>
-                      </div>
-                      <Badge variant="secondary" className="bg-black/50 backdrop-blur text-xs">
-                         {home.supervisionType}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <CardContent className="p-5 space-y-4 flex-1 flex flex-col">
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start mb-1">
-                        <h3 className="font-bold text-xl text-white line-clamp-1 group-hover:text-primary transition-colors">{home.name}</h3>
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground mb-3">
-                        <MapPin className="w-3 h-3 mr-1 text-primary" />
-                        {home.address}, {home.city}, {home.state}
+          {viewMode === "grid" && <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+              {MOCK_PROPERTIES.map((home) => (
+                <Link key={home.id} href={`/property/${home.id}`}>
+                  <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] cursor-pointer h-full flex flex-col">
+                    <div className="relative h-40 overflow-hidden shrink-0">
+                      <img 
+                        src={home.image} 
+                        alt={home.name} 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
+                      
+                      <div className="absolute top-2 left-2">
+                        {home.isVerified && (
+                          <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md bg-opacity-90 text-xs">
+                            <ShieldCheck className="w-3 h-3" /> Verified
+                          </Badge>
+                        )}
                       </div>
                       
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                        {home.description}
-                      </p>
-
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="secondary" className="bg-secondary/60 hover:bg-secondary">{home.gender}</Badge>
-                        {home.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary">MAT</Badge>}
-                        <Badge variant="outline" className={home.bedsAvailable > 0 ? "border-green-500/30 text-green-500" : "border-red-500/30 text-red-500"}>
-                          {home.bedsAvailable > 0 ? `${home.bedsAvailable} Beds` : "Waitlist"}
-                        </Badge>
+                      <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end">
+                        <div className="text-lg font-bold text-white drop-shadow-md">
+                          ${home.price}<span className="text-xs font-normal text-gray-200">/{home.pricePeriod}</span>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className="pt-4 border-t border-border/50 flex gap-2 mt-auto">
-                      <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
-                        Details
-                      </Button>
-                      <Button variant="outline" className="border-primary/20 text-primary hover:bg-primary/10">
-                        Apply
-                      </Button>
+
+                    <CardContent className="p-3 space-y-2 flex-1 flex flex-col">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-sm text-white line-clamp-1 group-hover:text-primary transition-colors">{home.name}</h3>
+                        <div className="flex items-center text-xs text-muted-foreground mb-2">
+                          <MapPin className="w-3 h-3 mr-1 text-primary" />
+                          {home.city}, {home.state}
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-1">
+                          <Badge variant="secondary" className="bg-secondary/60 text-xs py-0 px-2">{home.gender}</Badge>
+                          {home.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary text-xs py-0 px-2">MAT</Badge>}
+                        </div>
+                      </div>
+                      
+                      <div className="pt-2 border-t border-border/50 flex gap-1 mt-auto">
+                        <Button size="sm" className="flex-1 h-7 bg-primary text-primary-foreground hover:bg-primary/90 text-xs">
+                          Details
+                        </Button>
+                        <Button size="sm" variant="outline" className="flex-1 h-7 border-primary/20 text-primary hover:bg-primary/10 text-xs">
+                          Apply
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>}
+
+          {viewMode === "list" && (
+            <div className="space-y-3">
+              {MOCK_PROPERTIES.map((home) => (
+                <Link key={home.id} href={`/property/${home.id}`}>
+                  <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] cursor-pointer">
+                    <div className="flex gap-4 p-4">
+                      <div className="relative w-32 h-32 shrink-0 overflow-hidden rounded-lg">
+                        <img 
+                          src={home.image} 
+                          alt={home.name} 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        {home.isVerified && (
+                          <Badge className="absolute top-2 left-2 bg-primary text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md bg-opacity-90 text-xs">
+                            <ShieldCheck className="w-3 h-3" /> Verified
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-start gap-4 mb-2">
+                            <h3 className="font-bold text-lg text-white group-hover:text-primary transition-colors line-clamp-1">{home.name}</h3>
+                            <div className="text-xl font-bold text-primary shrink-0">
+                              ${home.price}<span className="text-sm font-normal text-gray-300">/{home.pricePeriod}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center text-sm text-muted-foreground mb-3">
+                            <MapPin className="w-4 h-4 mr-2 text-primary" />
+                            {home.address}, {home.city}, {home.state}
+                          </div>
+                          
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                            {home.description}
+                          </p>
+
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="secondary" className="bg-secondary/60">{home.gender}</Badge>
+                            <Badge variant="outline" className="border-primary/30 text-primary text-xs">{home.supervisionType}</Badge>
+                            {home.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary">MAT Friendly</Badge>}
+                            <Badge variant="outline" className={home.bedsAvailable > 0 ? "border-green-500/30 text-green-500" : "border-red-500/30 text-red-500"}>
+                              {home.bedsAvailable > 0 ? `${home.bedsAvailable} Beds Open` : "Waitlist"}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div className="pt-3 border-t border-border/50 flex gap-2 mt-auto">
+                          <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
+                            View Details
+                          </Button>
+                          <Button variant="outline" className="border-primary/20 text-primary hover:bg-primary/10">
+                            Apply
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </Layout>
