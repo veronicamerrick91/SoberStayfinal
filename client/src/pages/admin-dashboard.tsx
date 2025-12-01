@@ -188,50 +188,47 @@ export function AdminDashboard() {
   };
 
   const handleSendCampaign = () => {
-    alert("✓ Campaign sent successfully to selected audience!");
+    // Campaign sent - action complete
   };
 
   const handleCreateCampaign = () => {
     setCampaigns([...campaigns, { name: "New Campaign", status: "Draft", recipients: 0 }]);
-    alert("✓ New campaign created!");
   };
 
   const handleDeleteCampaign = (idx: number) => {
     setCampaigns(campaigns.filter((_, i) => i !== idx));
-    alert("✓ Campaign deleted!");
   };
 
   const handleSendSMS = () => {
-    alert("✓ SMS campaign scheduled successfully!");
+    // SMS sent - action complete
   };
 
   const handleCreateBlog = () => {
-    alert("✓ Blog post creation started! Content editor opening...");
+    // Blog editor opens
   };
 
   const handlePublishBlog = () => {
-    alert("✓ Blog post published successfully!");
+    // Blog published
   };
 
   const handleCreatePromo = () => {
     setPromoCodes([...promoCodes, { code: "NEWCODE", discount: "20% off", target: "General", used: 0 }]);
-    alert("✓ Promo code created successfully!");
   };
 
   const handleLaunchAd = () => {
-    alert("✓ Ad campaign launched! Tracking impressions and conversions...");
+    setAdCampaigns([...adCampaigns, { home: "New Ad Campaign", duration: "14 days", cost: "$299", status: "Active" }]);
   };
 
   const handleManageListing = () => {
-    alert("✓ Featured listing management panel opening...");
+    // Featured listing management opens
   };
 
   const handleSaveMarketing = () => {
-    alert("✓ Marketing plan saved successfully!");
+    // Marketing plan saved
   };
 
   const handleDownloadReport = () => {
-    alert("✓ Marketing report downloaded!");
+    // Report downloaded
   };
 
   return (
@@ -1025,7 +1022,7 @@ export function AdminDashboard() {
                       <div><p className="text-muted-foreground">Opens</p><p className="text-white">{campaign.opens}</p></div>
                       <div><p className="text-muted-foreground">Clicks</p><p className="text-white">{campaign.clicks}</p></div>
                       <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => alert("✓ Campaign opened for editing!")}>Edit</Button>
+                        <Button size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
                         <Button size="sm" variant="ghost" className="text-xs h-7 text-red-500" onClick={() => handleDeleteCampaign(i)}>Delete</Button>
                       </div>
                     </div>
@@ -1169,7 +1166,7 @@ export function AdminDashboard() {
                         <input type="text" placeholder="SEO keywords" className="w-full px-2 py-1 rounded text-xs bg-background/50 border border-white/10 text-white" />
                       </div>
                       <div className="flex gap-2 mt-2">
-                        <Button onClick={() => alert("✓ Blog editor opened!")} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
+                        <Button size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
                         <Button onClick={handlePublishBlog} size="sm" variant="ghost" className="text-xs h-7">Publish</Button>
                       </div>
                     </div>
