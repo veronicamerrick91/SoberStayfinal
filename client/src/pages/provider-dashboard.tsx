@@ -120,16 +120,16 @@ export function ProviderDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="bg-card border border-border p-1 grid w-full grid-cols-9 gap-1">
-            <TabsTrigger value="overview" className="px-3 py-2 text-sm">Overview</TabsTrigger>
-            <TabsTrigger value="properties" className="px-3 py-2 text-sm">Properties</TabsTrigger>
-            <TabsTrigger value="messages" className="px-3 py-2 text-sm">Messages</TabsTrigger>
-            <TabsTrigger value="inbox" className="px-3 py-2 text-sm">Applications</TabsTrigger>
-            <TabsTrigger value="beds" className="gap-1 px-3 py-2 text-sm"><Bed className="w-4 h-4" /> Beds</TabsTrigger>
-            <TabsTrigger value="marketing" className="gap-1 px-3 py-2 text-sm"><Zap className="w-4 h-4" /> Marketing</TabsTrigger>
-            <TabsTrigger value="files" className="gap-1 px-3 py-2 text-sm"><FileArchive className="w-4 h-4" /> Files</TabsTrigger>
-            <TabsTrigger value="verification" className="gap-1 px-3 py-2 text-sm"><Shield className="w-4 h-4" /> Verify</TabsTrigger>
-            <TabsTrigger value="settings" className="gap-1 px-3 py-2 text-sm"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
+          <TabsList className="bg-gradient-to-r from-card via-card to-card border border-border/50 p-2 flex flex-wrap gap-2 h-auto justify-start rounded-lg shadow-sm">
+            <TabsTrigger value="overview" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Overview</TabsTrigger>
+            <TabsTrigger value="properties" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Properties</TabsTrigger>
+            <TabsTrigger value="messages" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Messages</TabsTrigger>
+            <TabsTrigger value="inbox" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Applications</TabsTrigger>
+            <TabsTrigger value="beds" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Bed className="w-4 h-4" /> Beds</TabsTrigger>
+            <TabsTrigger value="marketing" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Zap className="w-4 h-4" /> Marketing</TabsTrigger>
+            <TabsTrigger value="files" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><FileArchive className="w-4 h-4" /> Files</TabsTrigger>
+            <TabsTrigger value="verification" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Shield className="w-4 h-4" /> Verify</TabsTrigger>
+            <TabsTrigger value="settings" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
           </TabsList>
 
           {/* OVERVIEW */}

@@ -165,12 +165,12 @@ export function TenantDashboard() {
           </div>
 
           <Tabs defaultValue="messages" className="space-y-6">
-            <TabsList className="bg-card border border-border p-1 w-full justify-start">
-              <TabsTrigger value="messages" className="gap-2">
+            <TabsList className="bg-gradient-to-r from-card via-card to-card border border-border/50 p-2 flex flex-wrap gap-2 h-auto justify-start rounded-lg shadow-sm">
+              <TabsTrigger value="messages" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
                 <MessageSquare className="w-4 h-4" />
                 Messages {conversations.length > 0 && <Badge className="bg-primary text-white ml-1">{conversations.length}</Badge>}
               </TabsTrigger>
-              <TabsTrigger value="saved" className="gap-2">
+              <TabsTrigger value="saved" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
                 <Heart className="w-4 h-4" />
                 Saved Homes {savedHomes.length > 0 && <Badge className="bg-primary text-white ml-1">{savedHomes.length}</Badge>}
               </TabsTrigger>
