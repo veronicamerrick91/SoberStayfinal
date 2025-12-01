@@ -1504,13 +1504,13 @@ export function AdminDashboard() {
                 <div>
                   <label className="text-xs font-semibold text-muted-foreground mb-2 block">Email Content</label>
                   <textarea 
-                    placeholder="Write your email content here. You can use HTML or plain text. Variables: {{name}}, {{email}}, {{role}}, {{property}}" 
+                    placeholder="Write your email content here. You can use HTML or plain text. Variables: [name], [email], [role], [property]" 
                     value={newWorkflowBody}
                     onChange={(e) => setNewWorkflowBody(e.target.value)}
                     className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm font-mono"
                     rows={6}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Use {{variable}} syntax to personalize emails. Supports HTML formatting.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Use [variable] syntax to personalize emails. Supports HTML formatting.</p>
                 </div>
 
                 <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
