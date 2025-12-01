@@ -1,0 +1,258 @@
+🧭 1. Dashboard Home
+
+A clear overview of everything happening on your platform.
+	•	Total tenants, providers, and active listings
+	•	Applications submitted, pending, approved, rejected
+	•	Daily/weekly/monthly traffic analytics
+	•	Message & call volume
+	•	Platform revenue (if subscription or listing fees)
+	•	Compliance alerts
+	•	Suspicious activity notifications
+	•	Quick actions: Approve listing • View applications • Moderate messages
+
+⸻
+
+🏡 2. Provider & Listing Management
+
+Everything you need to oversee every sober living home.
+
+Provider Accounts
+	•	Approve / deny provider registrations
+	•	Verify business license, ID, and ownership documents
+	•	Edit or disable provider accounts
+	•	See provider activity logs
+
+Listings
+	•	Approve / decline listings before they go live
+	•	Moderate listing details (photos, pricing, amenities)
+	•	Flag or unpublish unsafe listings
+	•	Track bed availability updates in real-time
+	•	Provider compliance reminders (e.g., missing house rules, outdated photos)
+
+⸻
+
+🧑‍💼 3. Tenant Management
+	•	Manage tenant profiles
+	•	View tenant applications
+	•	Suspend or delete accounts
+	•	Track communication or behavior issues
+	•	View tenant history (applied listings, approved stays)
+
+⸻
+
+📝 4. Application Review System (VERY IMPORTANT)
+
+A full intake-like system.
+
+Admin can view:
+	•	Complete application
+	•	Uploaded photo ID (required)
+	•	Emergency contact info
+	•	Treatment history (only the fields you choose to include)
+	•	Sobriety status
+	•	Housing needs
+	•	Healthcare/insurance information
+	•	Triggers (OPTIONAL if you keep it removed)
+	•	Provider-specific screening questions
+
+Admin actions:
+	•	Approve, deny, or request more info
+	•	Add notes visible only to admin
+	•	Reassign applications to a different provider
+	•	Export application as PDF
+
+⸻
+
+💬 5. Full Messaging Oversight
+
+Admins can monitor the platform for safety.
+
+Features:
+	•	View tenant ↔ provider message threads
+	•	Flag inappropriate messages
+	•	Silence or ban users
+	•	Auto-moderation filters (threats, harassment, drug sales, etc.)
+	•	Spam detection
+	•	Download message transcripts
+
+⸻
+
+📞 6. Built-In Communication Logs
+
+Track every interaction made through Sober Stay:
+	•	Emails
+	•	Calls
+	•	Texts
+	•	Voicemails
+	•	Missed calls
+	•	Message opening & response times
+
+⸻
+
+🔐 7. Safety & Compliance Center
+
+Extremely important for a recovery-related platform.
+
+Tools:
+	•	Incident reports submitted by providers or tenants
+	•	Documentation uploader for:
+	•	House certifications
+	•	Fire inspections
+	•	Insurance
+	•	Staff background checks
+	•	Verify uploaded documents
+	•	Track expiration dates (auto reminders)
+	•	Ban or suspend unsafe homes
+	•	Track overdose responses, if reported
+	•	Internal notes per home
+
+⸻
+
+📢 8. Marketing Tools (Platform Growth Features)
+
+Turn your admin panel into a marketing machine.
+
+Email & SMS Marketing
+	•	Send mass emails to tenants or providers
+	•	Automated onboarding sequences
+	•	Announcement campaigns
+	•	Template library (renewal reminders, new listings, promos)
+
+SEO Tools
+	•	Manage blog posts
+	•	Add keywords, metadata, tags
+	•	Publish resources for recovery
+
+Promo Codes
+	•	Provider sign-up discounts
+	•	Featured listing boosts
+
+Ad Management
+	•	Featured home placements
+	•	Sponsored listings
+
+⸻
+
+💳 9. Billing & Payment Controls
+
+If you charge providers:
+
+Features:
+	•	Subscription management
+	•	Listing boost payments
+	•	Automatic invoices
+	•	Failed payment tracker
+	•	Payout logs
+	•	Downloadable financial reports
+	•	Tax settings
+
+⸻
+
+📂 10. Reporting & Analytics
+
+Deep analytics similar to Apartments.com + Zillow.
+
+For Admin:
+	•	Provider performance
+	•	Tenant activity
+	•	High-traffic listings
+	•	Abandoned applications
+	•	Market insights (average rent, amenities, demand)
+	•	Conversion rates (search → message → application)
+
+Export:
+	•	Excel • PDF • CSV
+
+⸻
+
+⚙️ 11. Platform Settings
+
+Everything Sober Stay needs:
+	•	Update application form questions anytime
+	•	Toggle required fields (photo ID, insurance, etc.)
+	•	Manage filters available on the site
+	•	Customize listing categories & amenities
+	•	Update Terms, Privacy Policy, Disclaimer
+	•	Set safety alert keywords
+	•	Manage blocked users
+	•	Notification settings
+
+⸻
+
+🧑‍💻 12. Admin & Staff Permissions
+
+Roles example:
+	•	Super Admin — full access
+	•	Support Manager — handles tickets & messages
+	•	Compliance Officer — reviews documents & safety issues
+	•	Content Manager — updates blog & SEO
+	•	Finance Admin — view payments only
+
+You can control who sees what.
+
+⸻
+
+🆘 13. Support Ticket System
+
+For tenants & providers:
+	•	Submit support requests
+	•	Attach screenshots
+	•	Categorize: billing, listing issues, safety, tech help, etc.
+	•	Assign tickets to staff
+	•	Internal notes
+	•	Track resolution time
+
+⸻
+
+🧩 14. Integrations
+
+Your admin panel should connect to:
+	•	Stripe or PayPal (billing)
+	•	Twilio (SMS & calls)
+	•	SendGrid (email)
+	•	AirTable or Notion (data backup)
+	•	QuickBooks (accounting)
+	•	Google Maps (location search)
+	•	Firebase or Supabase (backend)
+
+⸻
+
+💠 15. Advanced Search Tools
+
+Admin should be able to search:
+	•	By tenant name, provider name
+	•	By listing ID
+	•	By email
+	•	By phone number
+	•	By status (pending/approved/banned)
+	•	By application stage
+
+⸻
+
+🛡 16. Fraud & Abuse Monitoring
+	•	Fake listing detection
+	•	Duplicate account alerts
+	•	Suspicious activity scoring
+	•	IP address tracking
+	•	Auto-flagging of dangerous content
+
+⸻
+
+🎚 17. Version Control & Change Logs
+
+Track EVERY change done on the platform:
+	•	Who edited a listing?
+	•	Who approved a provider?
+	•	What was removed?
+	•	When?
+
+⸻
+
+🧩 18. Content Moderation
+
+Admin can:
+	•	Manage blog posts
+	•	Edit homepage content
+	•	Upload photos or videos
+	•	Manage Help Center articles
+	•	Add FAQs
