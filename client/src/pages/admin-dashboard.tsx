@@ -66,6 +66,19 @@ export function AdminDashboard() {
     { id: 3, label: "Require provider verification", enabled: true },
     { id: 4, label: "Enable duplicate account detection", enabled: true },
   ]);
+  const [campaigns, setCampaigns] = useState<any[]>([
+    { name: "Provider Onboarding Series", status: "Active", recipients: 145 },
+    { name: "Tenant Recovery Resources", status: "Scheduled", recipients: 320 },
+    { name: "Featured Listing Promotion", status: "Draft", recipients: 0 },
+  ]);
+  const [promoCodes, setPromoCodes] = useState<any[]>([
+    { code: "WELCOME25", discount: "25% off", target: "New Providers", used: 34 },
+    { code: "RECOVERY20", discount: "20% off", target: "Tenants", used: 128 },
+  ]);
+  const [adCampaigns, setAdCampaigns] = useState<any[]>([
+    { home: "Downtown Recovery Center", duration: "30 days", cost: "$199", status: "Active" },
+    { home: "Supportive Living Homes", duration: "7 days", cost: "$49", status: "Expiring Soon" },
+  ]);
 
   useEffect(() => {
     setReports(getReports());
@@ -172,6 +185,53 @@ export function AdminDashboard() {
     link.download = `admin-export-${new Date().toISOString().split("T")[0]}.json`;
     link.click();
     alert("✓ Platform data exported successfully!");
+  };
+
+  const handleSendCampaign = () => {
+    alert("✓ Campaign sent successfully to selected audience!");
+  };
+
+  const handleCreateCampaign = () => {
+    setCampaigns([...campaigns, { name: "New Campaign", status: "Draft", recipients: 0 }]);
+    alert("✓ New campaign created!");
+  };
+
+  const handleDeleteCampaign = (idx: number) => {
+    setCampaigns(campaigns.filter((_, i) => i !== idx));
+    alert("✓ Campaign deleted!");
+  };
+
+  const handleSendSMS = () => {
+    alert("✓ SMS campaign scheduled successfully!");
+  };
+
+  const handleCreateBlog = () => {
+    alert("✓ Blog post creation started! Content editor opening...");
+  };
+
+  const handlePublishBlog = () => {
+    alert("✓ Blog post published successfully!");
+  };
+
+  const handleCreatePromo = () => {
+    setPromoCodes([...promoCodes, { code: "NEWCODE", discount: "20% off", target: "General", used: 0 }]);
+    alert("✓ Promo code created successfully!");
+  };
+
+  const handleLaunchAd = () => {
+    alert("✓ Ad campaign launched! Tracking impressions and conversions...");
+  };
+
+  const handleManageListing = () => {
+    alert("✓ Featured listing management panel opening...");
+  };
+
+  const handleSaveMarketing = () => {
+    alert("✓ Marketing plan saved successfully!");
+  };
+
+  const handleDownloadReport = () => {
+    alert("✓ Marketing report downloaded!");
   };
 
   return (
@@ -965,13 +1025,13 @@ export function AdminDashboard() {
                       <div><p className="text-muted-foreground">Opens</p><p className="text-white">{campaign.opens}</p></div>
                       <div><p className="text-muted-foreground">Clicks</p><p className="text-white">{campaign.clicks}</p></div>
                       <div className="flex gap-1">
-                        <Button size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
-                        <Button size="sm" variant="ghost" className="text-xs h-7 text-red-500">Delete</Button>
+                        <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => alert("✓ Campaign opened for editing!")}>Edit</Button>
+                        <Button size="sm" variant="ghost" className="text-xs h-7 text-red-500" onClick={() => handleDeleteCampaign(i)}>Delete</Button>
                       </div>
                     </div>
                   </div>
                 ))}
-                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 mt-4">
+                <Button onClick={handleCreateCampaign} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 mt-4">
                   <Plus className="w-4 h-4" /> Create Campaign
                 </Button>
               </CardContent>
@@ -997,7 +1057,7 @@ export function AdminDashboard() {
                     </div>
                     <div className="text-right">
                       <p className="text-white font-bold">{item.spent}</p>
-                      <Button size="sm" variant="outline" className="mt-2">Manage</Button>
+                      <Button onClick={handleManageListing} size="sm" variant="outline" className="mt-2">Manage</Button>
                     </div>
                   </div>
                 ))}
@@ -1053,7 +1113,7 @@ export function AdminDashboard() {
                         <label className="text-xs text-muted-foreground">Subject</label>
                         <input type="text" placeholder="Email subject" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm mt-1" />
                       </div>
-                      <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-2">Send Campaign</Button>
+                      <Button onClick={handleSendCampaign} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-2">Send Campaign</Button>
                     </div>
                   </div>
                   
@@ -1075,7 +1135,7 @@ export function AdminDashboard() {
                   <textarea placeholder="SMS message (160 characters max)" maxLength={160} className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm" rows={3} />
                   <div className="flex items-center justify-between mt-2">
                     <span className="text-xs text-muted-foreground">Select audience: Tenants • Providers • All Users</span>
-                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Send SMS</Button>
+                    <Button onClick={handleSendSMS} className="bg-primary text-primary-foreground hover:bg-primary/90">Send SMS</Button>
                   </div>
                 </div>
               </CardContent>
@@ -1109,13 +1169,13 @@ export function AdminDashboard() {
                         <input type="text" placeholder="SEO keywords" className="w-full px-2 py-1 rounded text-xs bg-background/50 border border-white/10 text-white" />
                       </div>
                       <div className="flex gap-2 mt-2">
-                        <Button size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
-                        <Button size="sm" variant="ghost" className="text-xs h-7">Publish</Button>
+                        <Button onClick={() => alert("✓ Blog editor opened!")} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
+                        <Button onClick={handlePublishBlog} size="sm" variant="ghost" className="text-xs h-7">Publish</Button>
                       </div>
                     </div>
                   ))}
                 </div>
-                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
+                <Button onClick={handleCreateBlog} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
                   <Plus className="w-4 h-4" /> Create Blog Post
                 </Button>
               </CardContent>
@@ -1157,7 +1217,7 @@ export function AdminDashboard() {
                         <option>Free 3x visibility boost</option>
                       </select>
                       <input type="number" placeholder="Limit (0 = unlimited)" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm" />
-                      <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">Create Code</Button>
+                      <Button onClick={handleCreatePromo} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">Create Code</Button>
                     </div>
                   </div>
                 </div>
@@ -1221,15 +1281,15 @@ export function AdminDashboard() {
                       <option>Promoted Home</option>
                     </select>
                     <input type="number" placeholder="Budget ($)" className="px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm" />
-                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 h-10">Launch</Button>
+                    <Button onClick={handleLaunchAd} className="bg-primary text-primary-foreground hover:bg-primary/90 h-10">Launch</Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             <div className="flex gap-2">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Save Marketing Plan</Button>
-              <Button variant="outline">Download Report</Button>
+              <Button onClick={handleSaveMarketing} className="bg-primary text-primary-foreground hover:bg-primary/90">Save Marketing Plan</Button>
+              <Button onClick={handleDownloadReport} variant="outline">Download Report</Button>
             </div>
           </TabsContent>
         </Tabs>
