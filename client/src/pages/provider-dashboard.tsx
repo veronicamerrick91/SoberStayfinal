@@ -119,14 +119,14 @@ export function ProviderDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="bg-card border border-border p-1 grid w-full grid-cols-7">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="properties">Properties</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
-            <TabsTrigger value="inbox">Applications</TabsTrigger>
-            <TabsTrigger value="beds" className="gap-1"><Bed className="w-4 h-4" /> Beds</TabsTrigger>
-            <TabsTrigger value="verification" className="gap-1"><Shield className="w-4 h-4" /> Verify</TabsTrigger>
-            <TabsTrigger value="settings" className="gap-1"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
+          <TabsList className="bg-card border border-border p-1 grid w-full grid-cols-7 gap-1">
+            <TabsTrigger value="overview" className="px-3 py-2 text-sm">Overview</TabsTrigger>
+            <TabsTrigger value="properties" className="px-3 py-2 text-sm">Properties</TabsTrigger>
+            <TabsTrigger value="messages" className="px-3 py-2 text-sm">Messages</TabsTrigger>
+            <TabsTrigger value="inbox" className="px-3 py-2 text-sm">Applications</TabsTrigger>
+            <TabsTrigger value="beds" className="gap-1 px-3 py-2 text-sm"><Bed className="w-4 h-4" /> Beds</TabsTrigger>
+            <TabsTrigger value="verification" className="gap-1 px-3 py-2 text-sm"><Shield className="w-4 h-4" /> Verify</TabsTrigger>
+            <TabsTrigger value="settings" className="gap-1 px-3 py-2 text-sm"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
           </TabsList>
 
           {/* OVERVIEW */}
