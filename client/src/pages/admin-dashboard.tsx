@@ -62,6 +62,11 @@ export function AdminDashboard() {
   const [smsContent, setSmsContent] = useState("");
   const [showSubscriptionWaiverModal, setShowSubscriptionWaiverModal] = useState(false);
   const [waivingProvider, setWaivingProvider] = useState("");
+  const [workflows, setWorkflows] = useState<any[]>([]);
+  const [showWorkflowModal, setShowWorkflowModal] = useState(false);
+  const [newWorkflowName, setNewWorkflowName] = useState("");
+  const [newWorkflowTrigger, setNewWorkflowTrigger] = useState("onSignup");
+  const [newWorkflowTemplate, setNewWorkflowTemplate] = useState("welcome");
 
   useEffect(() => {
     setReports(getReports());
@@ -281,6 +286,7 @@ export function AdminDashboard() {
             <TabsTrigger value="analytics" className="text-xs">Analytics</TabsTrigger>
             <TabsTrigger value="support" className="text-xs">Support</TabsTrigger>
             <TabsTrigger value="marketing" className="text-xs">Marketing</TabsTrigger>
+            <TabsTrigger value="workflows" className="text-xs">Workflows</TabsTrigger>
             <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
           </TabsList>
 
@@ -1341,7 +1347,180 @@ export function AdminDashboard() {
               <Button onClick={handleDownloadReport} variant="outline">Download Report</Button>
             </div>
           </TabsContent>
+
+          {/* WORKFLOWS & AUTOMATION */}
+          <TabsContent value="workflows" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Mail className="w-5 h-5" /> Email Workflow Builder
+                  </CardTitle>
+                  <Button onClick={() => setShowWorkflowModal(true)} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
+                    <Plus className="w-4 h-4" /> Create Workflow
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-gray-300 mb-6">Automate email sequences and tenant/provider communications with intelligent workflows.</p>
+                
+                {workflows.length === 0 ? (
+                  <div className="text-center py-12 rounded-lg bg-white/5 border border-white/10 border-dashed">
+                    <Mail className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-white font-medium mb-1">No workflows yet</p>
+                    <p className="text-xs text-muted-foreground mb-4">Create your first automated email workflow</p>
+                    <Button onClick={() => setShowWorkflowModal(true)} size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">Create Workflow</Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {workflows.map((workflow, i) => (
+                      <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
+                        <div>
+                          <p className="text-white font-medium">{workflow.name}</p>
+                          <p className="text-xs text-muted-foreground mt-1">Trigger: {workflow.trigger} • Template: {workflow.template} • Status: {workflow.status}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="h-8 text-xs">Edit</Button>
+                          <Button size="sm" variant="ghost" className="h-8 text-xs text-red-500">Delete</Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white">Workflow Templates</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[
+                  { id: "welcome", name: "Welcome Series", desc: "3-email welcome sequence for new tenants", emails: 3 },
+                  { id: "provider-onboard", name: "Provider Onboarding", desc: "Complete setup guide for new providers", emails: 5 },
+                  { id: "app-approved", name: "Application Approved", desc: "Notify tenant after successful application", emails: 1 },
+                  { id: "renewal-reminder", name: "Renewal Reminder", desc: "Remind providers about subscription renewal", emails: 2 },
+                  { id: "success-story", name: "Success Stories", desc: "Share recovery testimonials monthly", emails: 4 },
+                ].map((template) => (
+                  <div key={template.id} className="p-4 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between hover:border-primary/30 transition-colors">
+                    <div className="flex-1">
+                      <p className="text-white font-medium text-sm">{template.name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{template.desc}</p>
+                      <p className="text-xs text-primary mt-1">{template.emails} emails</p>
+                    </div>
+                    <Button onClick={() => { setNewWorkflowTemplate(template.id); setShowWorkflowModal(true); }} size="sm" variant="outline" className="h-8 text-xs">Use Template</Button>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white">Workflow Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground">Workflows created this month</span>
+                    <span className="text-white font-bold">{workflows.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground">Total emails sent via workflows</span>
+                    <span className="text-white font-bold">0</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground">Average open rate</span>
+                    <span className="text-white font-bold">0%</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
+
+        {showWorkflowModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-lg w-full mx-4 max-h-96 overflow-y-auto">
+              <h2 className="text-xl font-bold text-white mb-4">Create Email Workflow</h2>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Workflow Name</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g., New Tenant Onboarding" 
+                    value={newWorkflowName}
+                    onChange={(e) => setNewWorkflowName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Workflow Trigger</label>
+                  <select 
+                    value={newWorkflowTrigger}
+                    onChange={(e) => setNewWorkflowTrigger(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
+                  >
+                    <option value="onSignup">On User Signup</option>
+                    <option value="onApplicationApproved">Application Approved</option>
+                    <option value="onApplicationSubmitted">Application Submitted</option>
+                    <option value="onSubscriptionRenewal">Subscription Renewal</option>
+                    <option value="onInactivity">30 Days Inactive</option>
+                    <option value="manual">Manual Send</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Email Template</label>
+                  <select 
+                    value={newWorkflowTemplate}
+                    onChange={(e) => setNewWorkflowTemplate(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
+                  >
+                    <option value="welcome">Welcome Series</option>
+                    <option value="provider-onboard">Provider Onboarding</option>
+                    <option value="app-approved">Application Approved</option>
+                    <option value="renewal-reminder">Renewal Reminder</option>
+                    <option value="success-story">Success Stories</option>
+                    <option value="blank">Blank Template</option>
+                  </select>
+                </div>
+
+                <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+                  <p className="text-xs text-primary font-medium">Preview: This workflow will send emails when a user {newWorkflowTrigger === 'onSignup' ? 'signs up' : newWorkflowTrigger === 'onApplicationApproved' ? 'has an approved application' : 'triggers this event'}.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2 mt-6">
+                <Button 
+                  onClick={() => {
+                    if (newWorkflowName.trim()) {
+                      setWorkflows([...workflows, { 
+                        name: newWorkflowName, 
+                        trigger: newWorkflowTrigger, 
+                        template: newWorkflowTemplate,
+                        status: "Active",
+                        created: new Date().toLocaleDateString()
+                      }]);
+                      setShowWorkflowModal(false);
+                      setNewWorkflowName("");
+                    }
+                  }} 
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                >
+                  Create Workflow
+                </Button>
+                <Button 
+                  onClick={() => setShowWorkflowModal(false)} 
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {editingUser && (
           <UserEditModal
