@@ -33,7 +33,7 @@ export function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [listings, setListings] = useState<any[]>(MOCK_PROPERTIES.map(p => ({ ...p, status: "Pending" })));
+  const [listings, setListings] = useState<any[]>([]);
   const [reviewingListing, setReviewingListing] = useState<any | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [applications, setApplications] = useState<any[]>([]);
