@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Users, Building, MessageSquare, AlertCircle, 
   Plus, Check, X, MoreHorizontal, Search, ChevronRight,
-  Bed, FileText, Settings, Lock, Mail, Phone, Upload, Shield, ToggleRight
+  Bed, FileText, Settings, Lock, Mail, Phone, Upload, Shield, ToggleRight,
+  Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { MOCK_PROPERTIES, SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
@@ -119,12 +120,14 @@ export function ProviderDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="bg-card border border-border p-1 grid w-full grid-cols-7 gap-1">
+          <TabsList className="bg-card border border-border p-1 grid w-full grid-cols-9 gap-1">
             <TabsTrigger value="overview" className="px-3 py-2 text-sm">Overview</TabsTrigger>
             <TabsTrigger value="properties" className="px-3 py-2 text-sm">Properties</TabsTrigger>
             <TabsTrigger value="messages" className="px-3 py-2 text-sm">Messages</TabsTrigger>
             <TabsTrigger value="inbox" className="px-3 py-2 text-sm">Applications</TabsTrigger>
             <TabsTrigger value="beds" className="gap-1 px-3 py-2 text-sm"><Bed className="w-4 h-4" /> Beds</TabsTrigger>
+            <TabsTrigger value="marketing" className="gap-1 px-3 py-2 text-sm"><Zap className="w-4 h-4" /> Marketing</TabsTrigger>
+            <TabsTrigger value="files" className="gap-1 px-3 py-2 text-sm"><FileArchive className="w-4 h-4" /> Files</TabsTrigger>
             <TabsTrigger value="verification" className="gap-1 px-3 py-2 text-sm"><Shield className="w-4 h-4" /> Verify</TabsTrigger>
             <TabsTrigger value="settings" className="gap-1 px-3 py-2 text-sm"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
           </TabsList>
@@ -438,6 +441,163 @@ export function ProviderDashboard() {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          {/* MARKETING & SEO TAB */}
+          <TabsContent value="marketing" className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary" /> SEO Optimization</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">Boost your listing visibility with our built-in SEO tools.</p>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-primary/20 p-2 rounded text-primary">
+                          <BarChart3 className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-white text-sm">Automatic Keyword Targeting</h4>
+                          <p className="text-xs text-muted-foreground mt-1">We optimize your listings for "sober living homes", "recovery housing", and more.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-primary/20 p-2 rounded text-primary">
+                          <Share2 className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-white text-sm">Social Media Integration</h4>
+                          <p className="text-xs text-muted-foreground mt-1">Share listings to social media with one click - reaches more potential residents.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">View SEO Dashboard</Button>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2"><Zap className="w-5 h-5 text-amber-500" /> Marketing Tools</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">Reach more qualified applicants with our marketing suite.</p>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-amber-500/20 p-2 rounded text-amber-500">
+                          <Mail className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-white text-sm">Email Campaigns</h4>
+                          <p className="text-xs text-muted-foreground mt-1">Send targeted emails to interested tenants - included with your subscription.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-amber-500/20 p-2 rounded text-amber-500">
+                          <BarChart3 className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-white text-sm">Analytics & Insights</h4>
+                          <p className="text-xs text-muted-foreground mt-1">Track views, clicks, and applications - see what's working for your listings.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <Button className="w-full bg-amber-500 text-white hover:bg-amber-600">Launch Campaign</Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white">Marketing Performance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary mb-1">2,847</div>
+                    <p className="text-xs text-muted-foreground">Total Views This Month</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-emerald-400 mb-1">342</div>
+                    <p className="text-xs text-muted-foreground">New Clicks</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-blue-400 mb-1">24</div>
+                    <p className="text-xs text-muted-foreground">Applications Generated</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-amber-400 mb-1">8.4%</div>
+                    <p className="text-xs text-muted-foreground">Conversion Rate</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* DIGITAL RESIDENT FILES TAB */}
+          <TabsContent value="files" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2"><FileArchive className="w-5 h-5 text-primary" /> Digital Resident Files</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <p className="text-sm text-muted-foreground">Securely store and manage all resident documents in one place. All files are encrypted and compliant with privacy regulations.</p>
+                
+                <div className="space-y-4">
+                  <div className="border border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer bg-white/5">
+                    <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Upload className="w-6 h-6 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-white mb-2">Upload New Files</h3>
+                    <p className="text-sm text-muted-foreground">Drag and drop or click to upload applications, background checks, references, and more.</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-white">Recent Resident Files</h3>
+                  {[
+                    { name: "John Doe - Application + Background Check", size: "2.4 MB", date: "Today" },
+                    { name: "Sarah Jones - Reference Letters", size: "1.1 MB", date: "Yesterday" },
+                    { name: "Michael Smith - Employment Verification", size: "0.8 MB", date: "2 days ago" },
+                    { name: "Emma Wilson - Financial Records", size: "3.2 MB", date: "1 week ago" },
+                  ].map((file, i) => (
+                    <div key={i} className="flex items-center justify-between p-4 bg-white/5 border border-border rounded-lg hover:border-primary/50 transition-colors">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="w-10 h-10 bg-primary/10 rounded flex items-center justify-center">
+                          <FileText className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-white">{file.name}</p>
+                          <p className="text-xs text-muted-foreground">{file.size} • {file.date}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="ghost" className="text-primary hover:bg-primary/10">View</Button>
+                        <Button size="sm" variant="ghost" className="text-muted-foreground hover:bg-white/10">Download</Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                  <h4 className="font-semibold text-emerald-300 mb-2 flex items-center gap-2"><Shield className="w-4 h-4" /> Privacy & Security</h4>
+                  <ul className="text-sm text-emerald-100/80 space-y-1">
+                    <li>✓ All files encrypted at rest and in transit</li>
+                    <li>✓ HIPAA-compliant storage</li>
+                    <li>✓ Audit logs for all file access</li>
+                    <li>✓ Automatic backup and recovery</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* VERIFICATION TAB */}
