@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, CheckCircle2, ShieldCheck, FileCheck, HeartHandshake, ArrowRight, Sparkles, Building } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import heroBg from "@assets/generated_images/dark_navy_and_teal_abstract_background_for_hero_section.png";
+import heroBg from "@assets/generated_images/luxury_warm_home_exterior_at_dusk.png";
 import pathBg from "@assets/generated_images/abstract_glowing_path_representing_recovery_journey.png";
 import tenantBg from "@assets/generated_images/calm_safe_abstract_background_for_tenants.png";
 import providerBg from "@assets/generated_images/professional_geometric_background_for_providers_without_text.png";
@@ -25,33 +25,32 @@ export default function Home() {
   };
   return (
     <Layout>
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+      {/* Hero Section with Home Image */}
+      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
         <div 
           className="absolute inset-0 z-0"
           style={{
             backgroundImage: `url(${heroBg})`,
             backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            opacity: 0.8
+            backgroundPosition: 'center'
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background z-0" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/40 z-0" />
         
-        <div className="container relative z-10 px-4 py-20 text-center md:text-left md:flex md:items-center md:gap-12">
-          <div className="md:w-1/2 space-y-8 animate-in slide-in-from-bottom-8 duration-700 fade-in">
+        <div className="container relative z-10 px-4 py-20 text-left">
+          <div className="space-y-8 max-w-2xl animate-in slide-in-from-bottom-8 duration-700 fade-in">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium backdrop-blur-sm shadow-[0_0_15px_rgba(16,185,129,0.2)]">
               <ShieldCheck className="w-4 h-4" />
               <span>Quality Sober Living Communities</span>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-heading font-bold tracking-tight text-white leading-[1.1]">
-              Where Healing <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">Finds Home</span>
+              Find Your <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">Safe Haven</span>
             </h1>
             
             <p className="text-xl text-gray-300 max-w-lg leading-relaxed">
-              Connect with trusted sober living homes that provide the safety, structure, and community you need for your recovery journey.
+              Connect with supportive sober living homes that understand your journey. Take the next step toward lasting recovery.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -88,32 +87,6 @@ export default function Home() {
                   <Search className="w-6 h-6" />
                 </Button>
               </div>
-            </div>
-          </div>
-          
-          {/* Hero Visual/Stats (Hidden on mobile, visible on desktop) */}
-          <div className="hidden md:block md:w-1/2 relative perspective-[1000px]">
-            <div className="grid grid-cols-2 gap-6 transform rotate-y-[-5deg] hover:rotate-y-0 transition-transform duration-700">
-              <Card className="bg-card/30 backdrop-blur-xl border-white/10 p-8 transform hover:-translate-y-2 transition-transform duration-500 shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
-                <div className="text-4xl font-bold text-primary mb-2">100%</div>
-                <div className="text-sm text-gray-300 font-medium">Verified Providers</div>
-              </Card>
-              <Card className="bg-card/30 backdrop-blur-xl border-white/10 p-8 transform translate-y-12 hover:translate-y-10 transition-transform duration-500 shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
-                <div className="text-4xl font-bold text-white mb-2">500+</div>
-                <div className="text-sm text-gray-300 font-medium">Available Beds</div>
-              </Card>
-              <Card className="bg-gradient-to-br from-primary/20 to-card/30 backdrop-blur-xl border-white/10 p-8 col-span-2 mt-8 shadow-[0_20px_40px_rgba(0,0,0,0.3)] relative overflow-hidden group">
-                <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors duration-500" />
-                <div className="relative z-10 flex items-center gap-6">
-                  <div className="bg-primary p-4 rounded-2xl shadow-lg shadow-primary/20">
-                    <HeartHandshake className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-xl text-white mb-1">Community First</div>
-                    <div className="text-sm text-gray-300">Built by people in recovery, for people in recovery.</div>
-                  </div>
-                </div>
-              </Card>
             </div>
           </div>
         </div>
