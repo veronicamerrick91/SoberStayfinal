@@ -7,7 +7,7 @@ import {
   Users, Building, MessageSquare, AlertCircle, 
   Plus, Check, X, MoreHorizontal, Search, ChevronRight,
   Bed, FileText, Settings, Lock, Mail, Phone, Upload, Shield, ToggleRight,
-  Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video
+  Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video, Eye
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { MOCK_PROPERTIES, SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
@@ -416,8 +416,16 @@ export function ProviderDashboard() {
           {/* APPLICATIONS & INBOX TAB */}
           <TabsContent value="inbox">
             <Card className="bg-card border-border">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-white">Applications & Inbox</CardTitle>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2 border-primary/50 text-primary hover:bg-primary/10"
+                  onClick={() => window.open('/apply/preview', '_blank')}
+                >
+                  <Eye className="w-4 h-4" /> Preview Application
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">

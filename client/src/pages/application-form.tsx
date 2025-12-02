@@ -15,24 +15,42 @@ export default function ApplicationForm() {
   const [match, params] = useRoute("/apply/:id");
   const [location, setLocation] = useLocation();
   const [idUploaded, setIdUploaded] = useState(false);
-  const property = MOCK_PROPERTIES.find(p => p.id === params?.id);
+  
+  const isPreview = params?.id === "preview";
+  const property = isPreview 
+    ? { 
+        id: "preview", 
+        name: "Example Sober Living Home", 
+        address: "123 Recovery Way", 
+        city: "Cityville", 
+        state: "ST" 
+      } 
+    : MOCK_PROPERTIES.find(p => p.id === params?.id);
 
   useEffect(() => {
-    // Redirect to login if not authenticated
-    if (!isAuthenticated()) {
+    // Redirect to login if not authenticated (skip for preview)
+    if (!isAuthenticated() && !isPreview) {
       setLocation(`/login?returnPath=/apply/${params?.id}`);
     }
-  }, [params?.id, setLocation]);
+  }, [params?.id, setLocation, isPreview]);
 
   if (!property) return <Layout><div className="text-center py-12">Property not found</div></Layout>;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isPreview) {
+      alert("This is a preview. In the real form, this would submit the application.");
+      return;
+    }
     setLocation(`/tenant-dashboard`);
   };
 
   const handleBack = () => {
-    setLocation(`/property/${property.id}`);
+    if (isPreview) {
+      window.history.back();
+    } else {
+      setLocation(`/property/${property.id}`);
+    }
   };
 
   const handleFileUpload = () => {
@@ -48,6 +66,15 @@ export default function ApplicationForm() {
           </Button>
 
           <div className="mb-8">
+            {isPreview && (
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6 flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                <div>
+                  <h3 className="font-bold text-white text-sm">Provider Preview Mode</h3>
+                  <p className="text-sm text-muted-foreground">This is a preview of the application form your tenants will see.</p>
+                </div>
+              </div>
+            )}
             <h1 className="text-3xl font-bold text-white mb-2">Apply to {property.name}</h1>
             <p className="text-muted-foreground">Complete this comprehensive application. All fields marked * are required.</p>
           </div>
