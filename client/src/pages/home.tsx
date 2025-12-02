@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Compass, MapPin, CheckCircle2, ShieldCheck, Clipboard, HeartHandshake, ArrowRight, Sparkles, Building, Users, Heart } from "lucide-react";
+import { Search, Compass, MapPin, CheckCircle2, ShieldCheck, Clipboard, HeartHandshake, ArrowRight, Sparkles, Building, Users, Heart } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import heroBg from "@assets/generated_images/luxury_warm_home_exterior_at_dusk.png";
 import pathBg from "@assets/generated_images/dark_luxury_home_front_facade.png";
