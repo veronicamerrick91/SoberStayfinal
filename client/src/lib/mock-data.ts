@@ -158,5 +158,33 @@ export const MOCK_PROPERTIES: Property[] = [
     nearbyAmenities: [
       { category: "Recovery Meetings", items: [{ name: "Plymouth Group", distance: "1.5 mi" }] }
     ]
+  },
+  {
+    id: "5",
+    name: "Worcester Wellness Home",
+    address: "101 Central St",
+    city: "Worcester",
+    state: "MA",
+    price: 800,
+    pricePeriod: "monthly",
+    bedsAvailable: 3,
+    totalBeds: 10,
+    gender: "Co-ed",
+    isVerified: true,
+    roomType: "Shared Room",
+    isMatFriendly: true,
+    isPetFriendly: true,
+    isLgbtqFriendly: true,
+    isFaithBased: false,
+    acceptsInsurance: false,
+    supervisionType: "Supervised",
+    image: home2,
+    description: "A supportive and inclusive environment in the heart of Worcester. We focus on life skills and reintegration into the community.",
+    amenities: ["Washer/Dryer", "Kitchen Access", "Common Area / Lounge"],
+    inclusions: ["Utilities (All)", "WiFi / Internet", "Peer Support"],
+    nearbyAmenities: [
+      { category: "Transportation", items: [{ name: "Union Station", distance: "0.5 mi" }] },
+      { category: "Groceries", items: [{ name: "Price Chopper", distance: "0.4 mi" }] }
+    ]
   }
 ];
