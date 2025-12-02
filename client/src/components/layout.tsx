@@ -1,8 +1,14 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, LogOut, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import logo from "@assets/C442C7B9-08EE-40E8-9A2E-1D38827FBB5B_1764526673965.jpeg";
 import { isAuthenticated, getAuth, clearAuth } from "@/lib/auth";
 
@@ -20,10 +26,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const isActive = (path: string) => location === path;
 
-  const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/browse", label: "Browse Homes" },
-    { href: "/mission", label: "Our Mission" },
+  const resourceLinks = [
+    { href: "/resources", label: "Recovery Resources" },
+    { href: "/how-to-choose", label: "How to Choose a Sober Living" },
+    { href: "/insurance-info", label: "Insurance Info" },
+    { href: "/rights-responsibilities", label: "Rights & Responsibilities" },
+    { href: "/crisis-resources", label: "Emergency Hotlines" },
+    { href: "/blog", label: "Blog" },
   ];
 
   return (
@@ -37,13 +46,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive(link.href) ? "text-primary font-bold" : "text-muted-foreground"
-              }`}>
-                {link.label}
-              </Link>
-            ))}
+            <Link href="/" className={`text-sm font-medium transition-colors hover:text-primary ${isActive("/") ? "text-primary font-bold" : "text-muted-foreground"}`}>
+              Home
+            </Link>
+            <Link href="/browse" className={`text-sm font-medium transition-colors hover:text-primary ${isActive("/browse") ? "text-primary font-bold" : "text-muted-foreground"}`}>
+              Browse Homes
+            </Link>
+            <Link href="/mission" className={`text-sm font-medium transition-colors hover:text-primary ${isActive("/mission") ? "text-primary font-bold" : "text-muted-foreground"}`}>
+              Our Mission
+            </Link>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary outline-none">
+                Resources <ChevronDown className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {resourceLinks.map((link) => (
+                  <DropdownMenuItem key={link.href} asChild>
+                    <Link href={link.href} className="w-full cursor-pointer">
+                      {link.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
@@ -82,16 +108,33 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px] border-l border-border bg-card">
+            <SheetContent side="right" className="w-[300px] sm:w-[400px] border-l border-border bg-card overflow-y-auto">
               <nav className="flex flex-col gap-4 mt-8">
-                {navLinks.map((link) => (
-                  <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className={`text-lg font-medium transition-colors hover:text-primary ${
-                    isActive(link.href) ? "text-primary font-bold" : "text-muted-foreground"
-                  }`}>
-                    {link.label}
-                  </Link>
-                ))}
-                <div className="flex flex-col gap-2 mt-4">
+                <Link href="/" onClick={() => setMenuOpen(false)} className={`text-lg font-medium transition-colors hover:text-primary ${isActive("/") ? "text-primary font-bold" : "text-muted-foreground"}`}>
+                  Home
+                </Link>
+                <Link href="/browse" onClick={() => setMenuOpen(false)} className={`text-lg font-medium transition-colors hover:text-primary ${isActive("/browse") ? "text-primary font-bold" : "text-muted-foreground"}`}>
+                  Browse Homes
+                </Link>
+                <Link href="/mission" onClick={() => setMenuOpen(false)} className={`text-lg font-medium transition-colors hover:text-primary ${isActive("/mission") ? "text-primary font-bold" : "text-muted-foreground"}`}>
+                  Our Mission
+                </Link>
+                
+                <div className="space-y-3 pt-2">
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Resources</p>
+                  {resourceLinks.map((link) => (
+                    <Link 
+                      key={link.href} 
+                      href={link.href} 
+                      onClick={() => setMenuOpen(false)} 
+                      className={`block text-lg font-medium pl-4 border-l-2 transition-colors hover:text-primary ${isActive(link.href) ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+
+                <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
                   {authenticated ? (
                     <Button onClick={handleSignOut} className="w-full justify-start gap-2 bg-red-600/20 text-red-500 hover:bg-red-600/30">
                       <LogOut className="w-4 h-4" /> Sign Out
@@ -176,3 +219,4 @@ export function Layout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+

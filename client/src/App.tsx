@@ -24,6 +24,9 @@ import { Blog } from "@/pages/blog";
 import { Mission } from "@/pages/mission";
 import { Resources } from "@/pages/resources";
 import { Contact } from "@/pages/contact";
+import { HowToChoose } from "@/pages/how-to-choose";
+import { InsuranceInfo } from "@/pages/insurance-info";
+import { RightsResponsibilities } from "@/pages/rights-responsibilities";
 import { CreateListing } from "@/pages/create-listing";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
@@ -92,6 +95,9 @@ function Router() {
         <Route path="/blog" component={Blog} />
         <Route path="/mission" component={Mission} />
         <Route path="/resources" component={Resources} />
+        <Route path="/how-to-choose" component={HowToChoose} />
+        <Route path="/insurance-info" component={InsuranceInfo} />
+        <Route path="/rights-responsibilities" component={RightsResponsibilities} />
         <Route path="/contact" component={Contact} />
         <Route path="/create-listing" component={CreateListing} />
         <Route component={NotFound} />
