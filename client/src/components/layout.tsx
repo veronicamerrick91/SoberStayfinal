@@ -41,7 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <nav className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href} className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive(link.href) ? "text-primary" : "text-muted-foreground"
+                isActive(link.href) ? "text-primary font-bold" : "text-muted-foreground"
               }`}>
                 {link.label}
               </Link>
@@ -83,7 +83,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <nav className="flex flex-col gap-4 mt-8">
                 {navLinks.map((link) => (
                   <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className={`text-lg font-medium transition-colors hover:text-primary ${
-                    isActive(link.href) ? "text-primary" : "text-muted-foreground"
+                    isActive(link.href) ? "text-primary font-bold" : "text-muted-foreground"
                   }`}>
                     {link.label}
                   </Link>
