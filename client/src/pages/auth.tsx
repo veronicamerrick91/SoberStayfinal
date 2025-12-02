@@ -139,7 +139,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
               </Button>
             </form>
 
-            {(role === "tenant" || role === "provider") && (
+            {(role === "tenant" || role === "provider" || role === "admin") && (
               <div className="mt-4">
                 <div className="relative mb-4">
                   <div className="absolute inset-0 flex items-center">
