@@ -37,6 +37,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   useEffect(() => {
     setRole(defaultRole as any);
@@ -73,6 +74,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   };
 
   const handleGoogleLogin = () => {
+    setIsGoogleLoading(true);
     toast({
       title: "Demo Login",
       description: "Simulating Google Login for demo purposes...",
@@ -86,8 +88,9 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
         role: role,
         name: role === "tenant" ? "Google Tenant" : role === "provider" ? "Google Provider" : "Google Admin"
       });
+      setIsGoogleLoading(false);
       setLocation(getReturnPath());
-    }, 1000);
+    }, 1500);
   };
 
   return (
@@ -210,9 +213,14 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                 <Button 
                   type="button"
                   onClick={handleGoogleLogin}
-                  className="w-full bg-white text-black hover:bg-gray-100 gap-2"
+                  disabled={isGoogleLoading}
+                  className="w-full bg-white text-black hover:bg-gray-100 gap-2 border border-gray-200 shadow-sm"
                 >
-                  <Mail className="w-4 h-4" />
+                  {isGoogleLoading ? (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-500 border-t-transparent" />
+                  ) : (
+                    <Mail className="w-4 h-4" />
+                  )}
                   {type === "login" ? "Sign in with Gmail" : "Sign up with Gmail"}
                 </Button>
               </div>
