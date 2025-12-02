@@ -399,7 +399,7 @@ export default function ApplicationForm() {
                   <Textarea placeholder="e.g., Job, Family support, Disability benefits, Unemployment, Other..." className="bg-background/50 border-border min-h-16" />
                 </div>
                 <div className="space-y-2">
-                  <Label>Can You Pay Weekly Rent? *</Label>
+                  <Label>Can You Pay Monthly Rent on Time? *</Label>
                   <Select>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
@@ -648,42 +648,6 @@ export default function ApplicationForm() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3 bg-primary/5 border border-primary/20 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <input type="checkbox" id="consent1" className="mt-1" required />
-                    <label htmlFor="consent1" className="text-sm text-gray-300">
-                      I consent to drug testing as part of the application and residency process *
-                    </label>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <input type="checkbox" id="consent2" className="mt-1" required />
-                    <label htmlFor="consent2" className="text-sm text-gray-300">
-                      I consent to emergency medical treatment if needed *
-                    </label>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <input type="checkbox" id="consent3" className="mt-1" required />
-                    <label htmlFor="consent3" className="text-sm text-gray-300">
-                      I acknowledge the common-area camera policy *
-                    </label>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <input type="checkbox" id="consent4" className="mt-1" required />
-                    <label htmlFor="consent4" className="text-sm text-gray-300">
-                      I understand the privacy & confidentiality policy *
-                    </label>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <input type="checkbox" id="consent5" className="mt-1" required />
-                    <label htmlFor="consent5" className="text-sm text-gray-300">
-                      I acknowledge receipt and will review the resident handbook *
-                    </label>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <input type="checkbox" id="consent6" className="mt-1" required />
-                    <label htmlFor="consent6" className="text-sm text-gray-300">
-                      I agree to financial responsibility for rent and any damages *
-                    </label>
-                  </div>
                   <div className="flex items-start gap-3">
                     <input type="checkbox" id="consent7" className="mt-1" required />
                     <label htmlFor="consent7" className="text-sm text-gray-300">
