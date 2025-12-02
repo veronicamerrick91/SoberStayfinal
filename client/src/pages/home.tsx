@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, CheckCircle2, ShieldCheck, FileCheck, HeartHandshake, ArrowRight, Sparkles, Building } from "lucide-react";
+import { Search, MapPin, CheckCircle2, ShieldCheck, FileCheck, HeartHandshake, ArrowRight, Sparkles, Building, Heart } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import heroBg from "@assets/generated_images/dark_navy_and_teal_abstract_background_for_hero_section.png";
 import pathBg from "@assets/generated_images/abstract_glowing_path_representing_recovery_journey.png";
@@ -41,8 +41,9 @@ export default function Home() {
         <div className="container relative z-10 px-4 py-20 text-center md:text-left md:flex md:items-center md:gap-12">
           <div className="md:w-1/2 space-y-8 animate-in slide-in-from-bottom-8 duration-700 fade-in">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium backdrop-blur-sm shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-              <ShieldCheck className="w-4 h-4" />
-              <span>Quality Sober Living Communities</span>
+              <Heart className="w-4 h-4 fill-primary" />
+              <span>Healing Starts At Home</span>
+              <Heart className="w-4 h-4 fill-primary" />
             </div>
             
             <h1 className="text-5xl md:text-7xl font-heading font-bold tracking-tight text-white leading-[1.1]">
