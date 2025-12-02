@@ -164,9 +164,9 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
             <p className="text-sm text-muted-foreground">
               {type === "login" ? "Don't have an account? " : "Already have an account? "}
               <Link href={type === "login" ? "/signup" : "/login"}>
-                <a className="text-primary hover:underline font-semibold">
+                <span className="text-primary hover:underline font-semibold cursor-pointer">
                   {type === "login" ? "Sign up" : "Log in"}
-                </a>
+                </span>
               </Link>
             </p>
           </CardFooter>
