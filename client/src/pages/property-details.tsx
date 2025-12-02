@@ -159,6 +159,23 @@ export default function PropertyDetails() {
               </p>
             </div>
 
+            {/* Included in Price */}
+            {property.inclusions && property.inclusions.length > 0 && (
+              <div>
+                <h3 className="text-xl font-bold text-white mb-6">Included in Monthly Price</h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {property.inclusions.map((item, i) => (
+                    <div key={i} className="flex items-center gap-3 text-gray-200 p-3 rounded-lg bg-emerald-950/30 border border-emerald-500/30 hover:border-emerald-500/50 transition-colors">
+                      <div className="p-1.5 rounded-full bg-emerald-500/20 text-emerald-400">
+                        <Check className="w-4 h-4" />
+                      </div>
+                      <span className="font-medium">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Amenities */}
             <div>
               <h3 className="text-xl font-bold text-white mb-6">Amenities & Features</h3>

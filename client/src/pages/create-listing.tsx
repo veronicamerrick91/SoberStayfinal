@@ -28,6 +28,7 @@ interface ListingDraft {
   isPetFriendly: boolean;
   isLgbtqFriendly: boolean;
   isFaithBased: boolean;
+  inclusions: string[];
 }
 
 export function CreateListing() {
@@ -49,6 +50,7 @@ export function CreateListing() {
     isPetFriendly: false,
     isLgbtqFriendly: false,
     isFaithBased: false,
+    inclusions: [],
   });
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -64,6 +66,15 @@ export function CreateListing() {
       amenities: prev.amenities.includes(amenity)
         ? prev.amenities.filter(a => a !== amenity)
         : [...prev.amenities, amenity]
+    }));
+  };
+
+  const handleInclusionChange = (item: string) => {
+    setListingDraft(prev => ({
+      ...prev,
+      inclusions: prev.inclusions.includes(item)
+        ? prev.inclusions.filter(i => i !== item)
+        : [...prev.inclusions, item]
     }));
   };
 
@@ -247,6 +258,35 @@ export function CreateListing() {
                   </div>
 
                   <div className="pt-4 space-y-3">
+                    <Label className="text-white text-sm font-semibold">What's Included in Monthly Price</Label>
+                    <p className="text-xs text-muted-foreground mb-2">Select everything that is covered by the resident's monthly payment.</p>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      {[
+                        "Food / Meals",
+                        "Transportation",
+                        "Drug Testing",
+                        "Utilities (All)",
+                        "WiFi / Internet",
+                        "Cable / Streaming",
+                        "Linens & Bedding",
+                        "Toiletries",
+                        "Gym Access",
+                        "Case Management",
+                        "Peer Support",
+                        "Therapy Sessions"
+                      ].map((item) => (
+                        <div key={item} className="flex items-center gap-2">
+                          <Checkbox
+                            checked={listingDraft.inclusions.includes(item)}
+                            onCheckedChange={() => handleInclusionChange(item)}
+                          />
+                          <label className="text-sm text-gray-300 cursor-pointer">{item}</label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-4 space-y-3">
                     <Label className="text-white text-sm font-semibold">Property Features</Label>
                     <div className="space-y-2">
                       {[
@@ -296,14 +336,14 @@ export function CreateListing() {
                     <Label className="text-white text-sm font-semibold">Amenities & Services</Label>
                     <div className="grid sm:grid-cols-2 gap-3">
                       {[
-                        "WiFi",
                         "Washer/Dryer",
                         "Kitchen Access",
-                        "Gym",
+                        "On-site Gym",
                         "Parking",
                         "Garden/Outdoor Space",
-                        "Laundry Service",
-                        "Meals Provided"
+                        "Swimming Pool",
+                        "Common Area / Lounge",
+                        "Designated Smoking Area"
                       ].map((amenity) => (
                         <div key={amenity} className="flex items-center gap-2">
                           <Checkbox
