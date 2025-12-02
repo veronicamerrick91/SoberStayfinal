@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShieldCheck, AlertCircle, Mail, CheckCircle2, Sparkles, Building } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { saveAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
 
 const VALID_CREDENTIALS = {
   tenant: {
@@ -31,6 +32,7 @@ interface AuthPageProps {
 
 export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [location, setLocation] = useLocation();
+  const { toast } = useToast();
   const [role, setRole] = useState<"tenant" | "provider" | "admin">(defaultRole as any);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -71,7 +73,21 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `/api/auth/google?role=${role}`;
+    toast({
+      title: "Demo Login",
+      description: "Simulating Google Login for demo purposes...",
+    });
+
+    // Simulate network delay
+    setTimeout(() => {
+      saveAuth({
+        id: Math.random().toString(36).substr(2, 9),
+        email: "google-user@example.com",
+        role: role,
+        name: role === "tenant" ? "Google Tenant" : role === "provider" ? "Google Provider" : "Google Admin"
+      });
+      setLocation(getReturnPath());
+    }, 1000);
   };
 
   return (
