@@ -1,193 +1,106 @@
-import { Layout } from "@/components/layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
-import { useLocation } from "wouter";
-import { getAuth, updateAuth } from "@/lib/auth";
+import { Switch, Route, useLocation } from "wouter";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import NotFound from "@/pages/not-found";
+import Home from "@/pages/home";
+import Browse from "@/pages/browse";
+import { TenantDashboard } from "@/pages/tenant-dashboard";
+import { ProviderDashboard } from "@/pages/provider-dashboard";
+import { AdminDashboard } from "@/pages/admin-dashboard";
+import { AuthPage } from "@/pages/auth";
+import PropertyDetails from "@/pages/property-details";
+import ApplicationForm from "@/pages/application-form";
+import Chat from "@/pages/chat";
+import { PrivacyPolicy } from "@/pages/privacy-policy";
+import { TermsOfUse } from "@/pages/terms-of-use";
+import { Disclaimer } from "@/pages/disclaimer";
+import { LiabilityWaiver } from "@/pages/liability-waiver";
+import { HelpCenter } from "@/pages/help-center";
+import { CrisisResources } from "@/pages/crisis-resources";
+import { SafetyReporting } from "@/pages/safety-reporting";
+import { Blog } from "@/pages/blog";
+import { CreateListing } from "@/pages/create-listing";
+import { useEffect, useState } from "react";
+import { isAuthenticated, getAuth } from "./lib/auth";
 
-export function EditProfile() {
-  const [location, setLocation] = useLocation();
-  const [isSaving, setIsSaving] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const user = getAuth() as any;
+function ScrollToTop() {
+  const [location] = useLocation();
   
-  const [formData, setFormData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
-    phone: "",
-    bio: "",
-    recoveryFocus: "",
-    preferredLocation: "",
-  });
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+  
+  return null;
+}
 
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+function SessionRestorer() {
+  const [location, setLocation] = useLocation();
+  const [isReady, setIsReady] = useState(false);
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    
-    // Simulate save delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Update auth with new profile data
-    if (user?.id) {
-      updateAuth({
-        ...user,
-        name: formData.name,
-        email: formData.email,
-      });
+  useEffect(() => {
+    // Check if user has valid session on app load
+    const user = getAuth();
+    if (user && !isAuthenticated()) {
+      // Session data corrupted, redirect to login
+      setLocation("/login");
     }
-    
-    setShowSuccess(true);
-    setTimeout(() => {
-      setLocation("/tenant-dashboard");
-    }, 2000);
-  };
+    setIsReady(true);
+  }, [setLocation]);
 
+  if (!isReady) return null;
+  return null;
+}
+
+function Router() {
   return (
-    <Layout>
-      <div className="min-h-screen bg-background py-8">
-        <div className="container mx-auto px-4 max-w-2xl">
-          <Button 
-            variant="ghost" 
-            className="gap-2 mb-8 pl-0 text-muted-foreground hover:text-primary" 
-            onClick={() => setLocation("/tenant-dashboard")}
-          >
-            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-          </Button>
+    <>
+      <ScrollToTop />
+      <SessionRestorer />
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/browse" component={Browse} />
+        <Route path="/property/:id" component={PropertyDetails} />
+        <Route path="/apply/:id" component={ApplicationForm} />
+        <Route path="/chat/:propertyId" component={Chat} />
+        <Route path="/tenant-dashboard" component={TenantDashboard} />
+        <Route path="/provider-dashboard" component={ProviderDashboard} />
+        <Route path="/admin-dashboard" component={AdminDashboard} />
+        <Route path="/login">
+          <AuthPage type="login" />
+        </Route>
+        <Route path="/signup">
+          <AuthPage type="signup" />
+        </Route>
+        <Route path="/for-tenants">
+          <AuthPage type="signup" defaultRole="tenant" />
+        </Route>
+        <Route path="/for-providers">
+          <AuthPage type="signup" defaultRole="provider" />
+        </Route>
+        <Route path="/privacy-policy" component={PrivacyPolicy} />
+        <Route path="/terms-of-use" component={TermsOfUse} />
+        <Route path="/disclaimer" component={Disclaimer} />
+        <Route path="/liability-waiver" component={LiabilityWaiver} />
+        <Route path="/help-center" component={HelpCenter} />
+        <Route path="/crisis-resources" component={CrisisResources} />
+        <Route path="/safety-reporting" component={SafetyReporting} />
+        <Route path="/blog" component={Blog} />
+        <Route path="/create-listing" component={CreateListing} />
+        <Route component={NotFound} />
+      </Switch>
+    </>
+  );
+}
 
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Edit Your Profile</h1>
-            <p className="text-muted-foreground">Update your personal information and preferences</p>
-          </div>
-
-          <form onSubmit={handleSave} className="space-y-6">
-            {/* Basic Information */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white">Basic Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-white">Full Name</Label>
-                    <Input
-                      value={formData.name}
-                      onChange={(e) => handleChange("name", e.target.value)}
-                      placeholder="Your full name"
-                      className="bg-background/50 border-border"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-white">Email</Label>
-                    <Input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleChange("email", e.target.value)}
-                      placeholder="your@email.com"
-                      className="bg-background/50 border-border"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-white">Phone Number</Label>
-                  <Input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleChange("phone", e.target.value)}
-                    placeholder="(555) 123-4567"
-                    className="bg-background/50 border-border"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-white">About You</Label>
-                  <Textarea
-                    value={formData.bio}
-                    onChange={(e) => handleChange("bio", e.target.value)}
-                    placeholder="Tell providers about yourself, your recovery journey, and what matters to you..."
-                    className="bg-background/50 border-border min-h-24"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Recovery Preferences */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white">Recovery Preferences</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-white">Recovery Focus</Label>
-                  <Select value={formData.recoveryFocus} onValueChange={(val) => handleChange("recoveryFocus", val)}>
-                    <SelectTrigger className="bg-background/50 border-border">
-                      <SelectValue placeholder="Select your primary focus" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card border-border">
-                      <SelectItem value="aa-na">AA/NA Based</SelectItem>
-                      <SelectItem value="faith">Faith-Based</SelectItem>
-                      <SelectItem value="secular">Secular/SMART Recovery</SelectItem>
-                      <SelectItem value="holistic">Holistic Wellness</SelectItem>
-                      <SelectItem value="therapy">Therapy-Focused</SelectItem>
-                      <SelectItem value="flexible">Flexible/Open</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-white">Preferred Location</Label>
-                  <Input
-                    value={formData.preferredLocation}
-                    onChange={(e) => handleChange("preferredLocation", e.target.value)}
-                    placeholder="e.g., Boston, MA area"
-                    className="bg-background/50 border-border"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Action Buttons */}
-            <div className="flex gap-4">
-              <Button 
-                type="submit" 
-                disabled={isSaving}
-                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 h-12"
-                data-testid="button-save-profile"
-              >
-                <CheckCircle2 className="w-4 h-4 mr-2" /> {isSaving ? "Saving..." : "Save Profile"}
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setLocation("/tenant-dashboard")} 
-                className="flex-1 h-12"
-                disabled={isSaving}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-
-          {/* Success Message */}
-          {showSuccess && (
-            <div className="fixed bottom-4 right-4 bg-green-600 text-white p-4 rounded-lg shadow-lg flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5" />
-              Profile updated successfully!
-            </div>
-          )}
-        </div>
-      </div>
-    </Layout>
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Router />
+        <Toaster />
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }

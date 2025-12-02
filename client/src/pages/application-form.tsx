@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
@@ -16,8 +15,6 @@ export default function ApplicationForm() {
   const [match, params] = useRoute("/apply/:id");
   const [location, setLocation] = useLocation();
   const [idUploaded, setIdUploaded] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
   const property = MOCK_PROPERTIES.find(p => p.id === params?.id);
 
   useEffect(() => {
@@ -29,19 +26,9 @@ export default function ApplicationForm() {
 
   if (!property) return <Layout><div className="text-center py-12">Property not found</div></Layout>;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
-    // Simulate submission delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setShowSuccess(true);
-    
-    // Auto-redirect after showing success
-    setTimeout(() => {
-      setLocation(`/tenant-dashboard`);
-    }, 2500);
+    setLocation(`/tenant-dashboard`);
   };
 
   const handleBack = () => {
@@ -679,52 +666,15 @@ export default function ApplicationForm() {
 
             {/* Submit */}
             <div className="flex gap-4 sticky bottom-4 bg-background p-4 rounded-lg border border-border">
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg"
-                data-testid="button-submit-application"
-              >
-                <CheckCircle2 className="w-5 h-5 mr-2" /> {isSubmitting ? "Submitting..." : "Submit Application"}
+              <Button type="submit" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg">
+                <CheckCircle2 className="w-5 h-5 mr-2" /> Submit Application
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleBack} 
-                className="flex-1 h-12"
-                disabled={isSubmitting}
-              >
+              <Button type="button" variant="outline" onClick={handleBack} className="flex-1 h-12">
                 Cancel
               </Button>
             </div>
           </form>
         </div>
-
-        {/* Success Confirmation Dialog */}
-        <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
-          <DialogContent className="max-w-md bg-card border-border">
-            <DialogHeader>
-              <DialogTitle className="text-white text-center">Application Submitted!</DialogTitle>
-              <DialogDescription className="text-center">
-                Your application to {property.name} has been successfully submitted.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="text-center space-y-4 py-6">
-              <div className="flex justify-center">
-                <CheckCircle2 className="w-20 h-20 text-primary animate-pulse" />
-              </div>
-              <div className="space-y-2">
-                <p className="text-white font-semibold">Thank you for your application!</p>
-                <p className="text-sm text-muted-foreground">
-                  The provider will review your information and contact you within 24-48 hours.
-                </p>
-                <p className="text-xs text-muted-foreground pt-4">
-                  Redirecting to your dashboard...
-                </p>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </Layout>
   );
