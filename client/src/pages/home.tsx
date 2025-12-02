@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Compass, MapPin, CheckCircle2, ShieldCheck, Clipboard, HeartHandshake, ArrowRight, Sparkles, Building, Users, Heart } from "lucide-react";
+import { Search, Zap, MapPin, CheckCircle2, ShieldCheck, FileText, HeartHandshake, ArrowRight, Sparkles, Building, Heart } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import heroBg from "@assets/generated_images/luxury_warm_home_exterior_at_dusk.png";
 import pathBg from "@assets/generated_images/dark_luxury_home_front_facade.png";
@@ -133,9 +133,9 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-12 relative">
             {[
-              { icon: Compass, title: "Search Quality Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit.", step: "01" },
-              { icon: Clipboard, title: "Apply Securely", desc: "Fill out one detailed application and submit it to multiple homes instantly.", step: "02" },
-              { icon: Users, title: "Connect & Move In", desc: "Chat directly with providers, schedule visits, and secure your spot.", step: "03" }
+              { icon: Zap, title: "Search Quality Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit.", step: "01" },
+              { icon: FileText, title: "Apply Securely", desc: "Fill out one detailed application and submit it to multiple homes instantly.", step: "02" },
+              { icon: HeartHandshake, title: "Connect & Move In", desc: "Chat directly with providers, schedule visits, and secure your spot.", step: "03" }
             ].map((step, i) => (
               <div key={i} className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-emerald-600/50 rounded-2xl blur opacity-20 group-hover:opacity-70 transition duration-500"></div>
