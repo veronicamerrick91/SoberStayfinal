@@ -58,7 +58,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary outline-none">
-                Resources <ChevronDown className="h-4 w-4" />
+                Recovery Resources <ChevronDown className="h-4 w-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 {resourceLinks.map((link) => (
@@ -121,7 +121,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </Link>
                 
                 <div className="space-y-3 pt-2">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Resources</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Recovery Resources</p>
                   {resourceLinks.map((link) => (
                     <Link 
                       key={link.href} 
