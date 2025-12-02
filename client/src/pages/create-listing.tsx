@@ -78,6 +78,10 @@ export function CreateListing() {
     }));
   };
 
+  const handleCheckboxChange = (key: string, checked: boolean) => {
+    setListingDraft(prev => ({ ...prev, [key]: checked }));
+  };
+
   const isStep1Complete = listingDraft.propertyName && listingDraft.address && listingDraft.city && listingDraft.state;
   const isStep2Complete = listingDraft.monthlyPrice && listingDraft.totalBeds;
   const isStep3Complete = listingDraft.description;
@@ -298,7 +302,7 @@ export function CreateListing() {
                         <div key={key} className="flex items-center gap-2">
                           <Checkbox
                             checked={listingDraft[key as keyof ListingDraft] as boolean}
-                            onCheckedChange={(checked) => handleInputChange(key, checked)}
+                            onCheckedChange={(checked) => handleCheckboxChange(key, checked as boolean)}
                             data-testid={`checkbox-${key}`}
                           />
                           <label className="text-sm text-gray-300 cursor-pointer">{label}</label>

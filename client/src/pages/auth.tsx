@@ -75,11 +75,6 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
 
   const handleGoogleLogin = () => {
     setIsGoogleLoading(true);
-    toast({
-      title: "Demo Login",
-      description: "Simulating Google Login for demo purposes...",
-    });
-
     // Simulate network delay
     setTimeout(() => {
       saveAuth({
