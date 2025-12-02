@@ -71,7 +71,10 @@ export function GoogleLoginModal({ open, onClose, onLogin }: GoogleLoginModalPro
             {isLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted cursor-pointer border border-transparent hover:border-border transition-colors">
+          <div 
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted cursor-pointer border border-transparent hover:border-border transition-colors"
+            onClick={handleAccountClick}
+          >
             <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
               <Plus className="w-5 h-5 text-muted-foreground" />
             </div>
