@@ -71,15 +71,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   };
 
   const handleGoogleLogin = () => {
-    // Mock Google sign-in - in production this would redirect to Google OAuth
-    const gmailEmail = `user-${Math.random().toString(36).substr(2, 9)}@gmail.com`;
-    saveAuth({
-      id: Math.random().toString(36).substr(2, 9),
-      email: gmailEmail,
-      role: role,
-      name: role === "tenant" ? "Google Tenant" : role === "provider" ? "Google Provider" : "Test Administrator"
-    });
-    setLocation(getReturnPath());
+    window.location.href = `/api/auth/google?role=${role}`;
   };
 
   return (
