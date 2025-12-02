@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, CheckCircle2, ShieldCheck, FileCheck, HeartHandshake, ArrowRight, Sparkles, Building } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import heroBg from "@assets/generated_images/luxury_warm_home_exterior_at_dusk.png";
-import pathBg from "@assets/generated_images/abstract_glowing_path_representing_recovery_journey.png";
-import tenantBg from "@assets/generated_images/calm_safe_abstract_background_for_tenants.png";
-import providerBg from "@assets/generated_images/professional_geometric_background_for_providers_without_text.png";
+import pathBg from "@assets/generated_images/luxury_living_room_interior_warm_ambiance.png";
+import tenantBg from "@assets/generated_images/luxury_residential_street_at_sunset.png";
+import providerBg from "@assets/generated_images/modern_luxury_home_office_space.png";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { useState } from "react";
 
