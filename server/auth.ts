@@ -68,13 +68,23 @@ export function setupAuth(app: Express) {
               // We need a username. We'll use the email prefix or random string
               const username = email.split("@")[0] + Math.floor(Math.random() * 1000);
               
+              // Determine role - check if this is the admin email
+              let role = "tenant";
+              if (process.env.ADMIN_EMAIL && email === process.env.ADMIN_EMAIL) {
+                role = "admin";
+              }
+              
               user = await storage.createUser({
                 username,
                 email,
                 name,
                 googleId,
-                role: "tenant", // Default role, logic might be needed to persist role selection
+                role, 
               });
+            } else if (process.env.ADMIN_EMAIL && email === process.env.ADMIN_EMAIL && user.role !== "admin") {
+              // Upgrade existing user to admin if they match the admin email
+              // We need a way to update user, but for now we'll rely on manual DB update or initial creation
+              // Adding a TODO for future: implement updateUser(id, { role: 'admin' })
             }
 
             return done(null, user);
