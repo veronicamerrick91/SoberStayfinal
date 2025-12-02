@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShieldCheck, AlertCircle, Mail } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { saveAuth } from "@/lib/auth";
 
 const VALID_CREDENTIALS = {
@@ -35,6 +35,10 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+
+  useEffect(() => {
+    setRole(defaultRole as any);
+  }, [defaultRole]);
 
   const getReturnPath = () => {
     const params = new URLSearchParams(window.location.search);
