@@ -27,6 +27,7 @@ import { PaymentModal } from "@/components/payment-modal";
 import { isSubscriptionActive, getProviderSubscription } from "@/lib/subscriptions";
 import { getAuth } from "@/lib/auth";
 import { TourRequest } from "@/components/tour-schedule-modal";
+import { ApplicationDetailsModal, ApplicationData } from "@/components/application-details-modal";
 
 interface ChatMessage {
   sender: "tenant" | "provider";
@@ -43,6 +44,83 @@ interface Conversation {
   unreadCount: number;
 }
 
+// Mock Application Data for the detailed view
+const MOCK_APPLICATIONS: ApplicationData[] = [
+  {
+    id: "app-1",
+    applicantName: "John Doe",
+    email: "john.doe@example.com",
+    phone: "(555) 123-4567",
+    property: "Serenity House Boston",
+    submittedDate: "2024-05-15",
+    status: "New",
+    dob: "1990-04-12",
+    gender: "Male",
+    currentAddress: "123 Main St, Boston MA",
+    primarySubstance: "Alcohol",
+    soberDate: "2024-01-15",
+    soberLength: "4 months",
+    matStatus: true,
+    matMeds: "Suboxone 8mg daily",
+    probation: true,
+    pendingCases: false,
+    medicalConditions: "Hypertension",
+    medications: "Lisinopril",
+    employmentStatus: "Employed Full-time",
+    incomeSource: "Construction",
+    evictionHistory: false,
+    reasonForLeaving: "Lease ended, looking for sober environment",
+  },
+  {
+    id: "app-2",
+    applicantName: "Michael Smith",
+    email: "mike.smith@example.com",
+    phone: "(555) 987-6543",
+    property: "Hope Haven",
+    submittedDate: "2024-05-14",
+    status: "Screening",
+    dob: "1985-08-22",
+    gender: "Male",
+    currentAddress: "Shelter",
+    primarySubstance: "Opioids",
+    soberDate: "2023-11-01",
+    soberLength: "6 months",
+    matStatus: false,
+    probation: false,
+    pendingCases: true,
+    medicalConditions: "None",
+    medications: "None",
+    employmentStatus: "Unemployed",
+    incomeSource: "Seeking work",
+    evictionHistory: true,
+    reasonForLeaving: "Evicted from previous apartment",
+  },
+  {
+    id: "app-3",
+    applicantName: "Sarah Jones",
+    email: "sarah.j@example.com",
+    phone: "(555) 456-7890",
+    property: "Serenity House Boston",
+    submittedDate: "2024-05-10",
+    status: "Approved",
+    dob: "1992-02-14",
+    gender: "Female",
+    currentAddress: "Parents' home",
+    primarySubstance: "Alcohol",
+    soberDate: "2023-05-10",
+    soberLength: "1 year",
+    matStatus: false,
+    probation: false,
+    pendingCases: false,
+    medicalConditions: "Anxiety",
+    medications: "Lexapro",
+    employmentStatus: "Employed Part-time",
+    incomeSource: "Retail",
+    evictionHistory: false,
+    reasonForLeaving: "Need more independence",
+  }
+];
+
 export function ProviderDashboard() {
   const [location, setLocation] = useLocation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -50,7 +128,33 @@ export function ProviderDashboard() {
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
   const [tourRequests, setTourRequests] = useState<TourRequest[]>([]);
+  
+  // Application Review State
+  const [applications, setApplications] = useState<ApplicationData[]>(MOCK_APPLICATIONS);
+  const [selectedApplication, setSelectedApplication] = useState<ApplicationData | null>(null);
+  const [isAppDetailsOpen, setIsAppDetailsOpen] = useState(false);
+
   const user = getAuth();
+
+  const handleViewApplication = (app: ApplicationData) => {
+    setSelectedApplication(app);
+    setIsAppDetailsOpen(true);
+  };
+
+  const handleApproveApplication = (id: string) => {
+    setApplications(prev => prev.map(app => 
+      app.id === id ? { ...app, status: "Approved" } : app
+    ));
+    // In a real app, this would trigger a backend update and maybe an email
+  };
+
+  const handleDenyApplication = (id: string, reason: string) => {
+    setApplications(prev => prev.map(app => 
+      app.id === id ? { ...app, status: "Denied" } : app
+    ));
+    // In a real app, this would log the reason
+    console.log(`Application ${id} denied because: ${reason}`);
+  };
 
   useEffect(() => {
     // Load all conversations from localStorage
@@ -162,7 +266,7 @@ export function ProviderDashboard() {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Total Applications</p>
-                      <h3 className="text-3xl font-bold text-white">24</h3>
+                      <h3 className="text-3xl font-bold text-white">{applications.length}</h3>
                     </div>
                     <div className="p-2 bg-primary/10 rounded-lg">
                       <Users className="w-5 h-5 text-primary" />
@@ -213,7 +317,7 @@ export function ProviderDashboard() {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Pending Actions</p>
-                      <h3 className="text-3xl font-bold text-white">5</h3>
+                      <h3 className="text-3xl font-bold text-white">{applications.filter(a => a.status === "New" || a.status === "Screening").length}</h3>
                     </div>
                     <div className="p-2 bg-amber-500/10 rounded-lg">
                       <AlertCircle className="w-5 h-5 text-amber-500" />
@@ -269,22 +373,18 @@ export function ProviderDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {[
-                      { name: "John Doe", property: "Serenity House", date: "2 hrs ago", status: "New" },
-                      { name: "Michael Smith", property: "Pathway Home", date: "5 hrs ago", status: "Screening" },
-                      { name: "Sarah Jones", property: "Serenity House", date: "Yesterday", status: "Approved" },
-                    ].map((app, i) => (
-                      <tr key={i} className="hover:bg-white/5 transition-colors">
-                        <td className="p-4 font-medium text-white">{app.name}</td>
+                    {applications.slice(0, 5).map((app) => (
+                      <tr key={app.id} className="hover:bg-white/5 transition-colors">
+                        <td className="p-4 font-medium text-white">{app.applicantName}</td>
                         <td className="p-4 text-gray-300">{app.property}</td>
-                        <td className="p-4 text-muted-foreground">{app.date}</td>
+                        <td className="p-4 text-muted-foreground">{app.submittedDate}</td>
                         <td className="p-4">
                           <Badge variant={app.status === "New" ? "default" : app.status === "Approved" ? "secondary" : "outline"}>
                             {app.status}
                           </Badge>
                         </td>
                         <td className="p-4">
-                          <Button variant="ghost" size="sm">View</Button>
+                          <Button variant="ghost" size="sm" onClick={() => handleViewApplication(app)}>View</Button>
                         </td>
                       </tr>
                     ))}
@@ -429,11 +529,45 @@ export function ProviderDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                   {/* Mock detailed list would go here */}
-                   <div className="text-center py-12 text-muted-foreground">
-                     <AlertCircle className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                     <p>Check your messages tab for tenant conversations.</p>
-                   </div>
+                   <div className="p-0 overflow-hidden rounded-md border border-border">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-white/5 text-muted-foreground border-b border-border">
+                        <tr>
+                          <th className="p-4 font-medium">Applicant</th>
+                          <th className="p-4 font-medium">Property</th>
+                          <th className="p-4 font-medium">Date</th>
+                          <th className="p-4 font-medium">Risk Factors</th>
+                          <th className="p-4 font-medium">Status</th>
+                          <th className="p-4 font-medium">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {applications.map((app) => (
+                          <tr key={app.id} className="hover:bg-white/5 transition-colors">
+                            <td className="p-4 font-medium text-white">{app.applicantName}</td>
+                            <td className="p-4 text-gray-300">{app.property}</td>
+                            <td className="p-4 text-muted-foreground">{app.submittedDate}</td>
+                            <td className="p-4">
+                              <div className="flex gap-1">
+                                {app.probation && <Badge variant="outline" className="text-amber-500 border-amber-500/30 text-[10px]">Legal</Badge>}
+                                {app.evictionHistory && <Badge variant="outline" className="text-red-500 border-red-500/30 text-[10px]">Eviction</Badge>}
+                                {app.matStatus && <Badge variant="outline" className="text-blue-500 border-blue-500/30 text-[10px]">MAT</Badge>}
+                                {!app.probation && !app.evictionHistory && !app.matStatus && <span className="text-muted-foreground text-xs">-</span>}
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <Badge variant={app.status === "New" ? "default" : app.status === "Approved" ? "secondary" : app.status === "Denied" ? "destructive" : "outline"}>
+                                {app.status}
+                              </Badge>
+                            </td>
+                            <td className="p-4">
+                              <Button variant="ghost" size="sm" onClick={() => handleViewApplication(app)}>Review</Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -449,25 +583,13 @@ export function ProviderDashboard() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Total Beds</span>
-                        <span className="text-white font-bold">{property.totalBeds}</span>
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Occupancy</span>
+                        <span>{(property.totalBeds - property.bedsAvailable) / property.totalBeds * 100}%</span>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Available</span>
-                        <span className="text-primary font-bold">{property.bedsAvailable}</span>
+                      <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary" style={{ width: `${(property.totalBeds - property.bedsAvailable) / property.totalBeds * 100}%` }} />
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Occupied</span>
-                        <span className="text-gray-300 font-bold">{property.totalBeds - property.bedsAvailable}</span>
-                      </div>
-                    </div>
-                    <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary" style={{ width: `${((property.totalBeds - property.bedsAvailable) / property.totalBeds) * 100}%` }} />
-                    </div>
-                    <div className="flex gap-2 pt-4">
-                      <Button size="sm" className="flex-1 bg-primary/20 text-primary hover:bg-primary/30">Update</Button>
-                      <Button size="sm" variant="outline" className="flex-1">Manage</Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -851,6 +973,14 @@ export function ProviderDashboard() {
             )}
           </TabsContent>
         </Tabs>
+
+        <ApplicationDetailsModal 
+          open={isAppDetailsOpen}
+          onClose={() => setIsAppDetailsOpen(false)}
+          application={selectedApplication}
+          onApprove={handleApproveApplication}
+          onDeny={handleDenyApplication}
+        />
 
         <PaymentModal 
           open={showPaymentModal}

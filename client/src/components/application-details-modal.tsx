@@ -1,285 +1,226 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  CheckCircle, XCircle, Calendar, User, Mail, Phone, MapPin, 
+  Activity, AlertTriangle, FileText, ShieldCheck, Clock, Briefcase, Home
+} from "lucide-react";
 import { useState } from "react";
-import { FileText, User, Heart, Home, FileCheck, MessageSquare } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+
+export interface ApplicationData {
+  id: string;
+  applicantName: string;
+  email: string;
+  phone: string;
+  property: string;
+  submittedDate: string;
+  status: "New" | "Screening" | "Approved" | "Denied";
+  avatar?: string;
+  
+  // Personal Info
+  dob: string;
+  gender: string;
+  currentAddress: string;
+  
+  // Substance Use
+  primarySubstance: string;
+  soberDate: string;
+  soberLength: string;
+  matStatus: boolean;
+  matMeds?: string;
+  
+  // Legal & Medical
+  probation: boolean;
+  pendingCases: boolean;
+  medicalConditions: string;
+  medications: string;
+  
+  // Housing & Employment
+  employmentStatus: string;
+  incomeSource: string;
+  evictionHistory: boolean;
+  reasonForLeaving: string;
+}
 
 interface ApplicationDetailsModalProps {
   open: boolean;
   onClose: () => void;
-  application: {
-    id: string;
-    tenantName: string;
-    email: string;
-    phone: string;
-    propertyName: string;
-    status: "Pending Review" | "Needs Info" | "Approved" | "Denied";
-    completeness: number;
-    submittedDate: string;
-    photoID?: string;
-    sobrietyStatus?: string;
-    yearsClean?: number;
-    treatmentHistory?: string;
-    emergencyContact?: string;
-    emergencyPhone?: string;
-    housing?: string;
-    insurance?: string;
-  };
+  application: ApplicationData | null;
   onApprove: (id: string) => void;
   onDeny: (id: string, reason: string) => void;
-  onRequestInfo: (id: string, message: string) => void;
 }
 
-export function ApplicationDetailsModal({
-  open,
-  onClose,
-  application,
-  onApprove,
-  onDeny,
-  onRequestInfo,
-}: ApplicationDetailsModalProps) {
+export function ApplicationDetailsModal({ open, onClose, application, onApprove, onDeny }: ApplicationDetailsModalProps) {
   const [denyReason, setDenyReason] = useState("");
-  const [infoRequest, setInfoRequest] = useState("");
-  const [showDenyForm, setShowDenyForm] = useState(false);
-  const [showInfoForm, setShowInfoForm] = useState(false);
+  const [showDenyInput, setShowDenyInput] = useState(false);
 
-  const handleApprove = () => {
-    onApprove(application.id);
-    onClose();
-  };
+  if (!application) return null;
 
-  const handleDeny = () => {
-    if (!denyReason.trim()) {
-      alert("Please provide a reason for denial");
-      return;
+  const handleDenyClick = () => {
+    if (showDenyInput) {
+      onDeny(application.id, denyReason);
+      setShowDenyInput(false);
+      setDenyReason("");
+      onClose();
+    } else {
+      setShowDenyInput(true);
     }
-    onDeny(application.id, denyReason);
-    setDenyReason("");
-    setShowDenyForm(false);
-    onClose();
-  };
-
-  const handleRequestInfo = () => {
-    if (!infoRequest.trim()) {
-      alert("Please provide the information you're requesting");
-      return;
-    }
-    onRequestInfo(application.id, infoRequest);
-    setInfoRequest("");
-    setShowInfoForm(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
-      <DialogContent className="max-w-2xl bg-card border-border max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-white flex items-center justify-between">
-            <span>Application from {application.tenantName}</span>
-            <Badge
-              className={
-                application.status === "Approved"
-                  ? "bg-green-500/80"
-                  : application.status === "Denied"
-                  ? "bg-red-500/80"
-                  : application.status === "Needs Info"
-                  ? "bg-blue-500/80"
-                  : "bg-amber-500/80"
-              }
-            >
-              {application.status}
-            </Badge>
-          </DialogTitle>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="p-6 border-b border-border bg-card">
+          <div className="flex items-start justify-between">
+            <div className="flex gap-4">
+              <Avatar className="w-16 h-16 border-2 border-primary/20">
+                <AvatarImage src={application.avatar} />
+                <AvatarFallback className="text-lg">{application.applicantName.substring(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div>
+                <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
+                  {application.applicantName}
+                  <Badge variant={application.status === "New" ? "default" : application.status === "Approved" ? "secondary" : "outline"}>
+                    {application.status}
+                  </Badge>
+                </DialogTitle>
+                <div className="flex flex-col gap-1 mt-1 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Home className="w-3 h-3" /> Applied for: <span className="text-white">{application.property}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-3 h-3" /> Applied: {application.submittedDate}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </DialogHeader>
 
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-card border-border">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="details">Full Details</TabsTrigger>
-            <TabsTrigger value="actions">Actions</TabsTrigger>
-          </TabsList>
+        <ScrollArea className="flex-1 p-6">
+          <div className="space-y-8">
+            {/* Quick Actions / Risk Assessment */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className={`p-4 rounded-lg border ${application.matStatus ? "bg-blue-500/10 border-blue-500/20" : "bg-card border-border"}`}>
+                <div className="flex items-center gap-2 mb-2 font-semibold text-white">
+                  <Activity className="w-4 h-4 text-blue-500" /> MAT Status
+                </div>
+                <p className="text-sm text-gray-300">{application.matStatus ? "Active" : "None"}</p>
+                {application.matMeds && <p className="text-xs text-muted-foreground mt-1">{application.matMeds}</p>}
+              </div>
+              
+              <div className={`p-4 rounded-lg border ${application.probation || application.pendingCases ? "bg-amber-500/10 border-amber-500/20" : "bg-green-500/10 border-green-500/20"}`}>
+                <div className="flex items-center gap-2 mb-2 font-semibold text-white">
+                  <ShieldCheck className="w-4 h-4 text-amber-500" /> Legal Status
+                </div>
+                <p className="text-sm text-gray-300">
+                  {application.probation ? "Probation/Parole" : "No Supervision"}
+                </p>
+                {application.pendingCases && <p className="text-xs text-amber-500 mt-1">Pending Cases</p>}
+              </div>
 
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <Card className="bg-white/5 border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                    <User className="w-3 h-3" /> Tenant
-                  </p>
-                  <p className="text-white font-bold">{application.tenantName}</p>
-                  <p className="text-xs text-muted-foreground">{application.email}</p>
-                  <p className="text-xs text-muted-foreground">{application.phone}</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/5 border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                    <Home className="w-3 h-3" /> Property Interest
-                  </p>
-                  <p className="text-white font-bold">{application.propertyName}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Submitted: {new Date(application.submittedDate).toLocaleDateString()}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/5 border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                    <FileCheck className="w-3 h-3" /> Completeness
-                  </p>
-                  <p className="text-2xl font-bold text-primary">{application.completeness}%</p>
-                  <div className="w-full h-1.5 bg-gray-700 rounded-full mt-2 overflow-hidden">
-                    <div
-                      className="h-full bg-primary"
-                      style={{ width: `${application.completeness}%` }}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/5 border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                    <Heart className="w-3 h-3" /> Sobriety Status
-                  </p>
-                  <p className="text-white font-bold">{application.sobrietyStatus || "Not provided"}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Years clean: {application.yearsClean || "—"}
-                  </p>
-                </CardContent>
-              </Card>
+              <div className="p-4 rounded-lg bg-card border border-border">
+                <div className="flex items-center gap-2 mb-2 font-semibold text-white">
+                  <Clock className="w-4 h-4 text-primary" /> Sobriety
+                </div>
+                <p className="text-sm text-gray-300">{application.soberLength}</p>
+                <p className="text-xs text-muted-foreground mt-1">Since {application.soberDate}</p>
+              </div>
             </div>
-          </TabsContent>
 
-          <TabsContent value="details" className="space-y-4">
+            {/* Contact Info */}
             <div className="space-y-3">
-              {application.photoID && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-bold mb-1">Photo ID Status</p>
-                  <Badge className="bg-green-500/80">✓ Uploaded</Badge>
+              <h3 className="text-lg font-bold text-white border-b border-white/10 pb-2">Contact Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2 text-gray-300">
+                  <Mail className="w-4 h-4 text-muted-foreground" /> {application.email}
                 </div>
-              )}
-
-              {application.treatmentHistory && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-bold mb-1">Treatment History</p>
-                  <p className="text-sm text-gray-300 bg-black/20 p-2 rounded">
-                    {application.treatmentHistory}
-                  </p>
+                <div className="flex items-center gap-2 text-gray-300">
+                  <Phone className="w-4 h-4 text-muted-foreground" /> {application.phone}
                 </div>
-              )}
-
-              {application.emergencyContact && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-bold mb-1">Emergency Contact</p>
-                  <p className="text-sm text-white">{application.emergencyContact}</p>
-                  <p className="text-xs text-muted-foreground">{application.emergencyPhone}</p>
+                <div className="flex items-center gap-2 text-gray-300 md:col-span-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground" /> {application.currentAddress}
                 </div>
-              )}
-
-              {application.housing && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-bold mb-1">Housing Needs</p>
-                  <p className="text-sm text-gray-300 bg-black/20 p-2 rounded">
-                    {application.housing}
-                  </p>
-                </div>
-              )}
-
-              {application.insurance && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-bold mb-1">Insurance Information</p>
-                  <p className="text-sm text-gray-300">{application.insurance}</p>
-                </div>
-              )}
+              </div>
             </div>
-          </TabsContent>
 
-          <TabsContent value="actions" className="space-y-4">
-            {!showDenyForm && !showInfoForm && (
-              <div className="space-y-2">
-                <Button
-                  onClick={handleApprove}
-                  className="w-full bg-green-500/20 text-green-500 hover:bg-green-500/30 h-10"
-                >
-                  ✓ Approve Application
-                </Button>
-                <Button
-                  onClick={() => setShowInfoForm(true)}
-                  className="w-full bg-blue-500/20 text-blue-500 hover:bg-blue-500/30 h-10"
-                >
-                  ❓ Request More Information
-                </Button>
-                <Button
-                  onClick={() => setShowDenyForm(true)}
-                  variant="outline"
-                  className="w-full border-red-500/30 text-red-500 hover:bg-red-500/10 h-10"
-                >
-                  ✕ Deny Application
-                </Button>
-              </div>
-            )}
-
-            {showDenyForm && (
-              <div className="space-y-2">
-                <Label className="text-white text-sm">Reason for Denial</Label>
-                <Textarea
-                  placeholder="Explain why this application is being denied..."
-                  value={denyReason}
-                  onChange={(e) => setDenyReason(e.target.value)}
-                  className="bg-background/50 border-white/10 min-h-20"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleDeny}
-                    className="flex-1 bg-red-500/20 text-red-500 hover:bg-red-500/30"
-                  >
-                    Send Denial
-                  </Button>
-                  <Button
-                    onClick={() => setShowDenyForm(false)}
-                    variant="outline"
-                    className="flex-1 border-border"
-                  >
-                    Cancel
-                  </Button>
+            {/* Recovery & Health */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-white border-b border-white/10 pb-2">Recovery & Health</h3>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground block mb-1">Primary Substance History</span>
+                  <p className="text-gray-300">{application.primarySubstance}</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-muted-foreground block mb-1">Medical Conditions</span>
+                    <p className="text-gray-300">{application.medicalConditions || "None listed"}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block mb-1">Current Medications</span>
+                    <p className="text-gray-300">{application.medications || "None listed"}</p>
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
 
-            {showInfoForm && (
-              <div className="space-y-2">
-                <Label className="text-white text-sm">Information Requested</Label>
-                <Textarea
-                  placeholder="Specify what information you need from the tenant..."
-                  value={infoRequest}
-                  onChange={(e) => setInfoRequest(e.target.value)}
-                  className="bg-background/50 border-white/10 min-h-20"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    onClick={handleRequestInfo}
-                    className="flex-1 bg-blue-500/20 text-blue-500 hover:bg-blue-500/30"
-                  >
-                    Send Request
-                  </Button>
-                  <Button
-                    onClick={() => setShowInfoForm(false)}
-                    variant="outline"
-                    className="flex-1 border-border"
-                  >
-                    Cancel
-                  </Button>
+            {/* Employment & Housing */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-bold text-white border-b border-white/10 pb-2">Employment & Housing</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                <div>
+                  <div className="flex items-center gap-2 mb-1 text-muted-foreground">
+                    <Briefcase className="w-4 h-4" /> Employment
+                  </div>
+                  <p className="text-gray-300 font-medium">{application.employmentStatus}</p>
+                  <p className="text-gray-400 text-xs mt-1">Source: {application.incomeSource}</p>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1 text-muted-foreground">
+                    <AlertTriangle className="w-4 h-4" /> Housing History
+                  </div>
+                  <p className="text-gray-300">
+                    {application.evictionHistory ? "Has prior evictions" : "No eviction history"}
+                  </p>
+                </div>
+                <div className="md:col-span-2">
+                  <span className="text-muted-foreground block mb-1">Reason for Leaving Current Housing</span>
+                  <p className="text-gray-300 italic">"{application.reasonForLeaving}"</p>
                 </div>
               </div>
-            )}
-          </TabsContent>
-        </Tabs>
+            </div>
+          </div>
+        </ScrollArea>
+
+        <DialogFooter className="p-6 border-t border-border bg-card flex-col sm:flex-row gap-3">
+          {showDenyInput ? (
+            <div className="w-full space-y-3">
+              <Textarea 
+                placeholder="Reason for denial (optional)..." 
+                value={denyReason}
+                onChange={(e) => setDenyReason(e.target.value)}
+                className="bg-background/50"
+              />
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" onClick={() => setShowDenyInput(false)}>Cancel</Button>
+                <Button variant="destructive" onClick={handleDenyClick}>Confirm Denial</Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <Button variant="outline" onClick={handleDenyClick} className="border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-400">
+                <XCircle className="w-4 h-4 mr-2" /> Deny Application
+              </Button>
+              <Button onClick={() => { onApprove(application.id); onClose(); }} className="bg-green-600 hover:bg-green-700 text-white">
+                <CheckCircle className="w-4 h-4 mr-2" /> Approve Application
+              </Button>
+            </>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
