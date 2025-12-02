@@ -32,9 +32,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Navigation */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-4 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center hover:opacity-90 transition-opacity">
-            <img src={logo} alt="Sober Stay" className="h-24 w-auto" />
+            <img src={logo} alt="Sober Stay" className="h-16 w-auto" />
           </Link>
 
           {/* Desktop Nav */}
@@ -111,7 +111,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main className="flex-1 pt-4">
         {children}
       </main>
 
