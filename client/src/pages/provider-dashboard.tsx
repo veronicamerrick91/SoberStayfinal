@@ -7,7 +7,7 @@ import {
   Users, Building, MessageSquare, AlertCircle, 
   Plus, Check, X, MoreHorizontal, Search, ChevronRight,
   Bed, FileText, Settings, Lock, Mail, Phone, Upload, Shield, ToggleRight,
-  Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp
+  Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { MOCK_PROPERTIES, SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
@@ -26,6 +26,7 @@ import { useLocation } from "wouter";
 import { PaymentModal } from "@/components/payment-modal";
 import { isSubscriptionActive, getProviderSubscription } from "@/lib/subscriptions";
 import { getAuth } from "@/lib/auth";
+import { TourRequest } from "@/components/tour-schedule-modal";
 
 interface ChatMessage {
   sender: "tenant" | "provider";
@@ -48,6 +49,7 @@ export function ProviderDashboard() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
+  const [tourRequests, setTourRequests] = useState<TourRequest[]>([]);
   const user = getAuth();
 
   useEffect(() => {
@@ -80,6 +82,17 @@ export function ProviderDashboard() {
 
     setConversations(allConversations.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime()));
 
+    // Load tour requests from localStorage
+    const storedTours = localStorage.getItem("tour_requests");
+    if (storedTours) {
+      try {
+        const tours = JSON.parse(storedTours) as TourRequest[];
+        setTourRequests(tours);
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    }
+
     // Check subscription status
     if (user?.id) {
       const isActive = isSubscriptionActive(user.id);
@@ -88,6 +101,14 @@ export function ProviderDashboard() {
       setSubscriptionStatus(sub);
     }
   }, [user?.id]);
+
+  const handleTourResponse = (tourId: string, status: "approved" | "denied" | "rescheduled", notes?: string) => {
+    const updatedTours = tourRequests.map(tour =>
+      tour.id === tourId ? { ...tour, status, providerNotes: notes } : tour
+    );
+    setTourRequests(updatedTours);
+    localStorage.setItem("tour_requests", JSON.stringify(updatedTours));
+  };
 
   return (
     <Layout>
@@ -130,6 +151,7 @@ export function ProviderDashboard() {
             <TabsTrigger value="files" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><FileArchive className="w-4 h-4" /> Files</TabsTrigger>
             <TabsTrigger value="verification" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Shield className="w-4 h-4" /> Verify</TabsTrigger>
             <TabsTrigger value="settings" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
+            <TabsTrigger value="tours" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Calendar className="w-4 h-4" /> Tour Requests</TabsTrigger>
           </TabsList>
 
           {/* OVERVIEW */}
@@ -725,6 +747,100 @@ export function ProviderDashboard() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* TOUR REQUESTS */}
+          <TabsContent value="tours" className="space-y-6">
+            <h3 className="text-xl font-bold text-white">Tour Scheduling Requests</h3>
+            {tourRequests.length === 0 ? (
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6 text-center py-12">
+                  <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4 opacity-50" />
+                  <p className="text-muted-foreground">No tour requests yet.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {tourRequests.map((tour) => (
+                  <Card key={tour.id} className="bg-card border-border hover:border-primary/50 transition-colors overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
+                        <div>
+                          <h4 className="font-bold text-white text-lg mb-2">{tour.propertyName}</h4>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Users className="w-4 h-4 text-primary" />
+                              {tour.tenantName} ({tour.tenantEmail})
+                            </div>
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              {tour.tourType === "virtual" ? (
+                                <><Video className="w-4 h-4 text-primary" /> Virtual Tour</>
+                              ) : (
+                                <><MapPin className="w-4 h-4 text-primary" /> In-Person Tour</>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Calendar className="w-4 h-4 text-primary" />
+                              {new Date(tour.date).toLocaleDateString()}
+                            </div>
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Clock className="w-4 h-4 text-primary" />
+                              {tour.time}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="md:text-right">
+                          <Badge 
+                            className={`mb-2 ${
+                              tour.status === "approved" ? "bg-green-500/80" :
+                              tour.status === "denied" ? "bg-red-500/80" :
+                              tour.status === "rescheduled" ? "bg-amber-500/80" :
+                              "bg-blue-500/80"
+                            }`}
+                          >
+                            {tour.status.charAt(0).toUpperCase() + tour.status.slice(1)}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {tour.status === "pending" && (
+                        <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-border">
+                          <Button
+                            onClick={() => handleTourResponse(tour.id, "approved")}
+                            className="flex-1 bg-green-600/80 hover:bg-green-600 text-white gap-2"
+                            data-testid={`button-approve-tour-${tour.id}`}
+                          >
+                            <Check className="w-4 h-4" /> Approve
+                          </Button>
+                          <Button
+                            onClick={() => handleTourResponse(tour.id, "rescheduled", "Please suggest alternative times")}
+                            className="flex-1 bg-amber-600/80 hover:bg-amber-600 text-white gap-2"
+                            data-testid={`button-reschedule-tour-${tour.id}`}
+                          >
+                            <Clock className="w-4 h-4" /> Reschedule
+                          </Button>
+                          <Button
+                            onClick={() => handleTourResponse(tour.id, "denied")}
+                            variant="outline"
+                            className="flex-1 border-red-500/50 hover:bg-red-500/10 gap-2"
+                            data-testid={`button-deny-tour-${tour.id}`}
+                          >
+                            <X className="w-4 h-4" /> Deny
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {tour.providerNotes && (
+                        <div className="mt-4 pt-4 border-t border-border">
+                          <p className="text-xs text-muted-foreground font-semibold mb-1">Your Response:</p>
+                          <p className="text-sm text-gray-300">{tour.providerNotes}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
 

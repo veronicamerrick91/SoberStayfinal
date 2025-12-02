@@ -6,13 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { 
   MapPin, ShieldCheck, Check, ArrowLeft, Share2, Heart, Flag,
   Wifi, Car, Utensils, Tv, Dumbbell, Calendar,
-  Info, Mail, Phone, MessageSquare, Bus, ShoppingCart, Stethoscope, Users
+  Info, Mail, Phone, MessageSquare, Bus, ShoppingCart, Stethoscope, Users,
+  Video
 } from "lucide-react";
 import { useRoute, Link, useLocation } from "wouter";
 import { isAuthenticated } from "@/lib/auth";
 import { useState, useEffect } from "react";
 import { isFavorite, toggleFavorite } from "@/lib/favorites";
 import { ReportModal } from "@/components/report-modal";
+import { TourScheduleModal } from "@/components/tour-schedule-modal";
 import {
   Tooltip,
   TooltipContent,
@@ -25,7 +27,9 @@ export default function PropertyDetails() {
   const [location, setLocation] = useLocation();
   const [isFav, setIsFav] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showTourModal, setShowTourModal] = useState(false);
   const property = MOCK_PROPERTIES.find(p => p.id === params?.id);
+  const user = { name: "Tenant User", email: "tenant@example.com" }; // Mock tenant info
 
   useEffect(() => {
     if (property?.id) {
@@ -253,6 +257,14 @@ export default function PropertyDetails() {
                    </div>
 
                    <div className="space-y-3 pt-4">
+                     <Button 
+                       onClick={() => setShowTourModal(true)}
+                       className="w-full bg-primary/20 text-primary hover:bg-primary/30 h-12 border border-primary/50 gap-2"
+                       data-testid="button-schedule-tour"
+                     >
+                       <Video className="w-4 h-4" />
+                       Schedule a Tour
+                     </Button>
                      <Button onClick={handleApply} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg shadow-lg shadow-primary/20">
                        Apply Now
                      </Button>
@@ -333,6 +345,15 @@ export default function PropertyDetails() {
           propertyId={property?.id || ""}
           propertyName={property?.name || ""}
           userName={isAuthenticated() ? "Current User" : "Anonymous"}
+        />
+        
+        <TourScheduleModal 
+          open={showTourModal}
+          onClose={() => setShowTourModal(false)}
+          propertyName={property?.name || ""}
+          propertyId={property?.id || ""}
+          tenantName={user.name}
+          tenantEmail={user.email}
         />
       </div>
     </Layout>

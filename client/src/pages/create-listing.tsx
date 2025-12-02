@@ -52,7 +52,7 @@ export function CreateListing() {
   });
 
   const [currentStep, setCurrentStep] = useState(1);
-  const user = getAuth();
+  const user = getAuth() as any;
 
   const handleInputChange = (field: keyof ListingDraft, value: any) => {
     setListingDraft(prev => ({ ...prev, [field]: value }));
