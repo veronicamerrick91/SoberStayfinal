@@ -21,6 +21,9 @@ import { HelpCenter } from "@/pages/help-center";
 import { CrisisResources } from "@/pages/crisis-resources";
 import { SafetyReporting } from "@/pages/safety-reporting";
 import { Blog } from "@/pages/blog";
+import { Mission } from "@/pages/mission";
+import { Resources } from "@/pages/resources";
+import { Contact } from "@/pages/contact";
 import { CreateListing } from "@/pages/create-listing";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
@@ -87,6 +90,9 @@ function Router() {
         <Route path="/crisis-resources" component={CrisisResources} />
         <Route path="/safety-reporting" component={SafetyReporting} />
         <Route path="/blog" component={Blog} />
+        <Route path="/mission" component={Mission} />
+        <Route path="/resources" component={Resources} />
+        <Route path="/contact" component={Contact} />
         <Route path="/create-listing" component={CreateListing} />
         <Route component={NotFound} />
       </Switch>
