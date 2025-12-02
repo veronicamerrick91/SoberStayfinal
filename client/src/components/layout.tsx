@@ -100,10 +100,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   ) : (
                     <>
                       <Link href="/login">
-                        <Button variant="outline" className="w-full justify-start" onClick={() => setMenuOpen(false)}>Log in</Button>
+                        <Button variant="ghost" className="w-full justify-start" onClick={() => setMenuOpen(false)}>Log in</Button>
                       </Link>
-                      <Link href="/signup">
-                        <Button className="w-full justify-start bg-primary text-primary-foreground" onClick={() => setMenuOpen(false)}>Sign up</Button>
+                      <Link href="/for-tenants">
+                        <Button variant="outline" className="w-full justify-start border-primary/50 text-primary" onClick={() => setMenuOpen(false)}>
+                          Tenant Portal
+                        </Button>
+                      </Link>
+                      <Link href="/for-providers">
+                        <Button className="w-full justify-start bg-primary text-primary-foreground" onClick={() => setMenuOpen(false)}>
+                          Provider Portal
+                        </Button>
                       </Link>
                     </>
                   )}
