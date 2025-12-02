@@ -9,12 +9,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import logo from "@assets/C442C7B9-08EE-40E8-9A2E-1D38827FBB5B_1764526673965.jpeg";
 import { isAuthenticated, getAuth, clearAuth } from "@/lib/auth";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isResourcesOpen, setIsResourcesOpen] = useState(false);
   const user = getAuth();
   const authenticated = isAuthenticated();
 
@@ -57,7 +63,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Link>
             
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary outline-none">
+              <DropdownMenuTrigger className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary outline-none ${
+                resourceLinks.some(l => isActive(l.href)) ? "text-primary font-bold" : "text-muted-foreground"
+              }`}>
                 Recovery Resources <ChevronDown className="h-4 w-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -120,19 +128,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   Our Mission
                 </Link>
                 
-                <div className="space-y-3 pt-2">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Recovery Resources</p>
-                  {resourceLinks.map((link) => (
-                    <Link 
-                      key={link.href} 
-                      href={link.href} 
-                      onClick={() => setMenuOpen(false)} 
-                      className={`block text-lg font-medium pl-4 border-l-2 transition-colors hover:text-primary ${isActive(link.href) ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
+                <Collapsible open={isResourcesOpen} onOpenChange={setIsResourcesOpen} className="space-y-2">
+                  <CollapsibleTrigger className={`flex items-center justify-between w-full text-lg font-medium transition-colors hover:text-primary ${
+                    resourceLinks.some(l => isActive(l.href)) ? "text-primary" : "text-muted-foreground"
+                  }`}>
+                    Recovery Resources
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isResourcesOpen ? "rotate-180" : ""}`} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-2">
+                    {resourceLinks.map((link) => (
+                      <Link 
+                        key={link.href} 
+                        href={link.href} 
+                        onClick={() => setMenuOpen(false)} 
+                        className={`block text-base font-medium pl-4 border-l-2 transition-colors hover:text-primary ${isActive(link.href) ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
 
                 <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
                   {authenticated ? (
