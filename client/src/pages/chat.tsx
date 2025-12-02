@@ -1,11 +1,11 @@
 import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, Send, Phone, Mail, Video, MoreVertical } from "lucide-react";
+import { ArrowLeft, Send, Phone, Video, MoreVertical, MessageCircle, MapPin, ShieldCheck } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
+import { Badge } from "@/components/ui/badge";
 
 interface Message {
   id: string;
@@ -20,7 +20,6 @@ export default function Chat() {
   const [location, setLocation] = useLocation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [textFormat, setTextFormat] = useState<"normal" | "bold" | "italic">("normal");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const property = MOCK_PROPERTIES.find(p => p.id === params?.propertyId);
 
@@ -53,17 +52,6 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, property?.id]);
 
-  const formatText = (text: string) => {
-    switch (textFormat) {
-      case "bold":
-        return `**${text}**`;
-      case "italic":
-        return `_${text}_`;
-      default:
-        return text;
-    }
-  };
-
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -72,139 +60,156 @@ export default function Chat() {
       id: Date.now().toString(),
       sender: "tenant",
       senderName: "You",
-      text: formatText(input),
+      text: input.trim(),
       timestamp: new Date(),
     };
 
     setMessages([...messages, newMessage]);
     setInput("");
-    setTextFormat("normal");
   };
 
-  const formatTextDisplay = (text: string) => {
-    let formatted = text;
-    formatted = formatted.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-    formatted = formatted.replace(/_(.*?)_/g, "<em>$1</em>");
-    return formatted;
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
+
+  const formatDate = (date: Date) => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return "Today";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return "Yesterday";
+    } else {
+      return date.toLocaleDateString([], { month: "short", day: "numeric" });
+    }
+  };
+
+  const groupedMessages = messages.reduce((groups: any[], msg) => {
+    const dateKey = msg.timestamp.toDateString();
+    const lastGroup = groups[groups.length - 1];
+    if (lastGroup && lastGroup.date === dateKey) {
+      lastGroup.messages.push(msg);
+    } else {
+      groups.push({ date: dateKey, messages: [msg] });
+    }
+    return groups;
+  }, []);
 
   if (!property) return <Layout><div className="text-center py-12">Conversation not found</div></Layout>;
 
   return (
     <Layout>
       <div className="min-h-screen bg-background flex flex-col">
-        {/* Header */}
-        <div className="bg-card border-b border-border sticky top-16 z-40">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        {/* Premium Header */}
+        <div className="bg-gradient-to-r from-card to-card/80 border-b border-primary/20 sticky top-16 z-40 shadow-lg">
+          <div className="container mx-auto px-4 py-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
-                className="gap-2 pl-0 text-muted-foreground hover:text-primary"
+                className="gap-2 pl-0 text-muted-foreground hover:text-primary transition-colors"
                 onClick={() => setLocation(`/property/${property.id}`)}
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-5 h-5" />
               </Button>
-              <div>
-                <h2 className="font-bold text-white">{property.name}</h2>
-                <p className="text-xs text-muted-foreground">
-                  {property.city}, {property.state}
-                </p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h2 className="font-bold text-lg text-white">{property.name}</h2>
+                  {property.isVerified && (
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  )}
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center text-sm text-muted-foreground gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-primary" />
+                    {property.city}, {property.state}
+                  </div>
+                  <div className="text-sm text-primary font-semibold">
+                    ${property.price}/<span className="text-xs">{property.pricePeriod}</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-primary">
+            <div className="flex items-center gap-3">
+              <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all rounded-full">
                 <Phone className="w-4 h-4" />
               </Button>
-              <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-primary">
+              <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all rounded-full">
                 <Video className="w-4 h-4" />
               </Button>
-              <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-primary">
+              <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all rounded-full">
                 <MoreVertical className="w-4 h-4" />
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto container mx-auto px-4 py-6 space-y-4 max-w-2xl">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.sender === "tenant" ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`max-w-xs lg:max-w-md px-4 py-3 rounded-xl ${
-                  msg.sender === "tenant"
-                    ? "bg-primary text-primary-foreground rounded-br-none"
-                    : "bg-card border border-border text-foreground rounded-bl-none"
-                }`}
-              >
-                <p
-                  className="text-sm break-words"
-                  dangerouslySetInnerHTML={{ __html: formatTextDisplay(msg.text) }}
-                />
-                <p
-                  className={`text-xs mt-2 ${
-                    msg.sender === "tenant" ? "text-primary-foreground/70" : "text-muted-foreground"
-                  }`}
-                >
-                  {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </p>
+        {/* Messages Container */}
+        <div className="flex-1 overflow-y-auto py-8 px-4">
+          <div className="max-w-2xl mx-auto space-y-8">
+            {groupedMessages.map((group: any, groupIdx: number) => (
+              <div key={groupIdx} className="space-y-4">
+                {/* Date Separator */}
+                <div className="flex items-center gap-3 my-6">
+                  <div className="flex-1 h-px bg-border/50"></div>
+                  <span className="text-xs font-semibold text-muted-foreground px-3 py-1 bg-card/50 rounded-full">
+                    {formatDate(new Date(group.date))}
+                  </span>
+                  <div className="flex-1 h-px bg-border/50"></div>
+                </div>
+
+                {/* Messages */}
+                {group.messages.map((msg: Message) => (
+                  <div key={msg.id} className={`flex ${msg.sender === "tenant" ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-2 fade-in duration-300`}>
+                    <div className={`flex flex-col ${msg.sender === "tenant" ? "items-end" : "items-start"} gap-1 max-w-sm`}>
+                      <div
+                        className={`px-5 py-3 rounded-2xl transition-all ${
+                          msg.sender === "tenant"
+                            ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-br-none shadow-lg shadow-primary/20"
+                            : "bg-card border border-border/50 text-foreground rounded-bl-none hover:border-primary/30 shadow-md"
+                        }`}
+                      >
+                        <p className="text-sm leading-relaxed break-words">
+                          {msg.text}
+                        </p>
+                      </div>
+                      <span className={`text-xs font-medium px-1 ${msg.sender === "tenant" ? "text-muted-foreground mr-2" : "text-muted-foreground ml-2"}`}>
+                        {formatTime(msg.timestamp)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
 
-        {/* Input */}
-        <div className="bg-card border-t border-border sticky bottom-0">
+        {/* Premium Input Footer */}
+        <div className="bg-gradient-to-t from-background via-background to-background/80 border-t border-primary/10 sticky bottom-0 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4 max-w-2xl">
-            {/* Formatting Toolbar */}
-            <div className="flex gap-2 mb-3">
-              <Button
-                size="sm"
-                variant={textFormat === "normal" ? "default" : "outline"}
-                onClick={() => setTextFormat("normal")}
-                className="text-xs h-8"
-              >
-                Normal
-              </Button>
-              <Button
-                size="sm"
-                variant={textFormat === "bold" ? "default" : "outline"}
-                onClick={() => setTextFormat("bold")}
-                className="text-xs h-8 font-bold"
-              >
-                Bold
-              </Button>
-              <Button
-                size="sm"
-                variant={textFormat === "italic" ? "default" : "outline"}
-                onClick={() => setTextFormat("italic")}
-                className="text-xs h-8 italic"
-              >
-                Italic
-              </Button>
-            </div>
-
-            {/* Input Field */}
-            <form onSubmit={handleSend} className="flex gap-2">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message..."
-                className="bg-background/50 border-border flex-1"
-              />
+            <form onSubmit={handleSend} className="flex gap-3 items-end">
+              <div className="flex-1 relative">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask about the property, rules, or schedule a tour..."
+                  className="bg-card/60 border-primary/10 focus:border-primary/30 text-white placeholder:text-muted-foreground/60 pr-4 py-3 rounded-2xl transition-all focus:bg-card/80"
+                  data-testid="input-message"
+                />
+              </div>
               <Button
                 type="submit"
                 disabled={!input.trim()}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/30 rounded-full h-12 w-12 flex items-center justify-center transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                data-testid="button-send-message"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-5 h-5" />
               </Button>
             </form>
-            <p className="text-xs text-muted-foreground mt-2">
-              Format options: **bold text** or _italic text_
+            <p className="text-xs text-muted-foreground/60 mt-3 text-center">
+              Direct communication with property managers • Usually responds within 2 hours
             </p>
           </div>
         </div>
