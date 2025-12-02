@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldCheck, AlertCircle, Mail } from "lucide-react";
+import { ShieldCheck, AlertCircle, Mail, CheckCircle2, Sparkles, Building } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { saveAuth } from "@/lib/auth";
@@ -77,7 +77,49 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   return (
     <Layout>
       <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 bg-background">
-        <Card className="w-full max-w-md bg-card border-border shadow-2xl">
+        <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-12 items-center">
+          {/* Benefits Section - Only visible on desktop/large screens */}
+          <div className="hidden lg:block space-y-8 animate-in slide-in-from-left-8 duration-700">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
+              {role === "provider" ? <Building className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+              {role === "provider" ? "For Housing Providers" : "For Recovery Seekers"}
+            </div>
+            
+            <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight">
+              {role === "provider" 
+                ? "Grow Your Community With Confidence" 
+                : "Find Your Safe Haven Today"}
+            </h1>
+            
+            <p className="text-xl text-muted-foreground leading-relaxed">
+              {role === "provider"
+                ? "Join the largest network of verified sober living homes. Streamline your admissions and connect with qualified residents."
+                : "Connect with supportive environments that understand your journey. We make finding recovery housing simple and secure."}
+            </p>
+
+            <div className="space-y-4">
+              {(role === "provider" ? [
+                "Fill vacancies faster with qualified applicants",
+                "Streamlined application management tools",
+                "Digital resident files and document storage",
+                "Secure messaging and tour scheduling"
+              ] : [
+                "Browse hundreds of verified sober living homes",
+                "One application for multiple listings",
+                "Chat directly with housing providers",
+                "Secure your spot with online payments"
+              ]).map((benefit, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="p-1 rounded-full bg-primary/20 text-primary">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <span className="text-lg text-gray-200">{benefit}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Card className="w-full max-w-md bg-card border-border shadow-2xl mx-auto lg:mx-0">
           <CardHeader className="text-center space-y-2">
             <div className="mx-auto bg-primary/20 p-3 rounded-lg w-fit mb-2">
               <ShieldCheck className="w-8 h-8 text-primary" />
@@ -171,6 +213,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
             </p>
           </CardFooter>
         </Card>
+        </div>
       </div>
     </Layout>
   );

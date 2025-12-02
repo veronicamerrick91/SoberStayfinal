@@ -63,9 +63,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     Log in
                   </Button>
                 </Link>
-                <Link href="/signup">
+                <Link href="/for-tenants">
+                  <Button size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10 hidden lg:inline-flex">
+                    Tenant Portal
+                  </Button>
+                </Link>
+                <Link href="/for-providers">
                   <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                    Sign up
+                    Provider Portal
                   </Button>
                 </Link>
               </>
