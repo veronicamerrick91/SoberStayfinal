@@ -54,8 +54,6 @@ export function AdminDashboard() {
   const [showBlogModal, setShowBlogModal] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<any | null>(null);
   const [editingListing, setEditingListing] = useState<any | null>(null);
-  const [newBlogTitle, setNewBlogTitle] = useState("");
-  const [newBlogContent, setNewBlogContent] = useState("");
   const [showNewCampaignModal, setShowNewCampaignModal] = useState(false);
   const [newCampaignName, setNewCampaignName] = useState("");
   const [newCampaignRecipients, setNewCampaignRecipients] = useState("All Tenants");
@@ -112,8 +110,13 @@ export function AdminDashboard() {
   const [showBlogEditor, setShowBlogEditor] = useState(false);
   const [blogTitle, setBlogTitle] = useState("");
   const [blogContent, setBlogContent] = useState("");
-  const [blogIsBold, setBlogIsBold] = useState(false);
-  const [blogIsItalic, setBlogIsItalic] = useState(false);
+  const [blogExcerpt, setBlogExcerpt] = useState("");
+  const [blogCategory, setBlogCategory] = useState("Recovery Tips");
+  const [blogFont, setBlogFont] = useState("Georgia");
+  const [blogFontSize, setBlogFontSize] = useState(16);
+  const [blogFontColor, setBlogFontColor] = useState("#ffffff");
+  const [publishedBlogPosts, setPublishedBlogPosts] = useState<any[]>([]);
+  const [blogPublishSuccess, setBlogPublishSuccess] = useState(false);
 
   useEffect(() => {
     setReports(getReports());
@@ -274,16 +277,55 @@ export function AdminDashboard() {
   };
 
   const handleCreateBlog = () => {
+    setBlogTitle("");
+    setBlogContent("");
+    setBlogExcerpt("");
+    setBlogCategory("Recovery Tips");
+    setBlogFont("Georgia");
+    setBlogFontSize(16);
+    setBlogFontColor("#ffffff");
     setShowBlogModal(true);
-    setNewBlogTitle("");
   };
 
   const handleSaveBlog = () => {
+    if (blogTitle.trim() && blogContent.trim()) {
+      const newPost = {
+        id: `admin-${Date.now()}`,
+        title: blogTitle,
+        excerpt: blogExcerpt || blogContent.substring(0, 150) + "...",
+        content: blogContent,
+        author: "Admin",
+        date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        category: blogCategory,
+        status: "Draft"
+      };
+      setPublishedBlogPosts([newPost, ...publishedBlogPosts]);
+    }
     setShowBlogModal(false);
   };
 
   const handlePublishBlog = () => {
+    if (blogTitle.trim() && blogContent.trim()) {
+      const newPost = {
+        id: `admin-${Date.now()}`,
+        title: blogTitle,
+        excerpt: blogExcerpt || blogContent.substring(0, 150) + "...",
+        content: blogContent,
+        author: "Admin",
+        date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        category: blogCategory,
+        status: "Published"
+      };
+      setPublishedBlogPosts([newPost, ...publishedBlogPosts]);
+      
+      const existingPosts = JSON.parse(localStorage.getItem("sober-stay-blog-articles") || "[]");
+      localStorage.setItem("sober-stay-blog-articles", JSON.stringify([newPost, ...existingPosts]));
+      
+      setBlogPublishSuccess(true);
+      setTimeout(() => setBlogPublishSuccess(false), 3000);
+    }
     setShowBlogModal(false);
+    setShowBlogEditor(false);
   };
 
   const handleCreatePromo = () => {
@@ -364,6 +406,13 @@ export function AdminDashboard() {
             <TabsTrigger value="email-list" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Mail className="w-4 h-4" /> Email List</TabsTrigger>
             <TabsTrigger value="settings" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
           </TabsList>
+
+          {blogPublishSuccess && (
+            <div className="bg-green-500/20 border border-green-500/50 text-green-400 px-4 py-3 rounded-lg flex items-center gap-2 mb-4">
+              <CheckCircle className="w-5 h-5" />
+              <span className="font-medium">Blog post published successfully! It is now visible on the public blog page.</span>
+            </div>
+          )}
 
           {/* DASHBOARD OVERVIEW */}
           <TabsContent value="overview" className="space-y-6">
@@ -1710,31 +1759,115 @@ export function AdminDashboard() {
 
         {showBlogModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-2xl w-full mx-4 max-h-96 overflow-y-auto">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
               <h2 className="text-xl font-bold text-white mb-4">Create Blog Post</h2>
-              <input 
-                type="text" 
-                placeholder="Blog title" 
-                value={newBlogTitle}
-                onChange={(e) => setNewBlogTitle(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-2"
-              />
-              <div className="flex gap-1 mb-2 p-2 bg-background/30 rounded-lg">
-                <Button size="sm" variant="ghost" onClick={() => setNewBlogContent(newBlogContent + " **bold** ")} className="text-xs">B</Button>
-                <Button size="sm" variant="ghost" onClick={() => setNewBlogContent(newBlogContent + " *italic* ")} className="text-xs italic">I</Button>
-                <Button size="sm" variant="ghost" onClick={() => setNewBlogContent(newBlogContent + " 😊 ")} className="text-xs">😊</Button>
-                <Button size="sm" variant="ghost" onClick={() => setNewBlogContent(newBlogContent + " 🎉 ")} className="text-xs">🎉</Button>
-                <Button size="sm" variant="ghost" onClick={() => setNewBlogContent(newBlogContent + " ❤️ ")} className="text-xs">❤️</Button>
+              
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">Post Title</label>
+                  <input 
+                    type="text" 
+                    placeholder="Enter blog title" 
+                    value={blogTitle}
+                    onChange={(e) => setBlogTitle(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">Excerpt (Brief summary for previews)</label>
+                  <input 
+                    type="text" 
+                    placeholder="Short description of the article..." 
+                    value={blogExcerpt}
+                    onChange={(e) => setBlogExcerpt(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Category</label>
+                    <select 
+                      value={blogCategory} 
+                      onChange={(e) => setBlogCategory(e.target.value)} 
+                      className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
+                    >
+                      <option>Recovery Tips</option>
+                      <option>Education</option>
+                      <option>Community</option>
+                      <option>Guidance</option>
+                      <option>Mental Health</option>
+                      <option>Stories</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Font</label>
+                    <select 
+                      value={blogFont} 
+                      onChange={(e) => setBlogFont(e.target.value)} 
+                      className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-xs"
+                    >
+                      <option>Georgia</option>
+                      <option>Arial</option>
+                      <option>Times New Roman</option>
+                      <option>Verdana</option>
+                      <option>Trebuchet MS</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Size</label>
+                    <select 
+                      value={blogFontSize} 
+                      onChange={(e) => setBlogFontSize(Number(e.target.value))} 
+                      className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-xs"
+                    >
+                      <option value={14}>14px</option>
+                      <option value={16}>16px</option>
+                      <option value={18}>18px</option>
+                      <option value={20}>20px</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Text Color</label>
+                    <input 
+                      type="color" 
+                      value={blogFontColor} 
+                      onChange={(e) => setBlogFontColor(e.target.value)} 
+                      className="w-full h-10 rounded-lg cursor-pointer bg-background/50 border border-white/10"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">Content</label>
+                  <textarea 
+                    placeholder="Write your blog post content here..." 
+                    value={blogContent}
+                    onChange={(e) => setBlogContent(e.target.value)}
+                    className="w-full px-3 py-3 rounded-lg bg-background/50 border border-white/10 text-white h-48"
+                    style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
+                  />
+                </div>
+                
+                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                  <p className="text-xs text-muted-foreground mb-2">Live Preview</p>
+                  <div 
+                    className="p-4 bg-white/5 rounded-lg border border-white/10 min-h-24 whitespace-pre-wrap"
+                    style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
+                  >
+                    <h3 className="font-bold text-lg mb-2" style={{ color: blogFontColor }}>{blogTitle || "Your title here..."}</h3>
+                    {blogContent || "Your blog content will appear here..."}
+                  </div>
+                </div>
               </div>
-              <textarea 
-                placeholder="Blog content (supports markdown, emojis, and formatting)" 
-                value={newBlogContent}
-                onChange={(e) => setNewBlogContent(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white mb-4 h-32"
-              />
+              
               <div className="flex gap-2">
-                <Button onClick={handleSaveBlog} className="flex-1 bg-primary hover:bg-primary/90">Save as Draft</Button>
-                <Button onClick={handlePublishBlog} className="flex-1 bg-green-600 hover:bg-green-700">Publish</Button>
+                <Button onClick={handleSaveBlog} className="flex-1 bg-gray-600 hover:bg-gray-700">Save as Draft</Button>
+                <Button onClick={handlePublishBlog} className="flex-1 bg-green-600 hover:bg-green-700">Publish Now</Button>
                 <Button onClick={() => setShowBlogModal(false)} variant="outline">Cancel</Button>
               </div>
             </div>
@@ -1912,49 +2045,116 @@ export function AdminDashboard() {
 
         {showBlogEditor && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
-              <h2 className="text-xl font-bold text-white mb-4">Blog Post Editor</h2>
+            <div className="bg-card border border-border rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <h2 className="text-xl font-bold text-white mb-4">Edit Blog Post</h2>
+              
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Blog Title</label>
-                  <input type="text" value={blogTitle} onChange={(e) => setBlogTitle(e.target.value)} placeholder="Enter blog title" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm" />
+                  <label className="text-xs text-muted-foreground mb-2 block">Post Title</label>
+                  <input 
+                    type="text" 
+                    placeholder="Enter blog title" 
+                    value={blogTitle}
+                    onChange={(e) => setBlogTitle(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white"
+                  />
                 </div>
                 
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Formatting</label>
-                  <div className="flex gap-2 mb-3">
-                    <Button onClick={() => setBlogIsBold(!blogIsBold)} className={`gap-1 h-9 ${blogIsBold ? "bg-primary" : "bg-white/10"}`}>
-                      <Bold className="w-4 h-4" /> Bold
-                    </Button>
-                    <Button onClick={() => setBlogIsItalic(!blogIsItalic)} className={`gap-1 h-9 ${blogIsItalic ? "bg-primary" : "bg-white/10"}`}>
-                      <Italic className="w-4 h-4" /> Italic
-                    </Button>
+                  <label className="text-xs text-muted-foreground mb-2 block">Excerpt</label>
+                  <input 
+                    type="text" 
+                    placeholder="Short description..." 
+                    value={blogExcerpt}
+                    onChange={(e) => setBlogExcerpt(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Category</label>
+                    <select 
+                      value={blogCategory} 
+                      onChange={(e) => setBlogCategory(e.target.value)} 
+                      className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
+                    >
+                      <option>Recovery Tips</option>
+                      <option>Education</option>
+                      <option>Community</option>
+                      <option>Guidance</option>
+                      <option>Mental Health</option>
+                      <option>Stories</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Font</label>
+                    <select 
+                      value={blogFont} 
+                      onChange={(e) => setBlogFont(e.target.value)} 
+                      className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-xs"
+                    >
+                      <option>Georgia</option>
+                      <option>Arial</option>
+                      <option>Times New Roman</option>
+                      <option>Verdana</option>
+                      <option>Trebuchet MS</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Size</label>
+                    <select 
+                      value={blogFontSize} 
+                      onChange={(e) => setBlogFontSize(Number(e.target.value))} 
+                      className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-xs"
+                    >
+                      <option value={14}>14px</option>
+                      <option value={16}>16px</option>
+                      <option value={18}>18px</option>
+                      <option value={20}>20px</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Text Color</label>
+                    <input 
+                      type="color" 
+                      value={blogFontColor} 
+                      onChange={(e) => setBlogFontColor(e.target.value)} 
+                      className="w-full h-10 rounded-lg cursor-pointer bg-background/50 border border-white/10"
+                    />
                   </div>
                 </div>
                 
                 <div>
                   <label className="text-xs text-muted-foreground mb-2 block">Content</label>
-                  <textarea
-                    placeholder="Type your blog content here..."
+                  <textarea 
+                    placeholder="Write your blog post content here..." 
                     value={blogContent}
                     onChange={(e) => setBlogContent(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
-                    rows={8}
-                    style={{ fontWeight: blogIsBold ? "bold" : "normal", fontStyle: blogIsItalic ? "italic" : "normal" }}
+                    className="w-full px-3 py-3 rounded-lg bg-background/50 border border-white/10 text-white h-48"
+                    style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
                   />
                 </div>
                 
                 <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                  <p className="text-xs text-muted-foreground mb-2">Preview</p>
-                  <div className="p-4 bg-white/5 rounded-lg border border-white/10 min-h-20" style={{ fontWeight: blogIsBold ? "bold" : "normal", fontStyle: blogIsItalic ? "italic" : "normal" }}>
+                  <p className="text-xs text-muted-foreground mb-2">Live Preview</p>
+                  <div 
+                    className="p-4 bg-white/5 rounded-lg border border-white/10 min-h-24 whitespace-pre-wrap"
+                    style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
+                  >
+                    <h3 className="font-bold text-lg mb-2" style={{ color: blogFontColor }}>{blogTitle || "Your title here..."}</h3>
                     {blogContent || "Your blog content will appear here..."}
                   </div>
                 </div>
               </div>
               
-              <div className="flex gap-2 justify-end">
+              <div className="flex gap-2">
+                <Button onClick={handleSaveBlog} className="flex-1 bg-gray-600 hover:bg-gray-700">Save as Draft</Button>
+                <Button onClick={handlePublishBlog} className="flex-1 bg-green-600 hover:bg-green-700">Publish Now</Button>
                 <Button onClick={() => setShowBlogEditor(false)} variant="outline">Cancel</Button>
-                <Button onClick={() => setShowBlogEditor(false)} className="bg-primary hover:bg-primary/90">Publish Post</Button>
               </div>
             </div>
           </div>
