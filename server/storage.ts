@@ -1,6 +1,6 @@
-import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, users, listings, subscriptions } from "@shared/schema";
+import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type Application, type InsertApplication, users, listings, subscriptions, applications } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -21,6 +21,12 @@ export interface IStorage {
   createSubscription(subscription: InsertSubscription): Promise<Subscription>;
   getSubscriptionByProvider(providerId: number): Promise<Subscription | undefined>;
   
+  createApplication(application: InsertApplication): Promise<Application>;
+  getApplication(id: number): Promise<Application | undefined>;
+  getApplicationsByTenant(tenantId: number): Promise<Application[]>;
+  getApplicationsByListing(listingId: number): Promise<Application[]>;
+  updateApplication(id: number, application: Partial<InsertApplication>): Promise<Application | undefined>;
+
   sessionStore: session.Store;
 }
 
@@ -104,6 +110,36 @@ export class DatabaseStorage implements IStorage {
       
     // In a real app we would check if it's the latest active one
     return subscription;
+  }
+
+  async createApplication(insertApplication: InsertApplication): Promise<Application> {
+    const [application] = await db
+      .insert(applications)
+      .values(insertApplication)
+      .returning();
+    return application;
+  }
+
+  async getApplication(id: number): Promise<Application | undefined> {
+    const [application] = await db.select().from(applications).where(eq(applications.id, id));
+    return application;
+  }
+
+  async getApplicationsByTenant(tenantId: number): Promise<Application[]> {
+    return await db.select().from(applications).where(eq(applications.tenantId, tenantId));
+  }
+
+  async getApplicationsByListing(listingId: number): Promise<Application[]> {
+    return await db.select().from(applications).where(eq(applications.listingId, listingId));
+  }
+
+  async updateApplication(id: number, applicationData: Partial<InsertApplication>): Promise<Application | undefined> {
+    const [application] = await db
+      .update(applications)
+      .set({ ...applicationData, updatedAt: new Date() })
+      .where(eq(applications.id, id))
+      .returning();
+    return application;
   }
 }
 
