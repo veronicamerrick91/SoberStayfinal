@@ -107,7 +107,7 @@ export function CreateListing() {
     }));
   };
 
-  const isStep1Complete = listingDraft.propertyName && listingDraft.address && listingDraft.city && listingDraft.state;
+  const isStep1Complete = listingDraft.propertyName && listingDraft.city && listingDraft.state;
   const isStep2Complete = listingDraft.monthlyPrice && listingDraft.totalBeds;
   const isStep3Complete = listingDraft.description;
 
@@ -176,7 +176,7 @@ export function CreateListing() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-white">Street Address *</Label>
+                    <Label className="text-white">Street Address</Label>
                     <Input
                       placeholder="123 Main Street"
                       value={listingDraft.address}
