@@ -69,6 +69,10 @@ export function AdminDashboard() {
   const [newWorkflowTemplate, setNewWorkflowTemplate] = useState("welcome");
   const [newWorkflowSubject, setNewWorkflowSubject] = useState("");
   const [newWorkflowBody, setNewWorkflowBody] = useState("");
+  const [complianceIssues, setComplianceIssues] = useState<any[]>([
+    { id: 1, provider: "Recovery First LLC", issue: "Missing Fire Inspection", status: "Pending" },
+    { id: 2, provider: "Hope House", issue: "Expired Insurance Certificate", status: "Urgent" },
+  ]);
 
   useEffect(() => {
     setReports(getReports());
@@ -159,6 +163,18 @@ export function AdminDashboard() {
       { id: 3, label: "Require provider verification", enabled: true },
       { id: 4, label: "Enable duplicate account detection", enabled: true },
     ]);
+  };
+
+  const handleSendReminder = (issueId: number) => {
+    setComplianceIssues(complianceIssues.map(issue => 
+      issue.id === issueId ? { ...issue, status: "Reminder Sent" } : issue
+    ));
+  };
+
+  const handleRequestUpdate = (issueId: number) => {
+    setComplianceIssues(complianceIssues.map(issue => 
+      issue.id === issueId ? { ...issue, status: "Update Requested" } : issue
+    ));
   };
 
   const handleExportData = () => {
@@ -775,32 +791,37 @@ export function AdminDashboard() {
                     </Card>
                   </div>
                   <div className="space-y-3">
-                    <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="text-white font-medium text-sm">Recovery First LLC - Missing Fire Inspection</p>
-                          <p className="text-xs text-muted-foreground mt-1">Property was last inspected 90 days ago. Annual inspection due.</p>
+                    {complianceIssues.map((issue) => (
+                      <div key={issue.id} className={`p-4 rounded-lg border ${
+                        issue.status === "Urgent" ? "bg-red-500/10 border-red-500/20" : 
+                        issue.status === "Reminder Sent" || issue.status === "Update Requested" ? "bg-green-500/10 border-green-500/20" :
+                        "bg-amber-500/10 border-amber-500/20"
+                      }`}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="text-white font-medium text-sm">{issue.provider} - {issue.issue}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {issue.issue.includes("Fire") ? "Property was last inspected 90 days ago. Annual inspection due." : "Certificate expired on Nov 15, 2024. New certificate required to maintain active status."}
+                            </p>
+                          </div>
+                          <Badge className={`text-xs ${
+                            issue.status === "Urgent" ? "bg-red-500/80" :
+                            issue.status === "Reminder Sent" ? "bg-green-500/80" :
+                            issue.status === "Update Requested" ? "bg-green-500/80" :
+                            "bg-amber-500/80"
+                          }`}>{issue.status}</Badge>
                         </div>
-                        <Badge className="bg-amber-500/80 text-xs">Pending</Badge>
-                      </div>
-                      <div className="mt-3 flex gap-2">
-                        <Button size="sm" className="h-8 text-xs bg-amber-500/20 text-amber-500 hover:bg-amber-500/30">Send Reminder</Button>
-                        <Button size="sm" variant="outline" className="h-8 text-xs">View Details</Button>
-                      </div>
-                    </div>
-                    <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="text-white font-medium text-sm">Hope House - Expired Insurance Certificate</p>
-                          <p className="text-xs text-muted-foreground mt-1">Insurance certificate expired on Nov 15, 2024. New certificate required to maintain active status.</p>
+                        <div className="mt-3 flex gap-2">
+                          {issue.status === "Pending" ? (
+                            <Button size="sm" onClick={() => handleSendReminder(issue.id)} className="h-8 text-xs bg-amber-500/20 text-amber-500 hover:bg-amber-500/30">Send Reminder</Button>
+                          ) : null}
+                          {issue.status === "Urgent" ? (
+                            <Button size="sm" onClick={() => handleRequestUpdate(issue.id)} className="h-8 text-xs bg-red-500/20 text-red-500 hover:bg-red-500/30">Request Update</Button>
+                          ) : null}
+                          <Button size="sm" variant="outline" className="h-8 text-xs cursor-pointer">View Details</Button>
                         </div>
-                        <Badge className="bg-red-500/80 text-xs">Urgent</Badge>
                       </div>
-                      <div className="mt-3 flex gap-2">
-                        <Button size="sm" className="h-8 text-xs bg-red-500/20 text-red-500 hover:bg-red-500/30">Request Update</Button>
-                        <Button size="sm" variant="outline" className="h-8 text-xs">View Details</Button>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </CardContent>
