@@ -367,66 +367,38 @@ export function AdminDashboard() {
 
           {/* DASHBOARD OVERVIEW */}
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                      <h3 className="text-3xl font-bold text-white">1,240</h3>
-                    </div>
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Users className="w-5 h-5 text-primary" />
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">850 Tenants • 390 Providers</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Active Listings</p>
-                      <h3 className="text-3xl font-bold text-white">145</h3>
-                    </div>
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Building className="w-5 h-5 text-primary" />
-                    </div>
-                  </div>
-                  <div className="text-xs text-primary font-bold">12 pending verification</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Applications</p>
-                      <h3 className="text-3xl font-bold text-white">892</h3>
-                    </div>
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <FileText className="w-5 h-5 text-primary" />
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">+45 this week</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Revenue</p>
-                      <h3 className="text-3xl font-bold text-primary">$12.4k</h3>
-                    </div>
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <DollarSign className="w-5 h-5 text-primary" />
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">From subscriptions this month</div>
-                </CardContent>
-              </Card>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
+                <Users className="w-5 h-5 text-primary shrink-0" />
+                <div className="flex-1">
+                  <p className="text-white font-medium">Total Users: 1,240</p>
+                  <p className="text-xs text-muted-foreground">850 Tenants • 390 Providers</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
+                <Building className="w-5 h-5 text-primary shrink-0" />
+                <div className="flex-1">
+                  <p className="text-white font-medium">Active Listings: 145</p>
+                  <p className="text-xs text-muted-foreground">12 pending verification</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
+                <FileText className="w-5 h-5 text-primary shrink-0" />
+                <div className="flex-1">
+                  <p className="text-white font-medium">Applications: 892</p>
+                  <p className="text-xs text-muted-foreground">+45 this week</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
+                <DollarSign className="w-5 h-5 text-primary shrink-0" />
+                <div className="flex-1">
+                  <p className="text-white font-medium">Revenue: $12.4k</p>
+                  <p className="text-xs text-muted-foreground">From subscriptions this month</p>
+                </div>
+              </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
@@ -1065,66 +1037,38 @@ export function AdminDashboard() {
 
           {/* EMAIL SUBSCRIBER LIST */}
           <TabsContent value="email-list" className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Total Subscribers</p>
-                      <h3 className="text-3xl font-bold text-white">{emailSubscribers.length}</h3>
-                    </div>
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Mail className="w-5 h-5 text-primary" />
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">All active subscribers</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Active</p>
-                      <h3 className="text-3xl font-bold text-green-500">{emailSubscribers.filter(s => s.status === "Active").length}</h3>
-                    </div>
-                    <div className="p-2 bg-green-500/10 rounded-lg">
-                      <Check className="w-5 h-5 text-green-500" />
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">Actively receiving emails</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Growth Rate</p>
-                      <h3 className="text-3xl font-bold text-blue-500">+12%</h3>
-                    </div>
-                    <div className="p-2 bg-blue-500/10 rounded-lg">
-                      <TrendingUp className="w-5 h-5 text-blue-500" />
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">Month over month</div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Last 7 Days</p>
-                      <h3 className="text-3xl font-bold text-amber-500">+3</h3>
-                    </div>
-                    <div className="p-2 bg-amber-500/10 rounded-lg">
-                      <Clock className="w-5 h-5 text-amber-500" />
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">New subscriptions</div>
-                </CardContent>
-              </Card>
+            <div className="space-y-2 mb-6">
+              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
+                <Mail className="w-5 h-5 text-primary shrink-0" />
+                <div className="flex-1">
+                  <p className="text-white font-medium">Total Subscribers: {emailSubscribers.length}</p>
+                  <p className="text-xs text-muted-foreground">All active subscribers</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
+                <Check className="w-5 h-5 text-green-500 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-white font-medium">Active: {emailSubscribers.filter(s => s.status === "Active").length}</p>
+                  <p className="text-xs text-muted-foreground">Actively receiving emails</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
+                <TrendingUp className="w-5 h-5 text-blue-500 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-white font-medium">Growth Rate: +12%</p>
+                  <p className="text-xs text-muted-foreground">Month over month</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
+                <Clock className="w-5 h-5 text-amber-500 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-white font-medium">Last 7 Days: +3</p>
+                  <p className="text-xs text-muted-foreground">New subscriptions</p>
+                </div>
+              </div>
             </div>
 
             <Card className="bg-card border-border">
