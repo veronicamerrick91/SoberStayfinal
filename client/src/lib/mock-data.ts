@@ -77,7 +77,9 @@ export const MOCK_PROPERTIES: Property[] = [
     requirements: ["Must attend 3 meetings per week", "Valid ID required", "Minimum 30 days sober", "Commitment to 6+ month stay", "Employment or education program"],
     nearbyAmenities: [
       { category: "Transportation", items: [{ name: "Bus Stop #42", distance: "0.1 mi" }, { name: "Red Line Station", distance: "0.5 mi" }] },
-      { category: "Recovery Meetings", items: [{ name: "Boston AA Central", distance: "0.5 mi" }] },
+      { category: "Recovery Meetings", items: [{ name: "Boston AA Central", distance: "0.5 mi" }, { name: "NA Meeting", distance: "0.7 mi" }] },
+      { category: "Treatment Centers", items: [{ name: "Boston Recovery Center", distance: "1.2 mi" }] },
+      { category: "Therapy/IOP", items: [{ name: "Community Outpatient Program", distance: "0.8 mi" }] },
       { category: "Groceries", items: [{ name: "Whole Foods", distance: "0.3 mi" }] }
     ]
   },
@@ -107,7 +109,9 @@ export const MOCK_PROPERTIES: Property[] = [
     houseRules: ["Quiet hours 10pm-8am", "Smoking outside only", "Kitchen cleaned after use", "Monthly rent due by 1st", "No unauthorized guests"],
     requirements: ["Women only", "Minimum 14 days sober", "Mental health assessment required", "Pet policy compliance", "Willing to participate in groups"],
     nearbyAmenities: [
-      { category: "Therapy/IOP", items: [{ name: "Cambridge Health", distance: "1.0 mi" }] },
+      { category: "Therapy/IOP", items: [{ name: "Cambridge Health", distance: "1.0 mi" }, { name: "Women's Recovery Center", distance: "1.5 mi" }] },
+      { category: "Recovery Meetings", items: [{ name: "Cambridge Women's AA", distance: "0.6 mi" }, { name: "NA Women's Group", distance: "0.8 mi" }] },
+      { category: "Treatment Centers", items: [{ name: "Cambridge Behavioral Health", distance: "1.3 mi" }] },
       { category: "Food", items: [{ name: "Main St Cafe", distance: "0.2 mi" }] }
     ]
   },
@@ -137,7 +141,10 @@ export const MOCK_PROPERTIES: Property[] = [
     houseRules: ["Democratic decision making", "Mandatory house meetings", "Shared meal prep Sundays", "No violence or theft", "Community service hours required"],
     requirements: ["Open to all genders", "Minimum 7 days sober", "Able to participate in peer governance", "Conflict resolution commitment"],
     nearbyAmenities: [
-      { category: "Transportation", items: [{ name: "Quincy Center T", distance: "0.8 mi" }] }
+      { category: "Transportation", items: [{ name: "Quincy Center T", distance: "0.8 mi" }] },
+      { category: "Recovery Meetings", items: [{ name: "Quincy AA", distance: "0.5 mi" }, { name: "NA Group", distance: "0.9 mi" }] },
+      { category: "Treatment Centers", items: [{ name: "South Shore Recovery Center", distance: "1.1 mi" }] },
+      { category: "Therapy/IOP", items: [{ name: "Quincy Community Health", distance: "1.0 mi" }] }
     ]
   },
   {
@@ -166,7 +173,10 @@ export const MOCK_PROPERTIES: Property[] = [
     houseRules: ["Professional dress for outings", "No visitors without advance notice", "Bedtime 10:30pm weekdays", "Fitness classes mandatory", "Random UA testing"],
     requirements: ["Private room only", "Minimum 3 months sober", "Aftercare plan required", "Medical clearance", "Insurance or payment plan"],
     nearbyAmenities: [
-      { category: "Recovery Meetings", items: [{ name: "Plymouth Group", distance: "1.5 mi" }] }
+      { category: "Recovery Meetings", items: [{ name: "Plymouth Group AA", distance: "1.5 mi" }, { name: "NA Plymouth", distance: "1.8 mi" }] },
+      { category: "Treatment Centers", items: [{ name: "Coastal Behavioral Health", distance: "2.0 mi" }] },
+      { category: "Therapy/IOP", items: [{ name: "Plymouth Medical Center", distance: "1.2 mi" }] },
+      { category: "Food", items: [{ name: "Coastal Cafe", distance: "0.3 mi" }] }
     ]
   },
   {
@@ -196,6 +206,9 @@ export const MOCK_PROPERTIES: Property[] = [
     requirements: ["Minimum 2 weeks sober", "Open to all genders", "Willingness to participate in community", "Basic self-care skills"],
     nearbyAmenities: [
       { category: "Transportation", items: [{ name: "Union Station", distance: "0.5 mi" }] },
+      { category: "Recovery Meetings", items: [{ name: "Worcester AA Central", distance: "0.7 mi" }, { name: "NA Group", distance: "1.0 mi" }] },
+      { category: "Treatment Centers", items: [{ name: "Worcester Recovery Center", distance: "1.2 mi" }] },
+      { category: "Therapy/IOP", items: [{ name: "Community Health Center", distance: "0.9 mi" }] },
       { category: "Groceries", items: [{ name: "Price Chopper", distance: "0.4 mi" }] }
     ]
   }

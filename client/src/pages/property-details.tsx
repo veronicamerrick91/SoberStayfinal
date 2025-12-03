@@ -159,6 +159,19 @@ export default function PropertyDetails() {
               </p>
             </div>
 
+            {/* Amenities & Features */}
+            <div>
+              <h3 className="text-xl font-bold text-white mb-6">Amenities & Features</h3>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {property.amenities.map((amenity, i) => (
+                  <div key={i} className="flex items-center gap-3 text-gray-300 p-3 rounded-lg bg-card/30 border border-border/50">
+                    <Check className="w-5 h-5 text-primary" />
+                    {amenity}
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Included in Price */}
             {property.inclusions && property.inclusions.length > 0 && (
               <div>
@@ -176,18 +189,39 @@ export default function PropertyDetails() {
               </div>
             )}
 
-            {/* Amenities */}
-            <div>
-              <h3 className="text-xl font-bold text-white mb-6">Amenities & Features</h3>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {property.amenities.map((amenity, i) => (
-                  <div key={i} className="flex items-center gap-3 text-gray-300 p-3 rounded-lg bg-card/30 border border-border/50">
-                    <Check className="w-5 h-5 text-primary" />
-                    {amenity}
-                  </div>
-                ))}
+            {/* House Rules */}
+            {property.houseRules && property.houseRules.length > 0 && (
+              <div>
+                <h3 className="text-xl font-bold text-white mb-6">House Rules</h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {property.houseRules.map((rule, i) => (
+                    <div key={i} className="flex items-start gap-3 text-gray-300 p-3 rounded-lg bg-amber-950/20 border border-amber-500/30">
+                      <div className="pt-1">
+                        <div className="w-2 h-2 rounded-full bg-amber-500 mt-1" />
+                      </div>
+                      <span className="text-sm">{rule}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Residency Requirements */}
+            {property.requirements && property.requirements.length > 0 && (
+              <div>
+                <h3 className="text-xl font-bold text-white mb-6">Residency Requirements</h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {property.requirements.map((req, i) => (
+                    <div key={i} className="flex items-start gap-3 text-gray-300 p-3 rounded-lg bg-blue-950/20 border border-blue-500/30">
+                      <div className="pt-1">
+                        <div className="w-2 h-2 rounded-full bg-blue-500 mt-1" />
+                      </div>
+                      <span className="text-sm">{req}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Nearby Amenities */}
             <div>
@@ -201,6 +235,7 @@ export default function PropertyDetails() {
                       case "Groceries": return <ShoppingCart className="w-5 h-5" />;
                       case "Therapy/IOP": return <Stethoscope className="w-5 h-5" />;
                       case "Recovery Meetings": return <Users className="w-5 h-5" />;
+                      case "Treatment Centers": return <Users className="w-5 h-5" />;
                       default: return <Check className="w-5 h-5" />;
                     }
                   };
