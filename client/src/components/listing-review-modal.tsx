@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { MapPin, Users, Home, DollarSign, Check, X, AlertCircle, CheckCircle2, XCircle, Shield, AlertTriangle } from "lucide-react";
+import { MapPin, Check, X, AlertCircle, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 
 interface ListingReviewModalProps {
   open: boolean;
@@ -33,110 +33,83 @@ interface ListingReviewModalProps {
   onDeny: (id: string, reason: string) => void;
 }
 
-interface ApprovalCheckpoint {
-  id: string;
-  label: string;
-  status: "pass" | "warning" | "fail";
-  description: string;
-  icon: React.ReactNode;
-}
-
 export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }: ListingReviewModalProps) {
   const [denyReason, setDenyReason] = useState("");
   const [showDenyForm, setShowDenyForm] = useState(false);
 
-  // Calculate completeness score
   const calculateCompleteness = () => {
-    let score = 0;
-    const total = 8;
-    
-    if (listing.image) score++;
-    if (listing.description && listing.description.length > 100) score++;
-    if (listing.price > 0) score++;
-    if (listing.amenities && listing.amenities.length > 0) score++;
-    if (listing.inclusions && listing.inclusions.length > 0) score++;
-    if (listing.supervisionType) score++;
-    if (listing.totalBeds > 0) score++;
-    if (listing.address && listing.city && listing.state) score++;
-    
-    return Math.round((score / total) * 100);
+    let completeness = 0;
+    if (listing.image) completeness += 15;
+    if (listing.description && listing.description.length > 50) completeness += 15;
+    if (listing.price > 0) completeness += 15;
+    if (listing.amenities && listing.amenities.length > 0) completeness += 15;
+    if (listing.inclusions && listing.inclusions.length > 0) completeness += 15;
+    if (listing.supervisionType) completeness += 15;
+    if (listing.totalBeds > 0) completeness += 10;
+    return completeness;
   };
 
-  // Generate approval checkpoints
-  const getApprovalCheckpoints = (): ApprovalCheckpoint[] => {
-    const checkpoints: ApprovalCheckpoint[] = [];
+  const getApprovalCheckpoints = () => {
+    const checkpoints = [];
     
-    // Photo Quality
     checkpoints.push({
       id: "photo",
-      label: "Property Photo",
+      label: "Property Photos",
       status: listing.image ? "pass" : "fail",
-      description: listing.image ? "High-quality image uploaded" : "Photo is required for listings",
+      description: listing.image ? "High-quality images provided" : "No photos uploaded",
       icon: listing.image ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-red-500" />
     });
 
-    // Description Quality
-    const descLength = listing.description?.length || 0;
     checkpoints.push({
       id: "description",
-      label: "Description Quality",
-      status: descLength > 150 ? "pass" : descLength > 50 ? "warning" : "fail",
-      description: descLength > 150 ? `${descLength} characters - detailed` : `Only ${descLength} characters - too brief`,
-      icon: descLength > 150 ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <AlertCircle className="w-5 h-5 text-yellow-500" />
+      label: "Property Description",
+      status: listing.description && listing.description.length > 50 ? "pass" : "warning",
+      description: listing.description && listing.description.length > 50 ? "Detailed description provided" : "Description needs more detail",
+      icon: listing.description && listing.description.length > 50 ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <AlertTriangle className="w-5 h-5 text-yellow-500" />
     });
 
-    // Pricing Reasonableness
-    const priceReasonable = listing.price >= 400 && listing.price <= 3500;
     checkpoints.push({
-      id: "price",
-      label: "Pricing Reasonableness",
-      status: priceReasonable ? "pass" : "warning",
-      description: priceReasonable ? `$${listing.price}/${listing.pricePeriod} - within market range` : `$${listing.price}/${listing.pricePeriod} - outside typical range`,
-      icon: priceReasonable ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <AlertTriangle className="w-5 h-5 text-yellow-500" />
+      id: "pricing",
+      label: "Pricing Information",
+      status: listing.price > 0 ? "pass" : "fail",
+      description: listing.price > 0 ? `$${listing.price}/${listing.pricePeriod}` : "No pricing set",
+      icon: listing.price > 0 ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-red-500" />
     });
 
-    // Amenities Listed
-    const amenitiesCount = listing.amenities?.length || 0;
     checkpoints.push({
       id: "amenities",
-      label: "Amenities & Features",
-      status: amenitiesCount >= 3 ? "pass" : amenitiesCount >= 1 ? "warning" : "fail",
-      description: amenitiesCount > 0 ? `${amenitiesCount} amenities listed` : "No amenities listed",
-      icon: amenitiesCount >= 3 ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <AlertCircle className="w-5 h-5 text-yellow-500" />
+      label: "Amenities Listed",
+      status: listing.amenities && listing.amenities.length > 0 ? "pass" : "warning",
+      description: listing.amenities && listing.amenities.length > 0 ? `${listing.amenities.length} amenities listed` : "No amenities specified",
+      icon: listing.amenities && listing.amenities.length > 0 ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <AlertTriangle className="w-5 h-5 text-yellow-500" />
     });
 
-    // Inclusions Specified
-    const inclusionsCount = listing.inclusions?.length || 0;
     checkpoints.push({
       id: "inclusions",
       label: "Rent Inclusions",
-      status: inclusionsCount >= 2 ? "pass" : "warning",
-      description: inclusionsCount > 0 ? `${inclusionsCount} items included (utilities, meals, etc.)` : "No inclusions specified",
-      icon: inclusionsCount >= 2 ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <AlertCircle className="w-5 h-5 text-yellow-500" />
+      status: listing.inclusions && listing.inclusions.length > 0 ? "pass" : "warning",
+      description: listing.inclusions && listing.inclusions.length > 0 ? `${listing.inclusions.length} inclusions listed` : "No inclusions specified",
+      icon: listing.inclusions && listing.inclusions.length > 0 ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <AlertTriangle className="w-5 h-5 text-yellow-500" />
     });
 
-    // Supervision Type
     checkpoints.push({
       id: "supervision",
-      label: "Supervision Model",
-      status: listing.supervisionType ? "pass" : "fail",
-      description: listing.supervisionType ? `${listing.supervisionType}` : "Supervision type not specified",
-      icon: listing.supervisionType ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-red-500" />
+      label: "Supervision Type",
+      status: listing.supervisionType ? "pass" : "warning",
+      description: listing.supervisionType || "Not specified",
+      icon: listing.supervisionType ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <AlertTriangle className="w-5 h-5 text-yellow-500" />
     });
 
-    // Bed Count Realistic
-    const bedsRealistic = listing.bedsAvailable > 0 && listing.bedsAvailable <= listing.totalBeds;
     checkpoints.push({
       id: "beds",
-      label: "Bed Count Realistic",
-      status: bedsRealistic ? "pass" : "fail",
-      description: `${listing.bedsAvailable}/${listing.totalBeds} beds available`,
-      icon: bedsRealistic ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-red-500" />
+      label: "Bed Count",
+      status: listing.totalBeds > 0 ? "pass" : "fail",
+      description: listing.totalBeds > 0 ? `${listing.totalBeds} total beds` : "No beds specified",
+      icon: listing.totalBeds > 0 ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-red-500" />
     });
 
-    // Verified Provider
     checkpoints.push({
-      id: "verified",
+      id: "verification",
       label: "Provider Verification",
       status: listing.isVerified ? "pass" : "warning",
       description: listing.isVerified ? "Provider is verified" : "Provider not yet verified",
@@ -151,7 +124,7 @@ export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }
   const warningCount = checkpoints.filter(c => c.status === "warning").length;
   const failCount = checkpoints.filter(c => c.status === "fail").length;
   const completeness = calculateCompleteness();
-  const canApprove = failCount === 0; // Allow approval if no failures
+  const canApprove = failCount === 0;
 
   const handleDeny = () => {
     if (!denyReason.trim()) {
@@ -166,208 +139,131 @@ export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
-        <DialogHeader className="p-6 border-b border-border bg-card shrink-0">
-          <div className="flex items-start justify-between">
-            <div>
-              <DialogTitle className="text-2xl font-bold text-white">{listing.name}</DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground mt-1">
-                <MapPin className="w-3 h-3 inline mr-1" /> {listing.address}, {listing.city}, {listing.state}
-              </DialogDescription>
-            </div>
-            <Badge className={
-              listing.status === "Pending" ? "bg-amber-500/80" :
-              listing.status === "Approved" ? "bg-green-500/80" :
-              "bg-red-500/80"
-            }>{listing.status}</Badge>
-          </div>
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col gap-4 p-0">
+        <DialogHeader className="p-6 border-b">
+          <DialogTitle className="text-2xl font-bold text-white">{listing.name}</DialogTitle>
+          <DialogDescription>
+            <MapPin className="w-3 h-3 inline mr-1" /> {listing.address}, {listing.city}, {listing.state}
+          </DialogDescription>
+          <Badge className="w-fit mt-2">{listing.status}</Badge>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="space-y-6">
-            {/* Property Image */}
-            <div className="rounded-lg overflow-hidden">
-              <img src={listing.image} alt={listing.name} className="w-full h-64 object-cover" />
-            </div>
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-4 gap-4">
-              <Card className="bg-white/5 border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1">Price</p>
-                  <p className="text-lg font-bold text-white">${listing.price}</p>
-                  <p className="text-xs text-muted-foreground">per {listing.pricePeriod}</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-white/5 border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1">Beds Available</p>
-                  <p className="text-lg font-bold text-white">{listing.bedsAvailable}/{listing.totalBeds}</p>
-                  <p className="text-xs text-muted-foreground">Total beds</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-white/5 border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1">Gender</p>
-                  <p className="text-lg font-bold text-white">{listing.gender}</p>
-                  <p className="text-xs text-muted-foreground">Occupancy</p>
-                </CardContent>
-              </Card>
-              <Card className="bg-white/5 border-border">
-                <CardContent className="pt-4">
-                  <p className="text-xs text-muted-foreground mb-1">Completeness</p>
-                  <p className="text-lg font-bold text-primary">{completeness}%</p>
-                  <div className="h-1.5 bg-gray-700 rounded-full mt-2 overflow-hidden">
-                    <div className="h-full bg-primary" style={{ width: `${completeness}%` }} />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Approval Checklist */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-white">Approval Checklist</h3>
-                <div className="flex gap-3 text-xs">
-                  <div className="flex items-center gap-1">
-                    <CheckCircle2 className="w-4 h-4 text-green-500" />
-                    <span className="text-gray-300">{passCount} Pass</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <AlertTriangle className="w-4 h-4 text-yellow-500" />
-                    <span className="text-gray-300">{warningCount} Warning</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <XCircle className="w-4 h-4 text-red-500" />
-                    <span className="text-gray-300">{failCount} Issues</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                {checkpoints.map((checkpoint) => (
-                  <div 
-                    key={checkpoint.id}
-                    className={`p-4 rounded-lg border flex items-start gap-3 ${
-                      checkpoint.status === "pass" ? "bg-green-500/10 border-green-500/20" :
-                      checkpoint.status === "warning" ? "bg-yellow-500/10 border-yellow-500/20" :
-                      "bg-red-500/10 border-red-500/20"
-                    }`}
-                  >
-                    <div className="pt-1">{checkpoint.icon}</div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-white">{checkpoint.label}</p>
-                      <p className="text-xs text-gray-300 mt-1">{checkpoint.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Description */}
-            <div>
-              <h3 className="text-sm font-bold text-white mb-2">Property Description</h3>
-              <p className="text-sm text-gray-300 bg-white/5 p-4 rounded-lg">{listing.description}</p>
-            </div>
-
-            {/* Features */}
-            {(listing.amenities || listing.inclusions) && (
-              <div className="grid md:grid-cols-2 gap-4">
-                {listing.amenities && (
-                  <div>
-                    <h3 className="text-sm font-bold text-white mb-3">Amenities</h3>
-                    <ul className="space-y-2">
-                      {listing.amenities.map((amenity, i) => (
-                        <li key={i} className="text-xs text-gray-300 flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                          {amenity}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {listing.inclusions && (
-                  <div>
-                    <h3 className="text-sm font-bold text-white mb-3">Rent Inclusions</h3>
-                    <ul className="space-y-2">
-                      {listing.inclusions.map((inclusion, i) => (
-                        <li key={i} className="text-xs text-gray-300 flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                          {inclusion}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Recommendation */}
-            {failCount > 0 && (
-              <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-500 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-red-300 mb-1">Approval Issues Detected</p>
-                    <p className="text-xs text-red-200">This listing has {failCount} critical issue(s) that should be resolved before approval. Contact the provider for corrections.</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {canApprove && passCount >= 6 && (
-              <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-green-300 mb-1">Ready to Approve</p>
-                    <p className="text-xs text-green-200">This listing meets approval standards and can be published to the platform.</p>
-                  </div>
-                </div>
-              </div>
-            )}
+        <div className="px-6 overflow-y-auto flex-1">
+          {/* Property Image */}
+          <div className="mb-6">
+            <img src={listing.image} alt={listing.name} className="w-full h-64 object-cover rounded-lg" />
           </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-4 gap-3 mb-6">
+            <Card className="bg-white/5">
+              <CardContent className="pt-3">
+                <p className="text-xs text-muted-foreground mb-1">Price</p>
+                <p className="text-lg font-bold text-white">${listing.price}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/5">
+              <CardContent className="pt-3">
+                <p className="text-xs text-muted-foreground mb-1">Beds</p>
+                <p className="text-lg font-bold text-white">{listing.bedsAvailable}/{listing.totalBeds}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/5">
+              <CardContent className="pt-3">
+                <p className="text-xs text-muted-foreground mb-1">Gender</p>
+                <p className="text-lg font-bold text-white">{listing.gender}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-white/5">
+              <CardContent className="pt-3">
+                <p className="text-xs text-muted-foreground mb-1">Complete</p>
+                <p className="text-lg font-bold text-primary">{completeness}%</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Approval Checklist */}
+          <div className="mb-6">
+            <h3 className="text-lg font-bold text-white mb-3">Approval Checklist</h3>
+            <div className="flex gap-3 text-xs mb-4">
+              <span className="flex items-center gap-1 text-gray-300"><CheckCircle2 className="w-4 h-4 text-green-500" /> {passCount} Pass</span>
+              <span className="flex items-center gap-1 text-gray-300"><AlertTriangle className="w-4 h-4 text-yellow-500" /> {warningCount} Warning</span>
+              <span className="flex items-center gap-1 text-gray-300"><XCircle className="w-4 h-4 text-red-500" /> {failCount} Issues</span>
+            </div>
+            <div className="space-y-2">
+              {checkpoints.map((cp) => (
+                <div key={cp.id} className={`p-3 rounded border flex items-start gap-3 ${
+                  cp.status === "pass" ? "bg-green-500/10 border-green-500/20" :
+                  cp.status === "warning" ? "bg-yellow-500/10 border-yellow-500/20" :
+                  "bg-red-500/10 border-red-500/20"
+                }`}>
+                  <div>{cp.icon}</div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{cp.label}</p>
+                    <p className="text-xs text-gray-300">{cp.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-white mb-2">Description</h3>
+            <p className="text-sm text-gray-300 bg-white/5 p-3 rounded">{listing.description}</p>
+          </div>
+
+          {/* Amenities & Inclusions */}
+          {(listing.amenities || listing.inclusions) && (
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              {listing.amenities && (
+                <div>
+                  <h3 className="text-sm font-bold text-white mb-2">Amenities</h3>
+                  <ul className="space-y-1">
+                    {listing.amenities.map((a, i) => (
+                      <li key={i} className="text-xs text-gray-300 flex items-center gap-2">
+                        <div className="w-1 h-1 bg-primary rounded-full" />
+                        {a}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {listing.inclusions && (
+                <div>
+                  <h3 className="text-sm font-bold text-white mb-2">Inclusions</h3>
+                  <ul className="space-y-1">
+                    {listing.inclusions.map((inc, i) => (
+                      <li key={i} className="text-xs text-gray-300 flex items-center gap-2">
+                        <div className="w-1 h-1 bg-primary rounded-full" />
+                        {inc}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        <DialogFooter className="p-6 border-t border-border bg-card flex-col sm:flex-row gap-3 shrink-0">
+        <DialogFooter className="p-6 border-t bg-card flex-col gap-3">
           {!showDenyForm ? (
-            <>
-              <Button 
-                onClick={onClose} 
-                variant="outline" 
-                className="flex-1"
-              >
-                Close
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={onClose} className="flex-1">Close</Button>
+              <Button variant="outline" onClick={() => setShowDenyForm(true)} className="flex-1 border-red-500/30 text-red-500">
+                <X className="w-4 h-4 mr-2" /> Deny
               </Button>
-              <Button 
-                onClick={() => setShowDenyForm(true)} 
-                variant="outline" 
-                className="flex-1 border-red-500/30 text-red-500 hover:bg-red-500/10"
-              >
-                <X className="w-4 h-4 mr-2" /> Deny Listing
+              <Button disabled={!canApprove} onClick={() => { onApprove(listing.id); onClose(); }} className="flex-1 bg-green-600 hover:bg-green-700">
+                <Check className="w-4 h-4 mr-2" /> Approve
               </Button>
-              <Button 
-                onClick={() => onApprove(listing.id)} 
-                disabled={!canApprove}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Check className="w-4 h-4 mr-2" /> Approve Listing
-              </Button>
-            </>
+            </div>
           ) : (
-            <div className="w-full space-y-3">
-              <div>
-                <Label className="text-white text-sm mb-2 block">Reason for Denial</Label>
-                <Textarea
-                  placeholder="Explain why this listing is being denied (e.g., inappropriate content, suspicious pricing, etc.)..."
-                  value={denyReason}
-                  onChange={(e) => setDenyReason(e.target.value)}
-                  className="bg-background/50 border-white/10 min-h-20"
-                />
-              </div>
+            <div className="space-y-3">
+              <Label className="text-white">Reason for Denial</Label>
+              <Textarea placeholder="Explain why..." value={denyReason} onChange={(e) => setDenyReason(e.target.value)} />
               <div className="flex gap-2 justify-end">
-                <Button onClick={() => setShowDenyForm(false)} variant="outline">Cancel</Button>
-                <Button onClick={handleDeny} className="bg-red-600 hover:bg-red-700 text-white">Confirm Denial</Button>
+                <Button variant="ghost" onClick={() => { setShowDenyForm(false); setDenyReason(""); }}>Cancel</Button>
+                <Button variant="destructive" onClick={handleDeny}>Confirm Denial</Button>
               </div>
             </div>
           )}
