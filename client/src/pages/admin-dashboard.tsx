@@ -1065,46 +1065,86 @@ export function AdminDashboard() {
 
           {/* EMAIL SUBSCRIBER LIST */}
           <TabsContent value="email-list" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white">Email Subscribers</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {emailSubscribers.map((subscriber) => (
-                    <div key={subscriber.id} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
-                      <div className="flex-1">
-                        <p className="text-white font-medium text-sm">{subscriber.email}</p>
-                        <p className="text-xs text-muted-foreground">Subscribed {subscriber.subscribeDate}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Badge className="bg-green-500/80">{subscriber.status}</Badge>
-                        <Button size="sm" variant="outline" className="h-8 text-xs">Unsubscribe</Button>
-                      </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Total Subscribers</p>
+                      <h3 className="text-3xl font-bold text-white">{emailSubscribers.length}</h3>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <Mail className="w-5 h-5 text-primary" />
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">All active subscribers</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Active</p>
+                      <h3 className="text-3xl font-bold text-green-500">{emailSubscribers.filter(s => s.status === "Active").length}</h3>
+                    </div>
+                    <div className="p-2 bg-green-500/10 rounded-lg">
+                      <Check className="w-5 h-5 text-green-500" />
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">Actively receiving emails</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Growth Rate</p>
+                      <h3 className="text-3xl font-bold text-blue-500">+12%</h3>
+                    </div>
+                    <div className="p-2 bg-blue-500/10 rounded-lg">
+                      <TrendingUp className="w-5 h-5 text-blue-500" />
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">Month over month</div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Last 7 Days</p>
+                      <h3 className="text-3xl font-bold text-amber-500">+3</h3>
+                    </div>
+                    <div className="p-2 bg-amber-500/10 rounded-lg">
+                      <Clock className="w-5 h-5 text-amber-500" />
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">New subscriptions</div>
+                </CardContent>
+              </Card>
+            </div>
 
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-white">Subscriber Statistics</CardTitle>
+                <CardTitle className="text-white">Subscriber List</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                    <p className="text-xs text-muted-foreground mb-1">Total Subscribers</p>
-                    <p className="text-2xl font-bold text-white">{emailSubscribers.length}</p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                    <p className="text-xs text-muted-foreground mb-1">Active</p>
-                    <p className="text-2xl font-bold text-green-500">{emailSubscribers.filter(s => s.status === "Active").length}</p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                    <p className="text-xs text-muted-foreground mb-1">Growth Rate</p>
-                    <p className="text-2xl font-bold text-blue-500">+12%</p>
-                  </div>
+                <div className="space-y-2">
+                  {emailSubscribers.map((subscriber) => (
+                    <div key={subscriber.id} className="flex items-center justify-between text-sm border-b border-border/50 pb-3 last:border-0">
+                      <div>
+                        <p className="text-white font-medium">{subscriber.email}</p>
+                        <p className="text-xs text-muted-foreground">Subscribed {subscriber.subscribeDate}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-green-500/20 text-green-500">{subscriber.status}</Badge>
+                        <Button size="sm" variant="outline" className="h-7 text-xs">Unsubscribe</Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
