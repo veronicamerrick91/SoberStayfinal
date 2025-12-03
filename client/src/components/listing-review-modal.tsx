@@ -28,6 +28,8 @@ interface ListingReviewModalProps {
     supervisionType?: string;
     amenities?: string[];
     inclusions?: string[];
+    houseRules?: string[];
+    requirements?: string[];
   };
   onApprove: (id: string) => void;
   onDeny: (id: string, reason: string) => void;
@@ -145,7 +147,12 @@ export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }
           <DialogDescription>
             <MapPin className="w-3 h-3 inline mr-1" /> {listing.address}, {listing.city}, {listing.state}
           </DialogDescription>
-          <Badge className="w-fit mt-2">{listing.status}</Badge>
+          <div className="flex gap-2 mt-3 flex-wrap items-center">
+            <Badge className="w-fit">{listing.status}</Badge>
+            <Badge variant="outline">{listing.gender}</Badge>
+            <Badge variant="outline">{listing.totalBeds} Beds</Badge>
+            <Badge variant="outline">{listing.supervisionType}</Badge>
+          </div>
         </DialogHeader>
 
         <div className="px-6 overflow-y-auto flex-1">
@@ -216,22 +223,9 @@ export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }
           {/* Amenities & Inclusions */}
           {(listing.amenities || listing.inclusions) && (
             <div className="grid grid-cols-2 gap-4 mb-6">
-              {listing.amenities && (
-                <div>
-                  <h3 className="text-sm font-bold text-white mb-2">Amenities</h3>
-                  <ul className="space-y-1">
-                    {listing.amenities.map((a, i) => (
-                      <li key={i} className="text-xs text-gray-300 flex items-center gap-2">
-                        <div className="w-1 h-1 bg-primary rounded-full" />
-                        {a}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
               {listing.inclusions && (
                 <div>
-                  <h3 className="text-sm font-bold text-white mb-2">Inclusions</h3>
+                  <h3 className="text-sm font-bold text-white mb-2">Amenities & Features</h3>
                   <ul className="space-y-1">
                     {listing.inclusions.map((inc, i) => (
                       <li key={i} className="text-xs text-gray-300 flex items-center gap-2">
@@ -242,6 +236,49 @@ export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }
                   </ul>
                 </div>
               )}
+              {listing.amenities && (
+                <div>
+                  <h3 className="text-sm font-bold text-white mb-2">Included in Monthly Price</h3>
+                  <ul className="space-y-1">
+                    {listing.amenities.map((a, i) => (
+                      <li key={i} className="text-xs text-gray-300 flex items-center gap-2">
+                        <div className="w-1 h-1 bg-primary rounded-full" />
+                        {a}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* House Rules */}
+          {listing.houseRules && listing.houseRules.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-white mb-2">House Rules</h3>
+              <ul className="space-y-1">
+                {listing.houseRules.map((rule, i) => (
+                  <li key={i} className="text-xs text-gray-300 flex items-center gap-2">
+                    <div className="w-1 h-1 bg-amber-500 rounded-full" />
+                    {rule}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Requirements */}
+          {listing.requirements && listing.requirements.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-white mb-2">Residency Requirements</h3>
+              <ul className="space-y-1">
+                {listing.requirements.map((req, i) => (
+                  <li key={i} className="text-xs text-gray-300 flex items-center gap-2">
+                    <div className="w-1 h-1 bg-blue-500 rounded-full" />
+                    {req}
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>

@@ -39,6 +39,8 @@ export interface Property {
   description: string;
   amenities: string[]; // Physical amenities
   inclusions: string[]; // What's included in price
+  houseRules: string[];
+  requirements: string[];
   nearbyAmenities: NearbyAmenity[];
 }
 
@@ -71,6 +73,8 @@ export const MOCK_PROPERTIES: Property[] = [
     description: "A structured sober living environment focused on community and accountability. We provide a safe haven for men in early recovery, with 24/7 staff support and a strong emphasis on 12-step participation.",
     amenities: ["Washer/Dryer", "Kitchen Access", "On-site Gym", "Parking", "Garden/Outdoor Space"],
     inclusions: ["Utilities (All)", "WiFi / Internet", "Drug Testing", "Linens & Bedding", "Case Management"],
+    houseRules: ["No drugs or alcohol", "Curfew 11pm", "Weekly house meetings", "Chore rotation", "Guests must be approved", "No overnight visitors without notice"],
+    requirements: ["Must attend 3 meetings per week", "Valid ID required", "Minimum 30 days sober", "Commitment to 6+ month stay", "Employment or education program"],
     nearbyAmenities: [
       { category: "Transportation", items: [{ name: "Bus Stop #42", distance: "0.1 mi" }, { name: "Red Line Station", distance: "0.5 mi" }] },
       { category: "Recovery Meetings", items: [{ name: "Boston AA Central", distance: "0.5 mi" }] },
@@ -100,6 +104,8 @@ export const MOCK_PROPERTIES: Property[] = [
     description: "A warm, homelike setting for women building a new life. We welcome pets and have a large backyard garden.",
     amenities: ["Washer/Dryer", "Kitchen Access", "Garden/Outdoor Space", "Common Area / Lounge"],
     inclusions: ["Food / Meals", "Utilities (All)", "WiFi / Internet", "Cable / Streaming", "Therapy Sessions"],
+    houseRules: ["Quiet hours 10pm-8am", "Smoking outside only", "Kitchen cleaned after use", "Monthly rent due by 1st", "No unauthorized guests"],
+    requirements: ["Women only", "Minimum 14 days sober", "Mental health assessment required", "Pet policy compliance", "Willing to participate in groups"],
     nearbyAmenities: [
       { category: "Therapy/IOP", items: [{ name: "Cambridge Health", distance: "1.0 mi" }] },
       { category: "Food", items: [{ name: "Main St Cafe", distance: "0.2 mi" }] }
@@ -128,6 +134,8 @@ export const MOCK_PROPERTIES: Property[] = [
     description: "Affordable peer-run housing for motivated individuals. Strong community focus with weekly house meetings.",
     amenities: ["Washer/Dryer", "Kitchen Access", "Parking", "Designated Smoking Area"],
     inclusions: ["Utilities (All)", "WiFi / Internet", "Peer Support"],
+    houseRules: ["Democratic decision making", "Mandatory house meetings", "Shared meal prep Sundays", "No violence or theft", "Community service hours required"],
+    requirements: ["Open to all genders", "Minimum 7 days sober", "Able to participate in peer governance", "Conflict resolution commitment"],
     nearbyAmenities: [
       { category: "Transportation", items: [{ name: "Quincy Center T", distance: "0.8 mi" }] }
     ]
@@ -155,6 +163,8 @@ export const MOCK_PROPERTIES: Property[] = [
     description: "Luxury sober living with integrated clinical services and ocean views. Chef-prepared meals and daily transport included.",
     amenities: ["On-site Gym", "Swimming Pool", "Garden/Outdoor Space", "Common Area / Lounge", "Parking"],
     inclusions: ["Food / Meals", "Transportation", "Utilities (All)", "WiFi / Internet", "Cable / Streaming", "Gym Access", "Therapy Sessions", "Drug Testing"],
+    houseRules: ["Professional dress for outings", "No visitors without advance notice", "Bedtime 10:30pm weekdays", "Fitness classes mandatory", "Random UA testing"],
+    requirements: ["Private room only", "Minimum 3 months sober", "Aftercare plan required", "Medical clearance", "Insurance or payment plan"],
     nearbyAmenities: [
       { category: "Recovery Meetings", items: [{ name: "Plymouth Group", distance: "1.5 mi" }] }
     ]
@@ -182,6 +192,8 @@ export const MOCK_PROPERTIES: Property[] = [
     description: "A supportive and inclusive environment in the heart of Worcester. We focus on life skills and reintegration into the community.",
     amenities: ["Washer/Dryer", "Kitchen Access", "Common Area / Lounge"],
     inclusions: ["Utilities (All)", "WiFi / Internet", "Peer Support"],
+    houseRules: ["All residents welcome", "Respectful communication", "Shared cleaning duties", "No drug paraphernalia", "Midnight curfew"],
+    requirements: ["Minimum 2 weeks sober", "Open to all genders", "Willingness to participate in community", "Basic self-care skills"],
     nearbyAmenities: [
       { category: "Transportation", items: [{ name: "Union Station", distance: "0.5 mi" }] },
       { category: "Groceries", items: [{ name: "Price Chopper", distance: "0.4 mi" }] }
