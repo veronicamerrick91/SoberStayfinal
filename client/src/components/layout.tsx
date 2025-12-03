@@ -83,6 +83,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {authenticated ? (
               <div className="flex items-center gap-3">
                 <span className="text-sm text-muted-foreground">Welcome, {user?.name}</span>
+                {user?.role === "tenant" && (
+                  <Link href="/tenant-dashboard">
+                    <Button size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10">
+                      Dashboard
+                    </Button>
+                  </Link>
+                )}
+                {user?.role === "provider" && (
+                  <Link href="/provider-dashboard">
+                    <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                      Dashboard
+                    </Button>
+                  </Link>
+                )}
+                {user?.role === "admin" && (
+                  <Link href="/admin-dashboard">
+                    <Button size="sm" className="bg-amber-600 text-white hover:bg-amber-700">
+                      Admin Portal
+                    </Button>
+                  </Link>
+                )}
                 <Button onClick={handleSignOut} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-2">
                   <LogOut className="w-4 h-4" /> Sign Out
                 </Button>
@@ -150,9 +171,32 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
                 <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
                   {authenticated ? (
-                    <Button onClick={handleSignOut} className="w-full justify-start gap-2 bg-red-600/20 text-red-500 hover:bg-red-600/30">
-                      <LogOut className="w-4 h-4" /> Sign Out
-                    </Button>
+                    <>
+                      {user?.role === "tenant" && (
+                        <Link href="/tenant-dashboard" onClick={() => setMenuOpen(false)}>
+                          <Button variant="outline" className="w-full justify-start border-primary/50 text-primary">
+                            Tenant Dashboard
+                          </Button>
+                        </Link>
+                      )}
+                      {user?.role === "provider" && (
+                        <Link href="/provider-dashboard" onClick={() => setMenuOpen(false)}>
+                          <Button className="w-full justify-start bg-primary text-primary-foreground">
+                            Provider Dashboard
+                          </Button>
+                        </Link>
+                      )}
+                      {user?.role === "admin" && (
+                        <Link href="/admin-dashboard" onClick={() => setMenuOpen(false)}>
+                          <Button className="w-full justify-start bg-amber-600 text-white hover:bg-amber-700">
+                            Admin Portal
+                          </Button>
+                        </Link>
+                      )}
+                      <Button onClick={handleSignOut} className="w-full justify-start gap-2 bg-red-600/20 text-red-500 hover:bg-red-600/30">
+                        <LogOut className="w-4 h-4" /> Sign Out
+                      </Button>
+                    </>
                   ) : (
                     <>
                       <Link href="/login">
