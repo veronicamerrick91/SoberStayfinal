@@ -1195,7 +1195,7 @@ export function AdminDashboard() {
                       <div><p className="text-muted-foreground">Opens</p><p className="text-white">{campaign.opens}</p></div>
                       <div><p className="text-muted-foreground">Clicks</p><p className="text-white">{campaign.clicks}</p></div>
                       <div className="flex gap-1">
-                        <Button onClick={() => handleEditCampaign(i)} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
+                        <Button onClick={() => { setEmailSubject(campaign.name); setEmailBodyText(""); setShowEmailComposer(true); }} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
                         <Button size="sm" variant="ghost" className="text-xs h-7 text-red-500" onClick={() => handleDeleteCampaign(i)}>Delete</Button>
                       </div>
                     </div>
