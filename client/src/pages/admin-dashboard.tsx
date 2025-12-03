@@ -72,6 +72,86 @@ export function AdminDashboard() {
 
   useEffect(() => {
     setReports(getReports());
+    
+    // Initialize mock listings data
+    setListings([
+      {
+        id: "1",
+        name: "Serenity House Boston",
+        address: "123 Recovery Way",
+        city: "Boston",
+        state: "MA",
+        price: 1200,
+        pricePeriod: "monthly",
+        bedsAvailable: 2,
+        totalBeds: 8,
+        gender: "Men",
+        image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop",
+        description: "A structured sober living environment focused on community and accountability. We provide a safe haven for men in early recovery, with 24/7 staff support and a strong emphasis on 12-step participation. Our home features private and shared rooms, communal spaces, and a supportive community environment.",
+        isVerified: true,
+        status: "Pending",
+        supervisionType: "Supervised",
+        amenities: ["Washer/Dryer", "Kitchen Access", "On-site Gym", "Parking", "Garden/Outdoor Space"],
+        inclusions: ["Utilities (All)", "WiFi / Internet", "Drug Testing", "Linens & Bedding", "Case Management"]
+      },
+      {
+        id: "2",
+        name: "Hope Haven for Women",
+        address: "456 Healing Path",
+        city: "Cambridge",
+        state: "MA",
+        price: 1400,
+        pricePeriod: "monthly",
+        bedsAvailable: 1,
+        totalBeds: 6,
+        gender: "Women",
+        image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop",
+        description: "A warm, homelike setting for women building a new life. We welcome pets and have a large backyard garden. Our nurturing environment emphasizes personal growth and peer support.",
+        isVerified: true,
+        status: "Approved",
+        supervisionType: "Monitored",
+        amenities: ["Washer/Dryer", "Kitchen Access", "Garden/Outdoor Space", "Common Area / Lounge"],
+        inclusions: ["Food / Meals", "Utilities (All)", "WiFi / Internet", "Cable / Streaming", "Therapy Sessions"]
+      },
+      {
+        id: "3",
+        name: "New Beginnings Co-ed",
+        address: "789 Start Over St",
+        city: "Quincy",
+        state: "MA",
+        price: 950,
+        pricePeriod: "monthly",
+        bedsAvailable: 4,
+        totalBeds: 12,
+        gender: "Co-ed",
+        image: "https://images.unsplash.com/photo-1519341047528-483cfd303470?w=400&h=300&fit=crop",
+        description: "Affordable peer-run housing for motivated individuals. Strong community focus with weekly house meetings and peer governance.",
+        isVerified: false,
+        status: "Pending",
+        supervisionType: "Peer Ran",
+        amenities: ["Washer/Dryer", "Kitchen Access", "Parking"],
+        inclusions: ["Utilities (All)", "WiFi / Internet", "Peer Support"]
+      },
+      {
+        id: "4",
+        name: "Coastal Recovery Residence",
+        address: "321 Ocean Blvd",
+        city: "Plymouth",
+        state: "MA",
+        price: 2500,
+        pricePeriod: "monthly",
+        bedsAvailable: 0,
+        totalBeds: 10,
+        gender: "Men",
+        image: "https://images.unsplash.com/photo-1554995207-c18c203602cb?w=400&h=300&fit=crop",
+        description: "Luxury sober living with integrated clinical services and ocean views. Chef-prepared meals and daily transport included. Premium amenities and professional staff.",
+        isVerified: true,
+        status: "Approved",
+        supervisionType: "Integrated Treatment",
+        amenities: ["On-site Gym", "Swimming Pool", "Garden/Outdoor Space", "Common Area / Lounge", "Parking"],
+        inclusions: ["Food / Meals", "Transportation", "Utilities (All)", "WiFi / Internet", "Cable / Streaming", "Gym Access", "Therapy Sessions"]
+      }
+    ]);
   }, []);
 
   const handleEditUser = (user: User) => {
