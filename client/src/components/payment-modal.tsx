@@ -28,7 +28,6 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
   const [expiryDate, setExpiryDate] = useState("");
   const [cvc, setCvc] = useState("");
   const [billingName, setBillingName] = useState("");
-  const [paypalEmail, setPaypalEmail] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
   const monthlyFee = 49 * listingCount;
@@ -38,16 +37,19 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
       alert("Please fill in all debit card details");
       return;
     }
-    if (paymentMethod === "paypal" && (!paypalEmail || !billingName)) {
-      alert("Please fill in all PayPal details");
-      return;
-    }
+    // Removed PayPal validations since we're redirecting
+    
     if (paymentMethod === "applepay" && !billingName) {
       alert("Please fill in your name");
       return;
     }
 
     setIsProcessing(true);
+
+    // Simulate redirect delay for PayPal
+    if (paymentMethod === "paypal") {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    }
 
     try {
       await apiRequest("POST", "/api/subscriptions", {
@@ -231,23 +233,27 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
               )}
 
               {paymentMethod === "paypal" && (
-                <div>
-                  <Label className="text-white text-sm mb-2">PayPal Email</Label>
-                  <Input 
-                    placeholder="you@example.com"
-                    type="email"
-                    value={paypalEmail}
-                    onChange={(e) => setPaypalEmail(e.target.value)}
-                    className="bg-background/50 border-white/10"
-                  />
+                <div className="p-4 bg-[#003087]/10 rounded-lg border border-[#003087]/30 text-center space-y-2">
+                  <div className="flex justify-center mb-2">
+                    <div className="bg-[#003087] text-white px-4 py-1 rounded-full font-bold italic flex items-center gap-1">
+                      <span className="text-[#009cde]">Pay</span>Pal
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-300">
+                    You will be redirected to PayPal to complete your purchase securely.
+                  </p>
                 </div>
               )}
 
               {paymentMethod === "applepay" && (
-                <div className="p-4 bg-white/5 rounded-lg border border-primary/20 text-center">
-                  <p className="text-sm text-gray-300">
-                    Click "Confirm Payment" to complete your transaction via Apple Pay on your device.
+                <div className="p-4 bg-black/20 rounded-lg border border-white/10 text-center">
+                  <p className="text-sm text-gray-300 mb-3">
+                    Pay securely with Apple Pay using your saved card.
                   </p>
+                  <div className="h-10 bg-black border border-white/20 rounded-md flex items-center justify-center gap-1">
+                     <Apple className="w-4 h-4 text-white mb-0.5" />
+                     <span className="text-white font-medium">Pay</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -261,9 +267,17 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
               <Button 
                 onClick={handlePayment}
                 disabled={isProcessing}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-11"
+                className={`w-full h-11 ${
+                  paymentMethod === 'paypal' 
+                    ? 'bg-[#FFC439] hover:bg-[#F4B000] text-black font-semibold' 
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                }`}
               >
-                {isProcessing ? "Processing..." : "Confirm Payment"}
+                {isProcessing ? (
+                  paymentMethod === 'paypal' ? "Redirecting to PayPal..." : "Processing..."
+                ) : (
+                  paymentMethod === 'paypal' ? "Pay with PayPal" : "Confirm Payment"
+                )}
               </Button>
               <Button 
                 onClick={() => setStep("pricing")}
