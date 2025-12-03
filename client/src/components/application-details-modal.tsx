@@ -1,7 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   CheckCircle, XCircle, Calendar, User, Mail, Phone, MapPin, 
@@ -101,7 +100,7 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
           </div>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 p-6 overflow-hidden">
+        <div className="flex-1 overflow-y-auto p-6">
           <div className="space-y-8">
             {/* Quick Actions / Risk Assessment */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -195,7 +194,7 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
               </div>
             </div>
           </div>
-        </ScrollArea>
+        </div>
 
         <DialogFooter className="p-6 border-t border-border bg-card flex-col sm:flex-row gap-3 shrink-0">
           {showDenyInput ? (

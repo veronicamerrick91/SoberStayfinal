@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { MapPin, Users, Home, DollarSign, Check, X, AlertCircle, CheckCircle2, XCircle, Shield, AlertTriangle } from "lucide-react";
 
@@ -184,7 +183,7 @@ export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }
           </div>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 p-6 overflow-hidden">
+        <div className="flex-1 overflow-y-auto p-6">
           <div className="space-y-6">
             {/* Property Image */}
             <div className="rounded-lg overflow-hidden">
@@ -328,7 +327,7 @@ export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
 
         <DialogFooter className="p-6 border-t border-border bg-card flex-col sm:flex-row gap-3 shrink-0">
           {!showDenyForm ? (
