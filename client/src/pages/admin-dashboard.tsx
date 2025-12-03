@@ -613,7 +613,7 @@ export function AdminDashboard() {
                         <div className="w-2 h-2 bg-primary rounded-sm" />
                       </div>
                       <span className="text-sm text-white">{doc}</span>
-                      <span className="text-xs text-muted-foreground ml-auto">Required for all providers</span>
+                      <Badge className="ml-auto bg-red-500/80 text-xs">Required for verification</Badge>
                     </div>
                   ))}
                 </div>
@@ -774,7 +774,34 @@ export function AdminDashboard() {
                       </CardContent>
                     </Card>
                   </div>
-                  <div className="text-center py-6 text-muted-foreground text-sm">No compliance issues at this time</div>
+                  <div className="space-y-3">
+                    <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="text-white font-medium text-sm">Recovery First LLC - Missing Fire Inspection</p>
+                          <p className="text-xs text-muted-foreground mt-1">Property was last inspected 90 days ago. Annual inspection due.</p>
+                        </div>
+                        <Badge className="bg-amber-500/80 text-xs">Pending</Badge>
+                      </div>
+                      <div className="mt-3 flex gap-2">
+                        <Button size="sm" className="h-8 text-xs bg-amber-500/20 text-amber-500 hover:bg-amber-500/30">Send Reminder</Button>
+                        <Button size="sm" variant="outline" className="h-8 text-xs">View Details</Button>
+                      </div>
+                    </div>
+                    <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="text-white font-medium text-sm">Hope House - Expired Insurance Certificate</p>
+                          <p className="text-xs text-muted-foreground mt-1">Insurance certificate expired on Nov 15, 2024. New certificate required to maintain active status.</p>
+                        </div>
+                        <Badge className="bg-red-500/80 text-xs">Urgent</Badge>
+                      </div>
+                      <div className="mt-3 flex gap-2">
+                        <Button size="sm" className="h-8 text-xs bg-red-500/20 text-red-500 hover:bg-red-500/30">Request Update</Button>
+                        <Button size="sm" variant="outline" className="h-8 text-xs">View Details</Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -809,7 +836,25 @@ export function AdminDashboard() {
                     </CardContent>
                   </Card>
                 </div>
-                <div className="text-center py-6 text-muted-foreground text-sm">Loading subscription details...</div>
+                <div className="space-y-3">
+                  <h3 className="text-white font-bold text-sm mb-3">Active Provider Subscriptions</h3>
+                  {[
+                    { provider: "Recovery First LLC", plan: "Premium", status: "Active", renewDate: "Dec 10, 2024", amount: "$49/mo" },
+                    { provider: "Hope House", plan: "Basic", status: "Active", renewDate: "Dec 22, 2024", amount: "$29/mo" },
+                    { provider: "New Path Recovery", plan: "Premium", status: "Active", renewDate: "Dec 5, 2024", amount: "$49/mo" },
+                  ].map((sub, i) => (
+                    <div key={i} className="p-3 rounded-lg bg-white/5 border border-border/50 flex items-center justify-between">
+                      <div>
+                        <p className="text-white font-medium text-sm">{sub.provider}</p>
+                        <p className="text-xs text-muted-foreground">{sub.plan} • Renews {sub.renewDate}</p>
+                      </div>
+                      <div className="text-right">
+                        <Badge className="bg-green-500/80 text-xs mb-1">{sub.status}</Badge>
+                        <p className="text-xs font-bold text-white">{sub.amount}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -844,7 +889,29 @@ export function AdminDashboard() {
                 <CardTitle className="text-white">Top Performing Listings</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-6 text-muted-foreground text-sm">Loading analytics data...</div>
+                <div className="space-y-3">
+                  {[
+                    { rank: 1, listing: "Downtown Recovery Center", views: 2840, applications: 12, rating: 4.8 },
+                    { rank: 2, listing: "Hope House - Supportive Living", views: 2156, applications: 9, rating: 4.6 },
+                    { rank: 3, listing: "New Path Recovery Home", views: 1932, applications: 7, rating: 4.7 },
+                    { rank: 4, listing: "Serenity Sober Living", views: 1645, applications: 5, rating: 4.5 },
+                    { rank: 5, listing: "Fresh Start Recovery", views: 1289, applications: 4, rating: 4.4 },
+                  ].map((item) => (
+                    <div key={item.rank} className="p-3 rounded-lg bg-white/5 border border-border/50 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-primary">#{item.rank}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-medium text-sm truncate">{item.listing}</p>
+                        <div className="flex gap-3 mt-1">
+                          <span className="text-xs text-muted-foreground">{item.views.toLocaleString()} views</span>
+                          <span className="text-xs text-primary">{item.applications} apps</span>
+                          <span className="text-xs text-amber-500">★ {item.rating}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
