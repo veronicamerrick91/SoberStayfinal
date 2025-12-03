@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PaymentModal } from "@/components/payment-modal";
-import { ArrowLeft, CheckCircle, AlertCircle, Upload, X } from "lucide-react";
+import { ArrowLeft, CheckCircle, AlertCircle, Upload, X, Check } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { getAuth } from "@/lib/auth";
@@ -142,7 +142,7 @@ export function CreateListing() {
 
           {/* Step Indicator */}
           <div className="flex justify-between mb-8">
-            {[1, 2, 3].map((step) => (
+            {[1, 2, 3, 4].map((step) => (
               <div
                 key={step}
                 className={`flex-1 h-2 mx-1 rounded-full transition-all ${
@@ -427,9 +427,101 @@ export function CreateListing() {
                     <div className="flex gap-3">
                       <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                       <div className="text-sm">
-                        <p className="text-white font-semibold mb-1">Ready to Publish?</p>
+                        <p className="text-white font-semibold mb-1">Next: Review Your Listing</p>
                         <p className="text-muted-foreground">
-                          After you complete this draft, you'll be asked to confirm your $49/month subscription to publish this listing.
+                          Click "Review Listing" to see how your property will appear to tenants before confirming payment.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* STEP 4: Review & Preview */}
+            {currentStep === 4 && (
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs">
+                      4
+                    </span>
+                    Review Your Listing
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="border border-border rounded-lg p-6 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h2 className="text-2xl font-bold text-white mb-1">{listingDraft.propertyName}</h2>
+                        <p className="text-sm text-muted-foreground">{listingDraft.address}, {listingDraft.city}, {listingDraft.state}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-primary">${listingDraft.monthlyPrice}</div>
+                        <div className="text-xs text-muted-foreground">/month</div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+                      <div className="bg-primary/20 text-primary text-xs px-2 py-1 rounded">{listingDraft.gender}</div>
+                      <div className="bg-blue-500/20 text-blue-300 text-xs px-2 py-1 rounded">{listingDraft.totalBeds} Beds</div>
+                      <div className="bg-purple-500/20 text-purple-300 text-xs px-2 py-1 rounded">{listingDraft.supervisionType}</div>
+                      <div className="bg-emerald-500/20 text-emerald-300 text-xs px-2 py-1 rounded">{listingDraft.roomType}</div>
+                    </div>
+
+                    <div className="pt-4 border-t border-border">
+                      <h3 className="font-semibold text-white mb-2 text-sm">Description</h3>
+                      <p className="text-sm text-gray-300">{listingDraft.description}</p>
+                    </div>
+
+                    {listingDraft.inclusions.length > 0 && (
+                      <div className="pt-4 border-t border-border">
+                        <h3 className="font-semibold text-white mb-2 text-sm">Included in Price</h3>
+                        <div className="grid sm:grid-cols-2 gap-2">
+                          {listingDraft.inclusions.map((item, i) => (
+                            <div key={i} className="flex items-center gap-2 text-xs text-gray-300">
+                              <Check className="w-3 h-3 text-primary" /> {item}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {listingDraft.amenities.length > 0 && (
+                      <div className="pt-4 border-t border-border">
+                        <h3 className="font-semibold text-white mb-2 text-sm">Amenities</h3>
+                        <div className="grid sm:grid-cols-2 gap-2">
+                          {listingDraft.amenities.map((item, i) => (
+                            <div key={i} className="flex items-center gap-2 text-xs text-gray-300">
+                              <Check className="w-3 h-3 text-primary" /> {item}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {listingDraft.photos.length > 0 && (
+                      <div className="pt-4 border-t border-border">
+                        <h3 className="font-semibold text-white mb-3 text-sm">Photos ({listingDraft.photos.length})</h3>
+                        <div className="grid grid-cols-3 gap-2">
+                          {listingDraft.photos.slice(0, 3).map((photo, i) => (
+                            <img key={i} src={photo} alt={`Preview ${i + 1}`} className="w-full h-20 object-cover rounded-lg border border-border" />
+                          ))}
+                        </div>
+                        {listingDraft.photos.length > 3 && (
+                          <p className="text-xs text-muted-foreground mt-2">+{listingDraft.photos.length - 3} more photos</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                    <div className="flex gap-3">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                      <div className="text-sm">
+                        <p className="text-white font-semibold mb-1">Ready to Publish</p>
+                        <p className="text-muted-foreground">
+                          Click "Publish & Pay" to complete your $49/month subscription and publish this listing.
                         </p>
                       </div>
                     </div>
@@ -450,20 +542,21 @@ export function CreateListing() {
               </Button>
 
               <div className="flex gap-3">
-                {currentStep < 3 && (
+                {currentStep < 4 && (
                   <Button
                     onClick={() => setCurrentStep(currentStep + 1)}
                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                     disabled={
                       (currentStep === 1 && !isStep1Complete) ||
-                      (currentStep === 2 && !isStep2Complete)
+                      (currentStep === 2 && !isStep2Complete) ||
+                      (currentStep === 3 && !isStep3Complete)
                     }
                     data-testid="button-next-step"
                   >
-                    Next
+                    {currentStep === 3 ? "Review Listing" : "Next"}
                   </Button>
                 )}
-                {currentStep === 3 && (
+                {currentStep === 4 && (
                   <Button
                     onClick={handlePublish}
                     className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
