@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -73,6 +73,7 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogDescription className="sr-only">Tenant application review details</DialogDescription>
         <DialogHeader className="p-6 border-b border-border bg-card">
           <div className="flex items-start justify-between">
             <div className="flex gap-4">

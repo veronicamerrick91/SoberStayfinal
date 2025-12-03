@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -172,9 +172,9 @@ export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }
           <div className="flex items-start justify-between">
             <div>
               <DialogTitle className="text-2xl font-bold text-white">{listing.name}</DialogTitle>
-              <p className="text-sm text-muted-foreground mt-1">
+              <DialogDescription className="text-sm text-muted-foreground mt-1">
                 <MapPin className="w-3 h-3 inline mr-1" /> {listing.address}, {listing.city}, {listing.state}
-              </p>
+              </DialogDescription>
             </div>
             <Badge className={
               listing.status === "Pending" ? "bg-amber-500/80" :
