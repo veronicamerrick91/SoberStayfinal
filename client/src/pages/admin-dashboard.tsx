@@ -490,33 +490,26 @@ export function AdminDashboard() {
                 <CardTitle className="text-white">Listing Management ({listings.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {listings.map((listing) => (
-                    <div key={listing.id} className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
-                      listing.status === "Pending" ? "bg-amber-500/10 border-amber-500/20" :
-                      listing.status === "Approved" ? "bg-green-500/10 border-green-500/20" :
-                      "bg-red-500/10 border-red-500/20"
-                    }`}>
+                    <div key={listing.id} className="flex items-center justify-between p-4 rounded-lg border-b border-border/50 hover:bg-white/5 transition-colors last:border-0">
                       <div className="flex gap-4 flex-1">
-                        <img src={listing.image} className="w-16 h-16 rounded object-cover" />
+                        <img src={listing.image} className="w-12 h-12 rounded object-cover" />
                         <div>
                           <p className="text-white font-medium">{listing.name}</p>
                           <p className="text-xs text-muted-foreground">{listing.address}, {listing.city}</p>
-                          <div className="flex gap-2 mt-2">
-                            {listing.isVerified && <Badge className="bg-green-500/80 text-xs">Verified</Badge>}
-                            <Badge variant="outline" className="text-xs">${listing.price}/{listing.pricePeriod}</Badge>
-                            <Badge variant="secondary" className="text-xs">{listing.bedsAvailable} beds</Badge>
-                            <Badge className={
-                              listing.status === "Pending" ? "bg-amber-500/80" :
-                              listing.status === "Approved" ? "bg-green-500/80" :
-                              "bg-red-500/80"
-                            }>{listing.status}</Badge>
-                          </div>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => handleReviewListing(listing)} className="bg-primary/20 text-primary hover:bg-primary/30">Review</Button>
-                        <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10">Flag</Button>
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-1">
+                          {listing.isVerified && <Badge className="bg-green-500/80 text-xs">Verified</Badge>}
+                          <Badge variant="outline" className="text-xs">${listing.price}/{listing.pricePeriod}</Badge>
+                          <Badge variant="secondary" className="text-xs">{listing.bedsAvailable} beds</Badge>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => handleReviewListing(listing)} className="bg-primary/20 text-primary hover:bg-primary/30 h-7 text-xs">Review</Button>
+                          <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10 h-7 text-xs">Flag</Button>
+                        </div>
                       </div>
                     </div>
                   ))}
