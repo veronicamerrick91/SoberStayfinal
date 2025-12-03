@@ -28,6 +28,7 @@ export default function Browse() {
   const [location] = useLocation();
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const params = new URLSearchParams(window.location.search);
     const search = params.get("search");
     if (search) {

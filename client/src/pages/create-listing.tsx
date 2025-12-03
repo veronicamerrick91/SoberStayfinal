@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { PaymentModal } from "@/components/payment-modal";
 import { ArrowLeft, CheckCircle, AlertCircle, Upload, X, Check, Clock } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import * as React from "react";
 import { useLocation } from "wouter";
 import { getAuth } from "@/lib/auth";
 
@@ -35,6 +36,12 @@ interface ListingDraft {
 export function CreateListing() {
   const [location, setLocation] = useLocation();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  // Scroll to top on mount
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [listingDraft, setListingDraft] = useState<ListingDraft>({
     propertyName: "",
     address: "",

@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Lock, CheckCircle } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { CreditCard, Lock, CheckCircle, DollarSign, Banknote } from "lucide-react";
 import { createSubscription } from "@/lib/subscriptions";
 
 interface PaymentModalProps {
@@ -18,17 +19,29 @@ interface PaymentModalProps {
 
 export function PaymentModal({ open, onClose, onSuccess, providerId, listingCount = 1 }: PaymentModalProps) {
   const [step, setStep] = useState<"pricing" | "payment" | "success">("pricing");
+  const [paymentMethod, setPaymentMethod] = useState<"credit" | "ach" | "check">("credit");
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [cvc, setCvc] = useState("");
   const [billingName, setBillingName] = useState("");
+  const [achRoutingNumber, setAchRoutingNumber] = useState("");
+  const [achAccountNumber, setAchAccountNumber] = useState("");
+  const [checkNumber, setCheckNumber] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
   const monthlyFee = 49 * listingCount;
 
   const handlePayment = async () => {
-    if (!cardNumber || !expiryDate || !cvc || !billingName) {
+    if (paymentMethod === "credit" && (!cardNumber || !expiryDate || !cvc || !billingName)) {
       alert("Please fill in all payment details");
+      return;
+    }
+    if (paymentMethod === "ach" && (!achRoutingNumber || !achAccountNumber || !billingName)) {
+      alert("Please fill in all ACH details");
+      return;
+    }
+    if (paymentMethod === "check" && (!checkNumber || !billingName)) {
+      alert("Please fill in all check details");
       return;
     }
 
@@ -134,8 +147,32 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
             </div>
 
             <div className="space-y-3">
+              <Label className="text-white text-sm font-semibold">Payment Method</Label>
+              <RadioGroup value={paymentMethod} onValueChange={(val: any) => setPaymentMethod(val)}>
+                <div className="flex items-center space-x-2 p-2 rounded border border-border hover:border-primary/50">
+                  <RadioGroupItem value="credit" id="credit" />
+                  <Label htmlFor="credit" className="text-sm text-gray-300 cursor-pointer flex items-center gap-2 flex-1">
+                    <CreditCard className="w-4 h-4" /> Credit Card
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-2 rounded border border-border hover:border-primary/50">
+                  <RadioGroupItem value="ach" id="ach" />
+                  <Label htmlFor="ach" className="text-sm text-gray-300 cursor-pointer flex items-center gap-2 flex-1">
+                    <DollarSign className="w-4 h-4" /> ACH Transfer
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-2 rounded border border-border hover:border-primary/50">
+                  <RadioGroupItem value="check" id="check" />
+                  <Label htmlFor="check" className="text-sm text-gray-300 cursor-pointer flex items-center gap-2 flex-1">
+                    <Banknote className="w-4 h-4" /> Check
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-3">
               <div>
-                <Label className="text-white text-sm mb-2">Cardholder Name</Label>
+                <Label className="text-white text-sm mb-2">Name</Label>
                 <Input 
                   placeholder="John Doe"
                   value={billingName}
@@ -144,39 +181,77 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
                 />
               </div>
 
-              <div>
-                <Label className="text-white text-sm mb-2">Card Number</Label>
-                <Input 
-                  placeholder="4242 4242 4242 4242"
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                  maxLength={19}
-                  className="bg-background/50 border-white/10 font-mono"
-                />
-              </div>
+              {paymentMethod === "credit" && (
+                <>
+                  <div>
+                    <Label className="text-white text-sm mb-2">Card Number</Label>
+                    <Input 
+                      placeholder="4242 4242 4242 4242"
+                      value={cardNumber}
+                      onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                      maxLength={19}
+                      className="bg-background/50 border-white/10 font-mono"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-white text-sm mb-2">MM/YY</Label>
+                      <Input 
+                        placeholder="12/26"
+                        value={expiryDate}
+                        onChange={(e) => setExpiryDate(formatExpiry(e.target.value))}
+                        maxLength={5}
+                        className="bg-background/50 border-white/10 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-white text-sm mb-2">CVC</Label>
+                      <Input 
+                        placeholder="123"
+                        value={cvc}
+                        onChange={(e) => setCvc(e.target.value.slice(0, 4))}
+                        maxLength={4}
+                        className="bg-background/50 border-white/10 font-mono"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
-              <div className="grid grid-cols-2 gap-3">
+              {paymentMethod === "ach" && (
+                <>
+                  <div>
+                    <Label className="text-white text-sm mb-2">Routing Number</Label>
+                    <Input 
+                      placeholder="021000021"
+                      value={achRoutingNumber}
+                      onChange={(e) => setAchRoutingNumber(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                      className="bg-background/50 border-white/10 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white text-sm mb-2">Account Number</Label>
+                    <Input 
+                      placeholder="123456789"
+                      value={achAccountNumber}
+                      onChange={(e) => setAchAccountNumber(e.target.value.replace(/\D/g, "").slice(0, 17))}
+                      className="bg-background/50 border-white/10 font-mono"
+                    />
+                  </div>
+                </>
+              )}
+
+              {paymentMethod === "check" && (
                 <div>
-                  <Label className="text-white text-sm mb-2">MM/YY</Label>
+                  <Label className="text-white text-sm mb-2">Check Number</Label>
                   <Input 
-                    placeholder="12/26"
-                    value={expiryDate}
-                    onChange={(e) => setExpiryDate(formatExpiry(e.target.value))}
-                    maxLength={5}
+                    placeholder="1001"
+                    value={checkNumber}
+                    onChange={(e) => setCheckNumber(e.target.value.replace(/\D/g, "").slice(0, 10))}
                     className="bg-background/50 border-white/10 font-mono"
                   />
                 </div>
-                <div>
-                  <Label className="text-white text-sm mb-2">CVC</Label>
-                  <Input 
-                    placeholder="123"
-                    value={cvc}
-                    onChange={(e) => setCvc(e.target.value.slice(0, 4))}
-                    maxLength={4}
-                    className="bg-background/50 border-white/10 font-mono"
-                  />
-                </div>
-              </div>
+              )}
             </div>
 
             <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">

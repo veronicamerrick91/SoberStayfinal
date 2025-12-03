@@ -214,6 +214,11 @@ export function ProviderDashboard() {
     localStorage.setItem("tour_requests", JSON.stringify(updatedTours));
   };
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
