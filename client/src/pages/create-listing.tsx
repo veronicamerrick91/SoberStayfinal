@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PaymentModal } from "@/components/payment-modal";
-import { ArrowLeft, CheckCircle, AlertCircle, Upload, X, Check } from "lucide-react";
+import { ArrowLeft, CheckCircle, AlertCircle, Upload, X, Check, Clock } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { getAuth } from "@/lib/auth";
@@ -514,6 +514,18 @@ export function CreateListing() {
                         )}
                       </div>
                     )}
+                  </div>
+
+                  <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <div className="flex gap-3">
+                      <Clock className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+                      <div className="text-sm">
+                        <p className="text-white font-semibold mb-1">Application Review Timeline</p>
+                        <p className="text-muted-foreground">
+                          Your listing will be reviewed by our team within 24 hours. You'll receive an email confirmation once it's approved and live on the platform.
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
