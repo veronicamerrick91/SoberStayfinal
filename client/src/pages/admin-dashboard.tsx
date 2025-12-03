@@ -279,21 +279,21 @@ export function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="bg-card border border-border p-1 grid w-full grid-cols-7 lg:grid-cols-12 gap-1">
-            <TabsTrigger value="overview" className="text-xs">Dashboard</TabsTrigger>
-            <TabsTrigger value="users" className="text-xs">Users</TabsTrigger>
-            <TabsTrigger value="listings" className="text-xs">Listings</TabsTrigger>
-            <TabsTrigger value="applications" className="text-xs">Apps</TabsTrigger>
-            <TabsTrigger value="messaging" className="text-xs">Messages</TabsTrigger>
-            <TabsTrigger value="verification" className="text-xs">Verification</TabsTrigger>
-            <TabsTrigger value="reports" className="text-xs">Reports ({reports.length})</TabsTrigger>
-            <TabsTrigger value="compliance" className="text-xs">Safety</TabsTrigger>
-            <TabsTrigger value="billing" className="text-xs">Billing</TabsTrigger>
-            <TabsTrigger value="analytics" className="text-xs">Analytics</TabsTrigger>
-            <TabsTrigger value="support" className="text-xs">Support</TabsTrigger>
-            <TabsTrigger value="marketing" className="text-xs">Marketing</TabsTrigger>
-            <TabsTrigger value="workflows" className="text-xs">Workflows</TabsTrigger>
-            <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
+          <TabsList className="bg-gradient-to-r from-card via-card to-card border border-border/50 p-2 flex flex-wrap gap-2 h-auto justify-start rounded-lg shadow-sm">
+            <TabsTrigger value="overview" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Dashboard</TabsTrigger>
+            <TabsTrigger value="users" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Users className="w-4 h-4" /> Users</TabsTrigger>
+            <TabsTrigger value="listings" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Building className="w-4 h-4" /> Listings</TabsTrigger>
+            <TabsTrigger value="applications" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Applications</TabsTrigger>
+            <TabsTrigger value="messaging" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><MessageSquare className="w-4 h-4" /> Messages</TabsTrigger>
+            <TabsTrigger value="verification" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Shield className="w-4 h-4" /> Verification</TabsTrigger>
+            <TabsTrigger value="reports" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><AlertTriangle className="w-4 h-4" /> Reports</TabsTrigger>
+            <TabsTrigger value="compliance" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><ShieldAlert className="w-4 h-4" /> Safety</TabsTrigger>
+            <TabsTrigger value="billing" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><DollarSign className="w-4 h-4" /> Billing</TabsTrigger>
+            <TabsTrigger value="analytics" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><BarChart3 className="w-4 h-4" /> Analytics</TabsTrigger>
+            <TabsTrigger value="support" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Mail className="w-4 h-4" /> Support</TabsTrigger>
+            <TabsTrigger value="marketing" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><TrendingUp className="w-4 h-4" /> Marketing</TabsTrigger>
+            <TabsTrigger value="workflows" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Activity className="w-4 h-4" /> Workflows</TabsTrigger>
+            <TabsTrigger value="settings" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
           </TabsList>
 
           {/* DASHBOARD OVERVIEW */}
