@@ -8,19 +8,21 @@ import { storage } from "./storage";
 import { User } from "@shared/schema";
 
 export function setupAuth(app: Express) {
+  // Always trust proxy in Replit environment
+  app.set("trust proxy", 1);
+
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "replit_session_secret",
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,
     cookie: {
-      secure: app.get("env") === "production",
+      secure: true,
+      httpOnly: true,
+      sameSite: "none",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
   };
-
-  if (app.get("env") === "production") {
-    app.set("trust proxy", 1); // trust first proxy
-  }
 
   app.use(session(sessionSettings));
   app.use(passport.initialize());
