@@ -259,7 +259,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {MOCK_PROPERTIES.map((home) => (
-              <Link key={home.id} href={`/browse`}>
+              <Link key={home.id} href={`/property/${home.id}`}>
                 <Card className="h-full overflow-hidden bg-card border-border hover:border-primary/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] cursor-pointer group rounded-2xl">
                   <div className="relative h-64 overflow-hidden">
                     <img 
