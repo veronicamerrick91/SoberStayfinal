@@ -240,7 +240,7 @@ export function ProviderDashboard() {
             className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
             data-testid="button-list-property"
           >
-            <Plus className="w-4 h-4" /> {hasActiveSubscription ? "List New Property" : "Subscribe to List"}
+            <Plus className="w-4 h-4" /> {hasActiveSubscription ? "List New Property" : "List Now"}
           </Button>
         </div>
 
