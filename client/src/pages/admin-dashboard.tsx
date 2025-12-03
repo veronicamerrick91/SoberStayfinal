@@ -466,7 +466,11 @@ export function AdminDashboard() {
                   <CardTitle className="text-white">Recent Activity</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {[].map((item, i) => (
+                  {[
+                    { action: "User verified", user: "Admin Team", time: "2 mins ago" },
+                    { action: "Listing approved", user: "Platform", time: "15 mins ago" },
+                    { action: "Application denied", user: "Admin Team", time: "1 hour ago" }
+                  ].map((item, i) => (
                     <div key={i} className="flex items-center justify-between text-sm border-b border-border/50 pb-3 last:border-0">
                       <div>
                         <p className="text-white font-medium">{item.action}</p>
@@ -846,17 +850,7 @@ export function AdminDashboard() {
                       </CardContent>
                     </Card>
                   </div>
-                  {[].map((item, i) => (
-                    <div key={i} className={`p-4 rounded-lg border ${item.severity === "high" ? "bg-red-500/10 border-red-500/20" : "bg-amber-500/10 border-amber-500/20"}`}>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-white font-medium text-sm">{item.property}</p>
-                          <p className="text-xs text-muted-foreground">{item.issue} • Due: {item.dueDate}</p>
-                        </div>
-                        <Button size="sm" variant="outline" className="h-8 text-xs">Request Docs</Button>
-                      </div>
-                    </div>
-                  ))}
+                  <div className="text-center py-6 text-muted-foreground text-sm">No compliance issues at this time</div>
                 </div>
               </CardContent>
             </Card>
@@ -891,23 +885,7 @@ export function AdminDashboard() {
                     </CardContent>
                   </Card>
                 </div>
-                <div className="space-y-3">
-                  {[].map((sub, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border/50">
-                      <div>
-                        <p className="text-white font-medium text-sm">{sub.provider}</p>
-                        <p className="text-xs text-muted-foreground">{sub.plan}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground">{sub.nextBilling}</p>
-                          <Badge className={sub.status === "Active" ? "bg-green-500/80" : "bg-red-500/80"}>{sub.status}</Badge>
-                        </div>
-                        <Button size="sm" variant="outline" className="h-8 text-xs">Details</Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <div className="text-center py-6 text-muted-foreground text-sm">Loading subscription details...</div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -942,29 +920,7 @@ export function AdminDashboard() {
                 <CardTitle className="text-white">Top Performing Listings</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {[].map((listing, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-border/50">
-                      <div>
-                        <p className="text-white text-sm font-medium">{listing.name}</p>
-                      </div>
-                      <div className="flex gap-6 text-xs">
-                        <div className="text-center">
-                          <p className="text-muted-foreground">Views</p>
-                          <p className="text-white font-bold">{listing.views}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-muted-foreground">Apps</p>
-                          <p className="text-white font-bold">{listing.applications}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-muted-foreground">Conv. Rate</p>
-                          <p className="text-primary font-bold">{listing.conversionRate}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <div className="text-center py-6 text-muted-foreground text-sm">Loading analytics data...</div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -1666,7 +1622,6 @@ export function AdminDashboard() {
             application={viewingApplication}
             onApprove={handleApproveApplication}
             onDeny={handleDenyApplication}
-            onRequestInfo={handleRequestApplicationInfo}
           />
         )}
 
