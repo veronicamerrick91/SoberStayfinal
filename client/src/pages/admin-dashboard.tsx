@@ -485,37 +485,27 @@ export function AdminDashboard() {
 
           {/* LISTINGS MANAGEMENT */}
           <TabsContent value="listings" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white">Listing Management ({listings.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {listings.map((listing) => (
-                    <div key={listing.id} className="flex items-center justify-between p-4 rounded-lg border-b border-border/50 hover:bg-white/5 transition-colors last:border-0">
-                      <div className="flex gap-4 flex-1">
-                        <img src={listing.image} className="w-12 h-12 rounded object-cover" />
-                        <div>
-                          <p className="text-white font-medium">{listing.name}</p>
-                          <p className="text-xs text-muted-foreground">{listing.address}, {listing.city}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex gap-1">
-                          {listing.isVerified && <Badge className="bg-green-500/80 text-xs">Verified</Badge>}
-                          <Badge variant="outline" className="text-xs">${listing.price}/{listing.pricePeriod}</Badge>
-                          <Badge variant="secondary" className="text-xs">{listing.bedsAvailable} beds</Badge>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" onClick={() => handleReviewListing(listing)} className="bg-primary/20 text-primary hover:bg-primary/30 h-7 text-xs">Review</Button>
-                          <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10 h-7 text-xs">Flag</Button>
-                        </div>
-                      </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-semibold mb-3">Listing Management ({listings.length})</h3>
+              {listings.map((listing) => (
+                <div key={listing.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-colors border-b border-border/50 last:border-0">
+                  <div className="flex gap-3 flex-1">
+                    <img src={listing.image} className="w-12 h-12 rounded object-cover" />
+                    <div className="flex-1">
+                      <p className="text-white font-medium">{listing.name}</p>
+                      <p className="text-xs text-muted-foreground">{listing.address}, {listing.city}</p>
                     </div>
-                  ))}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {listing.isVerified && <Badge className="bg-green-500/80 text-xs">Verified</Badge>}
+                    <Badge variant="outline" className="text-xs">${listing.price}/{listing.pricePeriod}</Badge>
+                    <Badge variant="secondary" className="text-xs">{listing.bedsAvailable} beds</Badge>
+                    <Button size="sm" onClick={() => handleReviewListing(listing)} className="bg-primary/20 text-primary hover:bg-primary/30 h-7 text-xs">Review</Button>
+                    <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10 h-7 text-xs">Flag</Button>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
           </TabsContent>
 
           {/* APPLICATIONS REVIEW */}
