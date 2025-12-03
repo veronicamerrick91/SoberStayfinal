@@ -97,6 +97,12 @@ export function AdminDashboard() {
   const [newApplications, setNewApplications] = useState(5);
   const [newVerifications, setNewVerifications] = useState(1);
   const [newBillingSubscriptions, setNewBillingSubscriptions] = useState(2);
+  const [emailBodyText, setEmailBodyText] = useState("");
+  const [emailFont, setEmailFont] = useState("Arial");
+  const [emailFontSize, setEmailFontSize] = useState(16);
+  const [emailFontColor, setEmailFontColor] = useState("#ffffff");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [showEmailComposer, setShowEmailComposer] = useState(false);
 
   useEffect(() => {
     setReports(getReports());
@@ -1279,9 +1285,9 @@ export function AdminDashboard() {
                       </div>
                       <div>
                         <label className="text-xs text-muted-foreground">Subject</label>
-                        <input type="text" placeholder="Email subject" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm mt-1" />
+                        <input type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} placeholder="Email subject" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm mt-1" />
                       </div>
-                      <Button onClick={handleSendCampaign} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-2">Send Campaign</Button>
+                      <Button onClick={() => setShowEmailComposer(true)} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-2">Compose Email</Button>
                     </div>
                   </div>
                   
@@ -1916,6 +1922,85 @@ export function AdminDashboard() {
               <div className="flex gap-2">
                 <Button onClick={() => { setShowReplyModal(false); setReplyMessage(""); }} className="flex-1 bg-primary hover:bg-primary/90">Send Reply</Button>
                 <Button onClick={() => { setShowReplyModal(false); setReplyMessage(""); }} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showEmailComposer && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+              <h2 className="text-xl font-bold text-white mb-4">Email Composer</h2>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">Email Subject</label>
+                  <input type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} placeholder="Enter email subject" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm" />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Font</label>
+                    <select value={emailFont} onChange={(e) => setEmailFont(e.target.value)} className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-xs">
+                      <option>Arial</option>
+                      <option>Georgia</option>
+                      <option>Times New Roman</option>
+                      <option>Courier New</option>
+                      <option>Verdana</option>
+                      <option>Trebuchet MS</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Size</label>
+                    <select value={emailFontSize} onChange={(e) => setEmailFontSize(Number(e.target.value))} className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-xs">
+                      <option value={12}>12px</option>
+                      <option value={14}>14px</option>
+                      <option value={16}>16px</option>
+                      <option value={18}>18px</option>
+                      <option value={20}>20px</option>
+                      <option value={24}>24px</option>
+                      <option value={28}>28px</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Text Color</label>
+                    <div className="flex gap-2">
+                      <input type="color" value={emailFontColor} onChange={(e) => setEmailFontColor(e.target.value)} className="w-full h-10 rounded-lg cursor-pointer bg-background/50 border border-white/10" />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Preview</label>
+                    <div className="w-full h-10 rounded-lg bg-background/50 border border-white/10 flex items-center px-3" style={{ fontSize: `${emailFontSize * 0.7}px`, fontFamily: emailFont, color: emailFontColor }}>
+                      Preview
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">Email Body</label>
+                  <textarea
+                    placeholder="Type your email content here..."
+                    value={emailBodyText}
+                    onChange={(e) => setEmailBodyText(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
+                    rows={6}
+                    style={{ fontFamily: emailFont, fontSize: `${emailFontSize}px`, color: emailFontColor }}
+                  />
+                </div>
+                
+                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                  <p className="text-xs text-muted-foreground mb-2">Live Preview</p>
+                  <div className="p-4 bg-white/5 rounded-lg border border-white/10 min-h-32" style={{ fontFamily: emailFont, fontSize: `${emailFontSize}px`, color: emailFontColor }}>
+                    {emailBodyText || "Your email content will appear here..."}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex gap-2 justify-end">
+                <Button onClick={() => setShowEmailComposer(false)} variant="outline">Cancel</Button>
+                <Button onClick={() => { setShowEmailComposer(false); handleSendCampaign(); }} className="bg-primary hover:bg-primary/90">Send Campaign</Button>
               </div>
             </div>
           </div>
