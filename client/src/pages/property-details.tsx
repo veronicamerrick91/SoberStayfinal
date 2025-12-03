@@ -155,6 +155,10 @@ export default function PropertyDetails() {
                       </TooltipContent>
                     </Tooltip>
                  </TooltipProvider>
+                 {property.isMatFriendly && <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 text-xs font-medium">MAT Friendly</Badge>}
+                 {property.isPetFriendly && <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-3 py-1 text-xs font-medium">Pet Friendly</Badge>}
+                 {property.isLgbtqFriendly && <Badge className="bg-pink-500/20 text-pink-300 border border-pink-500/30 px-3 py-1 text-xs font-medium">LGBTQ+ Friendly</Badge>}
+                 {property.isFaithBased && <Badge className="bg-orange-500/20 text-orange-300 border border-orange-500/30 px-3 py-1 text-xs font-medium">Faith Based</Badge>}
               </div>
             </div>
 
@@ -360,34 +364,6 @@ export default function PropertyDetails() {
                 </CardContent>
               </Card>
 
-              {/* Filters / Tags Summary */}
-              <Card className="bg-card/50 border-border">
-                <CardContent className="p-6 space-y-4">
-                   <h4 className="font-bold text-white text-sm">Property Highlights</h4>
-                   <div className="space-y-3">
-                     {property.isMatFriendly && (
-                       <div className="flex items-center gap-2 text-sm text-gray-300">
-                         <Check className="w-4 h-4 text-primary" /> MAT Friendly
-                       </div>
-                     )}
-                     {property.isPetFriendly && (
-                       <div className="flex items-center gap-2 text-sm text-gray-300">
-                         <Check className="w-4 h-4 text-primary" /> Pet Friendly
-                       </div>
-                     )}
-                     {property.isLgbtqFriendly && (
-                       <div className="flex items-center gap-2 text-sm text-gray-300">
-                         <Check className="w-4 h-4 text-primary" /> LGBTQ+ Friendly
-                       </div>
-                     )}
-                     {property.isFaithBased && (
-                       <div className="flex items-center gap-2 text-sm text-gray-300">
-                         <Check className="w-4 h-4 text-primary" /> Faith Based
-                       </div>
-                     )}
-                   </div>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </div>

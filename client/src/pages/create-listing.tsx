@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PaymentModal } from "@/components/payment-modal";
-import { ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, AlertCircle, Upload, X } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { getAuth } from "@/lib/auth";
@@ -29,6 +29,7 @@ interface ListingDraft {
   isLgbtqFriendly: boolean;
   isFaithBased: boolean;
   inclusions: string[];
+  photos: string[];
 }
 
 export function CreateListing() {
@@ -51,6 +52,7 @@ export function CreateListing() {
     isLgbtqFriendly: false,
     isFaithBased: false,
     inclusions: [],
+    photos: [],
   });
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -80,6 +82,29 @@ export function CreateListing() {
 
   const handleCheckboxChange = (key: string, checked: boolean) => {
     setListingDraft(prev => ({ ...prev, [key]: checked }));
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const newPhotos = Array.from(files).map(file => URL.createObjectURL(file));
+      const totalPhotos = listingDraft.photos.length + newPhotos.length;
+      if (totalPhotos <= 15) {
+        setListingDraft(prev => ({
+          ...prev,
+          photos: [...prev.photos, ...newPhotos]
+        }));
+      } else {
+        alert(`You can upload a maximum of 15 photos. You currently have ${listingDraft.photos.length} photo(s).`);
+      }
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    setListingDraft(prev => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index)
+    }));
   };
 
   const isStep1Complete = listingDraft.propertyName && listingDraft.address && listingDraft.city && listingDraft.state;
@@ -193,6 +218,44 @@ export function CreateListing() {
                         <SelectItem value="Co-ed">Co-ed</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="space-y-2 pt-4 border-t border-border">
+                    <Label className="text-white">Property Photos {listingDraft.photos.length}/15</Label>
+                    <p className="text-xs text-muted-foreground">Upload 5-15 high-quality photos of your property. First photo will be used as the listing cover.</p>
+                    <div className="border-2 border-dashed border-border/50 rounded-lg p-4 text-center hover:border-primary/50 transition-colors">
+                      <label className="cursor-pointer flex flex-col items-center gap-2">
+                        <Upload className="w-6 h-6 text-primary" />
+                        <span className="text-sm text-white font-medium">Click to upload photos</span>
+                        <span className="text-xs text-muted-foreground">or drag and drop (Max 15 photos)</span>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={handlePhotoUpload}
+                          className="hidden"
+                          disabled={listingDraft.photos.length >= 15}
+                        />
+                      </label>
+                    </div>
+
+                    {listingDraft.photos.length > 0 && (
+                      <div className="grid grid-cols-3 gap-3 pt-2">
+                        {listingDraft.photos.map((photo, index) => (
+                          <div key={index} className="relative group">
+                            <img src={photo} alt={`Property photo ${index + 1}`} className="w-full h-24 object-cover rounded-lg border border-border" />
+                            {index === 0 && <span className="absolute top-1 left-1 bg-primary text-white text-xs px-2 py-0.5 rounded">Cover</span>}
+                            <button
+                              type="button"
+                              onClick={() => removePhoto(index)}
+                              className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
