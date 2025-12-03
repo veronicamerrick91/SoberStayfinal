@@ -401,51 +401,40 @@ export function AdminDashboard() {
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center justify-between">
-                    <span>Alerts & Flags</span>
-                    <Badge className="bg-red-500/20 text-red-500">3 Critical</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {[
-                    { icon: AlertTriangle, title: "Suspicious Activity", desc: "Multiple failed logins", color: "red" },
-                    { icon: Flag, title: "Inappropriate Message", desc: "Flagged by AI moderation", color: "amber" },
-                    { icon: Lock, title: "Payment Failed", desc: "Provider account suspended", color: "red" },
-                  ].map((alert, i) => (
-                    <div key={i} className={`flex items-start gap-3 p-3 rounded-lg bg-${alert.color}-500/10 border border-${alert.color}-500/20`}>
-                      <alert.icon className={`w-5 h-5 text-${alert.color}-500 mt-0.5 shrink-0`} />
-                      <div className="flex-1">
-                        <p className="text-white font-medium text-sm">{alert.title}</p>
-                        <p className="text-xs text-muted-foreground">{alert.desc}</p>
-                      </div>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-white font-semibold mb-3">Alerts & Flags</h3>
+                {[
+                  { icon: AlertTriangle, title: "Suspicious Activity", desc: "Multiple failed logins", color: "red" },
+                  { icon: Flag, title: "Inappropriate Message", desc: "Flagged by AI moderation", color: "amber" },
+                  { icon: Lock, title: "Payment Failed", desc: "Provider account suspended", color: "red" },
+                ].map((alert, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default border-b border-border/50 last:border-0">
+                    <alert.icon className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-white font-medium text-sm">{alert.title}</p>
+                      <p className="text-xs text-muted-foreground">{alert.desc}</p>
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
+                  </div>
+                ))}
+              </div>
 
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-white">Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {[
-                    { action: "User verified", user: "Admin Team", time: "2 mins ago" },
-                    { action: "Listing approved", user: "Platform", time: "15 mins ago" },
-                    { action: "Application denied", user: "Admin Team", time: "1 hour ago" }
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between text-sm border-b border-border/50 pb-3 last:border-0">
-                      <div>
-                        <p className="text-white font-medium">{item.action}</p>
-                        <p className="text-xs text-muted-foreground">{item.user}</p>
-                      </div>
-                      <span className="text-xs text-muted-foreground">{item.time}</span>
+              <div className="space-y-2">
+                <h3 className="text-white font-semibold mb-3">Recent Activity</h3>
+                {[
+                  { action: "User verified", user: "Admin Team", time: "2 mins ago" },
+                  { action: "Listing approved", user: "Platform", time: "15 mins ago" },
+                  { action: "Application denied", user: "Admin Team", time: "1 hour ago" }
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center justify-between text-sm p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default border-b border-border/50 last:border-0">
+                    <div>
+                      <p className="text-white font-medium">{item.action}</p>
+                      <p className="text-xs text-muted-foreground">{item.user}</p>
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
+                    <span className="text-xs text-muted-foreground">{item.time}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </TabsContent>
 
@@ -1071,27 +1060,21 @@ export function AdminDashboard() {
               </div>
             </div>
 
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white">Subscriber List</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {emailSubscribers.map((subscriber) => (
-                    <div key={subscriber.id} className="flex items-center justify-between text-sm border-b border-border/50 pb-3 last:border-0">
-                      <div>
-                        <p className="text-white font-medium">{subscriber.email}</p>
-                        <p className="text-xs text-muted-foreground">Subscribed {subscriber.subscribeDate}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-green-500/20 text-green-500">{subscriber.status}</Badge>
-                        <Button size="sm" variant="outline" className="h-7 text-xs">Unsubscribe</Button>
-                      </div>
-                    </div>
-                  ))}
+            <div className="space-y-2">
+              <h3 className="text-white font-semibold mb-3">Subscriber List</h3>
+              {emailSubscribers.map((subscriber) => (
+                <div key={subscriber.id} className="flex items-center justify-between text-sm p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default border-b border-border/50 last:border-0">
+                  <div>
+                    <p className="text-white font-medium">{subscriber.email}</p>
+                    <p className="text-xs text-muted-foreground">Subscribed {subscriber.subscribeDate}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-green-500/20 text-green-500">{subscriber.status}</Badge>
+                    <Button size="sm" variant="outline" className="h-7 text-xs">Unsubscribe</Button>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
           </TabsContent>
 
           {/* SETTINGS */}
