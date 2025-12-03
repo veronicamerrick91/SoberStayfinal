@@ -510,101 +510,75 @@ export function AdminDashboard() {
 
           {/* APPLICATIONS REVIEW */}
           <TabsContent value="applications" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white">Tenant Applications ({applications.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {applications.map((app) => (
-                    <div key={app.id} className={`p-4 rounded-lg border cursor-pointer transition-all hover:border-primary/50 ${
-                      app.status === "Approved" ? "bg-green-500/10 border-green-500/20" :
-                      app.status === "Denied" ? "bg-red-500/10 border-red-500/20" :
-                      app.status === "Needs Info" ? "bg-blue-500/10 border-blue-500/20" :
-                      "bg-amber-500/10 border-amber-500/20"
-                    }`}
-                    onClick={() => handleViewApplication(app)}>
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex-1">
-                          <p className="text-white font-medium">{app.tenantName}</p>
-                          <p className="text-xs text-muted-foreground">{app.propertyName} • {new Date(app.submittedDate).toLocaleDateString()}</p>
-                          <p className="text-xs text-muted-foreground">{app.email} • {app.phone}</p>
-                        </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <Badge className={
-                            app.status === "Approved" ? "bg-green-500/80" :
-                            app.status === "Denied" ? "bg-red-500/80" :
-                            app.status === "Needs Info" ? "bg-blue-500/80" :
-                            "bg-amber-500/80"
-                          }>{app.status}</Badge>
-                          <Badge variant="outline" className="text-xs border-primary/30 text-primary">{app.completeness}% Complete</Badge>
-                        </div>
-                      </div>
-                      <div className="w-full h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: `${app.completeness}%` }} />
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-2">Click to view full application and take action</div>
+            <div className="space-y-2">
+              <h3 className="text-white font-semibold mb-3">Tenant Applications ({applications.length})</h3>
+              {applications.map((app) => (
+                <div key={app.id} className="p-3 rounded-lg cursor-pointer transition-all hover:bg-white/5 border-b border-border/50 last:border-0"
+                onClick={() => handleViewApplication(app)}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex-1">
+                      <p className="text-white font-medium">{app.tenantName}</p>
+                      <p className="text-xs text-muted-foreground">{app.propertyName} • {new Date(app.submittedDate).toLocaleDateString()}</p>
+                      <p className="text-xs text-muted-foreground">{app.email} • {app.phone}</p>
                     </div>
-                  ))}
+                    <div className="flex flex-col items-end gap-2">
+                      <Badge className={
+                        app.status === "Approved" ? "bg-green-500/80" :
+                        app.status === "Denied" ? "bg-red-500/80" :
+                        app.status === "Needs Info" ? "bg-blue-500/80" :
+                        "bg-amber-500/80"
+                      }>{app.status}</Badge>
+                      <Badge variant="outline" className="text-xs border-primary/30 text-primary">{app.completeness}% Complete</Badge>
+                    </div>
+                  </div>
+                  <div className="w-full h-1 bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary" style={{ width: `${app.completeness}%` }} />
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
           </TabsContent>
 
           {/* PROVIDER VERIFICATION CENTER */}
           <TabsContent value="verification" className="space-y-6">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Shield className="w-5 h-5" /> Provider Document Verification ({documents.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {documents.map((doc) => (
-                    <div key={doc.id} className={`p-4 rounded-lg border transition-colors ${
-                      doc.status === "Approved" ? "bg-green-500/10 border-green-500/20" :
-                      doc.status === "Rejected" ? "bg-red-500/10 border-red-500/20" :
-                      "bg-amber-500/10 border-amber-500/20"
-                    }`}>
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <p className="text-white font-bold">{doc.documentName}</p>
-                          <p className="text-sm text-muted-foreground">Provider: {doc.provider}</p>
-                          <p className="text-xs text-muted-foreground">{doc.providerEmail}</p>
-                          <div className="flex gap-2 mt-2">
-                            <Badge variant="outline" className="text-xs border-primary/30 text-primary gap-1"><FileText className="w-3 h-3" /> {doc.documentType}</Badge>
-                            <Badge className="text-xs bg-gray-500/80">Submitted: {new Date(doc.uploadedDate).toLocaleDateString()}</Badge>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-2">
-                          <Badge className={
-                            doc.status === "Approved" ? "bg-green-500/80" :
-                            doc.status === "Rejected" ? "bg-red-500/80" :
-                            "bg-amber-500/80"
-                          }>{doc.status}</Badge>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="h-8 gap-1 text-xs">
-                          <Download className="w-3 h-3" /> Download
-                        </Button>
-                        {doc.status === "Pending Review" && (
-                          <>
-                            <Button size="sm" onClick={() => handleApproveDocument(doc.id)} className="h-8 bg-green-500/20 text-green-500 hover:bg-green-500/30 gap-1 text-xs">
-                              <Check className="w-3 h-3" /> Approve
-                            </Button>
-                            <Button size="sm" onClick={() => handleRejectDocument(doc.id)} variant="outline" className="h-8 border-red-500/30 text-red-500 hover:bg-red-500/10 gap-1 text-xs">
-                              <X className="w-3 h-3" /> Reject
-                            </Button>
-                          </>
-                        )}
+            <div className="space-y-2">
+              <h3 className="text-white font-semibold mb-3">Provider Document Verification ({documents.length})</h3>
+              {documents.map((doc) => (
+                <div key={doc.id} className="p-3 rounded-lg border-b border-border/50 hover:bg-white/5 transition-colors last:border-0">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <p className="text-white font-bold">{doc.documentName}</p>
+                      <p className="text-sm text-muted-foreground">Provider: {doc.provider}</p>
+                      <p className="text-xs text-muted-foreground">{doc.providerEmail}</p>
+                      <div className="flex gap-2 mt-2">
+                        <Badge variant="outline" className="text-xs border-primary/30 text-primary gap-1"><FileText className="w-3 h-3" /> {doc.documentType}</Badge>
+                        <Badge className="text-xs bg-gray-500/80">Submitted: {new Date(doc.uploadedDate).toLocaleDateString()}</Badge>
                       </div>
                     </div>
-                  ))}
+                    <Badge className={
+                      doc.status === "Approved" ? "bg-green-500/80" :
+                      doc.status === "Rejected" ? "bg-red-500/80" :
+                      "bg-amber-500/80"
+                    }>{doc.status}</Badge>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="h-8 gap-1 text-xs">
+                      <Download className="w-3 h-3" /> Download
+                    </Button>
+                    {doc.status === "Pending Review" && (
+                      <>
+                        <Button size="sm" onClick={() => handleApproveDocument(doc.id)} className="h-8 bg-green-500/20 text-green-500 hover:bg-green-500/30 gap-1 text-xs">
+                          <Check className="w-3 h-3" /> Approve
+                        </Button>
+                        <Button size="sm" onClick={() => handleRejectDocument(doc.id)} variant="outline" className="h-8 border-red-500/30 text-red-500 hover:bg-red-500/10 gap-1 text-xs">
+                          <X className="w-3 h-3" /> Reject
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
 
             <Card className="bg-card border-border">
               <CardHeader>
