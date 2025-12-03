@@ -1201,7 +1201,7 @@ export function AdminDashboard() {
                     </div>
                   </div>
                 ))}
-                <Button onClick={handleCreateCampaign} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 mt-4">
+                <Button onClick={() => { setEmailSubject(""); setEmailBodyText(""); setShowEmailComposer(true); }} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 mt-4">
                   <Plus className="w-4 h-4" /> Create Campaign
                 </Button>
               </CardContent>
@@ -1255,7 +1255,7 @@ export function AdminDashboard() {
                     <div key={i} className="p-3 rounded-lg bg-white/5 border border-white/10 flex flex-col">
                       <p className="text-white text-sm font-medium">{template.name}</p>
                       <p className="text-xs text-muted-foreground mt-1">{template.type} • Used {template.uses} times</p>
-                      <Button onClick={() => { setNewCampaignName(template.name); setShowNewCampaignModal(true); }} size="sm" variant="ghost" className="text-xs mt-2 self-start">Use Template</Button>
+                      <Button onClick={() => { setEmailSubject(template.name); setEmailBodyText(""); setShowEmailComposer(true); }} size="sm" variant="ghost" className="text-xs mt-2 self-start">Use Template</Button>
                     </div>
                   ))}
                 </div>
