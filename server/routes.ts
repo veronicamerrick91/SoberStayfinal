@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { insertListingSchema, insertSubscriptionSchema, insertApplicationSchema } from "@shared/schema";
+import { stripeService } from "./stripeService";
+import { getStripePublishableKey } from "./stripeClient";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -71,16 +73,88 @@ export async function registerRoutes(
     res.json(application);
   });
 
-  // Subscriptions & Payments
+  // Stripe Integration - Get publishable key for frontend
+  app.get("/api/stripe/config", async (_req, res) => {
+    try {
+      const publishableKey = await getStripePublishableKey();
+      res.json({ publishableKey });
+    } catch (error) {
+      console.error('Error getting Stripe config:', error);
+      res.status(500).json({ error: 'Failed to get Stripe configuration' });
+    }
+  });
+
+  // Stripe Checkout - Create checkout session for subscription
+  app.post("/api/stripe/create-checkout-session", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const user = req.user as any;
+      const { priceId } = req.body;
+
+      if (!priceId) {
+        return res.status(400).json({ error: 'priceId is required' });
+      }
+
+      // Create or get Stripe customer
+      let stripeCustomerId = user.stripeCustomerId;
+      if (!stripeCustomerId) {
+        const customer = await stripeService.createCustomer(
+          user.email,
+          user.name,
+          user.id
+        );
+        await storage.updateUserStripeInfo(user.id, { 
+          stripeCustomerId: customer.id 
+        });
+        stripeCustomerId = customer.id;
+      }
+
+      // Create checkout session
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const session = await stripeService.createCheckoutSession(
+        stripeCustomerId,
+        priceId,
+        `${baseUrl}/provider-dashboard?payment=success`,
+        `${baseUrl}/provider-dashboard?payment=cancelled`
+      );
+
+      res.json({ url: session.url });
+    } catch (error: any) {
+      console.error('Checkout session error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get user's subscription status
+  app.get("/api/subscription/status", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      const user = req.user as any;
+      
+      if (!user.stripeSubscriptionId) {
+        return res.json({ subscription: null, hasActiveSubscription: false });
+      }
+
+      const subscription = await stripeService.getSubscription(user.stripeSubscriptionId);
+      
+      res.json({ 
+        subscription,
+        hasActiveSubscription: subscription?.status === 'active' 
+      });
+    } catch (error) {
+      console.error('Subscription status error:', error);
+      res.status(500).json({ error: 'Failed to get subscription status' });
+    }
+  });
+
+  // Legacy subscription endpoint (for backward compatibility during migration)
   app.post("/api/subscriptions", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     
-    // In a real app, this is where we'd verify the Stripe/PayPal/ApplePay payment
-    // For now, we'll simulate a successful payment processing
-    
     const { paymentMethod } = req.body;
     
-    // Simulate processing time
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     const nextMonth = new Date();

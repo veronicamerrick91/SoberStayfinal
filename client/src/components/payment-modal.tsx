@@ -1,14 +1,9 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CreditCard, Lock, CheckCircle, Smartphone } from "lucide-react";
-import { Apple, } from "lucide-react";
-import { createSubscription } from "@/lib/subscriptions"; // Remove this line if we are replacing it
+import { CreditCard, Lock, CheckCircle, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,77 +11,41 @@ interface PaymentModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  providerId: string; // We might not need this if we use req.user on backend, but good to keep for interface
+  providerId: string;
   listingCount?: number;
 }
 
+const STRIPE_PRICE_ID = "price_1Sa7CIPBUlX7cw67f5eJMTf6"; // From seed script
+
 export function PaymentModal({ open, onClose, onSuccess, providerId, listingCount = 1 }: PaymentModalProps) {
   const { toast } = useToast();
-  const [step, setStep] = useState<"pricing" | "payment" | "success">("pricing");
-  const [paymentMethod, setPaymentMethod] = useState<"debit" | "paypal" | "applepay">("debit");
-  const [cardNumber, setCardNumber] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [cvc, setCvc] = useState("");
-  const [billingName, setBillingName] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-
   const monthlyFee = 49 * listingCount;
 
-  const handlePayment = async () => {
-    if (paymentMethod === "debit" && (!cardNumber || !expiryDate || !cvc || !billingName)) {
-      alert("Please fill in all debit card details");
-      return;
-    }
-    // Removed PayPal validations since we're redirecting
-    
-    if (paymentMethod === "applepay" && !billingName) {
-      alert("Please fill in your name");
-      return;
-    }
-
+  const handleStripeCheckout = async () => {
     setIsProcessing(true);
 
-    // Simulate redirect delay for PayPal
-    if (paymentMethod === "paypal") {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-    }
-
     try {
-      await apiRequest("POST", "/api/subscriptions", {
-        paymentMethod,
-        // In a real app, we would send tokenized payment data here
-        providerId // Backend will use session user, but we can pass it if needed
+      const response = await apiRequest("POST", "/api/stripe/create-checkout-session", {
+        priceId: STRIPE_PRICE_ID,
       });
-      
-      setIsProcessing(false);
-      setStep("success");
 
-      // Auto-close after success
-      setTimeout(() => {
-        setStep("pricing");
-        onClose();
-        onSuccess();
-      }, 2000);
-    } catch (error) {
+      const data = await response.json();
+
+      if (data.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (error: any) {
       setIsProcessing(false);
       toast({
-        title: "Payment Failed",
-        description: "There was an error processing your payment. Please try again.",
+        title: "Checkout Failed",
+        description: error.message || "Unable to start checkout. Please try again.",
         variant: "destructive"
       });
     }
-  };
-
-  const formatCardNumber = (value: string) => {
-    return value.replace(/\s/g, "").replace(/(\d{4})/g, "$1 ").trim();
-  };
-
-  const formatExpiry = (value: string) => {
-    const cleaned = value.replace(/\D/g, "");
-    if (cleaned.length >= 2) {
-      return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}`;
-    }
-    return cleaned;
   };
 
   return (
@@ -97,216 +56,86 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
           <DialogDescription>Secure payment with Stripe</DialogDescription>
         </DialogHeader>
 
-        {step === "pricing" && (
-          <div className="space-y-6">
-            <Card className="bg-white/5 border-primary/30">
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-white font-semibold">Monthly Listing Fee</p>
-                      <p className="text-xs text-muted-foreground">Per property</p>
-                    </div>
-                    <Badge className="bg-primary text-white">$49/month</Badge>
-                  </div>
-                  
-                  {listingCount > 1 && (
-                    <div className="flex justify-between items-start pt-3 border-t border-border">
-                      <div>
-                        <p className="text-white font-semibold">{listingCount} Listings</p>
-                        <p className="text-xs text-muted-foreground">Total monthly</p>
-                      </div>
-                      <span className="text-white font-bold text-lg">${monthlyFee}</span>
-                    </div>
-                  )}
-                  
-                  <div className="pt-4 space-y-2 bg-primary/10 rounded-lg p-3 border border-primary/20">
-                    <p className="text-sm font-medium text-primary">What's Included:</p>
-                    <ul className="text-xs text-gray-300 space-y-1">
-                      <li>✓ Property listing</li>
-                      <li>✓ Access to thousands of clients seeking sober living</li>
-                      <li>✓ Direct tenant messaging</li>
-                      <li>✓ Application management tools</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-3">
-              <Button 
-                onClick={() => setStep("payment")} 
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-11 gap-2"
-              >
-                <CreditCard className="w-4 h-4" />
-                Continue to Payment
-              </Button>
-              <Button 
-                onClick={onClose} 
-                variant="outline" 
-                className="w-full border-border"
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === "payment" && (
-          <div className="space-y-4">
-            <div className="p-3 bg-white/5 rounded-lg border border-primary/20 text-sm">
-              <p className="text-muted-foreground mb-1">Amount to charge today:</p>
-              <p className="text-2xl font-bold text-primary">${monthlyFee}</p>
-              <p className="text-xs text-muted-foreground mt-1">Then ${monthlyFee}/month</p>
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-white text-sm font-semibold">Payment Method</Label>
-              <RadioGroup value={paymentMethod} onValueChange={(val: any) => setPaymentMethod(val)}>
-                <div className="flex items-center space-x-2 p-2 rounded border border-border hover:border-primary/50">
-                  <RadioGroupItem value="debit" id="debit" />
-                  <Label htmlFor="debit" className="text-sm text-gray-300 cursor-pointer flex items-center gap-2 flex-1">
-                    <CreditCard className="w-4 h-4" /> Debit Card
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 p-2 rounded border border-border hover:border-primary/50">
-                  <RadioGroupItem value="paypal" id="paypal" />
-                  <Label htmlFor="paypal" className="text-sm text-gray-300 cursor-pointer flex items-center gap-2 flex-1">
-                    <Smartphone className="w-4 h-4" /> PayPal
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 p-2 rounded border border-border hover:border-primary/50">
-                  <RadioGroupItem value="applepay" id="applepay" />
-                  <Label htmlFor="applepay" className="text-sm text-gray-300 cursor-pointer flex items-center gap-2 flex-1">
-                    <Apple className="w-4 h-4" /> Apple Pay
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <Label className="text-white text-sm mb-2">Name</Label>
-                <Input 
-                  placeholder="John Doe"
-                  value={billingName}
-                  onChange={(e) => setBillingName(e.target.value)}
-                  className="bg-background/50 border-white/10"
-                />
-              </div>
-
-              {paymentMethod === "debit" && (
-                <>
+        <div className="space-y-6">
+          <Card className="bg-white/5 border-primary/30">
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div className="flex justify-between items-start">
                   <div>
-                    <Label className="text-white text-sm mb-2">Debit Card Number</Label>
-                    <Input 
-                      placeholder="4242 4242 4242 4242"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                      maxLength={19}
-                      className="bg-background/50 border-white/10 font-mono"
-                    />
+                    <p className="text-white font-semibold">Monthly Listing Fee</p>
+                    <p className="text-xs text-muted-foreground">Per property</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <Badge className="bg-primary text-white">$49/month</Badge>
+                </div>
+                
+                {listingCount > 1 && (
+                  <div className="flex justify-between items-start pt-3 border-t border-border">
                     <div>
-                      <Label className="text-white text-sm mb-2">MM/YY</Label>
-                      <Input 
-                        placeholder="12/26"
-                        value={expiryDate}
-                        onChange={(e) => setExpiryDate(formatExpiry(e.target.value))}
-                        maxLength={5}
-                        className="bg-background/50 border-white/10 font-mono"
-                      />
+                      <p className="text-white font-semibold">{listingCount} Listings</p>
+                      <p className="text-xs text-muted-foreground">Total monthly</p>
                     </div>
-                    <div>
-                      <Label className="text-white text-sm mb-2">CVV</Label>
-                      <Input 
-                        placeholder="123"
-                        value={cvc}
-                        onChange={(e) => setCvc(e.target.value.slice(0, 4))}
-                        maxLength={4}
-                        className="bg-background/50 border-white/10 font-mono"
-                      />
-                    </div>
+                    <span className="text-white font-bold text-lg">${monthlyFee}</span>
                   </div>
+                )}
+                
+                <div className="pt-4 space-y-2 bg-primary/10 rounded-lg p-3 border border-primary/20">
+                  <p className="text-sm font-medium text-primary">What's Included:</p>
+                  <ul className="text-xs text-gray-300 space-y-1">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="w-3 h-3 text-primary" />
+                      Unlimited property photos
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="w-3 h-3 text-primary" />
+                      Featured placement in search results
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="w-3 h-3 text-primary" />
+                      Application management system
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="w-3 h-3 text-primary" />
+                      Direct tenant messaging
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="w-3 h-3 text-primary" />
+                      Cancel anytime
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="space-y-3">
+            <Button
+              onClick={handleStripeCheckout}
+              disabled={isProcessing}
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 gap-2"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Loading Checkout...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-5 h-5" />
+                  Continue to Stripe Checkout
                 </>
               )}
+            </Button>
 
-              {paymentMethod === "paypal" && (
-                <div className="p-4 bg-[#003087]/10 rounded-lg border border-[#003087]/30 text-center space-y-2">
-                  <div className="flex justify-center mb-2">
-                    <div className="bg-[#003087] text-white px-4 py-1 rounded-full font-bold italic flex items-center gap-1">
-                      <span className="text-[#009cde]">Pay</span>Pal
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-300">
-                    You will be redirected to PayPal to complete your purchase securely.
-                  </p>
-                </div>
-              )}
-
-              {paymentMethod === "applepay" && (
-                <div className="p-4 bg-black/20 rounded-lg border border-white/10 text-center">
-                  <p className="text-sm text-gray-300 mb-3">
-                    Pay securely with Apple Pay using your saved card.
-                  </p>
-                  <div className="h-10 bg-black border border-white/20 rounded-md flex items-center justify-center gap-1">
-                     <Apple className="w-4 h-4 text-white mb-0.5" />
-                     <span className="text-white font-medium">Pay</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
               <Lock className="w-3 h-3" />
-              Secure payment powered by Stripe
+              <span>Secured by Stripe</span>
             </div>
 
-            <div className="space-y-2">
-              <Button 
-                onClick={handlePayment}
-                disabled={isProcessing}
-                className={`w-full h-11 ${
-                  paymentMethod === 'paypal' 
-                    ? 'bg-[#FFC439] hover:bg-[#F4B000] text-black font-semibold' 
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                }`}
-              >
-                {isProcessing ? (
-                  paymentMethod === 'paypal' ? "Redirecting to PayPal..." : "Processing..."
-                ) : (
-                  paymentMethod === 'paypal' ? "Pay with PayPal" : "Confirm Payment"
-                )}
-              </Button>
-              <Button 
-                onClick={() => setStep("pricing")}
-                variant="outline"
-                className="w-full border-border"
-                disabled={isProcessing}
-              >
-                Back
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {step === "success" && (
-          <div className="text-center space-y-4 py-6">
-            <div className="flex justify-center">
-              <CheckCircle className="w-16 h-16 text-primary animate-pulse" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold text-white">Payment Successful!</h3>
-              <p className="text-sm text-muted-foreground">
-                Your subscription is now active. Start listing your properties!
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground pt-4">
-              Redirecting...
+            <p className="text-xs text-center text-muted-foreground">
+              You'll be redirected to Stripe's secure checkout page to complete your subscription.
             </p>
           </div>
-        )}
+        </div>
       </DialogContent>
     </Dialog>
   );
