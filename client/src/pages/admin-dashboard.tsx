@@ -313,13 +313,12 @@ export function AdminDashboard() {
         content: blogContent,
         author: "Admin",
         date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-        category: blogCategory,
-        status: "Published"
+        category: blogCategory
       };
       setPublishedBlogPosts([newPost, ...publishedBlogPosts]);
       
-      const existingPosts = JSON.parse(localStorage.getItem("sober-stay-blog-articles") || "[]");
-      localStorage.setItem("sober-stay-blog-articles", JSON.stringify([newPost, ...existingPosts]));
+      const existingPosts = JSON.parse(localStorage.getItem("sober-stay-admin-posts") || "[]");
+      localStorage.setItem("sober-stay-admin-posts", JSON.stringify([newPost, ...existingPosts]));
       
       setBlogPublishSuccess(true);
       setTimeout(() => setBlogPublishSuccess(false), 3000);

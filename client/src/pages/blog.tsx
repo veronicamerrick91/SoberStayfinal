@@ -579,9 +579,18 @@ export function Blog() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(BLOG_POSTS);
 
   useEffect(() => {
-    // Always use the latest BLOG_POSTS from code (clear old cache)
-    localStorage.setItem("sober-stay-blog-articles", JSON.stringify(BLOG_POSTS));
-    setBlogPosts(BLOG_POSTS);
+    const storedAdminPosts = localStorage.getItem("sober-stay-admin-posts");
+    if (storedAdminPosts) {
+      try {
+        const adminPosts = JSON.parse(storedAdminPosts);
+        const mergedPosts = [...adminPosts, ...BLOG_POSTS];
+        setBlogPosts(mergedPosts);
+      } catch {
+        setBlogPosts(BLOG_POSTS);
+      }
+    } else {
+      setBlogPosts(BLOG_POSTS);
+    }
   }, []);
 
   const categories = ["All", "Recovery Tips", "Education", "Community", "Guidance", "Mental Health", "Stories"];
