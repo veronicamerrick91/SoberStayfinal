@@ -88,6 +88,10 @@ export function AdminDashboard() {
     { id: "#2449", user: "Sarah Connor (Tenant)", subject: "Message notification not working", status: "Resolved", priority: "low", created: "1 day ago", message: "Not receiving message notifications from providers" },
   ]);
   const newTicketsCount = supportTickets.filter(t => t.status === "Open").length;
+  const [viewingSupportTicket, setViewingSupportTicket] = useState<any | null>(null);
+  const [showSupportDetailsModal, setShowSupportDetailsModal] = useState(false);
+  const [showReplyModal, setShowReplyModal] = useState(false);
+  const [replyMessage, setReplyMessage] = useState("");
 
   useEffect(() => {
     setReports(getReports());
@@ -326,10 +330,10 @@ export function AdminDashboard() {
             <TabsTrigger value="users" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Users className="w-4 h-4" /> Users</TabsTrigger>
             <TabsTrigger value="listings" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Building className="w-4 h-4" /> Listings</TabsTrigger>
             <TabsTrigger value="applications" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Applications</TabsTrigger>
-            <TabsTrigger value="messaging" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><MessageSquare className="w-4 h-4" /> Messages</TabsTrigger>
+            <TabsTrigger value="messaging" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2 relative"><MessageSquare className="w-4 h-4" /> Messages {messages.filter(m => m.flagged).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</TabsTrigger>
             <TabsTrigger value="verification" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Shield className="w-4 h-4" /> Verification</TabsTrigger>
             <TabsTrigger value="reports" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><AlertTriangle className="w-4 h-4" /> Reports</TabsTrigger>
-            <TabsTrigger value="compliance" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><ShieldAlert className="w-4 h-4" /> Safety</TabsTrigger>
+            <TabsTrigger value="compliance" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2 relative"><ShieldAlert className="w-4 h-4" /> Safety {complianceIssues.filter(i => i.status === "Urgent").length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</TabsTrigger>
             <TabsTrigger value="billing" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><DollarSign className="w-4 h-4" /> Billing</TabsTrigger>
             <TabsTrigger value="analytics" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><BarChart3 className="w-4 h-4" /> Analytics</TabsTrigger>
             <TabsTrigger value="support" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2 relative"><Mail className="w-4 h-4" /> Support {newTicketsCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</TabsTrigger>
@@ -1026,7 +1030,8 @@ export function AdminDashboard() {
                         {ticket.status === "In Progress" && (
                           <Button size="sm" onClick={() => setSupportTickets(supportTickets.map(t => t.id === ticket.id ? {...t, status: "Resolved"} : t))} className="h-8 text-xs bg-green-500/20 text-green-500 hover:bg-green-500/30">Resolve</Button>
                         )}
-                        <Button size="sm" variant="outline" className="h-8 text-xs">Reply</Button>
+                        <Button size="sm" onClick={() => { setViewingSupportTicket(ticket); setShowReplyModal(true); }} variant="outline" className="h-8 text-xs">Reply</Button>
+                        <Button size="sm" onClick={() => { setViewingSupportTicket(ticket); setShowSupportDetailsModal(true); }} variant="outline" className="h-8 text-xs">View</Button>
                       </div>
                     </div>
                   ))}
@@ -1230,6 +1235,10 @@ export function AdminDashboard() {
                   { name: "Recovery Success Stories", type: "Social Post", uses: 12 },
                   { name: "Available Listings Alert", type: "SMS", uses: 156 },
                   { name: "Testimonial Campaign", type: "Email", uses: 8 },
+                  { name: "Property Compliance Reminder", type: "Email", uses: 42 },
+                  { name: "Tenant Application Approved", type: "Email", uses: 67 },
+                  { name: "Provider Subscription Renewal", type: "Email", uses: 89 },
+                  { name: "Resource Updates Newsletter", type: "Email", uses: 34 },
                 ].map((template, i) => (
                   <div key={i} className="p-3 rounded-lg bg-white/5 flex items-center justify-between">
                     <div>
@@ -1274,7 +1283,7 @@ export function AdminDashboard() {
                   <div className="p-4 rounded-lg bg-white/5 border border-white/10">
                     <p className="text-white font-semibold mb-3">Automated Sequences</p>
                     <div className="space-y-2">
-                      {["New Provider Onboarding (7 emails)", "Tenant Recovery Tips (Weekly)", "Renewal Reminders (30 days before)"].map((seq, i) => (
+                      {["New Provider Onboarding (7 emails)", "Tenant Recovery Tips (Weekly)", "Renewal Reminders (7 days before)"].map((seq, i) => (
                         <div key={i} className="flex items-center justify-between p-2 bg-white/5 rounded">
                           <span className="text-xs text-gray-300">{seq}</span>
                           <input type="checkbox" defaultChecked className="w-4 h-4" />
@@ -1839,6 +1848,69 @@ export function AdminDashboard() {
               <div className="flex gap-2">
                 <Button onClick={handleCloseListing} className="flex-1 bg-primary hover:bg-primary/90">Apply</Button>
                 <Button onClick={() => setEditingListing(null)} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showSupportDetailsModal && viewingSupportTicket && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
+              <h2 className="text-xl font-bold text-white mb-4">Ticket Details</h2>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Ticket ID</p>
+                  <p className="text-white font-medium">{viewingSupportTicket.id}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">From</p>
+                  <p className="text-white font-medium">{viewingSupportTicket.user}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Subject</p>
+                  <p className="text-white font-medium">{viewingSupportTicket.subject}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Message</p>
+                  <div className="bg-white/5 border border-white/10 p-3 rounded">
+                    <p className="text-sm text-white">{viewingSupportTicket.message}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Status</p>
+                  <Badge className={
+                    viewingSupportTicket.status === "Open" ? "bg-blue-500/80" :
+                    viewingSupportTicket.status === "In Progress" ? "bg-amber-500/80" :
+                    "bg-green-500/80"
+                  }>{viewingSupportTicket.status}</Badge>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={() => setShowSupportDetailsModal(false)} className="flex-1 bg-primary hover:bg-primary/90">Close</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showReplyModal && viewingSupportTicket && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
+              <h2 className="text-xl font-bold text-white mb-4">Reply to {viewingSupportTicket.id}</h2>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">Message</label>
+                  <textarea
+                    placeholder="Type your reply..."
+                    value={replyMessage}
+                    onChange={(e) => setReplyMessage(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
+                    rows={4}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={() => { setShowReplyModal(false); setReplyMessage(""); }} className="flex-1 bg-primary hover:bg-primary/90">Send Reply</Button>
+                <Button onClick={() => { setShowReplyModal(false); setReplyMessage(""); }} variant="outline">Cancel</Button>
               </div>
             </div>
           </div>
