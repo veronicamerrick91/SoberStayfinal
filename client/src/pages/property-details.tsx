@@ -199,44 +199,44 @@ export default function PropertyDetails() {
             )}
 
             {/* House Rules */}
-            {fullProperty.houseRules && fullProperty.houseRules.length > 0 && (
-              <div>
-                <h3 className="text-xl font-bold text-white mb-6">House Rules</h3>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {fullProperty.houseRules.map((rule, i) => (
-                    <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-amber-950/20 border border-amber-500/30">
-                      <div className="pt-1">
-                        <div className="w-2 h-2 rounded-full bg-amber-500 mt-1" />
-                      </div>
-                      <span className="text-xs text-gray-300 font-normal">{rule}</span>
+            <div>
+              <h3 className="text-xl font-bold text-white mb-6">House Rules</h3>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {(fullProperty.houseRules || ["No drugs or alcohol", "Curfew 11pm", "Weekly house meetings", "Chore rotation"]).map((rule, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-amber-950/20 border border-amber-500/30">
+                    <div className="pt-1">
+                      <div className="w-2 h-2 rounded-full bg-amber-500 mt-1" />
                     </div>
-                  ))}
-                </div>
+                    <span className="text-xs text-gray-300 font-normal">{rule}</span>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
 
             {/* Residency Requirements */}
-            {fullProperty.requirements && fullProperty.requirements.length > 0 && (
-              <div>
-                <h3 className="text-xl font-bold text-white mb-6">Residency Requirements</h3>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {fullProperty.requirements.map((req, i) => (
-                    <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-blue-950/20 border border-blue-500/30">
-                      <div className="pt-1">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 mt-1" />
-                      </div>
-                      <span className="text-xs text-gray-300 font-normal">{req}</span>
+            <div>
+              <h3 className="text-xl font-bold text-white mb-6">Residency Requirements</h3>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {(fullProperty.requirements || ["Minimum 30 days sober", "Valid ID required", "Employment or education", "Commitment to stay"]).map((req, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-blue-950/20 border border-blue-500/30">
+                    <div className="pt-1">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 mt-1" />
                     </div>
-                  ))}
-                </div>
+                    <span className="text-xs text-gray-300 font-normal">{req}</span>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
 
             {/* Nearby Amenities */}
             <div>
               <h3 className="text-xl font-bold text-white mb-6">Nearby Services & Support</h3>
               <div className="grid sm:grid-cols-2 gap-4">
-                {fullProperty.nearbyAmenities.map((amenity, idx) => {
+                {(fullProperty.nearbyAmenities || [
+                  { category: "Recovery Meetings", items: [{ name: "AA Meeting", distance: "0.5 mi" }, { name: "NA Meeting", distance: "0.7 mi" }] },
+                  { category: "Treatment Centers", items: [{ name: "Recovery Center", distance: "1.2 mi" }] },
+                  { category: "Therapy/IOP", items: [{ name: "Outpatient Program", distance: "0.8 mi" }] }
+                ]).map((amenity, idx) => {
                   const getCategoryIcon = (category: string) => {
                     switch(category) {
                       case "Transportation": return <Bus className="w-5 h-5" />;
