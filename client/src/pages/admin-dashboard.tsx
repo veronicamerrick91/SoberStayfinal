@@ -73,6 +73,8 @@ export function AdminDashboard() {
     { id: 1, provider: "Recovery First LLC", issue: "Missing Fire Inspection", status: "Pending" },
     { id: 2, provider: "Hope House", issue: "Expired Insurance Certificate", status: "Urgent" },
   ]);
+  const [viewingComplianceIssue, setViewingComplianceIssue] = useState<any | null>(null);
+  const [showComplianceDetailsModal, setShowComplianceDetailsModal] = useState(false);
 
   useEffect(() => {
     setReports(getReports());
@@ -175,6 +177,11 @@ export function AdminDashboard() {
     setComplianceIssues(complianceIssues.map(issue => 
       issue.id === issueId ? { ...issue, status: "Update Requested" } : issue
     ));
+  };
+
+  const handleViewComplianceDetails = (issue: any) => {
+    setViewingComplianceIssue(issue);
+    setShowComplianceDetailsModal(true);
   };
 
   const handleExportData = () => {
@@ -820,7 +827,7 @@ export function AdminDashboard() {
                           {issue.status === "Urgent" && (
                             <Button size="sm" onClick={() => handleRequestUpdate(issue.id)} className="h-8 text-xs bg-red-500/20 text-red-500 hover:bg-red-500/30">Request Update</Button>
                           )}
-                          <Button size="sm" variant="outline" className="h-8 text-xs cursor-pointer">View Details</Button>
+                          <Button size="sm" onClick={() => handleViewComplianceDetails(issue)} variant="outline" className="h-8 text-xs cursor-pointer">View Details</Button>
                         </div>
                       </div>
                     ))}
@@ -1773,6 +1780,54 @@ export function AdminDashboard() {
               <div className="flex gap-2">
                 <Button onClick={handleCloseListing} className="flex-1 bg-primary hover:bg-primary/90">Apply</Button>
                 <Button onClick={() => setEditingListing(null)} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showComplianceDetailsModal && viewingComplianceIssue && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
+              <h2 className="text-xl font-bold text-white mb-4">Compliance Issue Details</h2>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Provider</p>
+                  <p className="text-white font-medium">{viewingComplianceIssue.provider}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Issue</p>
+                  <p className="text-white font-medium">{viewingComplianceIssue.issue}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Current Status</p>
+                  <Badge className={`${
+                    viewingComplianceIssue.status === "Urgent" ? "bg-red-500/80" :
+                    viewingComplianceIssue.status === "Reminder Sent" ? "bg-green-500/80" :
+                    viewingComplianceIssue.status === "Update Requested" ? "bg-green-500/80" :
+                    "bg-amber-500/80"
+                  }`}>{viewingComplianceIssue.status}</Badge>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Details</p>
+                  <p className="text-sm text-gray-300">
+                    {viewingComplianceIssue.issue.includes("Fire") 
+                      ? "Property inspection is required annually. The last fire inspection was conducted 90 days ago and is due for renewal. Contact the provider to schedule the inspection immediately."
+                      : "The provider's insurance certificate expired on November 15, 2024. An updated and valid certificate must be uploaded within 48 hours to maintain compliance and active listing status."}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Required Action</p>
+                  <p className="text-sm text-white">
+                    {viewingComplianceIssue.status === "Pending" 
+                      ? "Send a reminder email to the provider requesting immediate compliance."
+                      : viewingComplianceIssue.status === "Urgent"
+                      ? "Request updated documentation from the provider immediately. Consider suspension if not resolved within 48 hours."
+                      : "Monitor for compliance. Documentation has been requested."}
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={() => setShowComplianceDetailsModal(false)} className="flex-1 bg-primary hover:bg-primary/90">Close</Button>
               </div>
             </div>
           </div>
