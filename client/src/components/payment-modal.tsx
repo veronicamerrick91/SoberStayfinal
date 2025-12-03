@@ -8,17 +8,20 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CreditCard, Lock, CheckCircle, Smartphone } from "lucide-react";
 import { Apple, } from "lucide-react";
-import { createSubscription } from "@/lib/subscriptions";
+import { createSubscription } from "@/lib/subscriptions"; // Remove this line if we are replacing it
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface PaymentModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  providerId: string;
+  providerId: string; // We might not need this if we use req.user on backend, but good to keep for interface
   listingCount?: number;
 }
 
 export function PaymentModal({ open, onClose, onSuccess, providerId, listingCount = 1 }: PaymentModalProps) {
+  const { toast } = useToast();
   const [step, setStep] = useState<"pricing" | "payment" | "success">("pricing");
   const [paymentMethod, setPaymentMethod] = useState<"debit" | "paypal" | "applepay">("debit");
   const [cardNumber, setCardNumber] = useState("");
@@ -45,21 +48,31 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
     }
 
     setIsProcessing(true);
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // Create subscription in localStorage
-    createSubscription(providerId);
-    
-    setIsProcessing(false);
-    setStep("success");
+    try {
+      await apiRequest("POST", "/api/subscriptions", {
+        paymentMethod,
+        // In a real app, we would send tokenized payment data here
+        providerId // Backend will use session user, but we can pass it if needed
+      });
+      
+      setIsProcessing(false);
+      setStep("success");
 
-    // Auto-close after success
-    setTimeout(() => {
-      setStep("pricing");
-      onClose();
-      onSuccess();
-    }, 2000);
+      // Auto-close after success
+      setTimeout(() => {
+        setStep("pricing");
+        onClose();
+        onSuccess();
+      }, 2000);
+    } catch (error) {
+      setIsProcessing(false);
+      toast({
+        title: "Payment Failed",
+        description: "There was an error processing your payment. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const formatCardNumber = (value: string) => {

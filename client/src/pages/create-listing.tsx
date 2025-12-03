@@ -12,6 +12,8 @@ import { useState, useEffect } from "react";
 import * as React from "react";
 import { useLocation } from "wouter";
 import { getAuth } from "@/lib/auth";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface ListingDraft {
   propertyName: string;
@@ -35,6 +37,7 @@ interface ListingDraft {
 
 export function CreateListing() {
   const [location, setLocation] = useLocation();
+  const { toast } = useToast();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReview, setShowReview] = useState(false);
 
@@ -133,9 +136,29 @@ export function CreateListing() {
     }
   };
 
-  const handlePaymentSuccess = () => {
-    // Navigate to provider dashboard
-    window.location.href = "/provider-dashboard?tab=properties";
+  const handlePaymentSuccess = async () => {
+    try {
+      await apiRequest("POST", "/api/listings", {
+        ...listingDraft,
+        monthlyPrice: parseInt(listingDraft.monthlyPrice),
+        totalBeds: parseInt(listingDraft.totalBeds),
+        providerId: user.id
+      });
+      
+      toast({
+        title: "Success!",
+        description: "Your listing has been published.",
+      });
+      
+      setLocation("/provider-dashboard?tab=properties");
+    } catch (error) {
+      console.error("Failed to create listing", error);
+      toast({
+        title: "Error",
+        description: "Failed to create listing. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   if (showReview) {
