@@ -75,6 +75,13 @@ export function AdminDashboard() {
   ]);
   const [viewingComplianceIssue, setViewingComplianceIssue] = useState<any | null>(null);
   const [showComplianceDetailsModal, setShowComplianceDetailsModal] = useState(false);
+  const [requiredDocs, setRequiredDocs] = useState<any[]>([
+    { id: 1, name: "Business License", uploaded: false },
+    { id: 2, name: "Insurance Certificate", uploaded: false },
+    { id: 3, name: "Facility Photos", uploaded: false },
+    { id: 4, name: "Safety Compliance Report", uploaded: false },
+    { id: 5, name: "Property Inspection Report", uploaded: false }
+  ]);
 
   useEffect(() => {
     setReports(getReports());
@@ -182,6 +189,12 @@ export function AdminDashboard() {
   const handleViewComplianceDetails = (issue: any) => {
     setViewingComplianceIssue(issue);
     setShowComplianceDetailsModal(true);
+  };
+
+  const handleUploadDocument = (docId: number) => {
+    setRequiredDocs(requiredDocs.map(doc =>
+      doc.id === docId ? { ...doc, uploaded: true } : doc
+    ));
   };
 
   const handleExportData = () => {
@@ -624,19 +637,28 @@ export function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {[
-                    "Business License",
-                    "Insurance Certificate",
-                    "Facility Photos",
-                    "Safety Compliance Report",
-                    "Property Inspection Report"
-                  ].map((doc, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-border/50">
-                      <div className="w-4 h-4 rounded border border-primary/50 flex items-center justify-center">
-                        <div className="w-2 h-2 bg-primary rounded-sm" />
+                  {requiredDocs.map((doc) => (
+                    <div key={doc.id} className={`flex items-center gap-3 p-3 rounded-lg border ${doc.uploaded ? "bg-green-500/10 border-green-500/20" : "bg-white/5 border-border/50"}`}>
+                      <div className={`w-4 h-4 rounded border flex items-center justify-center ${doc.uploaded ? "border-green-500/50 bg-green-500/20" : "border-primary/50"}`}>
+                        {doc.uploaded ? (
+                          <Check className="w-3 h-3 text-green-500" />
+                        ) : (
+                          <div className="w-2 h-2 bg-primary rounded-sm" />
+                        )}
                       </div>
-                      <span className="text-sm text-white">{doc}</span>
-                      <Badge className="ml-auto bg-red-500/80 text-xs">Required for verification</Badge>
+                      <span className={`text-sm ${doc.uploaded ? "text-green-400 line-through" : "text-white"}`}>{doc.name}</span>
+                      <div className="ml-auto flex items-center gap-2">
+                        {doc.uploaded ? (
+                          <Badge className="bg-green-500/80 text-xs">Uploaded</Badge>
+                        ) : (
+                          <>
+                            <Badge className="bg-red-500/80 text-xs">Required</Badge>
+                            <Button size="sm" onClick={() => handleUploadDocument(doc.id)} className="h-8 text-xs bg-primary/20 text-primary hover:bg-primary/30 gap-1">
+                              <Upload className="w-3 h-3" /> Upload
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
