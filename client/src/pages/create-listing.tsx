@@ -311,15 +311,16 @@ export function CreateListing() {
 
                   <div className="space-y-2">
                     <Label className="text-white">Supervision Type *</Label>
+                    <p className="text-xs text-muted-foreground mb-2">Choose the level of staff presence and support at your property</p>
                     <Select value={listingDraft.supervisionType} onValueChange={(val) => handleInputChange("supervisionType", val)}>
                       <SelectTrigger className="bg-background/50 border-border">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-card border-border">
-                        <SelectItem value="Peer Ran">Peer Ran</SelectItem>
-                        <SelectItem value="Supervised">Supervised</SelectItem>
-                        <SelectItem value="Monitored">Monitored</SelectItem>
-                        <SelectItem value="Integrated Treatment">Integrated Treatment</SelectItem>
+                        <SelectItem value="Peer Ran">Peer Ran - Residents enforce rules democratically</SelectItem>
+                        <SelectItem value="Supervised">Supervised - Staff or senior resident on-site</SelectItem>
+                        <SelectItem value="Monitored">Monitored - Staff present during specific hours</SelectItem>
+                        <SelectItem value="Integrated Treatment">Integrated Treatment - Clinical services provided</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
