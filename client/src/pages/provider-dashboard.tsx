@@ -230,17 +230,11 @@ export function ProviderDashboard() {
             )}
           </div>
           <Button 
-            onClick={() => {
-              if (!hasActiveSubscription) {
-                setShowPaymentModal(true);
-              } else {
-                setLocation("/create-listing");
-              }
-            }}
+            onClick={() => setLocation("/create-listing")}
             className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
             data-testid="button-list-property"
           >
-            <Plus className="w-4 h-4" /> {hasActiveSubscription ? "List New Property" : "List Now"}
+            <Plus className="w-4 h-4" /> List New Property
           </Button>
         </div>
 
