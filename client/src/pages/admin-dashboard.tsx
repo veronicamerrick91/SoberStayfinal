@@ -82,6 +82,12 @@ export function AdminDashboard() {
     { id: 4, name: "Safety Compliance Report", uploaded: false },
     { id: 5, name: "Property Inspection Report", uploaded: false }
   ]);
+  const [supportTickets, setSupportTickets] = useState<any[]>([
+    { id: "#2451", user: "John Doe (Tenant)", subject: "Payment issue on application", status: "Open", priority: "high", created: "2 hours ago", message: "I'm unable to complete my application due to payment processing error" },
+    { id: "#2450", user: "Recovery LLC (Provider)", subject: "Can't upload photos", status: "In Progress", priority: "medium", created: "4 hours ago", message: "Getting an error when trying to upload facility photos" },
+    { id: "#2449", user: "Sarah Connor (Tenant)", subject: "Message notification not working", status: "Resolved", priority: "low", created: "1 day ago", message: "Not receiving message notifications from providers" },
+  ]);
+  const newTicketsCount = supportTickets.filter(t => t.status === "Open").length;
 
   useEffect(() => {
     setReports(getReports());
@@ -326,7 +332,7 @@ export function AdminDashboard() {
             <TabsTrigger value="compliance" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><ShieldAlert className="w-4 h-4" /> Safety</TabsTrigger>
             <TabsTrigger value="billing" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><DollarSign className="w-4 h-4" /> Billing</TabsTrigger>
             <TabsTrigger value="analytics" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><BarChart3 className="w-4 h-4" /> Analytics</TabsTrigger>
-            <TabsTrigger value="support" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Mail className="w-4 h-4" /> Support</TabsTrigger>
+            <TabsTrigger value="support" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2 relative"><Mail className="w-4 h-4" /> Support {newTicketsCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</TabsTrigger>
             <TabsTrigger value="marketing" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><TrendingUp className="w-4 h-4" /> Marketing</TabsTrigger>
             <TabsTrigger value="workflows" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Activity className="w-4 h-4" /> Workflows</TabsTrigger>
             <TabsTrigger value="settings" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
@@ -970,26 +976,57 @@ export function AdminDashboard() {
 
           {/* SUPPORT TICKETS */}
           <TabsContent value="support" className="space-y-6">
+            <div className="grid md:grid-cols-3 gap-4 mb-6">
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <p className="text-xs font-bold text-primary mb-2">Open Tickets</p>
+                  <p className="text-3xl font-bold text-white">{supportTickets.filter(t => t.status === "Open").length}</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <p className="text-xs font-bold text-primary mb-2">In Progress</p>
+                  <p className="text-3xl font-bold text-white">{supportTickets.filter(t => t.status === "In Progress").length}</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-card border-border">
+                <CardContent className="pt-6">
+                  <p className="text-xs font-bold text-primary mb-2">Resolved</p>
+                  <p className="text-3xl font-bold text-white">{supportTickets.filter(t => t.status === "Resolved").length}</p>
+                </CardContent>
+              </Card>
+            </div>
             <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="text-white">Support Tickets</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {[
-                    { id: "#2451", user: "John Doe (Tenant)", subject: "Payment issue on application", status: "Open", priority: "high", created: "2 hours ago" },
-                    { id: "#2450", user: "Recovery LLC (Provider)", subject: "Can't upload photos", status: "In Progress", priority: "medium", created: "4 hours ago" },
-                    { id: "#2449", user: "Sarah Connor (Tenant)", subject: "Message notification not working", status: "Resolved", priority: "low", created: "1 day ago" },
-                  ].map((ticket, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border/50">
-                      <div>
-                        <p className="text-white font-medium text-sm">{ticket.id} • {ticket.subject}</p>
-                        <p className="text-xs text-muted-foreground">{ticket.user} • {ticket.created}</p>
+                  {supportTickets.map((ticket) => (
+                    <div key={ticket.id} className={`p-4 rounded-lg border ${
+                      ticket.status === "Open" ? "bg-blue-500/10 border-blue-500/20" :
+                      ticket.status === "In Progress" ? "bg-amber-500/10 border-amber-500/20" :
+                      "bg-green-500/10 border-green-500/20"
+                    }`}>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <p className="text-white font-medium text-sm">{ticket.id} • {ticket.subject}</p>
+                          <p className="text-xs text-muted-foreground">{ticket.user} • {ticket.created}</p>
+                          <p className="text-sm text-gray-300 mt-2">{ticket.message}</p>
+                        </div>
+                        <div className="flex flex-col items-end gap-2 ml-4">
+                          <Badge className={ticket.priority === "high" ? "bg-red-500/80" : ticket.priority === "medium" ? "bg-amber-500/80" : "bg-gray-500/80"}>{ticket.priority}</Badge>
+                          <Badge className={ticket.status === "Open" ? "bg-blue-500/80" : ticket.status === "In Progress" ? "bg-amber-500/80" : "bg-green-500/80"}>{ticket.status}</Badge>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Badge className={ticket.priority === "high" ? "bg-red-500/80" : ticket.priority === "medium" ? "bg-amber-500/80" : "bg-gray-500/80"}>{ticket.priority}</Badge>
-                        <Badge className={ticket.status === "Open" ? "bg-blue-500/80" : ticket.status === "In Progress" ? "bg-amber-500/80" : "bg-green-500/80"}>{ticket.status}</Badge>
-                        <Button size="sm" variant="outline" className="h-8 text-xs">View</Button>
+                      <div className="flex gap-2 mt-3">
+                        {ticket.status === "Open" && (
+                          <Button size="sm" onClick={() => setSupportTickets(supportTickets.map(t => t.id === ticket.id ? {...t, status: "In Progress"} : t))} className="h-8 text-xs bg-amber-500/20 text-amber-500 hover:bg-amber-500/30">Start</Button>
+                        )}
+                        {ticket.status === "In Progress" && (
+                          <Button size="sm" onClick={() => setSupportTickets(supportTickets.map(t => t.id === ticket.id ? {...t, status: "Resolved"} : t))} className="h-8 text-xs bg-green-500/20 text-green-500 hover:bg-green-500/30">Resolve</Button>
+                        )}
+                        <Button size="sm" variant="outline" className="h-8 text-xs">Reply</Button>
                       </div>
                     </div>
                   ))}
