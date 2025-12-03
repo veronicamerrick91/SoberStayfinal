@@ -790,34 +790,36 @@ export function AdminDashboard() {
                       </CardContent>
                     </Card>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-3 mt-4">
+                    <h3 className="text-white font-bold text-sm mb-3">Compliance Issues Requiring Action</h3>
                     {complianceIssues.map((issue) => (
                       <div key={issue.id} className={`p-4 rounded-lg border ${
                         issue.status === "Urgent" ? "bg-red-500/10 border-red-500/20" : 
                         issue.status === "Reminder Sent" || issue.status === "Update Requested" ? "bg-green-500/10 border-green-500/20" :
                         "bg-amber-500/10 border-amber-500/20"
                       }`}>
-                        <div className="flex items-start justify-between">
+                        <div className="flex items-start justify-between mb-2">
                           <div className="flex-1">
-                            <p className="text-white font-medium text-sm">{issue.provider} - {issue.issue}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
+                            <p className="text-white font-medium text-sm">{issue.provider}</p>
+                            <p className="text-sm text-white font-semibold mt-1">{issue.issue}</p>
+                            <p className="text-xs text-muted-foreground mt-2">
                               {issue.issue.includes("Fire") ? "Property was last inspected 90 days ago. Annual inspection due." : "Certificate expired on Nov 15, 2024. New certificate required to maintain active status."}
                             </p>
                           </div>
-                          <Badge className={`text-xs ${
+                          <Badge className={`text-xs whitespace-nowrap ${
                             issue.status === "Urgent" ? "bg-red-500/80" :
                             issue.status === "Reminder Sent" ? "bg-green-500/80" :
                             issue.status === "Update Requested" ? "bg-green-500/80" :
                             "bg-amber-500/80"
                           }`}>{issue.status}</Badge>
                         </div>
-                        <div className="mt-3 flex gap-2">
-                          {issue.status === "Pending" ? (
+                        <div className="mt-4 flex gap-2 flex-wrap">
+                          {issue.status === "Pending" && (
                             <Button size="sm" onClick={() => handleSendReminder(issue.id)} className="h-8 text-xs bg-amber-500/20 text-amber-500 hover:bg-amber-500/30">Send Reminder</Button>
-                          ) : null}
-                          {issue.status === "Urgent" ? (
+                          )}
+                          {issue.status === "Urgent" && (
                             <Button size="sm" onClick={() => handleRequestUpdate(issue.id)} className="h-8 text-xs bg-red-500/20 text-red-500 hover:bg-red-500/30">Request Update</Button>
-                          ) : null}
+                          )}
                           <Button size="sm" variant="outline" className="h-8 text-xs cursor-pointer">View Details</Button>
                         </div>
                       </div>
