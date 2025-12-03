@@ -29,6 +29,7 @@ export interface IStorage {
   getApplication(id: number): Promise<Application | undefined>;
   getApplicationsByTenant(tenantId: number): Promise<Application[]>;
   getApplicationsByListing(listingId: number): Promise<Application[]>;
+  getApplicationsByProvider(providerId: number): Promise<Application[]>;
   updateApplication(id: number, application: Partial<InsertApplication>): Promise<Application | undefined>;
 
   sessionStore: session.Store;
@@ -135,6 +136,23 @@ export class DatabaseStorage implements IStorage {
 
   async getApplicationsByListing(listingId: number): Promise<Application[]> {
     return await db.select().from(applications).where(eq(applications.listingId, listingId));
+  }
+
+  async getApplicationsByProvider(providerId: number): Promise<Application[]> {
+    // First get all listings for this provider
+    const providerListings = await this.getListingsByProvider(providerId);
+    if (providerListings.length === 0) return [];
+    
+    // Get applications for all of the provider's listings
+    const listingIds = providerListings.map(l => l.id);
+    const allApplications: Application[] = [];
+    
+    for (const listingId of listingIds) {
+      const apps = await db.select().from(applications).where(eq(applications.listingId, listingId));
+      allApplications.push(...apps);
+    }
+    
+    return allApplications;
   }
 
   async updateApplication(id: number, applicationData: Partial<InsertApplication>): Promise<Application | undefined> {

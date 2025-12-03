@@ -56,6 +56,12 @@ export async function registerRoutes(
     res.json(applications);
   });
 
+  app.get("/api/applications/provider", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const applications = await storage.getApplicationsByProvider((req.user as any).id);
+    res.json(applications);
+  });
+
   app.put("/api/applications/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     

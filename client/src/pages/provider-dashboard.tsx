@@ -28,6 +28,7 @@ import { isSubscriptionActive, getProviderSubscription } from "@/lib/subscriptio
 import { getAuth } from "@/lib/auth";
 import { TourRequest } from "@/components/tour-schedule-modal";
 import { ApplicationDetailsModal, ApplicationData } from "@/components/application-details-modal";
+import { apiRequest } from "@/lib/queryClient";
 
 interface ChatMessage {
   sender: "tenant" | "provider";
@@ -130,11 +131,70 @@ export function ProviderDashboard() {
   const [tourRequests, setTourRequests] = useState<TourRequest[]>([]);
   
   // Application Review State
-  const [applications, setApplications] = useState<ApplicationData[]>(MOCK_APPLICATIONS);
+  const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [selectedApplication, setSelectedApplication] = useState<ApplicationData | null>(null);
   const [isAppDetailsOpen, setIsAppDetailsOpen] = useState(false);
+  const [listingsMap, setListingsMap] = useState<Record<number, string>>({});
 
   const user = getAuth();
+
+  // Load applications from the API
+  useEffect(() => {
+    async function loadApplications() {
+      try {
+        // First get listings to map IDs to names
+        const listingsRes = await fetch("/api/listings/provider", { credentials: "include" });
+        let map: Record<number, string> = {};
+        if (listingsRes.ok) {
+          const listings = await listingsRes.json();
+          listings.forEach((l: any) => { map[l.id] = l.propertyName; });
+          setListingsMap(map);
+        }
+
+        // Then get applications
+        const res = await fetch("/api/applications/provider", { credentials: "include" });
+        if (res.ok) {
+          const rawApps = await res.json();
+          // Transform database format to UI format
+          const uiApps: ApplicationData[] = rawApps.map((app: any) => {
+            const data = app.data || {};
+            const listingName = map[app.listingId] || `Listing #${app.listingId}`;
+            return {
+              id: String(app.id),
+              applicantName: data.fullName || "Unknown",
+              email: data.email || "",
+              phone: data.phone || "",
+              property: listingName,
+              submittedDate: new Date(app.createdAt).toISOString().split('T')[0],
+              status: app.status === "submitted" ? "New" : 
+                      app.status === "approved" ? "Approved" :
+                      app.status === "rejected" ? "Denied" : "New",
+              dob: data.dob || "",
+              gender: data.gender || "",
+              currentAddress: data.currentAddress || "",
+              primarySubstance: data.primarySubstance || "",
+              soberDate: data.soberDate || "",
+              soberLength: data.soberMonths ? `${data.soberMonths} months` : "",
+              matStatus: data.matStatus || false,
+              matMeds: data.matMedications || "",
+              probation: data.onProbation || false,
+              pendingCases: data.pendingCases || false,
+              medicalConditions: data.medicalConditions || "",
+              medications: data.medications || "",
+              employmentStatus: data.employmentStatus || "",
+              incomeSource: data.monthlyIncome || "",
+              evictionHistory: data.evictionHistory || false,
+              reasonForLeaving: data.movingReason || "",
+            };
+          });
+          setApplications(uiApps);
+        }
+      } catch (error) {
+        console.error("Failed to load applications:", error);
+      }
+    }
+    loadApplications();
+  }, []);
 
   const handleViewApplication = (app: ApplicationData) => {
     setSelectedApplication(app);
