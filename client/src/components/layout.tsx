@@ -112,17 +112,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <>
                 <Link href="/login">
                   <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                    Log in
+                    Sign In
                   </Button>
                 </Link>
                 <Link href="/for-tenants">
-                  <Button size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10 hidden lg:inline-flex">
-                    Tenant Portal
-                  </Button>
-                </Link>
-                <Link href="/for-providers">
                   <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                    Provider Portal
+                    Sign Up
                   </Button>
                 </Link>
               </>
@@ -200,16 +195,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   ) : (
                     <>
                       <Link href="/login">
-                        <Button variant="ghost" className="w-full justify-start" onClick={() => setMenuOpen(false)}>Log in</Button>
+                        <Button variant="ghost" className="w-full justify-start" onClick={() => setMenuOpen(false)}>Sign In</Button>
                       </Link>
                       <Link href="/for-tenants">
-                        <Button variant="outline" className="w-full justify-start border-primary/50 text-primary" onClick={() => setMenuOpen(false)}>
-                          Tenant Portal
-                        </Button>
-                      </Link>
-                      <Link href="/for-providers">
                         <Button className="w-full justify-start bg-primary text-primary-foreground" onClick={() => setMenuOpen(false)}>
-                          Provider Portal
+                          Sign Up
                         </Button>
                       </Link>
                     </>
