@@ -8,7 +8,8 @@ import {
   Users, Building, FileText, Activity, 
   Check, X, Eye, ShieldAlert, BarChart3, AlertTriangle,
   Mail, MessageSquare, Settings, DollarSign, TrendingUp,
-  Search, Download, Flag, Lock, Clock, Upload, Shield, Plus
+  Search, Download, Flag, Lock, Clock, Upload, Shield, Plus,
+  Bold, Italic
 } from "lucide-react";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { getReports, updateReportStatus } from "@/lib/reports";
@@ -103,6 +104,16 @@ export function AdminDashboard() {
   const [emailFontColor, setEmailFontColor] = useState("#ffffff");
   const [emailSubject, setEmailSubject] = useState("");
   const [showEmailComposer, setShowEmailComposer] = useState(false);
+  const [emailSubscribers, setEmailSubscribers] = useState<any[]>([
+    { id: 1, email: "john.doe@example.com", subscribeDate: "Dec 1, 2024", status: "Active" },
+    { id: 2, email: "sarah.smith@example.com", subscribeDate: "Dec 2, 2024", status: "Active" },
+    { id: 3, email: "mike.wilson@example.com", subscribeDate: "Dec 3, 2024", status: "Active" },
+  ]);
+  const [showBlogEditor, setShowBlogEditor] = useState(false);
+  const [blogTitle, setBlogTitle] = useState("");
+  const [blogContent, setBlogContent] = useState("");
+  const [blogIsBold, setBlogIsBold] = useState(false);
+  const [blogIsItalic, setBlogIsItalic] = useState(false);
 
   useEffect(() => {
     setReports(getReports());
@@ -350,6 +361,7 @@ export function AdminDashboard() {
             <TabsTrigger value="support" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2 relative"><Mail className="w-4 h-4" /> Support {newTicketsCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</TabsTrigger>
             <TabsTrigger value="marketing" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><TrendingUp className="w-4 h-4" /> Marketing</TabsTrigger>
             <TabsTrigger value="workflows" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Activity className="w-4 h-4" /> Workflows</TabsTrigger>
+            <TabsTrigger value="email-list" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Mail className="w-4 h-4" /> Email List</TabsTrigger>
             <TabsTrigger value="settings" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
           </TabsList>
 
@@ -1051,6 +1063,53 @@ export function AdminDashboard() {
             </Card>
           </TabsContent>
 
+          {/* EMAIL SUBSCRIBER LIST */}
+          <TabsContent value="email-list" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white">Email Subscribers</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {emailSubscribers.map((subscriber) => (
+                    <div key={subscriber.id} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
+                      <div className="flex-1">
+                        <p className="text-white font-medium text-sm">{subscriber.email}</p>
+                        <p className="text-xs text-muted-foreground">Subscribed {subscriber.subscribeDate}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Badge className="bg-green-500/80">{subscriber.status}</Badge>
+                        <Button size="sm" variant="outline" className="h-8 text-xs">Unsubscribe</Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white">Subscriber Statistics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <p className="text-xs text-muted-foreground mb-1">Total Subscribers</p>
+                    <p className="text-2xl font-bold text-white">{emailSubscribers.length}</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <p className="text-xs text-muted-foreground mb-1">Active</p>
+                    <p className="text-2xl font-bold text-green-500">{emailSubscribers.filter(s => s.status === "Active").length}</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <p className="text-xs text-muted-foreground mb-1">Growth Rate</p>
+                    <p className="text-2xl font-bold text-blue-500">+12%</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           {/* SETTINGS */}
           <TabsContent value="settings" className="space-y-6">
             <Card className="bg-card border-border">
@@ -1362,7 +1421,7 @@ export function AdminDashboard() {
                         <input type="text" placeholder="SEO keywords" className="w-full px-2 py-1 rounded text-xs bg-background/50 border border-white/10 text-white" />
                       </div>
                       <div className="flex gap-2 mt-2">
-                        <Button onClick={handleCreateBlog} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
+                        <Button onClick={() => { setBlogTitle(blog.title); setBlogContent(""); setShowBlogEditor(true); }} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
                         <Button onClick={handlePublishBlog} size="sm" variant="ghost" className="text-xs h-7">Publish</Button>
                       </div>
                     </div>
@@ -1922,6 +1981,56 @@ export function AdminDashboard() {
               <div className="flex gap-2">
                 <Button onClick={() => { setShowReplyModal(false); setReplyMessage(""); }} className="flex-1 bg-primary hover:bg-primary/90">Send Reply</Button>
                 <Button onClick={() => { setShowReplyModal(false); setReplyMessage(""); }} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showBlogEditor && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+              <h2 className="text-xl font-bold text-white mb-4">Blog Post Editor</h2>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">Blog Title</label>
+                  <input type="text" value={blogTitle} onChange={(e) => setBlogTitle(e.target.value)} placeholder="Enter blog title" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm" />
+                </div>
+                
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">Formatting</label>
+                  <div className="flex gap-2 mb-3">
+                    <Button onClick={() => setBlogIsBold(!blogIsBold)} className={`gap-1 h-9 ${blogIsBold ? "bg-primary" : "bg-white/10"}`}>
+                      <Bold className="w-4 h-4" /> Bold
+                    </Button>
+                    <Button onClick={() => setBlogIsItalic(!blogIsItalic)} className={`gap-1 h-9 ${blogIsItalic ? "bg-primary" : "bg-white/10"}`}>
+                      <Italic className="w-4 h-4" /> Italic
+                    </Button>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">Content</label>
+                  <textarea
+                    placeholder="Type your blog content here..."
+                    value={blogContent}
+                    onChange={(e) => setBlogContent(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
+                    rows={8}
+                    style={{ fontWeight: blogIsBold ? "bold" : "normal", fontStyle: blogIsItalic ? "italic" : "normal" }}
+                  />
+                </div>
+                
+                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                  <p className="text-xs text-muted-foreground mb-2">Preview</p>
+                  <div className="p-4 bg-white/5 rounded-lg border border-white/10 min-h-20" style={{ fontWeight: blogIsBold ? "bold" : "normal", fontStyle: blogIsItalic ? "italic" : "normal" }}>
+                    {blogContent || "Your blog content will appear here..."}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex gap-2 justify-end">
+                <Button onClick={() => setShowBlogEditor(false)} variant="outline">Cancel</Button>
+                <Button onClick={() => setShowBlogEditor(false)} className="bg-primary hover:bg-primary/90">Publish Post</Button>
               </div>
             </div>
           </div>
