@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CreditCard, Lock, CheckCircle, DollarSign, Banknote } from "lucide-react";
+import { CreditCard, Lock, CheckCircle, Smartphone } from "lucide-react";
+import { Apple, } from "lucide-react";
 import { createSubscription } from "@/lib/subscriptions";
 
 interface PaymentModalProps {
@@ -19,29 +20,27 @@ interface PaymentModalProps {
 
 export function PaymentModal({ open, onClose, onSuccess, providerId, listingCount = 1 }: PaymentModalProps) {
   const [step, setStep] = useState<"pricing" | "payment" | "success">("pricing");
-  const [paymentMethod, setPaymentMethod] = useState<"credit" | "ach" | "check">("credit");
+  const [paymentMethod, setPaymentMethod] = useState<"debit" | "paypal" | "applepay">("debit");
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [cvc, setCvc] = useState("");
   const [billingName, setBillingName] = useState("");
-  const [achRoutingNumber, setAchRoutingNumber] = useState("");
-  const [achAccountNumber, setAchAccountNumber] = useState("");
-  const [checkNumber, setCheckNumber] = useState("");
+  const [paypalEmail, setPaypalEmail] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
   const monthlyFee = 49 * listingCount;
 
   const handlePayment = async () => {
-    if (paymentMethod === "credit" && (!cardNumber || !expiryDate || !cvc || !billingName)) {
-      alert("Please fill in all payment details");
+    if (paymentMethod === "debit" && (!cardNumber || !expiryDate || !cvc || !billingName)) {
+      alert("Please fill in all debit card details");
       return;
     }
-    if (paymentMethod === "ach" && (!achRoutingNumber || !achAccountNumber || !billingName)) {
-      alert("Please fill in all ACH details");
+    if (paymentMethod === "paypal" && (!paypalEmail || !billingName)) {
+      alert("Please fill in all PayPal details");
       return;
     }
-    if (paymentMethod === "check" && (!checkNumber || !billingName)) {
-      alert("Please fill in all check details");
+    if (paymentMethod === "applepay" && !billingName) {
+      alert("Please fill in your name");
       return;
     }
 
@@ -150,21 +149,21 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
               <Label className="text-white text-sm font-semibold">Payment Method</Label>
               <RadioGroup value={paymentMethod} onValueChange={(val: any) => setPaymentMethod(val)}>
                 <div className="flex items-center space-x-2 p-2 rounded border border-border hover:border-primary/50">
-                  <RadioGroupItem value="credit" id="credit" />
-                  <Label htmlFor="credit" className="text-sm text-gray-300 cursor-pointer flex items-center gap-2 flex-1">
-                    <CreditCard className="w-4 h-4" /> Credit Card
+                  <RadioGroupItem value="debit" id="debit" />
+                  <Label htmlFor="debit" className="text-sm text-gray-300 cursor-pointer flex items-center gap-2 flex-1">
+                    <CreditCard className="w-4 h-4" /> Debit Card
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2 p-2 rounded border border-border hover:border-primary/50">
-                  <RadioGroupItem value="ach" id="ach" />
-                  <Label htmlFor="ach" className="text-sm text-gray-300 cursor-pointer flex items-center gap-2 flex-1">
-                    <DollarSign className="w-4 h-4" /> ACH Transfer
+                  <RadioGroupItem value="paypal" id="paypal" />
+                  <Label htmlFor="paypal" className="text-sm text-gray-300 cursor-pointer flex items-center gap-2 flex-1">
+                    <Smartphone className="w-4 h-4" /> PayPal
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2 p-2 rounded border border-border hover:border-primary/50">
-                  <RadioGroupItem value="check" id="check" />
-                  <Label htmlFor="check" className="text-sm text-gray-300 cursor-pointer flex items-center gap-2 flex-1">
-                    <Banknote className="w-4 h-4" /> Check
+                  <RadioGroupItem value="applepay" id="applepay" />
+                  <Label htmlFor="applepay" className="text-sm text-gray-300 cursor-pointer flex items-center gap-2 flex-1">
+                    <Apple className="w-4 h-4" /> Apple Pay
                   </Label>
                 </div>
               </RadioGroup>
@@ -181,10 +180,10 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
                 />
               </div>
 
-              {paymentMethod === "credit" && (
+              {paymentMethod === "debit" && (
                 <>
                   <div>
-                    <Label className="text-white text-sm mb-2">Card Number</Label>
+                    <Label className="text-white text-sm mb-2">Debit Card Number</Label>
                     <Input 
                       placeholder="4242 4242 4242 4242"
                       value={cardNumber}
@@ -205,7 +204,7 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
                       />
                     </div>
                     <div>
-                      <Label className="text-white text-sm mb-2">CVC</Label>
+                      <Label className="text-white text-sm mb-2">CVV</Label>
                       <Input 
                         placeholder="123"
                         value={cvc}
@@ -218,38 +217,24 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
                 </>
               )}
 
-              {paymentMethod === "ach" && (
-                <>
-                  <div>
-                    <Label className="text-white text-sm mb-2">Routing Number</Label>
-                    <Input 
-                      placeholder="021000021"
-                      value={achRoutingNumber}
-                      onChange={(e) => setAchRoutingNumber(e.target.value.replace(/\D/g, "").slice(0, 9))}
-                      className="bg-background/50 border-white/10 font-mono"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-white text-sm mb-2">Account Number</Label>
-                    <Input 
-                      placeholder="123456789"
-                      value={achAccountNumber}
-                      onChange={(e) => setAchAccountNumber(e.target.value.replace(/\D/g, "").slice(0, 17))}
-                      className="bg-background/50 border-white/10 font-mono"
-                    />
-                  </div>
-                </>
+              {paymentMethod === "paypal" && (
+                <div>
+                  <Label className="text-white text-sm mb-2">PayPal Email</Label>
+                  <Input 
+                    placeholder="you@example.com"
+                    type="email"
+                    value={paypalEmail}
+                    onChange={(e) => setPaypalEmail(e.target.value)}
+                    className="bg-background/50 border-white/10"
+                  />
+                </div>
               )}
 
-              {paymentMethod === "check" && (
-                <div>
-                  <Label className="text-white text-sm mb-2">Check Number</Label>
-                  <Input 
-                    placeholder="1001"
-                    value={checkNumber}
-                    onChange={(e) => setCheckNumber(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                    className="bg-background/50 border-white/10 font-mono"
-                  />
+              {paymentMethod === "applepay" && (
+                <div className="p-4 bg-white/5 rounded-lg border border-primary/20 text-center">
+                  <p className="text-sm text-gray-300">
+                    Click "Confirm Payment" to complete your transaction via Apple Pay on your device.
+                  </p>
                 </div>
               )}
             </div>
