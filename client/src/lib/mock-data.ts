@@ -8,7 +8,7 @@ export const SUPERVISION_DEFINITIONS: Record<SupervisionType, string> = {
 };
 
 export interface NearbyAmenity {
-  category: "Transportation" | "Food" | "Groceries" | "Therapy/IOP" | "Recovery Meetings";
+  category: "Transportation" | "Food" | "Groceries" | "Therapy/IOP" | "Recovery Meetings" | "Treatment Centers";
   items: { name: string; distance: string }[];
 }
 
@@ -18,6 +18,8 @@ export interface Property {
   address: string;
   city: string;
   state: string;
+  latitude: number;
+  longitude: number;
   price: number;
   pricePeriod: "weekly" | "monthly";
   bedsAvailable: number;
@@ -56,6 +58,8 @@ export const MOCK_PROPERTIES: Property[] = [
     address: "123 Recovery Way",
     city: "Boston",
     state: "MA",
+    latitude: 42.3601,
+    longitude: -71.0589,
     price: 1200,
     pricePeriod: "monthly",
     bedsAvailable: 2,
@@ -89,6 +93,8 @@ export const MOCK_PROPERTIES: Property[] = [
     address: "456 Healing Path",
     city: "Cambridge",
     state: "MA",
+    latitude: 42.3736,
+    longitude: -71.1097,
     price: 1400,
     pricePeriod: "monthly",
     bedsAvailable: 1,
@@ -121,6 +127,8 @@ export const MOCK_PROPERTIES: Property[] = [
     address: "789 Start Over St",
     city: "Quincy",
     state: "MA",
+    latitude: 42.2529,
+    longitude: -71.0023,
     price: 950,
     pricePeriod: "monthly",
     bedsAvailable: 4,
@@ -153,6 +161,8 @@ export const MOCK_PROPERTIES: Property[] = [
     address: "321 Ocean Blvd",
     city: "Plymouth",
     state: "MA",
+    latitude: 41.9584,
+    longitude: -70.6673,
     price: 2500,
     pricePeriod: "monthly",
     bedsAvailable: 0,
@@ -185,6 +195,8 @@ export const MOCK_PROPERTIES: Property[] = [
     address: "101 Central St",
     city: "Worcester",
     state: "MA",
+    latitude: 42.2626,
+    longitude: -71.8023,
     price: 800,
     pricePeriod: "monthly",
     bedsAvailable: 3,

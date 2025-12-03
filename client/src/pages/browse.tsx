@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { 
   Search, MapPin, ShieldCheck, Filter, LayoutGrid, List,
-  Info, HelpCircle
+  Info, HelpCircle, Map
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
@@ -20,10 +20,23 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+const customIcon = new L.Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 
 export default function Browse() {
   const [priceRange, setPriceRange] = useState([500]);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
   const [searchLocation, setSearchLocation] = useState("");
   const [location] = useLocation();
 
@@ -178,6 +191,7 @@ export default function Browse() {
                 size="icon" 
                 onClick={() => setViewMode("grid")}
                 className={`h-8 w-8 ${viewMode === "grid" ? "bg-primary/10 border-primary/20 text-primary" : ""}`}
+                data-testid="button-view-grid"
               >
                 <LayoutGrid className="h-4 w-4" />
               </Button>
@@ -186,8 +200,18 @@ export default function Browse() {
                 size="icon" 
                 onClick={() => setViewMode("list")}
                 className={`h-8 w-8 ${viewMode === "list" ? "bg-primary/10 border-primary/20 text-primary" : ""}`}
+                data-testid="button-view-list"
               >
                 <List className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={() => setViewMode("map")}
+                className={`h-8 w-8 ${viewMode === "map" ? "bg-primary/10 border-primary/20 text-primary" : ""}`}
+                data-testid="button-view-map"
+              >
+                <Map className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -309,6 +333,60 @@ export default function Browse() {
                   </Card>
                 </Link>
               ))}
+            </div>
+          )}
+
+          {viewMode === "map" && (
+            <div className="rounded-xl overflow-hidden border border-border shadow-xl" style={{ height: "600px" }}>
+              <MapContainer
+                center={[42.3601, -71.0589]}
+                zoom={9}
+                style={{ height: "100%", width: "100%" }}
+                scrollWheelZoom={true}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {MOCK_PROPERTIES.map((home) => (
+                  <Marker
+                    key={home.id}
+                    position={[home.latitude, home.longitude]}
+                    icon={customIcon}
+                  >
+                    <Popup>
+                      <div className="min-w-[200px]">
+                        <img 
+                          src={home.image} 
+                          alt={home.name}
+                          className="w-full h-24 object-cover rounded-t mb-2"
+                        />
+                        <h3 className="font-bold text-sm mb-1">{home.name}</h3>
+                        <p className="text-xs text-gray-600 mb-1">
+                          {home.city}, {home.state}
+                        </p>
+                        <p className="text-sm font-bold text-emerald-600 mb-2">
+                          ${home.price}/{home.pricePeriod}
+                        </p>
+                        <div className="flex gap-1 mb-2 flex-wrap">
+                          <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{home.gender}</span>
+                          <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{home.roomType}</span>
+                          {home.bedsAvailable > 0 && (
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                              {home.bedsAvailable} beds
+                            </span>
+                          )}
+                        </div>
+                        <Link href={`/property/${home.id}`}>
+                          <button className="w-full bg-emerald-500 text-white text-xs py-1.5 rounded hover:bg-emerald-600 transition-colors">
+                            View Details
+                          </button>
+                        </Link>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
             </div>
           )}
         </div>
