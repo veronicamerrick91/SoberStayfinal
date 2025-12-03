@@ -129,10 +129,10 @@ export default function PropertyDetails() {
             {/* Title & Key Info */}
             <div>
               <div className="flex justify-between items-start mb-2">
-                <h1 className="text-4xl font-bold text-white">{property.name}</h1>
+                <h1 className="text-3xl font-bold text-white">{property.name}</h1>
                 <div className="text-right">
-                  <div className="text-3xl font-bold text-primary">${property.price}</div>
-                  <div className="text-sm text-muted-foreground">per {property.pricePeriod}</div>
+                  <div className="text-2xl font-bold text-primary">${property.price}</div>
+                  <div className="text-xs text-muted-foreground">per {property.pricePeriod}</div>
                 </div>
               </div>
               <div className="flex items-center text-muted-foreground mb-3">
@@ -164,8 +164,8 @@ export default function PropertyDetails() {
 
             {/* Description */}
             <div className="bg-card/50 border border-border rounded-xl p-8">
-              <h3 className="text-xl font-bold text-white mb-4">About this Home</h3>
-              <p className="text-muted-foreground leading-relaxed">
+              <h3 className="text-lg font-bold text-white mb-4">About this Home</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 {property.description}
                 <br/><br/>
                 At {property.name}, we believe in creating a safe, structured environment that fosters long-term recovery. Our residents support one another through shared experience and accountability.
@@ -174,10 +174,10 @@ export default function PropertyDetails() {
 
             {/* Amenities & Features */}
             <div>
-              <h3 className="text-xl font-bold text-white mb-6">Amenities & Features</h3>
+              <h3 className="text-lg font-bold text-white mb-6">Amenities & Features</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 {property.amenities.map((amenity, i) => (
-                  <div key={i} className="flex items-center gap-3 text-gray-300 p-3 rounded-lg bg-card/30 border border-border/50">
+                  <div key={i} className="flex items-center gap-3 text-sm text-gray-300 p-3 rounded-lg bg-card/30 border border-border/50">
                     <Check className="w-5 h-5 text-primary" />
                     {amenity}
                   </div>
@@ -188,10 +188,10 @@ export default function PropertyDetails() {
             {/* Included in Price */}
             {property.inclusions && property.inclusions.length > 0 && (
               <div>
-                <h3 className="text-xl font-bold text-white mb-6">Included in Monthly Price</h3>
+                <h3 className="text-lg font-bold text-white mb-6">Included in Monthly Price</h3>
                 <div className="grid sm:grid-cols-2 gap-4">
                   {property.inclusions.map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 text-gray-200 p-3 rounded-lg bg-emerald-950/30 border border-emerald-500/30 hover:border-emerald-500/50 transition-colors">
+                    <div key={i} className="flex items-center gap-3 text-sm text-gray-200 p-3 rounded-lg bg-emerald-950/30 border border-emerald-500/30 hover:border-emerald-500/50 transition-colors">
                       <div className="p-1.5 rounded-full bg-emerald-500/20 text-emerald-400">
                         <Check className="w-4 h-4" />
                       </div>
@@ -204,14 +204,14 @@ export default function PropertyDetails() {
 
             {/* House Rules */}
             <div className="border-4 border-yellow-500 p-4">
-              <h3 className="text-xl font-bold text-white mb-6">House Rules</h3>
+              <h3 className="text-lg font-bold text-white mb-6">House Rules</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 {["No drugs or alcohol", "Curfew 11pm", "Weekly house meetings", "Chore rotation", "Guests must be approved"].map((rule, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-amber-950/20 border border-amber-500/30">
                     <div className="pt-1">
                       <div className="w-2 h-2 rounded-full bg-amber-500 mt-1" />
                     </div>
-                    <span className="text-xs text-gray-300 font-normal">{rule}</span>
+                    <span className="text-sm text-gray-300 font-normal">{rule}</span>
                   </div>
                 ))}
               </div>
@@ -219,14 +219,14 @@ export default function PropertyDetails() {
 
             {/* Residency Requirements */}
             <div className="border-4 border-blue-500 p-4">
-              <h3 className="text-xl font-bold text-white mb-6">Residency Requirements</h3>
+              <h3 className="text-lg font-bold text-white mb-6">Residency Requirements</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 {["Minimum 30 days sober", "Valid ID required", "Employment or education", "6+ month commitment", "3 meetings per week"].map((req, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-blue-950/20 border border-blue-500/30">
                     <div className="pt-1">
                       <div className="w-2 h-2 rounded-full bg-blue-500 mt-1" />
                     </div>
-                    <span className="text-xs text-gray-300 font-normal">{req}</span>
+                    <span className="text-sm text-gray-300 font-normal">{req}</span>
                   </div>
                 ))}
               </div>
@@ -234,7 +234,7 @@ export default function PropertyDetails() {
 
             {/* Nearby Amenities */}
             <div className="border-4 border-green-500 p-4">
-              <h3 className="text-xl font-bold text-white mb-6">Nearby Services & Support</h3>
+              <h3 className="text-lg font-bold text-white mb-6">Nearby Services & Support</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 {[
                   { category: "Recovery Meetings", items: [{ name: "AA Meeting", distance: "0.5 mi" }, { name: "NA Meeting", distance: "0.7 mi" }] },
@@ -275,7 +275,7 @@ export default function PropertyDetails() {
             
             {/* Map Location */}
             <div>
-              <h3 className="text-xl font-bold text-white mb-6">Location</h3>
+              <h3 className="text-lg font-bold text-white mb-6">Location</h3>
               <div className="rounded-xl overflow-hidden border border-border/50 relative h-[300px] bg-gradient-to-br from-blue-900/20 to-purple-900/20 flex items-center justify-center">
                 <div className="text-center">
                   <MapPin className="w-12 h-12 text-primary mx-auto mb-2 opacity-50" />

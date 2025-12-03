@@ -212,7 +212,7 @@ export default function Browse() {
                       </div>
                       
                       <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end">
-                        <div className="text-lg font-bold text-white drop-shadow-md">
+                        <div className="text-base font-bold text-white drop-shadow-md">
                           ${home.price}<span className="text-xs font-normal text-gray-200">/{home.pricePeriod}</span>
                         </div>
                       </div>
@@ -270,8 +270,8 @@ export default function Browse() {
                         <div>
                           <div className="flex justify-between items-start gap-4 mb-2">
                             <h3 className="font-bold text-base text-white group-hover:text-primary transition-colors line-clamp-1">{home.name}</h3>
-                            <div className="text-lg font-bold text-primary shrink-0">
-                              ${home.price}<span className="text-sm font-normal text-gray-300">/{home.pricePeriod}</span>
+                            <div className="text-base font-bold text-primary shrink-0">
+                              ${home.price}<span className="text-xs font-normal text-gray-300">/{home.pricePeriod}</span>
                             </div>
                           </div>
                           
