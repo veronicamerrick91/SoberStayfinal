@@ -167,8 +167,8 @@ export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0">
-        <DialogHeader className="p-6 border-b border-border bg-card">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+        <DialogHeader className="p-6 border-b border-border bg-card shrink-0">
           <div className="flex items-start justify-between">
             <div>
               <DialogTitle className="text-2xl font-bold text-white">{listing.name}</DialogTitle>
@@ -184,7 +184,7 @@ export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }
           </div>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 p-6">
+        <ScrollArea className="flex-1 p-6 overflow-hidden">
           <div className="space-y-6">
             {/* Property Image */}
             <div className="rounded-lg overflow-hidden">
@@ -330,7 +330,7 @@ export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }
           </div>
         </ScrollArea>
 
-        <DialogFooter className="p-6 border-t border-border bg-card flex-col sm:flex-row gap-3">
+        <DialogFooter className="p-6 border-t border-border bg-card flex-col sm:flex-row gap-3 shrink-0">
           {!showDenyForm ? (
             <>
               <Button 

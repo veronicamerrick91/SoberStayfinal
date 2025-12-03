@@ -72,9 +72,9 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
         <DialogDescription className="sr-only">Tenant application review details</DialogDescription>
-        <DialogHeader className="p-6 border-b border-border bg-card">
+        <DialogHeader className="p-6 border-b border-border bg-card shrink-0">
           <div className="flex items-start justify-between">
             <div className="flex gap-4">
               <Avatar className="w-16 h-16 border-2 border-primary/20">
@@ -101,7 +101,7 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
           </div>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 p-6">
+        <ScrollArea className="flex-1 p-6 overflow-hidden">
           <div className="space-y-8">
             {/* Quick Actions / Risk Assessment */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -197,7 +197,7 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
           </div>
         </ScrollArea>
 
-        <DialogFooter className="p-6 border-t border-border bg-card flex-col sm:flex-row gap-3">
+        <DialogFooter className="p-6 border-t border-border bg-card flex-col sm:flex-row gap-3 shrink-0">
           {showDenyInput ? (
             <div className="w-full space-y-3">
               <Textarea 
