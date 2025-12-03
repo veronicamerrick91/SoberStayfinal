@@ -203,37 +203,33 @@ export default function PropertyDetails() {
             )}
 
             {/* House Rules */}
-            <div className="border-4 border-yellow-500 p-4">
+            <div>
               <h3 className="text-lg font-bold text-white mb-6">House Rules</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 {["No drugs or alcohol", "Curfew 11pm", "Weekly house meetings", "Chore rotation", "Guests must be approved"].map((rule, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-amber-950/20 border border-amber-500/30">
-                    <div className="pt-1">
-                      <div className="w-2 h-2 rounded-full bg-amber-500 mt-1" />
-                    </div>
-                    <span className="text-sm text-gray-300 font-normal">{rule}</span>
+                  <div key={i} className="flex items-center gap-3 text-sm text-gray-300 p-3 rounded-lg bg-card/30 border border-border/50">
+                    <Check className="w-5 h-5 text-primary" />
+                    {rule}
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Residency Requirements */}
-            <div className="border-4 border-blue-500 p-4">
+            <div>
               <h3 className="text-lg font-bold text-white mb-6">Residency Requirements</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 {["Minimum 30 days sober", "Valid ID required", "Employment or education", "6+ month commitment", "3 meetings per week"].map((req, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-blue-950/20 border border-blue-500/30">
-                    <div className="pt-1">
-                      <div className="w-2 h-2 rounded-full bg-blue-500 mt-1" />
-                    </div>
-                    <span className="text-sm text-gray-300 font-normal">{req}</span>
+                  <div key={i} className="flex items-center gap-3 text-sm text-gray-300 p-3 rounded-lg bg-card/30 border border-border/50">
+                    <Check className="w-5 h-5 text-primary" />
+                    {req}
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Nearby Amenities */}
-            <div className="border-4 border-green-500 p-4">
+            <div>
               <h3 className="text-lg font-bold text-white mb-6">Nearby Services & Support</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 {[
