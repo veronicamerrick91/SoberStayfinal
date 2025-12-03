@@ -158,6 +158,36 @@ export default function PropertyDetails() {
               </div>
             </div>
 
+            {/* House Rules - MOVED TO TOP */}
+            <div className="bg-yellow-500 p-6 rounded-lg">
+              <h3 className="text-2xl font-bold text-black mb-4">🏠 HOUSE RULES</h3>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {["No drugs or alcohol", "Curfew 11pm", "Weekly house meetings", "Chore rotation", "Guests must be approved", "No overnight visitors without notice"].map((rule, i) => (
+                  <div key={i} className="text-sm text-black font-medium">• {rule}</div>
+                ))}
+              </div>
+            </div>
+
+            {/* Residency Requirements - MOVED TO TOP */}
+            <div className="bg-blue-500 p-6 rounded-lg">
+              <h3 className="text-2xl font-bold text-white mb-4">✓ RESIDENCY REQUIREMENTS</h3>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {["Minimum 30 days sober", "Valid ID required", "Employment or education", "6+ month commitment", "3 meetings per week", "Mental health assessment"].map((req, i) => (
+                  <div key={i} className="text-sm text-white font-medium">• {req}</div>
+                ))}
+              </div>
+            </div>
+
+            {/* Nearby Services - MOVED TO TOP */}
+            <div className="bg-green-500 p-6 rounded-lg">
+              <h3 className="text-2xl font-bold text-white mb-4">🎯 NEARBY SERVICES & SUPPORT</h3>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="bg-white p-3 rounded text-black font-semibold">Recovery Meetings<br/><span className="text-sm font-normal">AA Meeting - 0.5 mi<br/>NA Meeting - 0.7 mi</span></div>
+                <div className="bg-white p-3 rounded text-black font-semibold">Treatment Centers<br/><span className="text-sm font-normal">Recovery Center - 1.2 mi</span></div>
+                <div className="bg-white p-3 rounded text-black font-semibold">Therapy/IOP<br/><span className="text-sm font-normal">Outpatient Program - 0.8 mi</span></div>
+              </div>
+            </div>
+
             {/* Description */}
             <div className="bg-card/50 border border-border rounded-xl p-8">
               <h3 className="text-xl font-bold text-white mb-4">About this Home</h3>
