@@ -42,6 +42,13 @@ export function CreateListing() {
     window.scrollTo(0, 0);
   }, []);
 
+  const [currentStep, setCurrentStep] = useState(1);
+
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentStep]);
+
   const [listingDraft, setListingDraft] = useState<ListingDraft>({
     propertyName: "",
     address: "",
@@ -62,7 +69,6 @@ export function CreateListing() {
     photos: [],
   });
 
-  const [currentStep, setCurrentStep] = useState(1);
   const user = getAuth() as any;
 
   const handleInputChange = (field: keyof ListingDraft, value: any) => {
