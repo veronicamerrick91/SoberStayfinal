@@ -142,7 +142,6 @@ export function CreateListing() {
         ...listingDraft,
         monthlyPrice: parseInt(listingDraft.monthlyPrice),
         totalBeds: parseInt(listingDraft.totalBeds),
-        status: "active",
         providerId: user.id
       });
       
@@ -157,32 +156,6 @@ export function CreateListing() {
       toast({
         title: "Error",
         description: "Failed to create listing. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleSaveDraft = async () => {
-    try {
-      await apiRequest("POST", "/api/listings", {
-        ...listingDraft,
-        monthlyPrice: parseInt(listingDraft.monthlyPrice) || 0,
-        totalBeds: parseInt(listingDraft.totalBeds) || 0,
-        status: "draft",
-        providerId: user.id
-      });
-
-      toast({
-        title: "Draft Saved",
-        description: "Your listing has been saved as a draft.",
-      });
-      
-      setLocation("/provider-dashboard?tab=drafts");
-    } catch (error) {
-      console.error("Failed to save draft", error);
-      toast({
-        title: "Error",
-        description: "Failed to save draft. Please try again.",
         variant: "destructive"
       });
     }
@@ -616,14 +589,6 @@ export function CreateListing() {
 
             {/* Action Buttons */}
             <div className="flex gap-3 justify-end pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSaveDraft}
-                className="border-border"
-              >
-                Save as Draft
-              </Button>
               <Button
                 onClick={handleReview}
                 disabled={!isFormComplete}

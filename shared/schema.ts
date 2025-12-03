@@ -9,8 +9,6 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   name: text("name").notNull(),
   role: text("role").default("tenant").notNull(),
-  stripeCustomerId: text("stripe_customer_id"),
-  stripeSubscriptionId: text("stripe_subscription_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -47,16 +45,6 @@ export const subscriptions = pgTable("subscriptions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const applications = pgTable("applications", {
-  id: serial("id").primaryKey(),
-  tenantId: integer("tenant_id").notNull().references(() => users.id),
-  listingId: integer("listing_id").notNull().references(() => listings.id),
-  status: text("status").default("draft").notNull(), // draft, submitted, approved, rejected
-  data: jsonb("data").notNull(), // Stores all form fields
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   email: true,
@@ -75,17 +63,9 @@ export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
   createdAt: true,
 });
 
-export const insertApplicationSchema = createInsertSchema(applications).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Listing = typeof listings.$inferSelect;
 export type InsertListing = z.infer<typeof insertListingSchema>;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
-export type Application = typeof applications.$inferSelect;
-export type InsertApplication = z.infer<typeof insertApplicationSchema>;
