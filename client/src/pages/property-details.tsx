@@ -123,22 +123,19 @@ export default function PropertyDetails() {
                   <div className="text-sm text-muted-foreground">per {property.pricePeriod}</div>
                 </div>
               </div>
-              <div className="flex items-center text-muted-foreground mb-6">
+              <div className="flex items-center text-muted-foreground mb-3">
                 <MapPin className="w-4 h-4 mr-2 text-primary" />
                 {property.address}, {property.city}, {property.state}
               </div>
 
-              <div className="flex flex-wrap gap-3">
-                 <Badge variant="secondary" className="text-sm px-3 py-1">{property.gender} Only</Badge>
-                 <Badge variant="outline" className="text-sm px-3 py-1 border-primary/30 text-primary">{property.roomType}</Badge>
-                 <Badge variant={property.bedsAvailable > 0 ? "default" : "destructive"} className="text-sm px-3 py-1">
-                   {property.bedsAvailable > 0 ? `${property.bedsAvailable} Beds Available` : "Waitlist Only"}
-                 </Badge>
+              <div className="flex flex-wrap gap-2 mb-6">
+                 <Badge className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 text-xs font-medium">{property.gender}</Badge>
+                 <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3 py-1 text-xs font-medium">{property.totalBeds} Beds</Badge>
                  <TooltipProvider>
                     <Tooltip>
-                      <TooltipTrigger>
-                        <Badge variant="outline" className="text-sm px-3 py-1 border-primary/30 text-primary cursor-help flex items-center gap-1 hover:bg-primary/10 transition-colors">
-                          {property.supervisionType} <Info className="w-3 h-3" />
+                      <TooltipTrigger asChild>
+                        <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 text-xs font-medium cursor-help hover:bg-purple-500/30">
+                          {property.supervisionType}
                         </Badge>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -195,11 +192,11 @@ export default function PropertyDetails() {
                 <h3 className="text-xl font-bold text-white mb-6">House Rules</h3>
                 <div className="grid sm:grid-cols-2 gap-4">
                   {property.houseRules.map((rule, i) => (
-                    <div key={i} className="flex items-start gap-3 text-gray-300 p-3 rounded-lg bg-amber-950/20 border border-amber-500/30">
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-amber-950/20 border border-amber-500/30">
                       <div className="pt-1">
                         <div className="w-2 h-2 rounded-full bg-amber-500 mt-1" />
                       </div>
-                      <span className="text-sm">{rule}</span>
+                      <span className="text-xs text-gray-300 font-normal">{rule}</span>
                     </div>
                   ))}
                 </div>
@@ -212,11 +209,11 @@ export default function PropertyDetails() {
                 <h3 className="text-xl font-bold text-white mb-6">Residency Requirements</h3>
                 <div className="grid sm:grid-cols-2 gap-4">
                   {property.requirements.map((req, i) => (
-                    <div key={i} className="flex items-start gap-3 text-gray-300 p-3 rounded-lg bg-blue-950/20 border border-blue-500/30">
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-blue-950/20 border border-blue-500/30">
                       <div className="pt-1">
                         <div className="w-2 h-2 rounded-full bg-blue-500 mt-1" />
                       </div>
-                      <span className="text-sm">{req}</span>
+                      <span className="text-xs text-gray-300 font-normal">{req}</span>
                     </div>
                   ))}
                 </div>
@@ -263,20 +260,12 @@ export default function PropertyDetails() {
             {/* Map Location */}
             <div>
               <h3 className="text-xl font-bold text-white mb-6">Location</h3>
-              <div className="rounded-xl overflow-hidden border border-border/50 relative h-[300px]">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  allowFullScreen
-                  referrerPolicy="no-referrer-when-downgrade"
-                  src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBxjXHZ1yc_0dXcjVEbJwdaLPWR5V8eZwI&q=${encodeURIComponent(property.address + ' ' + property.city + ' ' + property.state)}`}
-                  title="Property Location Map"
-                />
-                <div className="absolute bottom-4 left-4 bg-card/90 backdrop-blur p-3 rounded-lg border border-white/10 shadow-xl max-w-xs">
+              <div className="rounded-xl overflow-hidden border border-border/50 relative h-[300px] bg-gradient-to-br from-blue-900/20 to-purple-900/20 flex items-center justify-center">
+                <div className="text-center">
+                  <MapPin className="w-12 h-12 text-primary mx-auto mb-2 opacity-50" />
                   <div className="font-bold text-white text-sm">{property.address}</div>
                   <div className="text-xs text-muted-foreground">{property.city}, {property.state}</div>
+                  <p className="text-xs text-muted-foreground mt-2">Map location view</p>
                 </div>
               </div>
             </div>
