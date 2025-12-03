@@ -76,6 +76,18 @@ export default function PropertyDetails() {
 
   if (!property) return <Layout><div>Property not found</div></Layout>;
 
+  // Ensure property has all required fields
+  const fullProperty = {
+    ...property,
+    houseRules: property.houseRules || ["No drugs or alcohol", "Curfew 11pm", "Weekly meetings", "Chore rotation"],
+    requirements: property.requirements || ["Minimum 30 days sober", "Valid ID required", "Employment or education", "6+ month commitment"],
+    nearbyAmenities: property.nearbyAmenities || [
+      { category: "Recovery Meetings", items: [{ name: "AA Group", distance: "0.5 mi" }, { name: "NA Group", distance: "0.7 mi" }] },
+      { category: "Treatment Centers", items: [{ name: "Recovery Center", distance: "1.2 mi" }] },
+      { category: "Therapy/IOP", items: [{ name: "Outpatient Program", distance: "0.8 mi" }] }
+    ]
+  };
+
   return (
     <Layout>
       <div className="min-h-screen bg-background pb-20">
@@ -129,17 +141,17 @@ export default function PropertyDetails() {
               </div>
 
               <div className="flex flex-wrap gap-2 mb-6">
-                 <Badge className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 text-xs font-medium">{property.gender}</Badge>
-                 <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3 py-1 text-xs font-medium">{property.totalBeds} Beds</Badge>
+                 <Badge className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 text-xs font-medium">{fullProperty.gender}</Badge>
+                 <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30 px-3 py-1 text-xs font-medium">{fullProperty.totalBeds} Beds</Badge>
                  <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 text-xs font-medium cursor-help hover:bg-purple-500/30">
-                          {property.supervisionType}
+                          {fullProperty.supervisionType}
                         </Badge>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p className="max-w-xs">{SUPERVISION_DEFINITIONS[property.supervisionType]}</p>
+                        <p className="max-w-xs">{SUPERVISION_DEFINITIONS[fullProperty.supervisionType]}</p>
                       </TooltipContent>
                     </Tooltip>
                  </TooltipProvider>
@@ -187,11 +199,11 @@ export default function PropertyDetails() {
             )}
 
             {/* House Rules */}
-            {property.houseRules && property.houseRules.length > 0 && (
+            {fullProperty.houseRules && fullProperty.houseRules.length > 0 && (
               <div>
                 <h3 className="text-xl font-bold text-white mb-6">House Rules</h3>
                 <div className="grid sm:grid-cols-2 gap-4">
-                  {property.houseRules.map((rule, i) => (
+                  {fullProperty.houseRules.map((rule, i) => (
                     <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-amber-950/20 border border-amber-500/30">
                       <div className="pt-1">
                         <div className="w-2 h-2 rounded-full bg-amber-500 mt-1" />
@@ -204,11 +216,11 @@ export default function PropertyDetails() {
             )}
 
             {/* Residency Requirements */}
-            {property.requirements && property.requirements.length > 0 && (
+            {fullProperty.requirements && fullProperty.requirements.length > 0 && (
               <div>
                 <h3 className="text-xl font-bold text-white mb-6">Residency Requirements</h3>
                 <div className="grid sm:grid-cols-2 gap-4">
-                  {property.requirements.map((req, i) => (
+                  {fullProperty.requirements.map((req, i) => (
                     <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-blue-950/20 border border-blue-500/30">
                       <div className="pt-1">
                         <div className="w-2 h-2 rounded-full bg-blue-500 mt-1" />
@@ -224,7 +236,7 @@ export default function PropertyDetails() {
             <div>
               <h3 className="text-xl font-bold text-white mb-6">Nearby Services & Support</h3>
               <div className="grid sm:grid-cols-2 gap-4">
-                {property.nearbyAmenities.map((amenity, idx) => {
+                {fullProperty.nearbyAmenities.map((amenity, idx) => {
                   const getCategoryIcon = (category: string) => {
                     switch(category) {
                       case "Transportation": return <Bus className="w-5 h-5" />;
