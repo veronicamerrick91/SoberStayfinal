@@ -295,7 +295,7 @@ export function AdminDashboard() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="bg-gradient-to-r from-card via-card to-card border border-border/50 p-2 flex flex-wrap gap-2 h-auto justify-start rounded-lg shadow-sm">
+          <TabsList className="bg-gradient-to-r from-card via-card to-card border border-border/50 p-2 flex gap-2 h-auto justify-start rounded-lg shadow-sm overflow-x-auto">
             <TabsTrigger value="overview" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Dashboard</TabsTrigger>
             <TabsTrigger value="users" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Users className="w-4 h-4" /> Users</TabsTrigger>
             <TabsTrigger value="listings" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Building className="w-4 h-4" /> Listings</TabsTrigger>
