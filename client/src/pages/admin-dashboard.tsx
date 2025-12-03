@@ -92,6 +92,11 @@ export function AdminDashboard() {
   const [showSupportDetailsModal, setShowSupportDetailsModal] = useState(false);
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [replyMessage, setReplyMessage] = useState("");
+  const [newUsers, setNewUsers] = useState(3);
+  const [newListings, setNewListings] = useState(2);
+  const [newApplications, setNewApplications] = useState(5);
+  const [newVerifications, setNewVerifications] = useState(1);
+  const [newBillingSubscriptions, setNewBillingSubscriptions] = useState(2);
 
   useEffect(() => {
     setReports(getReports());
@@ -327,14 +332,14 @@ export function AdminDashboard() {
         <Tabs defaultValue="overview" className="space-y-8">
           <TabsList className="bg-gradient-to-r from-card via-card to-card border border-border/50 p-2 flex gap-2 h-auto justify-start rounded-lg shadow-sm overflow-x-auto">
             <TabsTrigger value="overview" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Dashboard</TabsTrigger>
-            <TabsTrigger value="users" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Users className="w-4 h-4" /> Users</TabsTrigger>
-            <TabsTrigger value="listings" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Building className="w-4 h-4" /> Listings</TabsTrigger>
-            <TabsTrigger value="applications" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Applications</TabsTrigger>
+            <TabsTrigger value="users" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2 relative"><Users className="w-4 h-4" /> Users {newUsers > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</TabsTrigger>
+            <TabsTrigger value="listings" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2 relative"><Building className="w-4 h-4" /> Listings {newListings > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</TabsTrigger>
+            <TabsTrigger value="applications" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all relative">Applications {newApplications > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</TabsTrigger>
             <TabsTrigger value="messaging" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2 relative"><MessageSquare className="w-4 h-4" /> Messages {messages.filter(m => m.flagged).length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</TabsTrigger>
-            <TabsTrigger value="verification" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><Shield className="w-4 h-4" /> Verification</TabsTrigger>
+            <TabsTrigger value="verification" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2 relative"><Shield className="w-4 h-4" /> Verification {newVerifications > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</TabsTrigger>
             <TabsTrigger value="reports" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><AlertTriangle className="w-4 h-4" /> Reports</TabsTrigger>
             <TabsTrigger value="compliance" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2 relative"><ShieldAlert className="w-4 h-4" /> Safety {complianceIssues.filter(i => i.status === "Urgent").length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</TabsTrigger>
-            <TabsTrigger value="billing" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><DollarSign className="w-4 h-4" /> Billing</TabsTrigger>
+            <TabsTrigger value="billing" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2 relative"><DollarSign className="w-4 h-4" /> Billing {newBillingSubscriptions > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</TabsTrigger>
             <TabsTrigger value="analytics" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><BarChart3 className="w-4 h-4" /> Analytics</TabsTrigger>
             <TabsTrigger value="support" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2 relative"><Mail className="w-4 h-4" /> Support {newTicketsCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>}</TabsTrigger>
             <TabsTrigger value="marketing" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-2"><TrendingUp className="w-4 h-4" /> Marketing</TabsTrigger>
@@ -1229,25 +1234,25 @@ export function AdminDashboard() {
                   <Settings className="w-5 h-5" /> Marketing Templates
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {[
-                  { name: "Welcome New Providers", type: "Email", uses: 24 },
-                  { name: "Recovery Success Stories", type: "Social Post", uses: 12 },
-                  { name: "Available Listings Alert", type: "SMS", uses: 156 },
-                  { name: "Testimonial Campaign", type: "Email", uses: 8 },
-                  { name: "Property Compliance Reminder", type: "Email", uses: 42 },
-                  { name: "Tenant Application Approved", type: "Email", uses: 67 },
-                  { name: "Provider Subscription Renewal", type: "Email", uses: 89 },
-                  { name: "Resource Updates Newsletter", type: "Email", uses: 34 },
-                ].map((template, i) => (
-                  <div key={i} className="p-3 rounded-lg bg-white/5 flex items-center justify-between">
-                    <div>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-2">
+                  {[
+                    { name: "Welcome New Providers", type: "Email", uses: 24 },
+                    { name: "Recovery Success Stories", type: "Social Post", uses: 12 },
+                    { name: "Available Listings Alert", type: "SMS", uses: 156 },
+                    { name: "Testimonial Campaign", type: "Email", uses: 8 },
+                    { name: "Property Compliance Reminder", type: "Email", uses: 42 },
+                    { name: "Tenant Application Approved", type: "Email", uses: 67 },
+                    { name: "Provider Subscription Renewal", type: "Email", uses: 89 },
+                    { name: "Resource Updates Newsletter", type: "Email", uses: 34 },
+                  ].map((template, i) => (
+                    <div key={i} className="p-3 rounded-lg bg-white/5 border border-white/10 flex flex-col">
                       <p className="text-white text-sm font-medium">{template.name}</p>
-                      <p className="text-xs text-muted-foreground">{template.type} • Used {template.uses} times</p>
+                      <p className="text-xs text-muted-foreground mt-1">{template.type} • Used {template.uses} times</p>
+                      <Button onClick={() => { setNewCampaignName(template.name); setShowNewCampaignModal(true); }} size="sm" variant="ghost" className="text-xs mt-2 self-start">Use Template</Button>
                     </div>
-                    <Button onClick={() => { setNewCampaignName(template.name); setShowNewCampaignModal(true); }} size="sm" variant="ghost" className="text-xs">Use</Button>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </CardContent>
             </Card>
 
