@@ -4,27 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldCheck, AlertCircle, Mail, CheckCircle2, Sparkles, Building } from "lucide-react";
+import { ShieldCheck, AlertCircle, CheckCircle2, Sparkles, Building, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { saveAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
-import { GoogleLoginModal } from "@/components/google-login-modal";
-
-const VALID_CREDENTIALS = {
-  tenant: {
-    email: "contact@soberstay.com",
-    password: "contact@soberstay.com"
-  },
-  provider: {
-    email: "contact@soberstay.com",
-    password: "contact@soberstay.com"
-  },
-  admin: {
-    email: "contact@soberstay.com",
-    password: "contact@soberstay.com"
-  }
-};
+import { apiRequest } from "@/lib/queryClient";
 
 interface AuthPageProps {
   type: "login" | "signup";
@@ -37,8 +22,10 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [role, setRole] = useState<"tenant" | "provider" | "admin">(defaultRole as any);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setRole(defaultRole as any);
@@ -50,42 +37,71 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
     return params.get("returnPath") || (role === "tenant" ? "/tenant-dashboard" : "/provider-dashboard");
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError("");
+    setIsLoading(true);
     
-    const creds = VALID_CREDENTIALS[role as keyof typeof VALID_CREDENTIALS];
-    
-    if (type === "login") {
-      // Validate credentials for login
-      if (email !== creds.email || password !== creds.password) {
-        setLoginError("Invalid email or password");
-        return;
-      }
+    try {
+      const response = await apiRequest("POST", "/api/auth/login", {
+        username: username || email.split("@")[0],
+        password
+      });
+      const user = await response.json();
+      
+      saveAuth({
+        id: user.id.toString(),
+        email: user.email,
+        role: user.role,
+        name: user.name
+      });
+      
+      toast({
+        title: "Welcome back!",
+        description: `Logged in as ${user.name}`,
+      });
+      
+      setLocation(getReturnPath());
+    } catch (error: any) {
+      setLoginError(error.message || "Invalid credentials");
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError("");
+    setIsLoading(true);
     
-    // Save session and redirect
-    saveAuth({
-      id: Math.random().toString(36).substr(2, 9),
-      email: email || creds.email,
-      role: role,
-      name: role === "tenant" ? "Test Tenant" : role === "provider" ? "Test Provider" : "Test Administrator"
-    });
-    setLocation(getReturnPath());
-  };
-
-  const handleGoogleLoginClick = () => {
-    setShowGoogleModal(true);
-  };
-
-  const handleGoogleLoginSuccess = () => {
-    saveAuth({
-      id: Math.random().toString(36).substr(2, 9),
-      email: "john.doe@example.com",
-      role: role,
-      name: role === "tenant" ? "John Doe (Tenant)" : role === "provider" ? "John Doe (Provider)" : "John Doe (Admin)"
-    });
-    setLocation(getReturnPath());
+    try {
+      const response = await apiRequest("POST", "/api/auth/register", {
+        username: username || email.split("@")[0],
+        email,
+        password,
+        name: name || "User",
+        role
+      });
+      const user = await response.json();
+      
+      saveAuth({
+        id: user.id.toString(),
+        email: user.email,
+        role: user.role,
+        name: user.name
+      });
+      
+      toast({
+        title: "Account Created!",
+        description: `Welcome to Sober Stay, ${user.name}`,
+      });
+      
+      setLocation(getReturnPath());
+    } catch (error: any) {
+      setLoginError(error.message || "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -155,66 +171,99 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                 {type === "login" && <TabsTrigger value="admin" className="text-xs">Admin</TabsTrigger>}
               </TabsList>
             </Tabs>
-
-            
-            {/* Admin login removed for security - use Google Auth or real credentials */}
             
             {loginError && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex gap-2">
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex gap-2 mb-4">
                 <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <p className="text-sm text-red-300">{loginError}</p>
               </div>
             )}
             
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={type === "login" ? handleLogin : handleSignup} className="space-y-4">
               {type === "signup" && (
-                <div className="grid grid-cols-2 gap-4">
+                <>
                   <div className="space-y-2">
-                    <Label htmlFor="first-name">First name</Label>
-                    <Input id="first-name" placeholder="John" className="bg-background/50" />
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input 
+                      id="name" 
+                      placeholder="John Doe" 
+                      className="bg-background/50" 
+                      value={name} 
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="last-name">Last name</Label>
-                    <Input id="last-name" placeholder="Doe" className="bg-background/50" />
+                    <Label htmlFor="username">Username</Label>
+                    <Input 
+                      id="username" 
+                      placeholder="johndoe" 
+                      className="bg-background/50" 
+                      value={username} 
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
                   </div>
+                </>
+              )}
+              
+              {type === "login" && (
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input 
+                    id="username" 
+                    placeholder="Enter your username" 
+                    className="bg-background/50" 
+                    value={username} 
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+              
+              {type === "signup" && (
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="john@example.com" 
+                    className="bg-background/50" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
                 </div>
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="m@example.com" className="bg-background/50" value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              
-              <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" className="bg-background/50" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <Input 
+                  id="password" 
+                  type="password" 
+                  placeholder="Enter your password"
+                  className="bg-background/50" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
               </div>
 
-              <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                {type === "login" ? "Sign In" : "Create Account"}
+              <Button 
+                type="submit" 
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {type === "login" ? "Signing in..." : "Creating account..."}
+                  </>
+                ) : (
+                  type === "login" ? "Sign In" : "Create Account"
+                )}
               </Button>
             </form>
-
-            {(role === "tenant" || role === "provider" || role === "admin") && (
-              <div className="mt-4">
-                <div className="relative mb-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-card text-muted-foreground">Or continue with</span>
-                  </div>
-                </div>
-                <Button 
-                  type="button"
-                  onClick={handleGoogleLoginClick}
-                  className="w-full bg-white text-black hover:bg-gray-100 gap-2 border border-gray-200 shadow-sm"
-                >
-                  <Mail className="w-4 h-4" />
-                  {type === "login" ? "Sign in with Gmail" : "Sign up with Gmail"}
-                </Button>
-              </div>
-            )}
           </CardContent>
           <CardFooter className="flex justify-center border-t border-border pt-6">
             <p className="text-sm text-muted-foreground">
@@ -229,12 +278,6 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
         </Card>
         </div>
       </div>
-
-      <GoogleLoginModal 
-        open={showGoogleModal} 
-        onClose={() => setShowGoogleModal(false)} 
-        onLogin={handleGoogleLoginSuccess} 
-      />
     </Layout>
   );
 }
