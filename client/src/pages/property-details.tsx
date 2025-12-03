@@ -21,6 +21,19 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+const customIcon = new L.Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 
 export default function PropertyDetails() {
   const [match, params] = useRoute("/property/:id");
@@ -270,13 +283,30 @@ export default function PropertyDetails() {
             {/* Map Location */}
             <div>
               <h3 className="text-lg font-bold text-white mb-6">Location</h3>
-              <div className="rounded-xl overflow-hidden border border-border/50 relative h-[300px] bg-gradient-to-br from-blue-900/20 to-purple-900/20 flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="w-12 h-12 text-primary mx-auto mb-2 opacity-50" />
-                  <div className="font-bold text-white text-sm">{property.address}</div>
-                  <div className="text-xs text-muted-foreground">{property.city}, {property.state}</div>
-                  <p className="text-xs text-muted-foreground mt-2">Map location view</p>
-                </div>
+              <div className="rounded-xl overflow-hidden border border-border/50 shadow-xl" style={{ height: "300px" }}>
+                <MapContainer
+                  center={[property.latitude, property.longitude]}
+                  zoom={14}
+                  style={{ height: "100%", width: "100%" }}
+                  scrollWheelZoom={true}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <Marker
+                    position={[property.latitude, property.longitude]}
+                    icon={customIcon}
+                  >
+                    <Popup>
+                      <div className="text-center">
+                        <h3 className="font-bold text-sm">{property.name}</h3>
+                        <p className="text-xs text-gray-600">{property.address}</p>
+                        <p className="text-xs text-gray-600">{property.city}, {property.state}</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                </MapContainer>
               </div>
             </div>
           </div>
