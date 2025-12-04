@@ -102,6 +102,12 @@ export function AdminDashboard() {
   const [newListings, setNewListings] = useState(2);
   const [newApplications, setNewApplications] = useState(5);
   const [newVerifications, setNewVerifications] = useState(1);
+  const [viewingDocument, setViewingDocument] = useState<any | null>(null);
+  const [showDocumentPreviewModal, setShowDocumentPreviewModal] = useState(false);
+  const [showRequestInfoModal, setShowRequestInfoModal] = useState(false);
+  const [requestInfoMessage, setRequestInfoMessage] = useState("");
+  const [showDenyDocumentModal, setShowDenyDocumentModal] = useState(false);
+  const [denyDocumentReason, setDenyDocumentReason] = useState("");
   const [newBillingSubscriptions, setNewBillingSubscriptions] = useState(2);
   const [emailBodyText, setEmailBodyText] = useState("");
   const [emailFont, setEmailFont] = useState("Arial");
@@ -137,6 +143,61 @@ export function AdminDashboard() {
       ...prop,
       status: idx % 2 === 0 ? "Pending" : "Approved"
     })));
+    
+    // Initialize mock verification documents
+    setDocuments([
+      {
+        id: "doc-1",
+        documentName: "Business License",
+        documentType: "License",
+        provider: "Recovery First LLC",
+        providerEmail: "admin@recoveryfirst.com",
+        uploadedDate: "2024-12-01",
+        status: "Pending Review",
+        fileSize: "2.4 MB"
+      },
+      {
+        id: "doc-2",
+        documentName: "Liability Insurance Certificate",
+        documentType: "Insurance",
+        provider: "Hope House",
+        providerEmail: "contact@hopehouse.org",
+        uploadedDate: "2024-12-02",
+        status: "Pending Review",
+        fileSize: "1.8 MB"
+      },
+      {
+        id: "doc-3",
+        documentName: "Staff Background Check - John Smith",
+        documentType: "Background Check",
+        provider: "Serenity Living",
+        providerEmail: "info@serenityliving.com",
+        uploadedDate: "2024-11-28",
+        status: "Approved",
+        fileSize: "856 KB"
+      },
+      {
+        id: "doc-4",
+        documentName: "Fire Safety Inspection Report",
+        documentType: "Safety Certification",
+        provider: "New Beginnings Home",
+        providerEmail: "office@newbeginnings.org",
+        uploadedDate: "2024-11-30",
+        status: "Pending Review",
+        fileSize: "3.1 MB"
+      },
+      {
+        id: "doc-5",
+        documentName: "Zoning Compliance Letter",
+        documentType: "Zoning",
+        provider: "Pathway Recovery",
+        providerEmail: "admin@pathwayrecovery.com",
+        uploadedDate: "2024-11-25",
+        status: "Rejected",
+        denialReason: "Document is expired. Please submit current zoning compliance letter dated within last 12 months.",
+        fileSize: "1.2 MB"
+      }
+    ]);
   }, []);
 
   const handleEditUser = (user: User) => {
@@ -198,11 +259,38 @@ export function AdminDashboard() {
   };
 
   const handleApproveDocument = (docId: string) => {
-    setDocuments(documents.map(d => d.id === docId ? { ...d, status: "Approved" } : d));
+    setDocuments(documents.map(d => d.id === docId ? { ...d, status: "Approved", reviewedAt: new Date().toISOString() } : d));
+    setShowDocumentPreviewModal(false);
+    setViewingDocument(null);
   };
 
   const handleRejectDocument = (docId: string) => {
-    setDocuments(documents.map(d => d.id === docId ? { ...d, status: "Rejected" } : d));
+    setDocuments(documents.map(d => d.id === docId ? { ...d, status: "Rejected", denialReason: denyDocumentReason, reviewedAt: new Date().toISOString() } : d));
+    setShowDenyDocumentModal(false);
+    setDenyDocumentReason("");
+    setViewingDocument(null);
+  };
+
+  const handleRequestDocumentInfo = (docId: string) => {
+    setDocuments(documents.map(d => d.id === docId ? { ...d, status: "More Info Requested", infoRequest: requestInfoMessage, reviewedAt: new Date().toISOString() } : d));
+    setShowRequestInfoModal(false);
+    setRequestInfoMessage("");
+    setViewingDocument(null);
+  };
+
+  const handleViewDocument = (doc: any) => {
+    setViewingDocument(doc);
+    setShowDocumentPreviewModal(true);
+  };
+
+  const openDenyModal = (doc: any) => {
+    setViewingDocument(doc);
+    setShowDenyDocumentModal(true);
+  };
+
+  const openRequestInfoModal = (doc: any) => {
+    setViewingDocument(doc);
+    setShowRequestInfoModal(true);
   };
 
   const toggleSafetySettings = (settingId: number) => {
@@ -670,44 +758,111 @@ export function AdminDashboard() {
 
           {/* PROVIDER VERIFICATION CENTER */}
           <TabsContent value="verification" className="space-y-6">
-            <div className="space-y-2">
-              <h3 className="text-white font-semibold mb-3">Provider Document Verification ({documents.length})</h3>
-              {documents.map((doc) => (
-                <div key={doc.id} className="p-3 rounded-lg border-b border-border/50 hover:bg-white/5 transition-colors last:border-0">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <p className="text-white font-bold">{doc.documentName}</p>
-                      <p className="text-sm text-muted-foreground">Provider: {doc.provider}</p>
-                      <p className="text-xs text-muted-foreground">{doc.providerEmail}</p>
-                      <div className="flex gap-2 mt-2">
-                        <Badge variant="outline" className="text-xs border-primary/30 text-primary gap-1"><FileText className="w-3 h-3" /> {doc.documentType}</Badge>
-                        <Badge className="text-xs bg-gray-500/80">Submitted: {new Date(doc.uploadedDate).toLocaleDateString()}</Badge>
-                      </div>
-                    </div>
-                    <Badge className={
-                      doc.status === "Approved" ? "bg-green-500/80" :
-                      doc.status === "Rejected" ? "bg-red-500/80" :
-                      "bg-amber-500/80"
-                    }>{doc.status}</Badge>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" className="h-8 gap-1 text-xs">
-                      <Download className="w-3 h-3" /> Download
-                    </Button>
-                    {doc.status === "Pending Review" && (
-                      <>
-                        <Button size="sm" onClick={() => handleApproveDocument(doc.id)} className="h-8 bg-green-500/20 text-green-500 hover:bg-green-500/30 gap-1 text-xs">
-                          <Check className="w-3 h-3" /> Approve
-                        </Button>
-                        <Button size="sm" onClick={() => handleRejectDocument(doc.id)} variant="outline" className="h-8 border-red-500/30 text-red-500 hover:bg-red-500/10 gap-1 text-xs">
-                          <X className="w-3 h-3" /> Reject
-                        </Button>
-                      </>
-                    )}
-                  </div>
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Shield className="w-5 h-5" /> Provider Document Verification
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">Review and verify submitted provider documents</p>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2 mb-4">
+                  <Badge variant="outline" className="text-xs">
+                    {documents.filter(d => d.status === "Pending Review").length} Pending
+                  </Badge>
+                  <Badge className="bg-green-500/20 text-green-400 text-xs">
+                    {documents.filter(d => d.status === "Approved").length} Approved
+                  </Badge>
+                  <Badge className="bg-red-500/20 text-red-400 text-xs">
+                    {documents.filter(d => d.status === "Rejected").length} Rejected
+                  </Badge>
+                  <Badge className="bg-blue-500/20 text-blue-400 text-xs">
+                    {documents.filter(d => d.status === "More Info Requested").length} Awaiting Info
+                  </Badge>
                 </div>
-              ))}
-            </div>
+                
+                {documents.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                    <p>No documents submitted for verification</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {documents.map((doc) => (
+                      <div key={doc.id} className={`p-4 rounded-lg border transition-all ${
+                        doc.status === "Pending Review" ? "bg-amber-500/5 border-amber-500/20" :
+                        doc.status === "Approved" ? "bg-green-500/5 border-green-500/20" :
+                        doc.status === "Rejected" ? "bg-red-500/5 border-red-500/20" :
+                        doc.status === "More Info Requested" ? "bg-blue-500/5 border-blue-500/20" :
+                        "bg-white/5 border-border/50"
+                      }`}>
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <FileText className="w-4 h-4 text-primary" />
+                              <p className="text-white font-bold">{doc.documentName}</p>
+                            </div>
+                            <p className="text-sm text-muted-foreground">Provider: <span className="text-white">{doc.provider}</span></p>
+                            <p className="text-xs text-muted-foreground">{doc.providerEmail}</p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <Badge variant="outline" className="text-xs border-primary/30 text-primary gap-1">
+                                <FileText className="w-3 h-3" /> {doc.documentType}
+                              </Badge>
+                              <Badge className="text-xs bg-gray-600/50">
+                                <Clock className="w-3 h-3 mr-1" /> Submitted: {new Date(doc.uploadedDate).toLocaleDateString()}
+                              </Badge>
+                              {doc.fileSize && (
+                                <Badge variant="outline" className="text-xs">{doc.fileSize}</Badge>
+                              )}
+                            </div>
+                          </div>
+                          <Badge className={
+                            doc.status === "Approved" ? "bg-green-500/80" :
+                            doc.status === "Rejected" ? "bg-red-500/80" :
+                            doc.status === "More Info Requested" ? "bg-blue-500/80" :
+                            "bg-amber-500/80"
+                          }>{doc.status}</Badge>
+                        </div>
+                        
+                        {doc.denialReason && (
+                          <div className="mb-3 p-2 bg-red-500/10 border border-red-500/20 rounded text-sm">
+                            <span className="text-red-400 font-medium">Denial Reason:</span> <span className="text-red-300">{doc.denialReason}</span>
+                          </div>
+                        )}
+                        
+                        {doc.infoRequest && (
+                          <div className="mb-3 p-2 bg-blue-500/10 border border-blue-500/20 rounded text-sm">
+                            <span className="text-blue-400 font-medium">Info Requested:</span> <span className="text-blue-300">{doc.infoRequest}</span>
+                          </div>
+                        )}
+                        
+                        <div className="flex flex-wrap gap-2">
+                          <Button size="sm" variant="outline" onClick={() => handleViewDocument(doc)} className="h-8 gap-1 text-xs">
+                            <Eye className="w-3 h-3" /> View Document
+                          </Button>
+                          <Button size="sm" variant="outline" className="h-8 gap-1 text-xs">
+                            <Download className="w-3 h-3" /> Download
+                          </Button>
+                          {(doc.status === "Pending Review" || doc.status === "More Info Requested") && (
+                            <>
+                              <Button size="sm" onClick={() => handleApproveDocument(doc.id)} className="h-8 bg-green-500/20 text-green-500 hover:bg-green-500/30 gap-1 text-xs">
+                                <Check className="w-3 h-3" /> Verify
+                              </Button>
+                              <Button size="sm" onClick={() => openDenyModal(doc)} variant="outline" className="h-8 border-red-500/30 text-red-500 hover:bg-red-500/10 gap-1 text-xs">
+                                <X className="w-3 h-3" /> Deny
+                              </Button>
+                              <Button size="sm" onClick={() => openRequestInfoModal(doc)} variant="outline" className="h-8 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 gap-1 text-xs">
+                                <MessageSquare className="w-3 h-3" /> Request More Info
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             <Card className="bg-card border-border">
               <CardHeader>
@@ -1841,6 +1996,178 @@ export function AdminDashboard() {
             onApprove={handleApproveApplication}
             onDeny={handleDenyApplication}
           />
+        )}
+
+        {/* Document Preview Modal */}
+        {showDocumentPreviewModal && viewingDocument && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5" /> Document Preview
+                </h2>
+                <Button size="sm" variant="ghost" onClick={() => {
+                  setShowDocumentPreviewModal(false);
+                  setViewingDocument(null);
+                }}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Document Name</p>
+                    <p className="text-white font-medium">{viewingDocument.documentName}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Document Type</p>
+                    <p className="text-white">{viewingDocument.documentType}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Provider</p>
+                    <p className="text-white">{viewingDocument.provider}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Email</p>
+                    <p className="text-white">{viewingDocument.providerEmail}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Submitted</p>
+                    <p className="text-white">{new Date(viewingDocument.uploadedDate).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Status</p>
+                    <Badge className={
+                      viewingDocument.status === "Approved" ? "bg-green-500/80" :
+                      viewingDocument.status === "Rejected" ? "bg-red-500/80" :
+                      viewingDocument.status === "More Info Requested" ? "bg-blue-500/80" :
+                      "bg-amber-500/80"
+                    }>{viewingDocument.status}</Badge>
+                  </div>
+                </div>
+                
+                {/* Document Preview Area */}
+                <div className="border border-white/10 rounded-lg p-8 bg-white/5 min-h-64 flex flex-col items-center justify-center">
+                  <FileText className="w-16 h-16 text-muted-foreground mb-4" />
+                  <p className="text-white font-medium mb-2">{viewingDocument.documentName}</p>
+                  <p className="text-muted-foreground text-sm mb-4">{viewingDocument.fileSize || "PDF Document"}</p>
+                  <Button variant="outline" className="gap-2">
+                    <Download className="w-4 h-4" /> Download to View Full Document
+                  </Button>
+                </div>
+              </div>
+              
+              {viewingDocument.status === "Pending Review" && (
+                <div className="flex gap-2 mt-6 pt-4 border-t border-white/10">
+                  <Button onClick={() => handleApproveDocument(viewingDocument.id)} className="flex-1 bg-green-600 hover:bg-green-700 gap-2">
+                    <Check className="w-4 h-4" /> Verify Document
+                  </Button>
+                  <Button onClick={() => {
+                    setShowDocumentPreviewModal(false);
+                    openDenyModal(viewingDocument);
+                  }} variant="outline" className="flex-1 border-red-500/30 text-red-500 hover:bg-red-500/10 gap-2">
+                    <X className="w-4 h-4" /> Deny
+                  </Button>
+                  <Button onClick={() => {
+                    setShowDocumentPreviewModal(false);
+                    openRequestInfoModal(viewingDocument);
+                  }} variant="outline" className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 gap-2">
+                    <MessageSquare className="w-4 h-4" /> Request Info
+                  </Button>
+                </div>
+              )}
+              
+              {viewingDocument.status !== "Pending Review" && (
+                <div className="flex gap-2 mt-6 pt-4 border-t border-white/10">
+                  <Button onClick={() => {
+                    setShowDocumentPreviewModal(false);
+                    setViewingDocument(null);
+                  }} variant="outline" className="w-full">
+                    Close
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Deny Document Modal */}
+        {showDenyDocumentModal && viewingDocument && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <X className="w-5 h-5 text-red-500" /> Deny Document
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                You are denying: <span className="text-white font-medium">{viewingDocument.documentName}</span> from {viewingDocument.provider}
+              </p>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">Reason for Denial *</label>
+                  <textarea
+                    placeholder="Please explain why this document is being denied..."
+                    value={denyDocumentReason}
+                    onChange={(e) => setDenyDocumentReason(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white h-24"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => handleRejectDocument(viewingDocument.id)} 
+                  disabled={!denyDocumentReason.trim()}
+                  className="flex-1 bg-red-600 hover:bg-red-700 gap-2"
+                >
+                  <X className="w-4 h-4" /> Confirm Denial
+                </Button>
+                <Button onClick={() => {
+                  setShowDenyDocumentModal(false);
+                  setDenyDocumentReason("");
+                  setViewingDocument(null);
+                }} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Request More Info Modal */}
+        {showRequestInfoModal && viewingDocument && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
+              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-blue-400" /> Request More Information
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                Request additional information for: <span className="text-white font-medium">{viewingDocument.documentName}</span> from {viewingDocument.provider}
+              </p>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-2 block">What information do you need? *</label>
+                  <textarea
+                    placeholder="Please specify what additional information or documents are needed..."
+                    value={requestInfoMessage}
+                    onChange={(e) => setRequestInfoMessage(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white h-24"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => handleRequestDocumentInfo(viewingDocument.id)} 
+                  disabled={!requestInfoMessage.trim()}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 gap-2"
+                >
+                  <MessageSquare className="w-4 h-4" /> Send Request
+                </Button>
+                <Button onClick={() => {
+                  setShowRequestInfoModal(false);
+                  setRequestInfoMessage("");
+                  setViewingDocument(null);
+                }} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
         )}
 
         {showBlogModal && (
