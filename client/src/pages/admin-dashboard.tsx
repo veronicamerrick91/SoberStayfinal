@@ -9,7 +9,9 @@ import {
   Check, X, Eye, ShieldAlert, BarChart3, AlertTriangle,
   Mail, MessageSquare, Settings, DollarSign, TrendingUp,
   Search, Download, Flag, Lock, Clock, Upload, Shield, Plus,
-  CheckCircle
+  CheckCircle, Bold, Italic, Underline, Strikethrough, 
+  List, ListOrdered, Heading1, Heading2, Link2, Quote, 
+  AlignLeft, AlignCenter, AlignRight, Undo, Redo, Type, Save
 } from "lucide-react";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { getReports, updateReportStatus } from "@/lib/reports";
@@ -122,6 +124,11 @@ export function AdminDashboard() {
   const [blogFontColor, setBlogFontColor] = useState("#ffffff");
   const [publishedBlogPosts, setPublishedBlogPosts] = useState<any[]>([]);
   const [blogPublishSuccess, setBlogPublishSuccess] = useState(false);
+  const [blogAuthor, setBlogAuthor] = useState("Admin");
+  const [blogTags, setBlogTags] = useState("");
+  const [blogSlug, setBlogSlug] = useState("");
+  const [blogScheduleDate, setBlogScheduleDate] = useState("");
+  const [blogAutoSaved, setBlogAutoSaved] = useState(false);
 
   useEffect(() => {
     setReports(getReports());
@@ -293,7 +300,41 @@ export function AdminDashboard() {
     setBlogFont("Georgia");
     setBlogFontSize(16);
     setBlogFontColor("#ffffff");
+    setBlogAuthor("Admin");
+    setBlogTags("");
+    setBlogSlug("");
+    setBlogScheduleDate("");
+    setBlogAutoSaved(false);
     setShowBlogModal(true);
+  };
+
+  const insertFormatting = (prefix: string, suffix: string = prefix) => {
+    const textarea = document.getElementById("blog-content-textarea") as HTMLTextAreaElement;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = blogContent.substring(start, end);
+      const newText = blogContent.substring(0, start) + prefix + selectedText + suffix + blogContent.substring(end);
+      setBlogContent(newText);
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + prefix.length, end + prefix.length);
+      }, 0);
+    }
+  };
+
+  const getWordCount = (text: string) => {
+    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+  };
+
+  const getReadTime = (wordCount: number) => {
+    const wordsPerMinute = 200;
+    const minutes = Math.ceil(wordCount / wordsPerMinute);
+    return minutes < 1 ? "< 1 min read" : `${minutes} min read`;
+  };
+
+  const generateSlug = (title: string) => {
+    return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   };
 
   const handleSaveBlog = () => {
@@ -303,12 +344,16 @@ export function AdminDashboard() {
         title: blogTitle,
         excerpt: blogExcerpt || blogContent.substring(0, 150) + "...",
         content: blogContent,
-        author: "Admin",
+        author: blogAuthor || "Admin",
         date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
         category: blogCategory,
+        tags: blogTags.split(",").map(t => t.trim()).filter(t => t),
+        slug: blogSlug || generateSlug(blogTitle),
         status: "Draft"
       };
       setPublishedBlogPosts([newPost, ...publishedBlogPosts]);
+      setBlogAutoSaved(true);
+      setTimeout(() => setBlogAutoSaved(false), 2000);
     }
     setShowBlogModal(false);
   };
@@ -320,9 +365,11 @@ export function AdminDashboard() {
         title: blogTitle,
         excerpt: blogExcerpt || blogContent.substring(0, 150) + "...",
         content: blogContent,
-        author: "Admin",
-        date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-        category: blogCategory
+        author: blogAuthor || "Admin",
+        date: blogScheduleDate ? new Date(blogScheduleDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        category: blogCategory,
+        tags: blogTags.split(",").map(t => t.trim()).filter(t => t),
+        slug: blogSlug || generateSlug(blogTitle)
       };
       setPublishedBlogPosts([newPost, ...publishedBlogPosts]);
       
@@ -1773,33 +1820,59 @@ export function AdminDashboard() {
 
         {showBlogModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <h2 className="text-xl font-bold text-white mb-4">Create Blog Post</h2>
+            <div className="bg-card border border-border rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[95vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white">Content Editor</h2>
+                <div className="flex items-center gap-3">
+                  {blogAutoSaved && (
+                    <span className="text-xs text-green-400 flex items-center gap-1">
+                      <Save className="w-3 h-3" /> Auto-saved
+                    </span>
+                  )}
+                  <span className="text-xs text-muted-foreground">
+                    {getWordCount(blogContent)} words • {getReadTime(getWordCount(blogContent))}
+                  </span>
+                </div>
+              </div>
               
               <div className="space-y-4 mb-6">
-                <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Post Title</label>
-                  <input 
-                    type="text" 
-                    placeholder="Enter blog title" 
-                    value={blogTitle}
-                    onChange={(e) => setBlogTitle(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Post Title *</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter an engaging title..." 
+                      value={blogTitle}
+                      onChange={(e) => {
+                        setBlogTitle(e.target.value);
+                        if (!blogSlug) setBlogSlug(generateSlug(e.target.value));
+                      }}
+                      className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-lg font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Author</label>
+                    <input 
+                      type="text" 
+                      placeholder="Author name" 
+                      value={blogAuthor}
+                      onChange={(e) => setBlogAuthor(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white"
+                    />
+                  </div>
                 </div>
                 
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Excerpt (Brief summary for previews)</label>
-                  <input 
-                    type="text" 
-                    placeholder="Short description of the article..." 
+                  <label className="text-xs text-muted-foreground mb-2 block">Excerpt (Summary for previews)</label>
+                  <textarea 
+                    placeholder="Write a brief summary that will appear in article previews..." 
                     value={blogExcerpt}
                     onChange={(e) => setBlogExcerpt(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white h-16"
                   />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
                   <div>
                     <label className="text-xs text-muted-foreground mb-2 block">Category</label>
                     <select 
@@ -1815,7 +1888,6 @@ export function AdminDashboard() {
                       <option>Stories</option>
                     </select>
                   </div>
-                  
                   <div>
                     <label className="text-xs text-muted-foreground mb-2 block">Font</label>
                     <select 
@@ -1827,10 +1899,9 @@ export function AdminDashboard() {
                       <option>Arial</option>
                       <option>Times New Roman</option>
                       <option>Verdana</option>
-                      <option>Trebuchet MS</option>
+                      <option>Inter</option>
                     </select>
                   </div>
-                  
                   <div>
                     <label className="text-xs text-muted-foreground mb-2 block">Size</label>
                     <select 
@@ -1838,50 +1909,153 @@ export function AdminDashboard() {
                       onChange={(e) => setBlogFontSize(Number(e.target.value))} 
                       className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-xs"
                     >
-                      <option value={14}>14px</option>
-                      <option value={16}>16px</option>
-                      <option value={18}>18px</option>
-                      <option value={20}>20px</option>
+                      <option value={14}>Small</option>
+                      <option value={16}>Medium</option>
+                      <option value={18}>Large</option>
+                      <option value={20}>X-Large</option>
                     </select>
                   </div>
-                  
                   <div>
                     <label className="text-xs text-muted-foreground mb-2 block">Text Color</label>
                     <input 
                       type="color" 
                       value={blogFontColor} 
                       onChange={(e) => setBlogFontColor(e.target.value)} 
-                      className="w-full h-10 rounded-lg cursor-pointer bg-background/50 border border-white/10"
+                      className="w-full h-9 rounded-lg cursor-pointer bg-background/50 border border-white/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Schedule</label>
+                    <input 
+                      type="date" 
+                      value={blogScheduleDate}
+                      onChange={(e) => setBlogScheduleDate(e.target.value)}
+                      className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-xs"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Tags (comma-separated)</label>
+                    <input 
+                      type="text" 
+                      placeholder="recovery, sobriety, mental health..." 
+                      value={blogTags}
+                      onChange={(e) => setBlogTags(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">URL Slug</label>
+                    <input 
+                      type="text" 
+                      placeholder="custom-url-slug" 
+                      value={blogSlug}
+                      onChange={(e) => setBlogSlug(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Content</label>
-                  <textarea 
-                    placeholder="Write your blog post content here..." 
-                    value={blogContent}
-                    onChange={(e) => setBlogContent(e.target.value)}
-                    className="w-full px-3 py-3 rounded-lg bg-background/50 border border-white/10 text-white h-48"
-                    style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
-                  />
+                  <label className="text-xs text-muted-foreground mb-2 block">Content *</label>
+                  <div className="border border-white/10 rounded-lg overflow-hidden">
+                    <div className="flex flex-wrap items-center gap-1 p-2 bg-background/30 border-b border-white/10">
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("**")} className="h-8 w-8 p-0" title="Bold">
+                        <Bold className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("*")} className="h-8 w-8 p-0" title="Italic">
+                        <Italic className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("~~")} className="h-8 w-8 p-0" title="Strikethrough">
+                        <Strikethrough className="w-4 h-4" />
+                      </Button>
+                      <div className="w-px h-6 bg-white/20 mx-1" />
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("# ", "")} className="h-8 w-8 p-0" title="Heading 1">
+                        <Heading1 className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("## ", "")} className="h-8 w-8 p-0" title="Heading 2">
+                        <Heading2 className="w-4 h-4" />
+                      </Button>
+                      <div className="w-px h-6 bg-white/20 mx-1" />
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("- ", "")} className="h-8 w-8 p-0" title="Bullet List">
+                        <List className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("1. ", "")} className="h-8 w-8 p-0" title="Numbered List">
+                        <ListOrdered className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("> ", "")} className="h-8 w-8 p-0" title="Quote">
+                        <Quote className="w-4 h-4" />
+                      </Button>
+                      <div className="w-px h-6 bg-white/20 mx-1" />
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("[", "](url)")} className="h-8 w-8 p-0" title="Link">
+                        <Link2 className="w-4 h-4" />
+                      </Button>
+                      <div className="flex-1" />
+                      <span className="text-xs text-muted-foreground px-2">Markdown supported</span>
+                    </div>
+                    <textarea 
+                      id="blog-content-textarea"
+                      placeholder="Start writing your content here...
+
+Use the toolbar above for formatting, or write in Markdown:
+• **bold** for bold text
+• *italic* for italic text
+• # Heading for headings
+• - item for bullet lists
+• > quote for blockquotes" 
+                      value={blogContent}
+                      onChange={(e) => setBlogContent(e.target.value)}
+                      className="w-full px-4 py-4 bg-background/50 text-white h-64 resize-none border-0 focus:outline-none focus:ring-0"
+                      style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
+                    />
+                  </div>
                 </div>
                 
                 <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                  <p className="text-xs text-muted-foreground mb-2">Live Preview</p>
-                  <div 
-                    className="p-4 bg-white/5 rounded-lg border border-white/10 min-h-24 whitespace-pre-wrap"
-                    style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
-                  >
-                    <h3 className="font-bold text-lg mb-2" style={{ color: blogFontColor }}>{blogTitle || "Your title here..."}</h3>
-                    {blogContent || "Your blog content will appear here..."}
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs text-muted-foreground">Live Preview</p>
+                    {blogCategory && (
+                      <Badge className="bg-primary/20 text-primary text-xs">{blogCategory}</Badge>
+                    )}
+                  </div>
+                  <div className="p-6 bg-card rounded-lg border border-white/10 min-h-32">
+                    <h3 className="font-bold text-2xl text-white mb-2">{blogTitle || "Your title here..."}</h3>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4">
+                      <span>{blogAuthor || "Author"}</span>
+                      <span>•</span>
+                      <span>{blogScheduleDate ? new Date(blogScheduleDate).toLocaleDateString() : new Date().toLocaleDateString()}</span>
+                      <span>•</span>
+                      <span>{getReadTime(getWordCount(blogContent))}</span>
+                    </div>
+                    {blogExcerpt && (
+                      <p className="text-muted-foreground italic mb-4">{blogExcerpt}</p>
+                    )}
+                    <div 
+                      className="prose prose-invert max-w-none whitespace-pre-wrap"
+                      style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
+                    >
+                      {blogContent || "Your blog content will appear here..."}
+                    </div>
+                    {blogTags && (
+                      <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/10">
+                        {blogTags.split(",").map((tag, i) => (
+                          <span key={i} className="text-xs bg-white/10 px-2 py-1 rounded">{tag.trim()}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
               
-              <div className="flex gap-2">
-                <Button onClick={handleSaveBlog} className="flex-1 bg-gray-600 hover:bg-gray-700">Save as Draft</Button>
-                <Button onClick={handlePublishBlog} className="flex-1 bg-green-600 hover:bg-green-700">Publish Now</Button>
+              <div className="flex gap-2 pt-4 border-t border-white/10">
+                <Button onClick={handleSaveBlog} className="flex-1 bg-gray-600 hover:bg-gray-700 gap-2">
+                  <Save className="w-4 h-4" /> Save Draft
+                </Button>
+                <Button onClick={handlePublishBlog} className="flex-1 bg-green-600 hover:bg-green-700 gap-2">
+                  <CheckCircle className="w-4 h-4" /> {blogScheduleDate ? "Schedule" : "Publish Now"}
+                </Button>
                 <Button onClick={() => setShowBlogModal(false)} variant="outline">Cancel</Button>
               </div>
             </div>
@@ -2059,115 +2233,123 @@ export function AdminDashboard() {
 
         {showBlogEditor && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <h2 className="text-xl font-bold text-white mb-4">Edit Blog Post</h2>
+            <div className="bg-card border border-border rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[95vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white">Edit Blog Post</h2>
+                <div className="flex items-center gap-3">
+                  {blogAutoSaved && (
+                    <span className="text-xs text-green-400 flex items-center gap-1">
+                      <Save className="w-3 h-3" /> Auto-saved
+                    </span>
+                  )}
+                  <span className="text-xs text-muted-foreground">
+                    {getWordCount(blogContent)} words • {getReadTime(getWordCount(blogContent))}
+                  </span>
+                </div>
+              </div>
               
               <div className="space-y-4 mb-6">
-                <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Post Title</label>
-                  <input 
-                    type="text" 
-                    placeholder="Enter blog title" 
-                    value={blogTitle}
-                    onChange={(e) => setBlogTitle(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Excerpt</label>
-                  <input 
-                    type="text" 
-                    placeholder="Short description..." 
-                    value={blogExcerpt}
-                    onChange={(e) => setBlogExcerpt(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Category</label>
-                    <select 
-                      value={blogCategory} 
-                      onChange={(e) => setBlogCategory(e.target.value)} 
-                      className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
-                    >
-                      <option>Recovery Tips</option>
-                      <option>Education</option>
-                      <option>Community</option>
-                      <option>Guidance</option>
-                      <option>Mental Health</option>
-                      <option>Stories</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Font</label>
-                    <select 
-                      value={blogFont} 
-                      onChange={(e) => setBlogFont(e.target.value)} 
-                      className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-xs"
-                    >
-                      <option>Georgia</option>
-                      <option>Arial</option>
-                      <option>Times New Roman</option>
-                      <option>Verdana</option>
-                      <option>Trebuchet MS</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Size</label>
-                    <select 
-                      value={blogFontSize} 
-                      onChange={(e) => setBlogFontSize(Number(e.target.value))} 
-                      className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-xs"
-                    >
-                      <option value={14}>14px</option>
-                      <option value={16}>16px</option>
-                      <option value={18}>18px</option>
-                      <option value={20}>20px</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Text Color</label>
+                    <label className="text-xs text-muted-foreground mb-2 block">Post Title *</label>
                     <input 
-                      type="color" 
-                      value={blogFontColor} 
-                      onChange={(e) => setBlogFontColor(e.target.value)} 
-                      className="w-full h-10 rounded-lg cursor-pointer bg-background/50 border border-white/10"
+                      type="text" 
+                      placeholder="Enter an engaging title..." 
+                      value={blogTitle}
+                      onChange={(e) => {
+                        setBlogTitle(e.target.value);
+                        if (!blogSlug) setBlogSlug(generateSlug(e.target.value));
+                      }}
+                      className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-lg font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">Author</label>
+                    <input 
+                      type="text" 
+                      placeholder="Author name" 
+                      value={blogAuthor}
+                      onChange={(e) => setBlogAuthor(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Content</label>
-                  <textarea 
-                    placeholder="Write your blog post content here..." 
-                    value={blogContent}
-                    onChange={(e) => setBlogContent(e.target.value)}
-                    className="w-full px-3 py-3 rounded-lg bg-background/50 border border-white/10 text-white h-48"
-                    style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
-                  />
+                  <label className="text-xs text-muted-foreground mb-2 block">Content *</label>
+                  <div className="border border-white/10 rounded-lg overflow-hidden">
+                    <div className="flex flex-wrap items-center gap-1 p-2 bg-background/30 border-b border-white/10">
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("**")} className="h-8 w-8 p-0" title="Bold">
+                        <Bold className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("*")} className="h-8 w-8 p-0" title="Italic">
+                        <Italic className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("~~")} className="h-8 w-8 p-0" title="Strikethrough">
+                        <Strikethrough className="w-4 h-4" />
+                      </Button>
+                      <div className="w-px h-6 bg-white/20 mx-1" />
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("# ", "")} className="h-8 w-8 p-0" title="Heading 1">
+                        <Heading1 className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("## ", "")} className="h-8 w-8 p-0" title="Heading 2">
+                        <Heading2 className="w-4 h-4" />
+                      </Button>
+                      <div className="w-px h-6 bg-white/20 mx-1" />
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("- ", "")} className="h-8 w-8 p-0" title="Bullet List">
+                        <List className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("1. ", "")} className="h-8 w-8 p-0" title="Numbered List">
+                        <ListOrdered className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("> ", "")} className="h-8 w-8 p-0" title="Quote">
+                        <Quote className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => insertFormatting("[", "](url)")} className="h-8 w-8 p-0" title="Link">
+                        <Link2 className="w-4 h-4" />
+                      </Button>
+                      <div className="flex-1" />
+                      <span className="text-xs text-muted-foreground px-2">Markdown supported</span>
+                    </div>
+                    <textarea 
+                      id="blog-content-textarea"
+                      placeholder="Start writing your content here..." 
+                      value={blogContent}
+                      onChange={(e) => setBlogContent(e.target.value)}
+                      className="w-full px-4 py-4 bg-background/50 text-white h-64 resize-none border-0 focus:outline-none focus:ring-0"
+                      style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
+                    />
+                  </div>
                 </div>
                 
                 <div className="p-4 rounded-lg bg-white/5 border border-white/10">
                   <p className="text-xs text-muted-foreground mb-2">Live Preview</p>
-                  <div 
-                    className="p-4 bg-white/5 rounded-lg border border-white/10 min-h-24 whitespace-pre-wrap"
-                    style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
-                  >
-                    <h3 className="font-bold text-lg mb-2" style={{ color: blogFontColor }}>{blogTitle || "Your title here..."}</h3>
-                    {blogContent || "Your blog content will appear here..."}
+                  <div className="p-6 bg-card rounded-lg border border-white/10 min-h-32">
+                    <h3 className="font-bold text-2xl text-white mb-2">{blogTitle || "Your title here..."}</h3>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4">
+                      <span>{blogAuthor || "Author"}</span>
+                      <span>•</span>
+                      <span>{new Date().toLocaleDateString()}</span>
+                      <span>•</span>
+                      <span>{getReadTime(getWordCount(blogContent))}</span>
+                    </div>
+                    <div 
+                      className="prose prose-invert max-w-none whitespace-pre-wrap"
+                      style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
+                    >
+                      {blogContent || "Your blog content will appear here..."}
+                    </div>
                   </div>
                 </div>
               </div>
               
-              <div className="flex gap-2">
-                <Button onClick={handleSaveBlog} className="flex-1 bg-gray-600 hover:bg-gray-700">Save as Draft</Button>
-                <Button onClick={handlePublishBlog} className="flex-1 bg-green-600 hover:bg-green-700">Publish Now</Button>
+              <div className="flex gap-2 pt-4 border-t border-white/10">
+                <Button onClick={handleSaveBlog} className="flex-1 bg-gray-600 hover:bg-gray-700 gap-2">
+                  <Save className="w-4 h-4" /> Save Draft
+                </Button>
+                <Button onClick={handlePublishBlog} className="flex-1 bg-green-600 hover:bg-green-700 gap-2">
+                  <CheckCircle className="w-4 h-4" /> Publish Now
+                </Button>
                 <Button onClick={() => setShowBlogEditor(false)} variant="outline">Cancel</Button>
               </div>
             </div>
