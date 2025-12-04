@@ -9,7 +9,7 @@ import {
   Check, X, Eye, ShieldAlert, BarChart3, AlertTriangle,
   Mail, MessageSquare, Settings, DollarSign, TrendingUp,
   Search, Download, Flag, Lock, Clock, Upload, Shield, Plus,
-  Bold, Italic
+  CheckCircle
 } from "lucide-react";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { getReports, updateReportStatus } from "@/lib/reports";
@@ -48,7 +48,11 @@ export function AdminDashboard() {
     { id: 3, label: "Require provider verification", enabled: true },
     { id: 4, label: "Enable duplicate account detection", enabled: true },
   ]);
-  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [campaigns, setCampaigns] = useState<any[]>([
+    { name: "Provider Onboarding Series", status: "Active", recipients: 145, sent: "Dec 1, 2024", opens: "52", clicks: "18" },
+    { name: "Tenant Recovery Resources", status: "Scheduled", recipients: 320, sent: "Dec 8, 2024", opens: "-", clicks: "-" },
+    { name: "Featured Listing Promotion", status: "Draft", recipients: 0, sent: "-", opens: "-", clicks: "-" },
+  ]);
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
   const [adCampaigns, setAdCampaigns] = useState<any[]>([]);
   const [showBlogModal, setShowBlogModal] = useState(false);
@@ -59,6 +63,7 @@ export function AdminDashboard() {
   const [newCampaignRecipients, setNewCampaignRecipients] = useState("All Tenants");
   const [smsAudience, setSmsAudience] = useState("All Users");
   const [smsContent, setSmsContent] = useState("");
+  const [smsSentSuccess, setSmsSentSuccess] = useState(false);
   const [showSubscriptionWaiverModal, setShowSubscriptionWaiverModal] = useState(false);
   const [waivingProvider, setWaivingProvider] = useState("");
   const [workflows, setWorkflows] = useState<any[]>([]);
@@ -273,7 +278,11 @@ export function AdminDashboard() {
   };
 
   const handleSendSMS = () => {
-    // SMS sent - action complete
+    if (smsContent.trim()) {
+      setSmsSentSuccess(true);
+      setSmsContent("");
+      setTimeout(() => setSmsSentSuccess(false), 3000);
+    }
   };
 
   const handleCreateBlog = () => {
@@ -1208,30 +1217,30 @@ export function AdminDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {[
-                  { name: "Provider Onboarding Series", status: "Active", recipients: 145, sent: "Dec 1, 2024", opens: "52", clicks: "18" },
-                  { name: "Tenant Recovery Resources", status: "Scheduled", recipients: 320, sent: "Dec 8, 2024", opens: "-", clicks: "-" },
-                  { name: "Featured Listing Promotion", status: "Draft", recipients: 0, sent: "-", opens: "-", clicks: "-" },
-                ].map((campaign, i) => (
-                  <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="text-white font-medium">{campaign.name}</p>
-                        <p className="text-xs text-muted-foreground">{campaign.recipients} recipients</p>
+                {campaigns.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4">No campaigns yet. Create your first campaign!</p>
+                ) : (
+                  campaigns.map((campaign, i) => (
+                    <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <p className="text-white font-medium">{campaign.name}</p>
+                          <p className="text-xs text-muted-foreground">{campaign.recipients} recipients</p>
+                        </div>
+                        <Badge className={campaign.status === "Active" ? "bg-green-500/80" : campaign.status === "Scheduled" ? "bg-blue-500/80" : "bg-gray-600"}>{campaign.status}</Badge>
                       </div>
-                      <Badge className={campaign.status === "Active" ? "bg-green-500/80" : campaign.status === "Scheduled" ? "bg-blue-500/80" : "bg-gray-600"}>{campaign.status}</Badge>
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 text-xs">
-                      <div><p className="text-muted-foreground">Sent</p><p className="text-white">{campaign.sent}</p></div>
-                      <div><p className="text-muted-foreground">Opens</p><p className="text-white">{campaign.opens}</p></div>
-                      <div><p className="text-muted-foreground">Clicks</p><p className="text-white">{campaign.clicks}</p></div>
-                      <div className="flex gap-1">
-                        <Button onClick={() => { setEmailSubject(campaign.name); setEmailBodyText(""); setShowEmailComposer(true); }} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
-                        <Button size="sm" variant="ghost" className="text-xs h-7 text-red-500" onClick={() => handleDeleteCampaign(i)}>Delete</Button>
+                      <div className="grid grid-cols-4 gap-2 text-xs">
+                        <div><p className="text-muted-foreground">Sent</p><p className="text-white">{campaign.sent || "-"}</p></div>
+                        <div><p className="text-muted-foreground">Opens</p><p className="text-white">{campaign.opens || "-"}</p></div>
+                        <div><p className="text-muted-foreground">Clicks</p><p className="text-white">{campaign.clicks || "-"}</p></div>
+                        <div className="flex gap-1">
+                          <Button onClick={() => { setEmailSubject(campaign.name); setEmailBodyText(""); setShowEmailComposer(true); }} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
+                          <Button size="sm" variant="ghost" className="text-xs h-7 text-red-500" onClick={() => handleDeleteCampaign(i)}>Delete</Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
                 <Button onClick={() => { setEmailSubject(""); setEmailBodyText(""); setShowEmailComposer(true); }} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 mt-4">
                   <Plus className="w-4 h-4" /> Create Campaign
                 </Button>
@@ -1360,6 +1369,12 @@ export function AdminDashboard() {
                       <span className="text-xs text-muted-foreground">{smsContent.length}/160 characters</span>
                       <Button onClick={handleSendSMS} className="bg-primary text-primary-foreground hover:bg-primary/90">Send SMS</Button>
                     </div>
+                    {smsSentSuccess && (
+                      <div className="mt-2 bg-green-500/20 border border-green-500/50 text-green-400 px-3 py-2 rounded-lg flex items-center gap-2 text-sm">
+                        <CheckCircle className="w-4 h-4" />
+                        SMS sent successfully to {smsAudience}!
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
