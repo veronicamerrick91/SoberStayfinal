@@ -29,6 +29,7 @@ import { InsuranceInfo } from "@/pages/insurance-info";
 import { RightsResponsibilities } from "@/pages/rights-responsibilities";
 import { CreateListing } from "@/pages/create-listing";
 import { ProviderSupport } from "@/pages/provider-support";
+import { AuthCallback } from "@/pages/auth-callback";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
 
@@ -86,6 +87,7 @@ function Router() {
         <Route path="/for-providers">
           <AuthPage type="signup" defaultRole="provider" />
         </Route>
+        <Route path="/auth/callback" component={AuthCallback} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms-of-use" component={TermsOfUse} />
         <Route path="/disclaimer" component={Disclaimer} />

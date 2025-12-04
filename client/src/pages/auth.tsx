@@ -9,7 +9,6 @@ import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { saveAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
-import { GoogleLoginModal } from "@/components/google-login-modal";
 
 const VALID_CREDENTIALS = {
   tenant: {
@@ -38,7 +37,6 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
 
   useEffect(() => {
     setRole(defaultRole as any);
@@ -75,17 +73,8 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   };
 
   const handleGoogleLoginClick = () => {
-    setShowGoogleModal(true);
-  };
-
-  const handleGoogleLoginSuccess = () => {
-    saveAuth({
-      id: Math.random().toString(36).substr(2, 9),
-      email: "john.doe@example.com",
-      role: role,
-      name: role === "tenant" ? "John Doe (Tenant)" : role === "provider" ? "John Doe (Provider)" : "John Doe (Admin)"
-    });
-    setLocation(getReturnPath());
+    // Redirect to real Google OAuth endpoint with role
+    window.location.href = `/api/auth/google?role=${role}`;
   };
 
   return (
@@ -229,12 +218,6 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
         </Card>
         </div>
       </div>
-
-      <GoogleLoginModal 
-        open={showGoogleModal} 
-        onClose={() => setShowGoogleModal(false)} 
-        onLogin={handleGoogleLoginSuccess} 
-      />
     </Layout>
   );
 }

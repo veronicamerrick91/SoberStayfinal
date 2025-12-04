@@ -74,10 +74,14 @@ export function setupAuth(app: Express) {
                 role = "admin";
               }
               
+              // Generate a random password for OAuth users (they won't use it)
+              const randomPassword = Math.random().toString(36).slice(-16) + Math.random().toString(36).slice(-16);
+              
               user = await storage.createUser({
                 username,
                 email,
                 name,
+                password: randomPassword,
                 googleId,
                 role, 
               });
@@ -109,17 +113,18 @@ export function setupAuth(app: Express) {
     "/api/auth/google/callback",
     passport.authenticate("google", { failureRedirect: "/login" }),
     (req, res) => {
-      // Successful authentication, redirect home.
+      // Successful authentication, redirect to auth callback page to sync session
       // @ts-ignore
       const role = req.session.role || req.user?.role || "tenant";
-      // Redirect based on role
+      // Determine redirect path based on role
+      let redirectPath = "/tenant-dashboard";
       if (role === "provider") {
-        res.redirect("/provider-dashboard");
+        redirectPath = "/provider-dashboard";
       } else if (role === "admin") {
-        res.redirect("/admin-dashboard");
-      } else {
-        res.redirect("/tenant-dashboard");
+        redirectPath = "/admin-dashboard";
       }
+      // Redirect to auth callback page which will sync localStorage and then redirect
+      res.redirect(`/auth/callback?redirect=${encodeURIComponent(redirectPath)}`);
     }
   );
 
@@ -132,7 +137,9 @@ export function setupAuth(app: Express) {
 
   app.get("/api/user", (req, res) => {
     if (req.isAuthenticated()) {
-      res.json(req.user);
+      const user = req.user as any;
+      const { password, ...safeUser } = user;
+      res.json(safeUser);
     } else {
       res.status(401).json({ message: "Not authenticated" });
     }
