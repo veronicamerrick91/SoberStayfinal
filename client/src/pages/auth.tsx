@@ -13,16 +13,16 @@ import { GoogleLoginModal } from "@/components/google-login-modal";
 
 const VALID_CREDENTIALS = {
   tenant: {
-    email: "contact@soberstay.com",
-    password: "contact@soberstay.com"
+    email: "demo@soberstay.com",
+    password: "demo123"
   },
   provider: {
-    email: "contact@soberstay.com",
-    password: "contact@soberstay.com"
+    email: "demo@soberstay.com",
+    password: "demo123"
   },
   admin: {
-    email: "contact@soberstay.com",
-    password: "contact@soberstay.com"
+    email: "demo@soberstay.com",
+    password: "demo123"
   }
 };
 
@@ -35,8 +35,8 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [role, setRole] = useState<"tenant" | "provider" | "admin">(defaultRole as any);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("demo@soberstay.com");
+  const [password, setPassword] = useState("demo123");
   const [loginError, setLoginError] = useState("");
   const [showGoogleModal, setShowGoogleModal] = useState(false);
 
