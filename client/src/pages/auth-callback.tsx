@@ -7,8 +7,13 @@ export function AuthCallback() {
   const [, setLocation] = useLocation();
   const [error, setError] = useState<string | null>(null);
 
+  console.log("AuthCallback component mounted");
+  console.log("Current localStorage pending_role:", localStorage.getItem("pending_role"));
+
   useEffect(() => {
     const syncSession = async () => {
+      console.log("syncSession starting...");
+      console.log("pending_role from localStorage:", localStorage.getItem("pending_role"));
       try {
         const response = await fetch("/api/user", {
           credentials: "include",

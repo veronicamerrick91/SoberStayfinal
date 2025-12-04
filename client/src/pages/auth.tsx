@@ -74,7 +74,10 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
 
   const handleGoogleLoginClick = () => {
     // Store role in localStorage before OAuth redirect
+    console.log("Setting pending_role to:", role);
     localStorage.setItem("pending_role", role);
+    // Verify it was saved
+    console.log("Saved pending_role:", localStorage.getItem("pending_role"));
     // Redirect to real Google OAuth endpoint
     window.location.href = `/api/auth/google`;
   };
