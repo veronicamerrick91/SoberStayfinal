@@ -12,6 +12,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByGoogleId(googleId: string): Promise<User | undefined>;
   createUser(user: InsertUser & { googleId?: string }): Promise<User>;
+  updateUser(id: number, data: Partial<{ role: string }>): Promise<User | undefined>;
   
   createListing(listing: InsertListing): Promise<Listing>;
   getListing(id: number): Promise<Listing | undefined>;
@@ -58,6 +59,15 @@ export class DatabaseStorage implements IStorage {
         googleId,
         role: insertUser.role ?? "tenant"
       })
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: number, data: Partial<{ role: string }>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(data)
+      .where(eq(users.id, id))
       .returning();
     return user;
   }

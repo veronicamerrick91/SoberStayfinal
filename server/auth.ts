@@ -91,10 +91,6 @@ export function setupAuth(app: Express) {
                 googleId,
                 role, 
               });
-            } else if (process.env.ADMIN_EMAIL && email === process.env.ADMIN_EMAIL && user.role !== "admin") {
-              // Upgrade existing user to admin if they match the admin email
-              // We need a way to update user, but for now we'll rely on manual DB update or initial creation
-              // Adding a TODO for future: implement updateUser(id, { role: 'admin' })
             }
 
             return done(null, user);
@@ -118,11 +114,22 @@ export function setupAuth(app: Express) {
   app.get(
     "/api/auth/google/callback",
     passport.authenticate("google", { failureRedirect: "/login" }),
-    (req, res) => {
-      // Successful authentication, redirect to auth callback page to sync session
+    async (req, res) => {
+      // Check if session has a role override from form selection
       // @ts-ignore
-      const role = req.session.role || req.user?.role || "tenant";
-      // Determine redirect path based on role
+      const sessionRole = req.session?.role;
+      const user = req.user as any;
+      
+      // Update user role if it differs from what was selected in the form
+      if (sessionRole && sessionRole !== user.role) {
+        await storage.updateUser(user.id, { role: sessionRole });
+        // Update the user object with new role
+        user.role = sessionRole;
+      }
+      
+      // Determine redirect path based on final role
+      // @ts-ignore
+      const role = user.role || "tenant";
       let redirectPath = "/tenant-dashboard";
       if (role === "provider") {
         redirectPath = "/provider-dashboard";
