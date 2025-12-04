@@ -2,6 +2,7 @@ import { Layout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ContentEditor } from "@/components/content-editor";
 import { Badge } from "@/components/ui/badge";
 import { 
   Users, Building, MessageSquare, AlertCircle, 
@@ -693,6 +694,8 @@ export function ProviderDashboard() {
                 </div>
               </CardContent>
             </Card>
+
+            <ContentEditor />
           </TabsContent>
 
           {/* DIGITAL RESIDENT FILES TAB */}
