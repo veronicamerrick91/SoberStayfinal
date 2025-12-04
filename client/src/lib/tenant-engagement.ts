@@ -136,3 +136,62 @@ export function addViewedHome(propertyId: string): ViewedHome[] {
   }
   return viewed;
 }
+
+const TOUR_REQUESTS_KEY = "tour_requests";
+
+export type TourStatus = "pending" | "approved" | "denied";
+
+export interface TourRequest {
+  id: string;
+  propertyId: string;
+  propertyName: string;
+  date: string;
+  time: string;
+  status: TourStatus;
+  createdAt: string | Date;
+  tenantName?: string;
+  tenantEmail?: string;
+  tourType?: "virtual" | "in-person";
+  responseDate?: string;
+  providerMessage?: string;
+  providerNotes?: string;
+}
+
+export function getTourRequests(): TourRequest[] {
+  const stored = localStorage.getItem(TOUR_REQUESTS_KEY);
+  if (stored) {
+    return JSON.parse(stored);
+  }
+  return [];
+}
+
+export function addTourRequest(request: Omit<TourRequest, "id" | "createdAt" | "status">): TourRequest[] {
+  const tours = getTourRequests();
+  const newTour: TourRequest = {
+    ...request,
+    id: `tour_${Date.now()}`,
+    status: "pending",
+    createdAt: new Date().toISOString(),
+  };
+  tours.unshift(newTour);
+  localStorage.setItem(TOUR_REQUESTS_KEY, JSON.stringify(tours));
+  return tours;
+}
+
+export function hasPendingTours(): boolean {
+  return getTourRequests().some(t => t.status === "pending");
+}
+
+export function updateTourStatus(tourId: string, status: TourStatus, providerMessage?: string): TourRequest[] {
+  const tours = getTourRequests();
+  const tour = tours.find(t => t.id === tourId);
+  if (tour) {
+    tour.status = status;
+    tour.responseDate = new Date().toISOString();
+    if (providerMessage) {
+      tour.providerMessage = providerMessage;
+    }
+    localStorage.setItem(TOUR_REQUESTS_KEY, JSON.stringify(tours));
+  }
+  return tours;
+}

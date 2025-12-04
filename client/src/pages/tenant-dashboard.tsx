@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  Home, FileText, MessageSquare, Heart, Bell, Eye,
+  Home, FileText, MessageSquare, Heart, Bell, Eye, CalendarCheck,
   Clock, CheckCircle, XCircle, ChevronRight, MapPin, Send, 
   Zap, Settings, LogOut, User, Phone, Mail, Calendar, Shield
 } from "lucide-react";
@@ -21,7 +21,7 @@ import { useLocation } from "wouter";
 import { getFavorites } from "@/lib/favorites";
 import { clearAuth, getAuth, saveAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
-import { getEngagementStats, getRecoveryBadges, getNextStep, getDaysClean, getViewedHomes } from "@/lib/tenant-engagement";
+import { getEngagementStats, getRecoveryBadges, getNextStep, getDaysClean, getViewedHomes, getTourRequests, TourRequest } from "@/lib/tenant-engagement";
 import { formatDistanceToNow } from "date-fns";
 
 interface ChatMessage {
@@ -62,6 +62,7 @@ export function TenantDashboard() {
   const [recoveryBadges, setRecoveryBadges] = useState(getRecoveryBadges(""));
   const [daysClean, setDaysClean] = useState(0);
   const [viewedHomes, setViewedHomes] = useState<typeof MOCK_PROPERTIES>([]);
+  const [tourRequests, setTourRequests] = useState<TourRequest[]>([]);
   
   const [profile, setProfile] = useState<TenantProfile>(() => {
     const saved = localStorage.getItem("tenant_profile");
@@ -163,6 +164,9 @@ export function TenantDashboard() {
       .map(v => MOCK_PROPERTIES.find(p => p.id === v.propertyId))
       .filter((p): p is typeof MOCK_PROPERTIES[0] => p !== undefined);
     setViewedHomes(viewedProperties);
+    
+    // Load tour requests
+    setTourRequests(getTourRequests());
     
     // Load recovery badges based on profile sobriety date
     const savedProfile = localStorage.getItem("tenant_profile");
@@ -303,6 +307,10 @@ export function TenantDashboard() {
               <TabsTrigger value="applications" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
                 <FileText className="w-4 h-4" />
                 Applications
+              </TabsTrigger>
+              <TabsTrigger value="tours" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
+                <CalendarCheck className="w-4 h-4" />
+                Tour Requests {tourRequests.length > 0 && <Badge className="bg-primary text-white ml-1">{tourRequests.length}</Badge>}
               </TabsTrigger>
               <TabsTrigger value="recovery" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
                 <Shield className="w-4 h-4" />
@@ -493,6 +501,86 @@ export function TenantDashboard() {
                       </div>
                     ))}
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* TOUR REQUESTS TAB */}
+            <TabsContent value="tours" className="space-y-6">
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <CalendarCheck className="w-5 h-5 text-primary" />
+                    Tour Requests
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {tourRequests.length > 0 ? (
+                    <div className="space-y-4">
+                      {tourRequests.map((tour) => {
+                        const property = MOCK_PROPERTIES.find(p => p.id === tour.propertyId);
+                        return (
+                          <div 
+                            key={tour.id} 
+                            className="flex items-center gap-4 p-4 rounded-lg bg-white/5 border border-border/50 hover:border-primary/50 transition-colors cursor-pointer hover:bg-white/10"
+                            onClick={() => setLocation(`/property/${tour.propertyId}`)}
+                            data-testid={`tour-request-${tour.id}`}
+                          >
+                            <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0">
+                              {property && (
+                                <img src={property.image} alt={tour.propertyName} className="w-full h-full object-cover" />
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex justify-between items-start mb-2">
+                                <div>
+                                  <h4 className="font-bold text-white">{tour.propertyName}</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    <Calendar className="w-3 h-3 inline mr-1" />
+                                    {new Date(tour.date).toLocaleDateString()} at {tour.time}
+                                  </p>
+                                </div>
+                                <Badge 
+                                  className={
+                                    tour.status === "approved" 
+                                      ? "bg-green-500/20 text-green-400 border-green-500/30" 
+                                      : tour.status === "denied" 
+                                        ? "bg-red-500/20 text-red-400 border-red-500/30" 
+                                        : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                                  }
+                                >
+                                  {tour.status === "approved" && <CheckCircle className="w-3 h-3 mr-1" />}
+                                  {tour.status === "denied" && <XCircle className="w-3 h-3 mr-1" />}
+                                  {tour.status === "pending" && <Clock className="w-3 h-3 mr-1" />}
+                                  {tour.status.charAt(0).toUpperCase() + tour.status.slice(1)}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Requested {formatDistanceToNow(new Date(tour.createdAt), { addSuffix: true })}
+                              </p>
+                              {tour.providerMessage && (
+                                <p className="text-sm text-muted-foreground mt-2 italic">
+                                  "{tour.providerMessage}"
+                                </p>
+                              )}
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <CalendarCheck className="w-16 h-16 text-muted-foreground/30 mb-4" />
+                      <h3 className="text-xl font-bold text-white mb-2">No Tour Requests Yet</h3>
+                      <p className="text-muted-foreground text-center mb-6 max-w-sm">
+                        Schedule a tour on any property page to see your requests here
+                      </p>
+                      <Button onClick={() => setLocation("/browse")} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                        Browse Homes
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
