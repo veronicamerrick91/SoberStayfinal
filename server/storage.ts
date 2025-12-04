@@ -50,10 +50,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser & { googleId?: string }): Promise<User> {
+    const { googleId, ...userData } = insertUser;
     const [user] = await db
       .insert(users)
       .values({
-        ...insertUser,
+        ...userData,
+        googleId,
         role: insertUser.role ?? "tenant"
       })
       .returning();
