@@ -406,7 +406,7 @@ export function TenantDashboard() {
                   {viewedHomes.map((home) => (
                     <Card key={home.id} className="bg-card border-border hover:border-primary/50 transition-all cursor-pointer group overflow-hidden" onClick={() => setLocation(`/property/${home.id}`)} data-testid={`viewed-home-${home.id}`}>
                       <div className="relative">
-                        <img src={home.images[0]} alt={home.name} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <img src={home.image} alt={home.name} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
                         <div className="absolute top-2 right-2">
                           <Badge className="bg-blue-500/90 text-white">
                             <Eye className="w-3 h-3 mr-1" />
