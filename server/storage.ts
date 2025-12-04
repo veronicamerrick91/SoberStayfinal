@@ -10,9 +10,10 @@ const PostgresSessionStore = connectPg(session);
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   getUserByGoogleId(googleId: string): Promise<User | undefined>;
   createUser(user: InsertUser & { googleId?: string }): Promise<User>;
-  updateUser(id: number, data: Partial<{ role: string }>): Promise<User | undefined>;
+  updateUser(id: number, data: Partial<{ role: string; googleId?: string }>): Promise<User | undefined>;
   
   createListing(listing: InsertListing): Promise<Listing>;
   getListing(id: number): Promise<Listing | undefined>;
@@ -45,6 +46,11 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
   async getUserByGoogleId(googleId: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
     return user;
@@ -63,7 +69,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async updateUser(id: number, data: Partial<{ role: string }>): Promise<User | undefined> {
+  async updateUser(id: number, data: Partial<{ role: string; googleId?: string }>): Promise<User | undefined> {
     const [user] = await db
       .update(users)
       .set(data)

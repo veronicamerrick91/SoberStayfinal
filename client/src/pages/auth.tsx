@@ -10,20 +10,6 @@ import { useState, useEffect } from "react";
 import { saveAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 
-const VALID_CREDENTIALS = {
-  tenant: {
-    email: "contact@soberstay.com",
-    password: "contact@soberstay.com"
-  },
-  provider: {
-    email: "contact@soberstay.com",
-    password: "contact@soberstay.com"
-  },
-  admin: {
-    email: "contact@soberstay.com",
-    password: "contact@soberstay.com"
-  }
-};
 
 interface AuthPageProps {
   type: "login" | "signup";
@@ -36,40 +22,145 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [role, setRole] = useState<"tenant" | "provider" | "admin">(defaultRole as any);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setRole(defaultRole as any);
   }, [defaultRole]);
 
-  const getReturnPath = () => {
+  // Check for OAuth error messages in URL
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (role === "admin") return "/admin-dashboard";
-    return params.get("returnPath") || (role === "tenant" ? "/tenant-dashboard" : "/provider-dashboard");
+    const error = params.get("error");
+    if (error) {
+      switch (error) {
+        case "no-account":
+          setLoginError("No account found with this email. Please sign up first before using Google sign-in.");
+          break;
+        case "no-email":
+          setLoginError("Could not retrieve email from Google. Please try again or use email/password.");
+          break;
+        case "oauth-failed":
+          setLoginError("Google sign-in failed. Please try again.");
+          break;
+        case "login-failed":
+          setLoginError("Login failed. Please try again.");
+          break;
+        default:
+          setLoginError("An error occurred. Please try again.");
+      }
+      // Clear the error from URL
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  const getReturnPath = (userRole: string) => {
+    if (userRole === "admin") return "/admin-dashboard";
+    if (userRole === "provider") return "/provider-dashboard";
+    return "/tenant-dashboard";
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError("");
+    setIsSubmitting(true);
     
-    const creds = VALID_CREDENTIALS[role as keyof typeof VALID_CREDENTIALS];
-    
-    if (type === "login") {
-      // Validate credentials for login
-      if (email !== creds.email || password !== creds.password) {
-        setLoginError("Invalid email or password");
-        return;
+    try {
+      if (type === "signup") {
+        // Registration flow
+        if (!firstName.trim() || !lastName.trim()) {
+          setLoginError("Please enter your first and last name");
+          setIsSubmitting(false);
+          return;
+        }
+        if (!email.trim() || !password.trim()) {
+          setLoginError("Please enter your email and password");
+          setIsSubmitting(false);
+          return;
+        }
+        if (password.length < 6) {
+          setLoginError("Password must be at least 6 characters");
+          setIsSubmitting(false);
+          return;
+        }
+
+        const response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            email,
+            password,
+            firstName,
+            lastName,
+            role: role === "admin" ? "tenant" : role, // Admins register as tenants
+          }),
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          setLoginError(data.error || "Registration failed");
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Registration successful - save auth and redirect
+        saveAuth({
+          id: String(data.user.id),
+          email: data.user.email,
+          role: data.user.role,
+          name: data.user.name,
+        });
+        
+        toast({
+          title: "Account created!",
+          description: "Welcome to Sober Stay. Your account has been created successfully.",
+        });
+        
+        setLocation(getReturnPath(data.user.role));
+      } else {
+        // Login flow
+        if (!email.trim() || !password.trim()) {
+          setLoginError("Please enter your email and password");
+          setIsSubmitting(false);
+          return;
+        }
+
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          setLoginError(data.error || "Login failed");
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Login successful - save auth and redirect
+        saveAuth({
+          id: String(data.user.id),
+          email: data.user.email,
+          role: data.user.role,
+          name: data.user.name,
+        });
+        
+        setLocation(getReturnPath(data.user.role));
       }
+    } catch (error) {
+      console.error("Auth error:", error);
+      setLoginError("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    // Save session and redirect
-    saveAuth({
-      id: Math.random().toString(36).substr(2, 9),
-      email: email || creds.email,
-      role: role,
-      name: role === "tenant" ? "Test Tenant" : role === "provider" ? "Test Provider" : "Test Administrator"
-    });
-    setLocation(getReturnPath());
   };
 
   const handleGoogleLoginClick = () => {
@@ -170,11 +261,11 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="first-name">First name</Label>
-                    <Input id="first-name" placeholder="John" className="bg-background/50" />
+                    <Input id="first-name" placeholder="John" className="bg-background/50" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="last-name">Last name</Label>
-                    <Input id="last-name" placeholder="Doe" className="bg-background/50" />
+                    <Input id="last-name" placeholder="Doe" className="bg-background/50" value={lastName} onChange={(e) => setLastName(e.target.value)} />
                   </div>
                 </div>
               )}
@@ -189,8 +280,8 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                 <Input id="password" type="password" className="bg-background/50" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
 
-              <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                {type === "login" ? "Sign In" : "Create Account"}
+              <Button type="submit" disabled={isSubmitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                {isSubmitting ? "Please wait..." : (type === "login" ? "Sign In" : "Create Account")}
               </Button>
             </form>
 

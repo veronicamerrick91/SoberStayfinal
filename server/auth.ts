@@ -60,40 +60,32 @@ export function setupAuth(app: Express) {
           try {
             const googleId = profile.id;
             const email = profile.emails?.[0]?.value;
-            const name = profile.displayName;
 
             if (!email) {
-              return done(new Error("No email found in Google profile"));
+              return done(null, false, { message: "no-email" });
             }
 
+            // First, check if user already has Google linked
             let user = await storage.getUserByGoogleId(googleId);
 
-            if (!user) {
-              // Check if user exists by email to link account
-              // For now, just create a new user
-              // We need a username. We'll use the email prefix or random string
-              const username = email.split("@")[0] + Math.floor(Math.random() * 1000);
-              
-              // Determine role - check if this is the admin email
-              let role = "tenant";
-              if (process.env.ADMIN_EMAIL && email === process.env.ADMIN_EMAIL) {
-                role = "admin";
-              }
-              
-              // Generate a random password for OAuth users (they won't use it)
-              const randomPassword = Math.random().toString(36).slice(-16) + Math.random().toString(36).slice(-16);
-              
-              user = await storage.createUser({
-                username,
-                email,
-                name,
-                password: randomPassword,
-                googleId,
-                role, 
-              });
+            if (user) {
+              // User already has Google linked, sign them in
+              return done(null, user);
             }
 
-            return done(null, user);
+            // Check if user exists by email (registered but not linked to Google yet)
+            user = await storage.getUserByEmail(email);
+
+            if (user) {
+              // Link their Google account to existing user
+              await storage.updateUser(user.id, { googleId });
+              user.googleId = googleId;
+              return done(null, user);
+            }
+
+            // No account exists - reject authentication
+            // User must register first before using Google sign-in
+            return done(null, false, { message: "no-account" });
           } catch (err) {
             return done(err as Error);
           }
@@ -111,10 +103,29 @@ export function setupAuth(app: Express) {
 
   app.get(
     "/api/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "/login" }),
-    (req, res) => {
-      // Redirect to auth callback page to sync session with client-side localStorage
-      res.redirect("/auth/callback?redirect=" + encodeURIComponent("/tenant-dashboard"));
+    (req, res, next) => {
+      passport.authenticate("google", (err: Error | null, user: User | false, info: { message?: string } | undefined) => {
+        if (err) {
+          console.error("OAuth error:", err);
+          return res.redirect("/login?error=oauth-failed");
+        }
+        
+        if (!user) {
+          // Authentication failed - user doesn't have an account
+          const errorType = info?.message || "no-account";
+          return res.redirect(`/login?error=${errorType}`);
+        }
+        
+        // Log the user in
+        req.login(user, (loginErr) => {
+          if (loginErr) {
+            console.error("Login error:", loginErr);
+            return res.redirect("/login?error=login-failed");
+          }
+          // Redirect to auth callback page to sync session with client-side localStorage
+          res.redirect("/auth/callback");
+        });
+      })(req, res, next);
     }
   );
   
@@ -122,11 +133,21 @@ export function setupAuth(app: Express) {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     
     const { role } = req.body;
-    if (!role || !["tenant", "provider", "admin"].includes(role)) {
-      return res.status(400).json({ error: "Invalid role" });
+    const user = req.user as User;
+    
+    // Security: Only allow role changes under specific conditions
+    // - Tenants can switch to provider (for listing properties)
+    // - Providers can switch to tenant (for seeking housing)
+    // - Admin role can ONLY be set via ADMIN_EMAIL env var during OAuth, never via API
+    if (!role || !["tenant", "provider"].includes(role)) {
+      return res.status(400).json({ error: "Invalid role. Only tenant or provider roles are allowed." });
     }
     
-    const user = req.user as any;
+    // Prevent admins from losing their admin status
+    if (user.role === "admin") {
+      return res.status(403).json({ error: "Admin role cannot be changed" });
+    }
+    
     const updated = await storage.updateUser(user.id, { role });
     
     if (updated) {
