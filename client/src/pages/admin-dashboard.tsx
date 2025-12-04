@@ -129,6 +129,7 @@ export function AdminDashboard() {
   const [blogSlug, setBlogSlug] = useState("");
   const [blogScheduleDate, setBlogScheduleDate] = useState("");
   const [blogAutoSaved, setBlogAutoSaved] = useState(false);
+  const [draftSaveTimeout, setDraftSaveTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setReports(getReports());
@@ -335,6 +336,30 @@ export function AdminDashboard() {
 
   const generateSlug = (title: string) => {
     return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  };
+
+  const autoSaveDraft = (content: string, title: string) => {
+    if (draftSaveTimeout) {
+      clearTimeout(draftSaveTimeout);
+    }
+    const timeout = setTimeout(() => {
+      if (title.trim() || content.trim()) {
+        const draft = {
+          title,
+          content,
+          author: blogAuthor,
+          excerpt: blogExcerpt,
+          category: blogCategory,
+          tags: blogTags,
+          slug: blogSlug,
+          savedAt: new Date().toISOString()
+        };
+        localStorage.setItem("sober-stay-blog-draft", JSON.stringify(draft));
+        setBlogAutoSaved(true);
+        setTimeout(() => setBlogAutoSaved(false), 2000);
+      }
+    }, 1500);
+    setDraftSaveTimeout(timeout);
   };
 
   const handleSaveBlog = () => {
@@ -2006,7 +2031,10 @@ Use the toolbar above for formatting, or write in Markdown:
 • - item for bullet lists
 • > quote for blockquotes" 
                       value={blogContent}
-                      onChange={(e) => setBlogContent(e.target.value)}
+                      onChange={(e) => {
+                        setBlogContent(e.target.value);
+                        autoSaveDraft(e.target.value, blogTitle);
+                      }}
                       className="w-full px-4 py-4 bg-background/50 text-white h-64 resize-none border-0 focus:outline-none focus:ring-0"
                       style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
                     />
@@ -2312,10 +2340,13 @@ Use the toolbar above for formatting, or write in Markdown:
                       <span className="text-xs text-muted-foreground px-2">Markdown supported</span>
                     </div>
                     <textarea 
-                      id="blog-content-textarea"
+                      id="blog-content-textarea-edit"
                       placeholder="Start writing your content here..." 
                       value={blogContent}
-                      onChange={(e) => setBlogContent(e.target.value)}
+                      onChange={(e) => {
+                        setBlogContent(e.target.value);
+                        autoSaveDraft(e.target.value, blogTitle);
+                      }}
                       className="w-full px-4 py-4 bg-background/50 text-white h-64 resize-none border-0 focus:outline-none focus:ring-0"
                       style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
                     />
