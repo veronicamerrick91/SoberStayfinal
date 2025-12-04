@@ -73,10 +73,15 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   };
 
   const handleGoogleLoginClick = () => {
-    // Use defaultRole (from URL) to determine the role, not the selected tab
-    // This ensures /for-providers always logs in as provider
-    const loginRole = defaultRole;
-    console.log("Setting pending_role to:", loginRole);
+    // For /for-providers and /for-tenants, force the appropriate role
+    // For /login, use the currently selected tab (role state)
+    let loginRole = role;
+    if (window.location.pathname === "/for-providers") {
+      loginRole = "provider";
+    } else if (window.location.pathname === "/for-tenants") {
+      loginRole = "tenant";
+    }
+    console.log("Setting pending_role to:", loginRole, "from path:", window.location.pathname);
     localStorage.setItem("pending_role", loginRole);
     // Redirect to real Google OAuth endpoint
     window.location.href = `/api/auth/google`;

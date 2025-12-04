@@ -281,11 +281,16 @@ export function TenantDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     {[
-                      { name: "Serenity House", status: "Under Review", date: "Submitted today", progress: 60, icon: "📋" },
-                      { name: "New Beginnings", status: "Action Required", date: "Submitted yesterday", progress: 40, icon: "⚠️" },
-                      { name: "The Harbor", status: "Submitted", date: "Submitted Nov 28", progress: 20, icon: "✓" },
-                    ].map((app, i) => (
-                      <div key={i} className="flex items-center gap-4 p-4 rounded-lg bg-white/5 border border-border/50 hover:border-primary/50 transition-colors">
+                      { id: 1, name: "Serenity House", status: "Under Review", date: "Submitted today", progress: 60, icon: "📋", propertyId: "property1" },
+                      { id: 2, name: "New Beginnings", status: "Action Required", date: "Submitted yesterday", progress: 40, icon: "⚠️", propertyId: "property2" },
+                      { id: 3, name: "The Harbor", status: "Submitted", date: "Submitted Nov 28", progress: 20, icon: "✓", propertyId: "property3" },
+                    ].map((app) => (
+                      <div 
+                        key={app.id} 
+                        className="flex items-center gap-4 p-4 rounded-lg bg-white/5 border border-border/50 hover:border-primary/50 transition-colors cursor-pointer hover:bg-white/10"
+                        onClick={() => setLocation(`/property/${app.propertyId}`)}
+                        data-testid={`application-card-${app.id}`}
+                      >
                         <div className="text-3xl">{app.icon}</div>
                         <div className="flex-1">
                           <div className="flex justify-between items-start mb-2">
@@ -302,7 +307,7 @@ export function TenantDashboard() {
                             <span className="text-xs text-muted-foreground font-medium">{app.progress}%</span>
                           </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
                       </div>
                     ))}
                   </div>
