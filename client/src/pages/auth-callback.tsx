@@ -19,9 +19,11 @@ export function AuthCallback() {
           
           // Check if there's a pending role from OAuth
           const pendingRole = localStorage.getItem("pending_role");
+          console.log("Auth callback - User role:", user.role, "Pending role:", pendingRole);
           let finalUser = user;
           
           if (pendingRole && pendingRole !== user.role) {
+            console.log("Updating role to:", pendingRole);
             // Update user role via API
             const updateResponse = await fetch("/api/user/role", {
               method: "POST",
@@ -30,14 +32,17 @@ export function AuthCallback() {
               body: JSON.stringify({ role: pendingRole })
             });
             
+            console.log("Update response status:", updateResponse.status);
             if (updateResponse.ok) {
               finalUser = await updateResponse.json();
+              console.log("Role updated successfully to:", finalUser.role);
             }
           }
           
           // Clear pending role
           localStorage.removeItem("pending_role");
           
+          console.log("Saving auth with role:", finalUser.role);
           saveAuth({
             id: String(finalUser.id),
             email: finalUser.email,
@@ -46,7 +51,8 @@ export function AuthCallback() {
           });
 
           const params = new URLSearchParams(window.location.search);
-          const redirect = params.get("redirect") || "/";
+          const redirect = params.get("redirect") || (finalUser.role === "provider" ? "/provider-dashboard" : finalUser.role === "admin" ? "/admin-dashboard" : "/tenant-dashboard");
+          console.log("Redirecting to:", redirect);
           setLocation(redirect);
         } else {
           setError("Authentication failed. Please try again.");
