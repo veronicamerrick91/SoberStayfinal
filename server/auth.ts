@@ -49,6 +49,11 @@ export function setupAuth(app: Express) {
       ? `${domain}/api/auth/google/callback`
       : `https://${domain}/api/auth/google/callback`;
 
+    console.log("Google OAuth Config - Domain:", domain);
+    console.log("Google OAuth Config - Callback URL:", callbackURL);
+    console.log("Available env vars - REPLIT_DEV_DOMAIN:", process.env.REPLIT_DEV_DOMAIN);
+    console.log("Available env vars - REPLIT_DOMAINS:", process.env.REPLIT_DOMAINS);
+
     passport.use(
       new GoogleStrategy(
         {
