@@ -293,7 +293,7 @@ export function TenantDashboard() {
               </TabsTrigger>
               <TabsTrigger value="recovery" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
                 <Shield className="w-4 h-4" />
-                Recovery {recoveryBadges.filter(b => b.unlocked).length > 0 && <Badge className="bg-primary text-white ml-1">{recoveryBadges.filter(b => b.unlocked).length}</Badge>}
+                Recovery Milestones {recoveryBadges.filter(b => b.unlocked).length > 0 && <Badge className="bg-primary text-white ml-1">{recoveryBadges.filter(b => b.unlocked).length}</Badge>}
               </TabsTrigger>
             </TabsList>
 
