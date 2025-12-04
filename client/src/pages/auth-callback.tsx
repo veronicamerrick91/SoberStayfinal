@@ -7,8 +7,13 @@ export function AuthCallback() {
   const [, setLocation] = useLocation();
   const [error, setError] = useState<string | null>(null);
 
-  console.log("AuthCallback component mounted");
-  console.log("Current localStorage pending_role:", localStorage.getItem("pending_role"));
+  const pendingRole = localStorage.getItem("pending_role");
+  console.log("AuthCallback component mounted, pending_role:", pendingRole);
+  
+  // Debug alert to verify this page loads
+  if (typeof window !== 'undefined') {
+    console.log("Window exists, pending_role is:", pendingRole);
+  }
 
   useEffect(() => {
     const syncSession = async () => {
@@ -86,6 +91,7 @@ export function AuthCallback() {
           <>
             <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
             <p className="text-muted-foreground">Signing you in...</p>
+            <p className="text-xs text-gray-500">Pending role: {pendingRole || "none"}</p>
           </>
         )}
       </div>
