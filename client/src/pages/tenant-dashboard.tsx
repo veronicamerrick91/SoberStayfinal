@@ -21,6 +21,7 @@ import { useLocation } from "wouter";
 import { getFavorites } from "@/lib/favorites";
 import { clearAuth, getAuth, saveAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import { getEngagementStats, getRecoveryBadges, getNextStep, getDaysClean } from "@/lib/tenant-engagement";
 
 interface ChatMessage {
   sender: "tenant" | "provider";
@@ -56,6 +57,10 @@ export function TenantDashboard() {
   const { toast } = useToast();
   const user = getAuth();
   
+  const [engagementStats, setEngagementStats] = useState(getEngagementStats());
+  const [recoveryBadges, setRecoveryBadges] = useState(getRecoveryBadges(""));
+  const [daysClean, setDaysClean] = useState(0);
+  
   const [profile, setProfile] = useState<TenantProfile>(() => {
     const saved = localStorage.getItem("tenant_profile");
     if (saved) {
@@ -79,6 +84,8 @@ export function TenantDashboard() {
     if (user) {
       saveAuth({ ...user, name: profile.name, email: profile.email });
     }
+    setRecoveryBadges(getRecoveryBadges(profile.sobrietyDate));
+    setDaysClean(getDaysClean(profile.sobrietyDate));
     toast({
       title: "Profile Updated",
       description: "Your profile has been saved successfully.",
@@ -124,6 +131,17 @@ export function TenantDashboard() {
     const favorites = getFavorites();
     const favorited = MOCK_PROPERTIES.filter(p => favorites.includes(p.id));
     setSavedHomes(favorited);
+    
+    // Load recovery badges based on profile sobriety date
+    const savedProfile = localStorage.getItem("tenant_profile");
+    if (savedProfile) {
+      const parsed = JSON.parse(savedProfile);
+      setRecoveryBadges(getRecoveryBadges(parsed.sobrietyDate));
+      setDaysClean(getDaysClean(parsed.sobrietyDate));
+    }
+    
+    // Update engagement stats with saved homes count
+    setEngagementStats(prev => ({ ...prev, savedHomes: favorited.length }));
   }, []);
 
   const handleSignOut = () => {
@@ -153,28 +171,60 @@ export function TenantDashboard() {
                 </Button>
               </div>
             </div>
+            
+            {/* Recovery Badges Strip */}
+            <div className="mt-6 pt-6 border-t border-primary/20">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-muted-foreground">Recovery Milestones:</span>
+                  {daysClean > 0 && (
+                    <Badge className="bg-primary/20 text-primary border-primary/30">
+                      {daysClean} days clean
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  {recoveryBadges.slice(0, 5).map((badge) => (
+                    <div 
+                      key={badge.id}
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded-full border transition-all ${
+                        badge.unlocked 
+                          ? "bg-primary/20 border-primary/50 text-white" 
+                          : "bg-white/5 border-border/50 text-muted-foreground opacity-50"
+                      }`}
+                      title={badge.unlocked ? `Unlocked: ${badge.name}` : `${badge.days - daysClean} days to unlock`}
+                      data-testid={`badge-${badge.id}`}
+                    >
+                      <span className="text-lg">{badge.icon}</span>
+                      <span className="text-xs font-medium">{badge.name}</span>
+                      {badge.unlocked && <CheckCircle className="w-3 h-3 text-primary" />}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="container mx-auto px-4 py-8">
-          {/* Stats Grid */}
-          <div className="grid md:grid-cols-4 gap-4 mb-8">
-            <Card className="bg-card border-border hover:border-primary/50 transition-colors">
+          {/* Progress Dashboard */}
+          <div className="grid md:grid-cols-5 gap-4 mb-8">
+            <Card className="bg-card border-border hover:border-primary/50 transition-colors" data-testid="stat-homes-viewed">
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Active Chats</p>
-                    <h3 className="text-3xl font-bold text-white">{conversations.length}</h3>
+                    <p className="text-sm font-medium text-muted-foreground">Homes Viewed</p>
+                    <h3 className="text-3xl font-bold text-white">{engagementStats.homesViewed}</h3>
                   </div>
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <MessageSquare className="w-5 h-5 text-primary" />
+                  <div className="p-2 bg-blue-500/10 rounded-lg">
+                    <Home className="w-5 h-5 text-blue-500" />
                   </div>
                 </div>
-                <p className="text-xs text-primary font-bold">{conversations.filter(c => c.unreadCount > 0).length} with new messages</p>
+                <p className="text-xs text-muted-foreground">Properties explored</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border hover:border-primary/50 transition-colors">
+            <Card className="bg-card border-border hover:border-primary/50 transition-colors" data-testid="stat-saved-homes">
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -189,18 +239,18 @@ export function TenantDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border hover:border-primary/50 transition-colors">
+            <Card className="bg-card border-border hover:border-primary/50 transition-colors" data-testid="stat-applications">
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Applications</p>
-                    <h3 className="text-3xl font-bold text-white">3</h3>
+                    <h3 className="text-3xl font-bold text-white">{engagementStats.applicationsSubmitted}</h3>
                   </div>
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <FileText className="w-5 h-5 text-primary" />
                   </div>
                 </div>
-                <p className="text-xs text-primary font-bold">1 pending review</p>
+                <p className="text-xs text-primary font-bold">{engagementStats.approvalsReceived} approved</p>
               </CardContent>
             </Card>
 
@@ -208,7 +258,7 @@ export function TenantDashboard() {
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Profile Status</p>
+                    <p className="text-sm font-medium text-muted-foreground">Profile</p>
                     <h3 className="text-3xl font-bold text-white">{calculateProfileCompletion()}%</h3>
                   </div>
                   <div className="p-2 bg-amber-500/10 rounded-lg">
@@ -216,6 +266,22 @@ export function TenantDashboard() {
                   </div>
                 </div>
                 <Progress value={calculateProfileCompletion()} className="h-1.5" />
+              </CardContent>
+            </Card>
+
+            {/* Next Step Card */}
+            <Card className="bg-gradient-to-br from-primary/20 to-primary/5 border-primary/30 hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setLocation(getNextStep(engagementStats).path)} data-testid="next-step-card">
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <p className="text-sm font-medium text-primary">Next Step</p>
+                    <h3 className="text-lg font-bold text-white">{getNextStep(engagementStats).title}</h3>
+                  </div>
+                  <div className="p-2 bg-primary/20 rounded-lg">
+                    <ChevronRight className="w-5 h-5 text-primary" />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">{getNextStep(engagementStats).action}</p>
               </CardContent>
             </Card>
           </div>

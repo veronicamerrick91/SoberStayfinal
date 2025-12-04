@@ -10,6 +10,7 @@ import { useLocation, useRoute } from "wouter";
 import { ArrowLeft, CheckCircle2, Upload } from "lucide-react";
 import { useState, useEffect } from "react";
 import { isAuthenticated } from "@/lib/auth";
+import { incrementStat } from "@/lib/tenant-engagement";
 
 export default function ApplicationForm() {
   const [match, params] = useRoute("/apply/:id");
@@ -42,6 +43,7 @@ export default function ApplicationForm() {
       alert("This is a preview. In the real form, this would submit the application.");
       return;
     }
+    incrementStat("applicationsSubmitted");
     setLocation(`/tenant-dashboard`);
   };
 
