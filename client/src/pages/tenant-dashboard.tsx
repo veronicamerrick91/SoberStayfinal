@@ -84,12 +84,35 @@ export function TenantDashboard() {
     if (user) {
       saveAuth({ ...user, name: profile.name, email: profile.email });
     }
-    setRecoveryBadges(getRecoveryBadges(profile.sobrietyDate));
-    setDaysClean(getDaysClean(profile.sobrietyDate));
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been saved successfully.",
-    });
+    
+    const oldBadges = recoveryBadges;
+    const newBadges = getRecoveryBadges(profile.sobrietyDate);
+    const newDays = getDaysClean(profile.sobrietyDate);
+    
+    setRecoveryBadges(newBadges);
+    setDaysClean(newDays);
+    
+    const newlyUnlocked = newBadges.filter(
+      (badge) => badge.unlocked && !oldBadges.find((old) => old.id === badge.id && old.unlocked)
+    );
+    
+    if (newlyUnlocked.length > 0) {
+      const badgeNames = newlyUnlocked.map(b => `${b.icon} ${b.name}`).join(", ");
+      toast({
+        title: "🎉 Badge Unlocked!",
+        description: `Congratulations! You've earned: ${badgeNames}`,
+      });
+    } else if (newDays > 0) {
+      toast({
+        title: "Profile Updated",
+        description: `${newDays} days clean - keep going! You're doing amazing.`,
+      });
+    } else {
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been saved successfully.",
+      });
+    }
     setShowProfileModal(false);
   };
 
