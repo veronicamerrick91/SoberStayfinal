@@ -864,41 +864,6 @@ export function AdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Upload className="w-5 h-5" /> Required Documents Checklist
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {requiredDocs.map((doc) => (
-                    <div key={doc.id} className={`flex items-center gap-3 p-3 rounded-lg border ${doc.uploaded ? "bg-green-500/10 border-green-500/20" : "bg-white/5 border-border/50"}`}>
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center ${doc.uploaded ? "border-green-500/50 bg-green-500/20" : "border-primary/50"}`}>
-                        {doc.uploaded ? (
-                          <Check className="w-3 h-3 text-green-500" />
-                        ) : (
-                          <div className="w-2 h-2 bg-primary rounded-sm" />
-                        )}
-                      </div>
-                      <span className={`text-sm ${doc.uploaded ? "text-green-400 line-through" : "text-white"}`}>{doc.name}</span>
-                      <div className="ml-auto flex items-center gap-2">
-                        {doc.uploaded ? (
-                          <Badge className="bg-green-500/80 text-xs">Uploaded</Badge>
-                        ) : (
-                          <>
-                            <Badge className="bg-red-500/80 text-xs">Required</Badge>
-                            <Button size="sm" onClick={() => handleUploadDocument(doc.id)} className="h-8 text-xs bg-primary/20 text-primary hover:bg-primary/30 gap-1">
-                              <Upload className="w-3 h-3" /> Upload
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           {/* MESSAGING OVERSIGHT */}
