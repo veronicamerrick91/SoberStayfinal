@@ -5,16 +5,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Home, FileText, MessageSquare, Heart, Bell, 
   Clock, CheckCircle, XCircle, ChevronRight, MapPin, Send, 
-  Zap, Settings, LogOut
+  Zap, Settings, LogOut, User, Phone, Mail, Calendar, Shield
 } from "lucide-react";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { getFavorites } from "@/lib/favorites";
-import { clearAuth, getAuth } from "@/lib/auth";
+import { clearAuth, getAuth, saveAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatMessage {
   sender: "tenant" | "provider";
@@ -30,11 +36,61 @@ interface Conversation {
   unreadCount: number;
 }
 
+interface TenantProfile {
+  name: string;
+  email: string;
+  phone: string;
+  preferredContact: string;
+  sobrietyDate: string;
+  supportNeeds: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  bio: string;
+}
+
 export function TenantDashboard() {
   const [location, setLocation] = useLocation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [savedHomes, setSavedHomes] = useState<typeof MOCK_PROPERTIES>([]);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const { toast } = useToast();
   const user = getAuth();
+  
+  const [profile, setProfile] = useState<TenantProfile>(() => {
+    const saved = localStorage.getItem("tenant_profile");
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return {
+      name: user?.name || "",
+      email: user?.email || "",
+      phone: "",
+      preferredContact: "email",
+      sobrietyDate: "",
+      supportNeeds: "",
+      emergencyContactName: "",
+      emergencyContactPhone: "",
+      bio: ""
+    };
+  });
+
+  const handleProfileSave = () => {
+    localStorage.setItem("tenant_profile", JSON.stringify(profile));
+    if (user) {
+      saveAuth({ ...user, name: profile.name, email: profile.email });
+    }
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been saved successfully.",
+    });
+    setShowProfileModal(false);
+  };
+
+  const calculateProfileCompletion = () => {
+    const fields = [profile.name, profile.email, profile.phone, profile.sobrietyDate, profile.emergencyContactName, profile.emergencyContactPhone, profile.bio];
+    const filled = fields.filter(f => f && f.trim() !== "").length;
+    return Math.round((filled / fields.length) * 100);
+  };
 
   useEffect(() => {
     // Load all conversations from localStorage
@@ -87,7 +143,7 @@ export function TenantDashboard() {
                 <p className="text-muted-foreground text-lg">Find your safe home, connect with providers, build your recovery journey</p>
               </div>
               <div className="flex gap-3">
-                <Button variant="outline" className="gap-2 border-primary/50">
+                <Button onClick={() => setShowProfileModal(true)} variant="outline" className="gap-2 border-primary/50" data-testid="settings-button">
                   <Settings className="w-4 h-4" />
                   Settings
                 </Button>
@@ -148,18 +204,18 @@ export function TenantDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border hover:border-primary/50 transition-colors">
+            <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setShowProfileModal(true)} data-testid="profile-status-card">
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Profile Status</p>
-                    <h3 className="text-3xl font-bold text-white">85%</h3>
+                    <h3 className="text-3xl font-bold text-white">{calculateProfileCompletion()}%</h3>
                   </div>
                   <div className="p-2 bg-amber-500/10 rounded-lg">
                     <Zap className="w-5 h-5 text-amber-500" />
                   </div>
                 </div>
-                <Progress value={85} className="h-1.5" />
+                <Progress value={calculateProfileCompletion()} className="h-1.5" />
               </CardContent>
             </Card>
           </div>
@@ -328,7 +384,7 @@ export function TenantDashboard() {
                 <MessageSquare className="w-5 h-5" />
                 View Messages
               </Button>
-              <Button variant="outline" className="h-12 gap-2 border-primary/50">
+              <Button onClick={() => setShowProfileModal(true)} variant="outline" className="h-12 gap-2 border-primary/50" data-testid="edit-profile-button">
                 <Settings className="w-5 h-5" />
                 Edit Profile
               </Button>
@@ -336,6 +392,188 @@ export function TenantDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Profile Edit Modal */}
+      <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-white flex items-center gap-2">
+              <User className="w-6 h-6 text-primary" />
+              Edit Your Profile
+            </DialogTitle>
+            <DialogDescription>
+              Complete your profile to help providers understand your needs and improve your housing matches.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Basic Info */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Mail className="w-5 h-5 text-primary" />
+                Contact Information
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input 
+                    id="name" 
+                    value={profile.name} 
+                    onChange={(e) => setProfile({...profile, name: e.target.value})}
+                    placeholder="Your full name"
+                    className="bg-background/50"
+                    data-testid="input-profile-name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email"
+                    value={profile.email} 
+                    onChange={(e) => setProfile({...profile, email: e.target.value})}
+                    placeholder="your@email.com"
+                    className="bg-background/50"
+                    data-testid="input-profile-email"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input 
+                    id="phone" 
+                    type="tel"
+                    value={profile.phone} 
+                    onChange={(e) => setProfile({...profile, phone: e.target.value})}
+                    placeholder="(555) 123-4567"
+                    className="bg-background/50"
+                    data-testid="input-profile-phone"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="preferredContact">Preferred Contact Method</Label>
+                  <Select value={profile.preferredContact} onValueChange={(v) => setProfile({...profile, preferredContact: v})}>
+                    <SelectTrigger className="bg-background/50" data-testid="select-preferred-contact">
+                      <SelectValue placeholder="Select preferred contact" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="email">Email</SelectItem>
+                      <SelectItem value="phone">Phone Call</SelectItem>
+                      <SelectItem value="text">Text Message</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Recovery Info */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" />
+                Recovery Journey
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="sobrietyDate">Sobriety Date</Label>
+                  <Input 
+                    id="sobrietyDate" 
+                    type="date"
+                    value={profile.sobrietyDate} 
+                    onChange={(e) => setProfile({...profile, sobrietyDate: e.target.value})}
+                    className="bg-background/50"
+                    data-testid="input-sobriety-date"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="supportNeeds">Support Needs</Label>
+                  <Select value={profile.supportNeeds} onValueChange={(v) => setProfile({...profile, supportNeeds: v})}>
+                    <SelectTrigger className="bg-background/50" data-testid="select-support-needs">
+                      <SelectValue placeholder="Select your support level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="minimal">Minimal - Independent living</SelectItem>
+                      <SelectItem value="moderate">Moderate - Some structure needed</SelectItem>
+                      <SelectItem value="intensive">Intensive - Full support program</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Emergency Contact */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Shield className="w-5 h-5 text-primary" />
+                Emergency Contact
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="emergencyName">Contact Name</Label>
+                  <Input 
+                    id="emergencyName" 
+                    value={profile.emergencyContactName} 
+                    onChange={(e) => setProfile({...profile, emergencyContactName: e.target.value})}
+                    placeholder="Emergency contact name"
+                    className="bg-background/50"
+                    data-testid="input-emergency-name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="emergencyPhone">Contact Phone</Label>
+                  <Input 
+                    id="emergencyPhone" 
+                    type="tel"
+                    value={profile.emergencyContactPhone} 
+                    onChange={(e) => setProfile({...profile, emergencyContactPhone: e.target.value})}
+                    placeholder="(555) 123-4567"
+                    className="bg-background/50"
+                    data-testid="input-emergency-phone"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Bio */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <User className="w-5 h-5 text-primary" />
+                About You
+              </h3>
+              <div className="space-y-2">
+                <Label htmlFor="bio">Tell providers about yourself</Label>
+                <Textarea 
+                  id="bio" 
+                  value={profile.bio} 
+                  onChange={(e) => setProfile({...profile, bio: e.target.value})}
+                  placeholder="Share a bit about yourself, your goals, and what you're looking for in housing..."
+                  className="bg-background/50 min-h-[100px]"
+                  data-testid="textarea-bio"
+                />
+              </div>
+            </div>
+
+            {/* Profile Completion */}
+            <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-white">Profile Completion</span>
+                <span className="text-sm font-bold text-primary">{calculateProfileCompletion()}%</span>
+              </div>
+              <Progress value={calculateProfileCompletion()} className="h-2" />
+              <p className="text-xs text-muted-foreground mt-2">
+                Complete your profile to increase visibility to providers
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t border-border">
+            <Button variant="outline" onClick={() => setShowProfileModal(false)} className="flex-1" data-testid="button-cancel-profile">
+              Cancel
+            </Button>
+            <Button onClick={handleProfileSave} className="flex-1 bg-primary text-primary-foreground" data-testid="button-save-profile">
+              Save Profile
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
