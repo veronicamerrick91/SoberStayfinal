@@ -43,12 +43,18 @@ export function setupAuth(app: Express) {
   if (!clientId || !clientSecret) {
     console.warn("Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET environment variables. Google OAuth will not work.");
   } else {
+    // Get the domain for the callback URL
+    const domain = process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS || "http://localhost:5000";
+    const callbackURL = domain.startsWith("http") 
+      ? `${domain}/api/auth/google/callback`
+      : `https://${domain}/api/auth/google/callback`;
+
     passport.use(
       new GoogleStrategy(
         {
           clientID: clientId,
           clientSecret: clientSecret,
-          callbackURL: "/api/auth/google/callback",
+          callbackURL,
         },
         async (accessToken, refreshToken, profile, done) => {
           try {
