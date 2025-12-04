@@ -103,7 +103,10 @@ export function setupAuth(app: Express) {
   }
 
   app.get("/api/auth/google", (req, res, next) => {
-    passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
+    passport.authenticate("google", { 
+      scope: ["profile", "email"],
+      prompt: "select_account"  // Always show account selection
+    })(req, res, next);
   });
 
   app.get(
@@ -127,7 +130,13 @@ export function setupAuth(app: Express) {
     const updated = await storage.updateUser(user.id, { role });
     
     if (updated) {
-      res.json(updated);
+      // Refresh the session with updated user data
+      req.login(updated, (err) => {
+        if (err) {
+          console.error("Session refresh error:", err);
+        }
+        res.json(updated);
+      });
     } else {
       res.status(500).json({ error: "Failed to update role" });
     }
