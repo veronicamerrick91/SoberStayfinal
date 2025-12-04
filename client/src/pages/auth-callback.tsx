@@ -16,11 +16,33 @@ export function AuthCallback() {
 
         if (response.ok) {
           const user = await response.json();
+          
+          // Check if there's a pending role from OAuth
+          const pendingRole = localStorage.getItem("pending_role");
+          let finalUser = user;
+          
+          if (pendingRole && pendingRole !== user.role) {
+            // Update user role via API
+            const updateResponse = await fetch("/api/user/role", {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ role: pendingRole })
+            });
+            
+            if (updateResponse.ok) {
+              finalUser = await updateResponse.json();
+            }
+          }
+          
+          // Clear pending role
+          localStorage.removeItem("pending_role");
+          
           saveAuth({
-            id: String(user.id),
-            email: user.email,
-            role: user.role,
-            name: user.name || user.username || user.email,
+            id: String(finalUser.id),
+            email: finalUser.email,
+            role: finalUser.role,
+            name: finalUser.name || finalUser.username || finalUser.email,
           });
 
           const params = new URLSearchParams(window.location.search);

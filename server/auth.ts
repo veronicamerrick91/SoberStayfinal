@@ -103,43 +103,35 @@ export function setupAuth(app: Express) {
   }
 
   app.get("/api/auth/google", (req, res, next) => {
-    // Store the intended role in the session if passed as query param
-    if (req.query.role) {
-      // @ts-ignore
-      req.session.role = req.query.role;
-    }
     passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
   });
 
   app.get(
     "/api/auth/google/callback",
     passport.authenticate("google", { failureRedirect: "/login" }),
-    async (req, res) => {
-      // Check if session has a role override from form selection
-      // @ts-ignore
-      const sessionRole = req.session?.role;
-      const user = req.user as any;
-      
-      // Update user role if it differs from what was selected in the form
-      if (sessionRole && sessionRole !== user.role) {
-        await storage.updateUser(user.id, { role: sessionRole });
-        // Update the user object with new role
-        user.role = sessionRole;
-      }
-      
-      // Determine redirect path based on final role
-      // @ts-ignore
-      const role = user.role || "tenant";
-      let redirectPath = "/tenant-dashboard";
-      if (role === "provider") {
-        redirectPath = "/provider-dashboard";
-      } else if (role === "admin") {
-        redirectPath = "/admin-dashboard";
-      }
-      // Redirect to auth callback page which will sync localStorage and then redirect
-      res.redirect(`/auth/callback?redirect=${encodeURIComponent(redirectPath)}`);
+    (req, res) => {
+      // Redirect to auth callback page to sync session with client-side localStorage
+      res.redirect("/auth/callback?redirect=" + encodeURIComponent("/tenant-dashboard"));
     }
   );
+  
+  app.post("/api/user/role", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    const { role } = req.body;
+    if (!role || !["tenant", "provider", "admin"].includes(role)) {
+      return res.status(400).json({ error: "Invalid role" });
+    }
+    
+    const user = req.user as any;
+    const updated = await storage.updateUser(user.id, { role });
+    
+    if (updated) {
+      res.json(updated);
+    } else {
+      res.status(500).json({ error: "Failed to update role" });
+    }
+  });
 
   app.get("/api/auth/logout", (req, res, next) => {
     req.logout((err) => {

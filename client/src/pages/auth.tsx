@@ -73,8 +73,10 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   };
 
   const handleGoogleLoginClick = () => {
-    // Redirect to real Google OAuth endpoint with role
-    window.location.href = `/api/auth/google?role=${role}`;
+    // Store role in localStorage before OAuth redirect
+    localStorage.setItem("pending_role", role);
+    // Redirect to real Google OAuth endpoint
+    window.location.href = `/api/auth/google`;
   };
 
   return (
