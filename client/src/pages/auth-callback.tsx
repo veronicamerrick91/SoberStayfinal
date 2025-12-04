@@ -50,9 +50,14 @@ export function AuthCallback() {
             name: finalUser.name || finalUser.username || finalUser.email,
           });
 
-          const params = new URLSearchParams(window.location.search);
-          const redirect = params.get("redirect") || (finalUser.role === "provider" ? "/provider-dashboard" : finalUser.role === "admin" ? "/admin-dashboard" : "/tenant-dashboard");
-          console.log("Redirecting to:", redirect);
+          // Always determine redirect based on final user role, ignore URL param
+          let redirect = "/tenant-dashboard";
+          if (finalUser.role === "provider") {
+            redirect = "/provider-dashboard";
+          } else if (finalUser.role === "admin") {
+            redirect = "/admin-dashboard";
+          }
+          console.log("Redirecting to:", redirect, "based on role:", finalUser.role);
           setLocation(redirect);
         } else {
           setError("Authentication failed. Please try again.");
