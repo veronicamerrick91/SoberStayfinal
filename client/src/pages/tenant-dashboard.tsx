@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
-  Home, FileText, MessageSquare, Heart, Bell, 
+  Home, FileText, MessageSquare, Heart, Bell, Eye,
   Clock, CheckCircle, XCircle, ChevronRight, MapPin, Send, 
   Zap, Settings, LogOut, User, Phone, Mail, Calendar, Shield
 } from "lucide-react";
@@ -21,7 +21,8 @@ import { useLocation } from "wouter";
 import { getFavorites } from "@/lib/favorites";
 import { clearAuth, getAuth, saveAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
-import { getEngagementStats, getRecoveryBadges, getNextStep, getDaysClean } from "@/lib/tenant-engagement";
+import { getEngagementStats, getRecoveryBadges, getNextStep, getDaysClean, getViewedHomes } from "@/lib/tenant-engagement";
+import { formatDistanceToNow } from "date-fns";
 
 interface ChatMessage {
   sender: "tenant" | "provider";
@@ -60,6 +61,7 @@ export function TenantDashboard() {
   const [engagementStats, setEngagementStats] = useState(getEngagementStats());
   const [recoveryBadges, setRecoveryBadges] = useState(getRecoveryBadges(""));
   const [daysClean, setDaysClean] = useState(0);
+  const [viewedHomes, setViewedHomes] = useState<typeof MOCK_PROPERTIES>([]);
   
   const [profile, setProfile] = useState<TenantProfile>(() => {
     const saved = localStorage.getItem("tenant_profile");
@@ -154,6 +156,13 @@ export function TenantDashboard() {
     const favorites = getFavorites();
     const favorited = MOCK_PROPERTIES.filter(p => favorites.includes(p.id));
     setSavedHomes(favorited);
+    
+    // Load viewed homes
+    const viewedData = getViewedHomes();
+    const viewedProperties = viewedData
+      .map(v => MOCK_PROPERTIES.find(p => p.id === v.propertyId))
+      .filter((p): p is typeof MOCK_PROPERTIES[0] => p !== undefined);
+    setViewedHomes(viewedProperties);
     
     // Load recovery badges based on profile sobriety date
     const savedProfile = localStorage.getItem("tenant_profile");
@@ -287,6 +296,10 @@ export function TenantDashboard() {
                 <Heart className="w-4 h-4" />
                 Saved Homes {savedHomes.length > 0 && <Badge className="bg-primary text-white ml-1">{savedHomes.length}</Badge>}
               </TabsTrigger>
+              <TabsTrigger value="viewed" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
+                <Eye className="w-4 h-4" />
+                Viewed Homes {viewedHomes.length > 0 && <Badge className="bg-primary text-white ml-1">{viewedHomes.length}</Badge>}
+              </TabsTrigger>
               <TabsTrigger value="applications" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
                 <FileText className="w-4 h-4" />
                 Applications
@@ -378,6 +391,58 @@ export function TenantDashboard() {
                     <Heart className="w-16 h-16 text-muted-foreground/30 mb-4" />
                     <h3 className="text-xl font-bold text-white mb-2">No Saved Homes Yet</h3>
                     <p className="text-muted-foreground text-center mb-6 max-w-sm">Click the heart icon on any listing to save it for later</p>
+                    <Button onClick={() => setLocation("/browse")} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                      Browse Homes
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* VIEWED HOMES TAB */}
+            <TabsContent value="viewed" className="space-y-6">
+              {viewedHomes.length > 0 ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {viewedHomes.map((home) => (
+                    <Card key={home.id} className="bg-card border-border hover:border-primary/50 transition-all cursor-pointer group overflow-hidden" onClick={() => setLocation(`/property/${home.id}`)} data-testid={`viewed-home-${home.id}`}>
+                      <div className="relative">
+                        <img src={home.images[0]} alt={home.name} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <div className="absolute top-2 right-2">
+                          <Badge className="bg-blue-500/90 text-white">
+                            <Eye className="w-3 h-3 mr-1" />
+                            Viewed
+                          </Badge>
+                        </div>
+                        <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded-md">
+                          <p className="text-white font-bold text-lg">${home.price}/{home.pricePeriod}</p>
+                        </div>
+                      </div>
+                      <CardContent className="p-4 space-y-3">
+                        <div>
+                          <h3 className="font-bold text-white group-hover:text-primary transition-colors">{home.name}</h3>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                            <MapPin className="w-4 h-4" />
+                            {home.city}, {home.state}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 pt-2 border-t border-border">
+                          <Button size="sm" variant="outline" className="flex-1 border-primary/50" onClick={(e) => { e.stopPropagation(); setLocation(`/property/${home.id}`); }}>
+                            View Again
+                          </Button>
+                          <Button size="sm" className="flex-1 bg-primary text-white hover:bg-primary/90" onClick={(e) => { e.stopPropagation(); setLocation(`/apply/${home.id}`); }}>
+                            Apply Now
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card className="bg-card border-border">
+                  <CardContent className="flex flex-col items-center justify-center py-16">
+                    <Eye className="w-16 h-16 text-muted-foreground/30 mb-4" />
+                    <h3 className="text-xl font-bold text-white mb-2">No Viewed Homes Yet</h3>
+                    <p className="text-muted-foreground text-center mb-6 max-w-sm">Start exploring sober living homes to track the ones you've viewed</p>
                     <Button onClick={() => setLocation("/browse")} className="bg-primary text-primary-foreground hover:bg-primary/90">
                       Browse Homes
                     </Button>

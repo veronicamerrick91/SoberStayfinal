@@ -13,7 +13,7 @@ import { useRoute, Link, useLocation } from "wouter";
 import { isAuthenticated, getAuth } from "@/lib/auth";
 import { useState, useEffect } from "react";
 import { isFavorite, toggleFavorite } from "@/lib/favorites";
-import { incrementStat } from "@/lib/tenant-engagement";
+import { incrementStat, addViewedHome } from "@/lib/tenant-engagement";
 import { ReportModal } from "@/components/report-modal";
 import { TourScheduleModal } from "@/components/tour-schedule-modal";
 import {
@@ -54,6 +54,7 @@ export default function PropertyDetails() {
         const viewedKey = `viewed_${property.id}`;
         if (!sessionStorage.getItem(viewedKey)) {
           incrementStat("homesViewed");
+          addViewedHome(property.id);
           sessionStorage.setItem(viewedKey, "true");
         }
       }

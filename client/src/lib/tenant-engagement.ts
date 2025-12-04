@@ -17,6 +17,7 @@ export interface RecoveryBadge {
 }
 
 const STORAGE_KEY = "tenant_engagement";
+const VIEWED_HOMES_KEY = "viewed_homes";
 
 export function getEngagementStats(): EngagementStats {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -96,14 +97,14 @@ export function getNextStep(stats: EngagementStats): { title: string; action: st
     return {
       title: "Submit an Application",
       action: "Apply to one of your saved homes",
-      path: "/browse"
+      path: "/tenant-dashboard?tab=saved"
     };
   }
   if (stats.approvalsReceived === 0) {
     return {
       title: "Check Application Status",
       action: "Follow up on your pending applications",
-      path: "/tenant-dashboard"
+      path: "/tenant-dashboard?tab=applications"
     };
   }
   return {
@@ -111,4 +112,27 @@ export function getNextStep(stats: EngagementStats): { title: string; action: st
     action: "Discover more housing options",
     path: "/browse"
   };
+}
+
+export interface ViewedHome {
+  propertyId: string;
+  viewedAt: string;
+}
+
+export function getViewedHomes(): ViewedHome[] {
+  const stored = localStorage.getItem(VIEWED_HOMES_KEY);
+  if (stored) {
+    return JSON.parse(stored);
+  }
+  return [];
+}
+
+export function addViewedHome(propertyId: string): ViewedHome[] {
+  const viewed = getViewedHomes();
+  const exists = viewed.find(v => v.propertyId === propertyId);
+  if (!exists) {
+    viewed.unshift({ propertyId, viewedAt: new Date().toISOString() });
+    localStorage.setItem(VIEWED_HOMES_KEY, JSON.stringify(viewed.slice(0, 50)));
+  }
+  return viewed;
 }
