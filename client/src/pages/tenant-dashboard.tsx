@@ -194,38 +194,6 @@ export function TenantDashboard() {
                 </Button>
               </div>
             </div>
-            
-            {/* Recovery Badges Strip */}
-            <div className="mt-6 pt-6 border-t border-primary/20">
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-muted-foreground">Recovery Milestones:</span>
-                  {daysClean > 0 && (
-                    <Badge className="bg-primary/20 text-primary border-primary/30">
-                      {daysClean} days clean
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  {recoveryBadges.slice(0, 5).map((badge) => (
-                    <div 
-                      key={badge.id}
-                      className={`flex items-center gap-1 px-3 py-1.5 rounded-full border transition-all ${
-                        badge.unlocked 
-                          ? "bg-primary/20 border-primary/50 text-white" 
-                          : "bg-white/5 border-border/50 text-muted-foreground opacity-50"
-                      }`}
-                      title={badge.unlocked ? `Unlocked: ${badge.name}` : `${badge.days - daysClean} days to unlock`}
-                      data-testid={`badge-${badge.id}`}
-                    >
-                      <span className="text-lg">{badge.icon}</span>
-                      <span className="text-xs font-medium">{badge.name}</span>
-                      {badge.unlocked && <CheckCircle className="w-3 h-3 text-primary" />}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -319,9 +287,13 @@ export function TenantDashboard() {
                 <Heart className="w-4 h-4" />
                 Saved Homes {savedHomes.length > 0 && <Badge className="bg-primary text-white ml-1">{savedHomes.length}</Badge>}
               </TabsTrigger>
-              <TabsTrigger value="applications" className="gap-2">
+              <TabsTrigger value="applications" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
                 <FileText className="w-4 h-4" />
                 Applications
+              </TabsTrigger>
+              <TabsTrigger value="recovery" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
+                <Shield className="w-4 h-4" />
+                Recovery {recoveryBadges.filter(b => b.unlocked).length > 0 && <Badge className="bg-primary text-white ml-1">{recoveryBadges.filter(b => b.unlocked).length}</Badge>}
               </TabsTrigger>
             </TabsList>
 
@@ -456,6 +428,104 @@ export function TenantDashboard() {
                       </div>
                     ))}
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* RECOVERY TAB */}
+            <TabsContent value="recovery" className="space-y-6">
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-primary" />
+                    Your Recovery Journey
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Days Clean Counter */}
+                  <div className="text-center py-6 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl border border-primary/30">
+                    {daysClean > 0 ? (
+                      <>
+                        <div className="text-6xl font-bold text-white mb-2">{daysClean}</div>
+                        <div className="text-xl text-primary font-medium">Days Clean</div>
+                        <p className="text-muted-foreground mt-2">Keep going - you're doing amazing!</p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-4xl mb-4">🌱</div>
+                        <div className="text-xl text-white font-medium mb-2">Start Your Journey</div>
+                        <p className="text-muted-foreground mb-4">Set your sobriety date in your profile to track your progress</p>
+                        <Button onClick={() => setShowProfileModal(true)} className="bg-primary text-white">
+                          <Calendar className="w-4 h-4 mr-2" />
+                          Set Sobriety Date
+                        </Button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Recovery Milestones */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-4">Recovery Milestones</h3>
+                    <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-4">
+                      {recoveryBadges.map((badge) => (
+                        <div 
+                          key={badge.id}
+                          className={`relative p-4 rounded-xl border text-center transition-all ${
+                            badge.unlocked 
+                              ? "bg-gradient-to-br from-primary/20 to-primary/5 border-primary/50" 
+                              : "bg-white/5 border-border/50 opacity-60"
+                          }`}
+                          data-testid={`badge-${badge.id}`}
+                        >
+                          {badge.unlocked && (
+                            <div className="absolute -top-2 -right-2">
+                              <CheckCircle className="w-6 h-6 text-primary bg-card rounded-full" />
+                            </div>
+                          )}
+                          <div className="text-4xl mb-2">{badge.icon}</div>
+                          <div className={`font-bold ${badge.unlocked ? "text-white" : "text-muted-foreground"}`}>
+                            {badge.name}
+                          </div>
+                          {badge.unlocked ? (
+                            <div className="text-xs text-primary mt-1">Unlocked!</div>
+                          ) : (
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {daysClean > 0 ? `${badge.days - daysClean} days to go` : `${badge.days} days`}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Encouragement Section */}
+                  {daysClean > 0 && (
+                    <div className="bg-white/5 rounded-xl p-6 border border-border">
+                      <h3 className="text-lg font-semibold text-white mb-3">Your Progress</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Next milestone:</span>
+                          <span className="text-white font-medium">
+                            {recoveryBadges.find(b => !b.unlocked)?.name || "All milestones achieved! 🎉"}
+                          </span>
+                        </div>
+                        {recoveryBadges.find(b => !b.unlocked) && (
+                          <div>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="text-muted-foreground">Progress</span>
+                              <span className="text-primary">
+                                {Math.round((daysClean / (recoveryBadges.find(b => !b.unlocked)?.days || 1)) * 100)}%
+                              </span>
+                            </div>
+                            <Progress 
+                              value={(daysClean / (recoveryBadges.find(b => !b.unlocked)?.days || 1)) * 100} 
+                              className="h-2" 
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
