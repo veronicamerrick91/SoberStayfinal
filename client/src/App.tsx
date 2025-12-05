@@ -75,6 +75,7 @@ function Router() {
         <Route path="/tenant-dashboard" component={TenantDashboard} />
         <Route path="/provider-dashboard" component={ProviderDashboard} />
         <Route path="/admin-dashboard" component={AdminDashboard} />
+        <Route path="/admin" component={AdminDashboard} />
         <Route path="/login">
           <AuthPage type="login" />
         </Route>
