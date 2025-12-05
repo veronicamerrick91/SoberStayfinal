@@ -170,7 +170,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                 "Secure messaging and tour scheduling"
               ] : [
                 "Browse hundreds of verified sober living homes",
-                "One application for multiple listings",
+                "Secure applications, fast responses",
                 "Chat directly with housing providers",
                 "Secure your spot with online payments"
               ]).map((benefit, i) => (
