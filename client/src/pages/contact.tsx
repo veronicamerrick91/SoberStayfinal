@@ -53,23 +53,6 @@ export function Contact() {
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-4">
                     <div className="p-3 rounded-full bg-primary/10 text-primary">
-                      <Phone className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold mb-1">Call Us</h3>
-                      <p className="text-sm text-muted-foreground mb-2">Mon-Fri, 9am-5pm EST:</p>
-                      <a href="tel:+15551234567" className="text-primary hover:underline text-sm">
-                        (555) 123-4567
-                      </a>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-full bg-primary/10 text-primary">
                       <MapPin className="w-6 h-6" />
                     </div>
                     <div>
