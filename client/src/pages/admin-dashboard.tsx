@@ -71,6 +71,12 @@ export function AdminDashboard() {
   const [smsSentSuccess, setSmsSentSuccess] = useState(false);
   const [showSubscriptionWaiverModal, setShowSubscriptionWaiverModal] = useState(false);
   const [waivingProvider, setWaivingProvider] = useState("");
+  const [waiverSearchEmail, setWaiverSearchEmail] = useState("");
+  const [waiverReason, setWaiverReason] = useState("");
+  const [waiverDuration, setWaiverDuration] = useState("permanent");
+  const [waivedProviders, setWaivedProviders] = useState<any[]>([
+    { id: 1, provider: "Recovery First LLC", email: "admin@recoveryfirst.com", status: "Active Waiver", reason: "Partnership Agreement", duration: "Permanent", grantedDate: "Nov 15, 2024" },
+  ]);
   const [workflows, setWorkflows] = useState<any[]>([]);
   const [showWorkflowModal, setShowWorkflowModal] = useState(false);
   const [newWorkflowName, setNewWorkflowName] = useState("");
@@ -1710,30 +1716,120 @@ the actual document file stored on the server.
           <TabsContent value="settings" className="space-y-6">
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <DollarSign className="w-5 h-5" /> Subscription Waivers
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <DollarSign className="w-5 h-5" /> Subscription Waivers
+                  </CardTitle>
+                  <Badge variant="outline" className="text-xs">{waivedProviders.length} Active Waivers</Badge>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground mb-4">Grant providers exemption from the $49/month subscription fee for partnerships, promotions, or community benefits.</p>
-                <div className="space-y-2">
-                  {[
-                    { provider: "Recovery First LLC", status: "Active Waiver", reason: "Partnership Agreement", until: "Permanent" },
-                    { provider: "Hope House", status: "No Waiver", reason: "-", until: "-" },
-                  ].map((item, i) => (
-                    <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
-                      <div className="flex-1">
-                        <p className="text-white font-medium">{item.provider}</p>
-                        <p className="text-xs text-muted-foreground">{item.reason}</p>
-                      </div>
-                      <div className="text-right">
-                        <Badge className={item.status === "Active Waiver" ? "bg-green-500/80" : "bg-gray-600"}>{item.status}</Badge>
-                        <Button onClick={() => handleWaiveSubscription(item.provider)} size="sm" variant="ghost" className="text-xs mt-2">
-                          {item.status === "Active Waiver" ? "Manage" : "Grant Waiver"}
-                        </Button>
-                      </div>
+              <CardContent className="space-y-6">
+                <p className="text-sm text-muted-foreground">Grant providers exemption from the $49/month subscription fee for partnerships, promotions, or community benefits.</p>
+                
+                <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                  <p className="text-white font-semibold mb-3">Waive Listing Fee by Email</p>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div className="md:col-span-1">
+                      <label className="text-xs text-muted-foreground mb-1 block">Provider Email</label>
+                      <input 
+                        type="email" 
+                        value={waiverSearchEmail}
+                        onChange={(e) => setWaiverSearchEmail(e.target.value)}
+                        placeholder="provider@example.com" 
+                        className="w-full px-3 py-2 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                      />
                     </div>
-                  ))}
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Reason</label>
+                      <select 
+                        value={waiverReason}
+                        onChange={(e) => setWaiverReason(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                      >
+                        <option value="">Select reason...</option>
+                        <option value="Partnership Agreement">Partnership Agreement</option>
+                        <option value="Promotional Offer">Promotional Offer</option>
+                        <option value="Community Partner">Community Partner</option>
+                        <option value="Non-Profit Organization">Non-Profit Organization</option>
+                        <option value="Beta Tester">Beta Tester</option>
+                        <option value="Referral Reward">Referral Reward</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Duration</label>
+                      <select 
+                        value={waiverDuration}
+                        onChange={(e) => setWaiverDuration(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                      >
+                        <option value="1-month">1 Month</option>
+                        <option value="3-months">3 Months</option>
+                        <option value="6-months">6 Months</option>
+                        <option value="1-year">1 Year</option>
+                        <option value="permanent">Permanent</option>
+                      </select>
+                    </div>
+                    <div className="flex items-end">
+                      <Button 
+                        onClick={() => {
+                          if (waiverSearchEmail && waiverReason) {
+                            const providerName = waiverSearchEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            setWaivedProviders([...waivedProviders, {
+                              id: waivedProviders.length + 1,
+                              provider: providerName,
+                              email: waiverSearchEmail,
+                              status: "Active Waiver",
+                              reason: waiverReason,
+                              duration: waiverDuration === 'permanent' ? 'Permanent' : waiverDuration.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                              grantedDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                            }]);
+                            setWaiverSearchEmail("");
+                            setWaiverReason("");
+                            toast({ title: "Waiver Granted", description: `Listing fee waived for ${waiverSearchEmail}` });
+                          }
+                        }}
+                        disabled={!waiverSearchEmail || !waiverReason}
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                      >
+                        Grant Waiver
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-white font-semibold text-sm mb-3">Active Waivers</h3>
+                  {waivedProviders.length === 0 ? (
+                    <div className="text-center py-8 rounded-lg bg-white/5 border border-white/10 border-dashed">
+                      <DollarSign className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-muted-foreground text-sm">No active waivers</p>
+                    </div>
+                  ) : (
+                    waivedProviders.map((item) => (
+                      <div key={item.id} className="p-4 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
+                        <div className="flex-1">
+                          <p className="text-white font-medium">{item.provider}</p>
+                          <p className="text-xs text-primary">{item.email}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{item.reason} • {item.duration} • Granted {item.grantedDate}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-green-500/80">{item.status}</Badge>
+                          <Button 
+                            onClick={() => {
+                              setWaivedProviders(waivedProviders.filter(p => p.id !== item.id));
+                              toast({ title: "Waiver Revoked", description: `Waiver removed for ${item.email}` });
+                            }} 
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-xs text-red-500 hover:text-red-400"
+                          >
+                            Revoke
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
