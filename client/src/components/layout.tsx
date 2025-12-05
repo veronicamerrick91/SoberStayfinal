@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut, ChevronDown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Menu, LogOut, ChevronDown, Lock } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -45,8 +46,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Navigation */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center hover:opacity-90 transition-opacity">
+          <Link href="/" className="flex items-center hover:opacity-90 transition-opacity gap-3">
             <img src={logo} alt="Sober Stay" className="h-16 w-auto" />
+            <Badge className="hidden sm:flex bg-green-600/20 text-green-300 border border-green-600/30 gap-1 text-xs">
+              <Lock className="w-3 h-3" /> Secure Application
+            </Badge>
           </Link>
 
           {/* Desktop Nav */}
