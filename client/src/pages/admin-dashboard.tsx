@@ -2599,26 +2599,31 @@ the actual document file stored on the server.
         )}
 
         {showBlogModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[95vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">Content Editor</h2>
-                <div className="flex items-center gap-3">
-                  {blogAutoSaved && (
-                    <span className="text-xs text-green-400 flex items-center gap-1">
-                      <Save className="w-3 h-3" /> Auto-saved
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden flex flex-col">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Content Editor</h2>
+                    <p className="text-xs text-muted-foreground mt-1">Create and publish blog content</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {blogAutoSaved && (
+                      <span className="text-xs text-green-400 flex items-center gap-1">
+                        <Save className="w-3 h-3" /> Auto-saved
+                      </span>
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      {getWordCount(blogContent)} words • {getReadTime(getWordCount(blogContent))}
                     </span>
-                  )}
-                  <span className="text-xs text-muted-foreground">
-                    {getWordCount(blogContent)} words • {getReadTime(getWordCount(blogContent))}
-                  </span>
+                  </div>
                 </div>
               </div>
               
-              <div className="space-y-4 mb-6">
+              <div className="flex-1 overflow-y-auto p-6 space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Post Title *</label>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Post Title *</label>
                     <input 
                       type="text" 
                       placeholder="Enter an engaging title..." 
@@ -2627,38 +2632,38 @@ the actual document file stored on the server.
                         setBlogTitle(e.target.value);
                         if (!blogSlug) setBlogSlug(generateSlug(e.target.value));
                       }}
-                      className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-lg font-medium"
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-lg font-medium transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Author</label>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Author</label>
                     <input 
                       type="text" 
                       placeholder="Author name" 
                       value={blogAuthor}
                       onChange={(e) => setBlogAuthor(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white"
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Excerpt (Summary for previews)</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Excerpt (Summary for previews)</label>
                   <textarea 
                     placeholder="Write a brief summary that will appear in article previews..." 
                     value={blogExcerpt}
                     onChange={(e) => setBlogExcerpt(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white h-16"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white h-16 transition-colors"
                   />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Category</label>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Category</label>
                     <select 
                       value={blogCategory} 
                       onChange={(e) => setBlogCategory(e.target.value)} 
-                      className="w-full px-2 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm"
+                      className="w-full px-3 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                     >
                       <option>Recovery Tips</option>
                       <option>Education</option>
@@ -2669,11 +2674,11 @@ the actual document file stored on the server.
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Font</label>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Font</label>
                     <select 
                       value={blogFont} 
                       onChange={(e) => setBlogFont(e.target.value)} 
-                      className="w-full px-2 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-xs"
+                      className="w-full px-3 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-xs transition-colors"
                     >
                       <option>Georgia</option>
                       <option>Arial</option>
@@ -2683,11 +2688,11 @@ the actual document file stored on the server.
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Size</label>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Size</label>
                     <select 
                       value={blogFontSize} 
                       onChange={(e) => setBlogFontSize(Number(e.target.value))} 
-                      className="w-full px-2 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-xs"
+                      className="w-full px-3 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-xs transition-colors"
                     >
                       <option value={14}>Small</option>
                       <option value={16}>Medium</option>
@@ -2696,52 +2701,52 @@ the actual document file stored on the server.
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Text Color</label>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Text Color</label>
                     <input 
                       type="color" 
                       value={blogFontColor} 
                       onChange={(e) => setBlogFontColor(e.target.value)} 
-                      className="w-full h-9 rounded-lg cursor-pointer bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all"
+                      className="w-full h-11 rounded-lg cursor-pointer bg-background/80 border border-primary/30 hover:border-primary/50 transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Schedule</label>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Schedule</label>
                     <input 
                       type="date" 
                       value={blogScheduleDate}
                       onChange={(e) => setBlogScheduleDate(e.target.value)}
-                      className="w-full px-2 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-xs"
+                      className="w-full px-3 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-xs transition-colors"
                     />
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Tags (comma-separated)</label>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Tags (comma-separated)</label>
                     <input 
                       type="text" 
                       placeholder="recovery, sobriety, mental health..." 
                       value={blogTags}
                       onChange={(e) => setBlogTags(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm"
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">URL Slug</label>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">URL Slug</label>
                     <input 
                       type="text" 
                       placeholder="custom-url-slug" 
                       value={blogSlug}
                       onChange={(e) => setBlogSlug(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm"
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Content *</label>
-                  <div className="border border-white/10 rounded-lg overflow-hidden">
-                    <div className="flex flex-wrap items-center gap-1 p-2 bg-background/30 border-b border-white/10">
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Content *</label>
+                  <div className="border border-primary/30 rounded-lg overflow-hidden">
+                    <div className="flex flex-wrap items-center gap-1 p-2 bg-background/50 border-b border-primary/20">
                       <Button size="sm" variant="ghost" onClick={() => insertFormatting("**")} className="h-8 w-8 p-0" title="Bold">
                         <Bold className="w-4 h-4" />
                       </Button>
@@ -2751,14 +2756,14 @@ the actual document file stored on the server.
                       <Button size="sm" variant="ghost" onClick={() => insertFormatting("~~")} className="h-8 w-8 p-0" title="Strikethrough">
                         <Strikethrough className="w-4 h-4" />
                       </Button>
-                      <div className="w-px h-6 bg-white/20 mx-1" />
+                      <div className="w-px h-6 bg-primary/30 mx-1" />
                       <Button size="sm" variant="ghost" onClick={() => insertFormatting("# ", "")} className="h-8 w-8 p-0" title="Heading 1">
                         <Heading1 className="w-4 h-4" />
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => insertFormatting("## ", "")} className="h-8 w-8 p-0" title="Heading 2">
                         <Heading2 className="w-4 h-4" />
                       </Button>
-                      <div className="w-px h-6 bg-white/20 mx-1" />
+                      <div className="w-px h-6 bg-primary/30 mx-1" />
                       <Button size="sm" variant="ghost" onClick={() => insertFormatting("- ", "")} className="h-8 w-8 p-0" title="Bullet List">
                         <List className="w-4 h-4" />
                       </Button>
@@ -2768,7 +2773,7 @@ the actual document file stored on the server.
                       <Button size="sm" variant="ghost" onClick={() => insertFormatting("> ", "")} className="h-8 w-8 p-0" title="Quote">
                         <Quote className="w-4 h-4" />
                       </Button>
-                      <div className="w-px h-6 bg-white/20 mx-1" />
+                      <div className="w-px h-6 bg-primary/30 mx-1" />
                       <Button size="sm" variant="ghost" onClick={() => insertFormatting("[", "](url)")} className="h-8 w-8 p-0" title="Link">
                         <Link2 className="w-4 h-4" />
                       </Button>
@@ -2790,20 +2795,20 @@ Use the toolbar above for formatting, or write in Markdown:
                         setBlogContent(e.target.value);
                         autoSaveDraft(e.target.value, blogTitle);
                       }}
-                      className="w-full px-4 py-4 bg-background/50 text-white h-64 resize-none border-0 focus:outline-none focus:ring-0"
+                      className="w-full px-4 py-4 bg-background/80 text-white h-64 resize-none border-0 focus:outline-none focus:ring-0"
                       style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
                     />
                   </div>
                 </div>
                 
-                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-xs text-muted-foreground">Live Preview</p>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Live Preview</p>
                     {blogCategory && (
                       <Badge className="bg-primary/20 text-primary text-xs">{blogCategory}</Badge>
                     )}
                   </div>
-                  <div className="p-6 bg-card rounded-lg border border-white/10 min-h-32">
+                  <div className="p-6 bg-background/50 rounded-lg border border-primary/20 min-h-32">
                     <h3 className="font-bold text-2xl text-white mb-2">{blogTitle || "Your title here..."}</h3>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4">
                       <span>{blogAuthor || "Author"}</span>
@@ -2822,9 +2827,9 @@ Use the toolbar above for formatting, or write in Markdown:
                       {blogContent || "Your blog content will appear here..."}
                     </div>
                     {blogTags && (
-                      <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/10">
+                      <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-primary/20">
                         {blogTags.split(",").map((tag, i) => (
-                          <span key={i} className="text-xs bg-white/10 px-2 py-1 rounded">{tag.trim()}</span>
+                          <span key={i} className="text-xs bg-primary/20 px-2 py-1 rounded">{tag.trim()}</span>
                         ))}
                       </div>
                     )}
@@ -2832,11 +2837,11 @@ Use the toolbar above for formatting, or write in Markdown:
                 </div>
               </div>
               
-              <div className="flex gap-2 pt-4 border-t border-white/10">
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
                 <Button onClick={handleSaveBlog} className="flex-1 bg-gray-600 hover:bg-gray-700 gap-2">
                   <Save className="w-4 h-4" /> Save Draft
                 </Button>
-                <Button onClick={handlePublishBlog} className="flex-1 bg-green-600 hover:bg-green-700 gap-2">
+                <Button onClick={handlePublishBlog} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
                   <CheckCircle className="w-4 h-4" /> {blogScheduleDate ? "Schedule" : "Publish Now"}
                 </Button>
                 <Button onClick={() => setShowBlogModal(false)} variant="outline">Cancel</Button>
@@ -2846,29 +2851,39 @@ Use the toolbar above for formatting, or write in Markdown:
         )}
 
         {showNewCampaignModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
-              <h2 className="text-xl font-bold text-white mb-4">Create New Campaign</h2>
-              <input 
-                type="text" 
-                placeholder="Campaign name" 
-                value={newCampaignName}
-                onChange={(e) => setNewCampaignName(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white mb-3"
-              />
-              <label className="text-xs text-muted-foreground">Recipient Group</label>
-              <select 
-                value={newCampaignRecipients}
-                onChange={(e) => setNewCampaignRecipients(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white mb-4 text-sm"
-              >
-                <option>All Tenants</option>
-                <option>All Providers</option>
-                <option>Active Subscribers</option>
-                <option>Inactive Users</option>
-              </select>
-              <div className="flex gap-2">
-                <Button onClick={handleSaveNewCampaign} className="flex-1 bg-primary hover:bg-primary/90">Create</Button>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Create New Campaign</h2>
+                <p className="text-xs text-muted-foreground mt-1">Set up a new email campaign</p>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Campaign Name</label>
+                  <input 
+                    type="text" 
+                    placeholder="Campaign name" 
+                    value={newCampaignName}
+                    onChange={(e) => setNewCampaignName(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Recipient Group</label>
+                  <select 
+                    value={newCampaignRecipients}
+                    onChange={(e) => setNewCampaignRecipients(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                  >
+                    <option>All Tenants</option>
+                    <option>All Providers</option>
+                    <option>Active Subscribers</option>
+                    <option>Inactive Users</option>
+                  </select>
+                </div>
+              </div>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+                <Button onClick={handleSaveNewCampaign} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">Create</Button>
                 <Button onClick={() => setShowNewCampaignModal(false)} variant="outline">Cancel</Button>
               </div>
             </div>
@@ -2876,30 +2891,33 @@ Use the toolbar above for formatting, or write in Markdown:
         )}
 
         {editingCampaign && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4 max-h-96 overflow-y-auto">
-              <h2 className="text-xl font-bold text-white mb-4">Edit Campaign</h2>
-              <div className="space-y-3">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Edit Campaign</h2>
+                <p className="text-xs text-muted-foreground mt-1">Modify campaign settings</p>
+              </div>
+              <div className="p-6 space-y-4 max-h-80 overflow-y-auto">
                 <div>
-                  <label className="text-xs text-muted-foreground">Campaign Name</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Campaign Name</label>
                   <input 
                     type="text" 
                     defaultValue={editingCampaign.name}
                     id="campaign-name"
-                    className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Status</label>
-                  <select id="campaign-status" className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white" defaultValue={editingCampaign.status}>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Status</label>
+                  <select id="campaign-status" className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors" defaultValue={editingCampaign.status}>
                     <option>Active</option>
                     <option>Scheduled</option>
                     <option>Draft</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Recipients: {editingCampaign.recipients}</label>
-                  <select id="campaign-recipients" className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white mt-1">
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Recipients: {editingCampaign.recipients}</label>
+                  <select id="campaign-recipients" className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white mt-1 transition-colors">
                     <option>All Tenants</option>
                     <option>All Providers</option>
                     <option>Active Subscribers</option>
@@ -2907,12 +2925,12 @@ Use the toolbar above for formatting, or write in Markdown:
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Subject/Preview</label>
-                  <input type="text" placeholder="Email subject" className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white" />
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Subject/Preview</label>
+                  <input type="text" placeholder="Email subject" className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors" />
                 </div>
               </div>
-              <div className="flex gap-2 mt-4">
-                <Button onClick={() => handleSaveCampaign({ name: (document.getElementById("campaign-name") as HTMLInputElement)?.value, status: (document.getElementById("campaign-status") as HTMLSelectElement)?.value })} className="flex-1 bg-primary hover:bg-primary/90">Save</Button>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+                <Button onClick={() => handleSaveCampaign({ name: (document.getElementById("campaign-name") as HTMLInputElement)?.value, status: (document.getElementById("campaign-status") as HTMLSelectElement)?.value })} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">Save</Button>
                 <Button onClick={() => setEditingCampaign(null)} variant="outline">Cancel</Button>
               </div>
             </div>
@@ -2920,31 +2938,36 @@ Use the toolbar above for formatting, or write in Markdown:
         )}
 
         {editingListing && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
-              <h2 className="text-xl font-bold text-white mb-4">Manage Featured Listing</h2>
-              <p className="text-white mb-2">{editingListing.provider}</p>
-              <p className="text-gray-400 mb-4 text-sm">{editingListing.listing}</p>
-              <div className="space-y-3 mb-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Manage Featured Listing</h2>
+                <p className="text-xs text-muted-foreground mt-1">Configure boost options</p>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="bg-background/50 rounded-lg p-3 border border-primary/20">
+                  <p className="text-white font-medium">{editingListing.provider}</p>
+                  <p className="text-muted-foreground text-sm">{editingListing.listing}</p>
+                </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Boost Level</label>
-                  <select className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white mt-1">
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Boost Level</label>
+                  <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors">
                     <option>2x Visibility - $49/week</option>
                     <option>3x Visibility - $99/week</option>
                     <option>Top Placement - $149/week</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Duration</label>
-                  <select className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white mt-1">
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Duration</label>
+                  <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors">
                     <option>7 days</option>
                     <option>14 days</option>
                     <option>30 days</option>
                   </select>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button onClick={handleCloseListing} className="flex-1 bg-primary hover:bg-primary/90">Apply</Button>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+                <Button onClick={handleCloseListing} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">Apply</Button>
                 <Button onClick={() => setEditingListing(null)} variant="outline">Cancel</Button>
               </div>
             </div>
@@ -2952,30 +2975,33 @@ Use the toolbar above for formatting, or write in Markdown:
         )}
 
         {showSupportDetailsModal && viewingSupportTicket && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
-              <h2 className="text-xl font-bold text-white mb-4">Ticket Details</h2>
-              <div className="space-y-4 mb-6">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Ticket Details</h2>
+                <p className="text-xs text-muted-foreground mt-1">Support request information</p>
+              </div>
+              <div className="p-6 space-y-4">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Ticket ID</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Ticket ID</p>
                   <p className="text-white font-medium">{viewingSupportTicket.id}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">From</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">From</p>
                   <p className="text-white font-medium">{viewingSupportTicket.user}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Subject</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Subject</p>
                   <p className="text-white font-medium">{viewingSupportTicket.subject}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Message</p>
-                  <div className="bg-white/5 border border-white/10 p-3 rounded">
+                  <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Message</p>
+                  <div className="bg-background/50 border border-primary/20 p-3 rounded-lg">
                     <p className="text-sm text-white">{viewingSupportTicket.message}</p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Status</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Status</p>
                   <Badge className={
                     viewingSupportTicket.status === "Open" ? "bg-blue-500/80" :
                     viewingSupportTicket.status === "In Progress" ? "bg-amber-500/80" :
@@ -2983,31 +3009,34 @@ Use the toolbar above for formatting, or write in Markdown:
                   }>{viewingSupportTicket.status}</Badge>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button onClick={() => setShowSupportDetailsModal(false)} className="flex-1 bg-primary hover:bg-primary/90">Close</Button>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+                <Button onClick={() => setShowSupportDetailsModal(false)} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">Close</Button>
               </div>
             </div>
           </div>
         )}
 
         {showReplyModal && viewingSupportTicket && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
-              <h2 className="text-xl font-bold text-white mb-4">Reply to {viewingSupportTicket.id}</h2>
-              <div className="space-y-4 mb-6">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Reply to {viewingSupportTicket.id}</h2>
+                <p className="text-xs text-muted-foreground mt-1">Send a response to support request</p>
+              </div>
+              <div className="p-6 space-y-4">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Message</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Message</label>
                   <textarea
                     placeholder="Type your reply..."
                     value={replyMessage}
                     onChange={(e) => setReplyMessage(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                     rows={4}
                   />
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button onClick={() => { setShowReplyModal(false); setReplyMessage(""); }} className="flex-1 bg-primary hover:bg-primary/90">Send Reply</Button>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+                <Button onClick={() => { setShowReplyModal(false); setReplyMessage(""); }} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">Send Reply</Button>
                 <Button onClick={() => { setShowReplyModal(false); setReplyMessage(""); }} variant="outline">Cancel</Button>
               </div>
             </div>
@@ -3262,20 +3291,23 @@ Use the toolbar above for formatting, or write in Markdown:
         )}
 
         {showComplianceDetailsModal && viewingComplianceIssue && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
-              <h2 className="text-xl font-bold text-white mb-4">Compliance Issue Details</h2>
-              <div className="space-y-4 mb-6">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Compliance Issue Details</h2>
+                <p className="text-xs text-muted-foreground mt-1">Review compliance requirements</p>
+              </div>
+              <div className="p-6 space-y-4 max-h-80 overflow-y-auto">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Provider</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Provider</p>
                   <p className="text-white font-medium">{viewingComplianceIssue.provider}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Issue</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Issue</p>
                   <p className="text-white font-medium">{viewingComplianceIssue.issue}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Current Status</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Current Status</p>
                   <Badge className={`${
                     viewingComplianceIssue.status === "Urgent" ? "bg-red-500/80" :
                     viewingComplianceIssue.status === "Reminder Sent" ? "bg-green-500/80" :
@@ -3284,7 +3316,7 @@ Use the toolbar above for formatting, or write in Markdown:
                   }`}>{viewingComplianceIssue.status}</Badge>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Details</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Details</p>
                   <p className="text-sm text-gray-300">
                     {viewingComplianceIssue.issue.includes("Fire") 
                       ? "Property inspection is required annually. The last fire inspection was conducted 90 days ago and is due for renewal. Contact the provider to schedule the inspection immediately."
@@ -3292,7 +3324,7 @@ Use the toolbar above for formatting, or write in Markdown:
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Required Action</p>
+                  <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wider">Required Action</p>
                   <p className="text-sm text-white">
                     {viewingComplianceIssue.status === "Pending" 
                       ? "Send a reminder email to the provider requesting immediate compliance."
@@ -3302,25 +3334,31 @@ Use the toolbar above for formatting, or write in Markdown:
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button onClick={() => setShowComplianceDetailsModal(false)} className="flex-1 bg-primary hover:bg-primary/90">Close</Button>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+                <Button onClick={() => setShowComplianceDetailsModal(false)} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">Close</Button>
               </div>
             </div>
           </div>
         )}
 
         {showSubscriptionWaiverModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
-              <h2 className="text-xl font-bold text-white mb-4">Waive Monthly Subscription</h2>
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mb-4">
-                <p className="text-sm text-amber-200">Admin Action: This provider will be exempt from the $49/month subscription fee.</p>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Waive Monthly Subscription</h2>
+                <p className="text-xs text-muted-foreground mt-1">Exempt provider from subscription fee</p>
               </div>
-              <p className="text-white mb-4">Provider: <span className="font-semibold">{waivingProvider}</span></p>
-              <div className="space-y-2 mb-4">
+              <div className="p-6 space-y-4">
+                <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                  <p className="text-sm text-amber-200">Admin Action: This provider will be exempt from the $49/month subscription fee.</p>
+                </div>
+                <div className="bg-background/50 rounded-lg p-3 border border-primary/20">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Provider</p>
+                  <p className="text-white font-semibold">{waivingProvider}</p>
+                </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Reason for Waiver</label>
-                  <select className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white mt-1">
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Reason for Waiver</label>
+                  <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors">
                     <option>Partnership Agreement</option>
                     <option>Promotional Period</option>
                     <option>Community Benefit</option>
@@ -3328,8 +3366,8 @@ Use the toolbar above for formatting, or write in Markdown:
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Duration</label>
-                  <select className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white mt-1">
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Duration</label>
+                  <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors">
                     <option>Permanent</option>
                     <option>1 Month</option>
                     <option>3 Months</option>
@@ -3338,8 +3376,8 @@ Use the toolbar above for formatting, or write in Markdown:
                   </select>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button onClick={handleConfirmWaiver} className="flex-1 bg-primary hover:bg-primary/90">Confirm Waiver</Button>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+                <Button onClick={handleConfirmWaiver} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">Confirm Waiver</Button>
                 <Button onClick={() => setShowSubscriptionWaiverModal(false)} variant="outline">Cancel</Button>
               </div>
             </div>
