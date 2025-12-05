@@ -2084,7 +2084,7 @@ the actual document file stored on the server.
                   <FileText className="w-16 h-16 text-muted-foreground mb-4" />
                   <p className="text-white font-medium mb-2">{viewingDocument.documentName}</p>
                   <p className="text-muted-foreground text-sm mb-4">{viewingDocument.fileSize || "PDF Document"}</p>
-                  <Button variant="outline" className="gap-2">
+                  <Button onClick={() => handleDownloadDocument(viewingDocument)} variant="outline" className="gap-2">
                     <Download className="w-4 h-4" /> Download to View Full Document
                   </Button>
                 </div>
