@@ -3190,28 +3190,45 @@ Use the toolbar above for formatting, or write in Markdown:
 
         {showEmailComposer && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden flex flex-col">
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
-                <h2 className="text-xl font-bold text-white">Email Composer</h2>
-                <p className="text-xs text-muted-foreground mt-1">Design professional email campaigns</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Email Composer</h2>
+                    <p className="text-xs text-muted-foreground mt-1">Design professional email campaigns</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{emailBodyText.length} characters</span>
+                </div>
               </div>
               
               <div className="flex-1 overflow-y-auto p-6 space-y-5">
-                {/* Subject Line */}
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Subject *</label>
-                  <input 
-                    type="text" 
-                    value={emailSubject} 
-                    onChange={(e) => setEmailSubject(e.target.value)} 
-                    placeholder="Enter compelling subject line..." 
-                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
-                    data-testid="input-email-subject"
-                  />
+                {/* Subject and Recipient Group - 2 column grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Subject *</label>
+                    <input 
+                      type="text" 
+                      value={emailSubject} 
+                      onChange={(e) => setEmailSubject(e.target.value)} 
+                      placeholder="Enter a compelling subject line..." 
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                      data-testid="input-email-subject"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Recipient Group</label>
+                    <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors">
+                      <option>All Users</option>
+                      <option>All Tenants</option>
+                      <option>All Providers</option>
+                      <option>Active Users</option>
+                      <option>Inactive Users</option>
+                    </select>
+                  </div>
                 </div>
                 
-                {/* Formatting Controls Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                {/* Formatting Controls - 4 column grid */}
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Font</label>
                     <select 
@@ -3235,10 +3252,10 @@ Use the toolbar above for formatting, or write in Markdown:
                       className="w-full px-3 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-xs transition-colors"
                       data-testid="select-size"
                     >
-                      <option value={14}>14px</option>
-                      <option value={16}>16px</option>
-                      <option value={18}>18px</option>
-                      <option value={20}>20px</option>
+                      <option value={14}>Small</option>
+                      <option value={16}>Medium</option>
+                      <option value={18}>Large</option>
+                      <option value={20}>X-Large</option>
                     </select>
                   </div>
                   
@@ -3263,18 +3280,17 @@ Use the toolbar above for formatting, or write in Markdown:
                 
                 {/* Email Content */}
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Content *</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Content *</label>
                   <div className="border border-primary/30 rounded-lg overflow-hidden">
                     <div className="flex flex-wrap items-center gap-1 p-2 bg-background/50 border-b border-primary/20">
-                      <span className="text-xs text-muted-foreground px-2 py-1">Formatting toolbar</span>
-                      <div className="flex-1" />
                       <span className="text-xs text-muted-foreground px-2">HTML supported</span>
+                      <div className="flex-1" />
                     </div>
                     <textarea
-                      placeholder="Write your email message here. Keep it engaging and concise..."
+                      placeholder="Write your email message here..."
                       value={emailBodyText}
                       onChange={(e) => setEmailBodyText(e.target.value)}
-                      className="w-full px-4 py-4 bg-background/80 text-white h-48 resize-none border-0 focus:outline-none focus:ring-0"
+                      className="w-full px-4 py-4 bg-background/80 text-white h-56 resize-none border-0 focus:outline-none focus:ring-0"
                       style={{ fontFamily: emailFont, fontSize: `${emailFontSize}px`, color: emailFontColor }}
                       data-testid="textarea-content"
                     />
@@ -3283,10 +3299,7 @@ Use the toolbar above for formatting, or write in Markdown:
                 
                 {/* Live Preview */}
                 <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Live Preview</p>
-                    <span className="text-xs text-muted-foreground">{emailBodyText.length} characters</span>
-                  </div>
+                  <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Live Preview</p>
                   <div className="p-6 bg-background/50 rounded-lg border border-primary/20 min-h-40 max-h-48 overflow-auto" style={{ fontFamily: emailFont, fontSize: `${emailFontSize}px`, color: emailFontColor, lineHeight: "1.6" }}>
                     {emailBodyText || "Your email content will appear here..."}
                   </div>
@@ -3296,16 +3309,14 @@ Use the toolbar above for formatting, or write in Markdown:
               <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
                 <Button 
                   onClick={() => setShowEmailComposer(false)} 
-                  variant="ghost"
-                  className="text-gray-400 hover:text-white"
+                  className="flex-1 bg-gray-600 hover:bg-gray-700"
                   data-testid="button-cancel-email"
                 >
                   Cancel
                 </Button>
-                <div className="flex-1" />
                 <Button 
                   onClick={() => { setShowEmailComposer(false); handleSendCampaign(); toast({ title: "Campaign Sent", description: "Email campaign sent successfully!" }); }} 
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                   data-testid="button-send-email"
                 >
                   Send Campaign
