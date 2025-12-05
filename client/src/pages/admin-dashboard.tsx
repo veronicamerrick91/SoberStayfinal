@@ -75,9 +75,15 @@ export function AdminDashboard() {
   const [newWorkflowTemplate, setNewWorkflowTemplate] = useState("welcome");
   const [newWorkflowSubject, setNewWorkflowSubject] = useState("");
   const [newWorkflowBody, setNewWorkflowBody] = useState("");
+  const [incidentReports, setIncidentReports] = useState<any[]>([
+    { id: 1, provider: "Recovery First LLC", incident: "Staff training overdue", severity: "High", reported: "Dec 3, 2024", dueDate: "Dec 5, 2024", description: "Annual staff safety training not completed for 3 staff members" },
+    { id: 2, provider: "Hope House", incident: "Maintenance issue reported", severity: "Medium", reported: "Dec 2, 2024", dueDate: "Dec 8, 2024", description: "Faulty exit sign in dormitory - needs immediate replacement" },
+    { id: 3, provider: "Serenity Living", incident: "Policy violation", severity: "High", reported: "Dec 1, 2024", dueDate: "Dec 4, 2024", description: "Unauthorized guest overnight - requires incident investigation" },
+  ]);
   const [complianceIssues, setComplianceIssues] = useState<any[]>([
-    { id: 1, provider: "Recovery First LLC", issue: "Missing Fire Inspection", status: "Pending" },
-    { id: 2, provider: "Hope House", issue: "Expired Insurance Certificate", status: "Urgent" },
+    { id: 1, provider: "Recovery First LLC", issue: "Missing Fire Inspection", status: "Pending", dueDate: "Dec 10, 2024", details: "Annual fire safety inspection overdue by 15 days", contact: "admin@recoveryfirst.com" },
+    { id: 2, provider: "Hope House", issue: "Expired Insurance Certificate", status: "Urgent", dueDate: "Dec 5, 2024", details: "Liability insurance expires Dec 15, 2024. Renewal required", contact: "contact@hopehouse.org" },
+    { id: 3, provider: "New Beginnings Home", issue: "Staff Background Check", status: "Pending", dueDate: "Dec 12, 2024", details: "Two new staff members require updated background checks", contact: "office@newbeginnings.org" },
   ]);
   const [viewingComplianceIssue, setViewingComplianceIssue] = useState<any | null>(null);
   const [showComplianceDetailsModal, setShowComplianceDetailsModal] = useState(false);
@@ -1102,46 +1108,71 @@ the actual document file stored on the server.
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4 mb-4">
+                  <div className="grid md:grid-cols-3 gap-4 mb-6">
                     <Card className="bg-white/5 border-border">
                       <CardContent className="pt-4">
                         <p className="text-xs font-bold text-primary mb-3">Incident Reports</p>
-                        <div className="text-3xl font-bold text-white mb-1">7</div>
-                        <p className="text-xs text-muted-foreground">3 pending review</p>
+                        <div className="text-3xl font-bold text-white mb-1">{incidentReports.length}</div>
+                        <p className="text-xs text-muted-foreground">{incidentReports.filter(i => i.severity === "High").length} High severity</p>
                       </CardContent>
                     </Card>
                     <Card className="bg-white/5 border-border">
                       <CardContent className="pt-4">
                         <p className="text-xs font-bold text-primary mb-3">Compliance Issues</p>
-                        <div className="text-3xl font-bold text-white mb-1">2</div>
-                        <p className="text-xs text-muted-foreground">Missing fire inspection</p>
+                        <div className="text-3xl font-bold text-white mb-1">{complianceIssues.length}</div>
+                        <p className="text-xs text-muted-foreground">{complianceIssues.filter(i => i.status === "Urgent").length} Urgent</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="bg-white/5 border-border">
+                      <CardContent className="pt-4">
+                        <p className="text-xs font-bold text-primary mb-3">Overdue Items</p>
+                        <div className="text-3xl font-bold text-red-500 mb-1">2</div>
+                        <p className="text-xs text-muted-foreground">Action required today</p>
                       </CardContent>
                     </Card>
                   </div>
-                  <div className="space-y-3 mt-4">
+
+                  <div className="space-y-4 mt-6">
+                    <h3 className="text-white font-bold text-sm mb-3">Active Incident Reports</h3>
+                    {incidentReports.map((report) => (
+                      <div key={report.id} className={`p-4 rounded-lg border ${
+                        report.severity === "High" ? "bg-red-500/10 border-red-500/20" : "bg-amber-500/10 border-amber-500/20"
+                      }`}>
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <p className="text-white font-medium text-sm">{report.provider}</p>
+                            <p className="text-sm text-white font-semibold mt-1">{report.incident}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{report.description}</p>
+                            <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+                              <span>Reported: {report.reported}</span>
+                              <span>Due: {report.dueDate}</span>
+                            </div>
+                          </div>
+                          <Badge className={`text-xs whitespace-nowrap ${report.severity === "High" ? "bg-red-500/80" : "bg-amber-500/80"}`}>{report.severity}</Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="space-y-4 mt-6">
                     <h3 className="text-white font-bold text-sm mb-3">Compliance Issues Requiring Action</h3>
                     {complianceIssues.map((issue) => (
                       <div key={issue.id} className={`p-4 rounded-lg border ${
-                        issue.status === "Urgent" ? "bg-red-500/10 border-red-500/20" : 
-                        issue.status === "Reminder Sent" || issue.status === "Update Requested" ? "bg-green-500/10 border-green-500/20" :
-                        "bg-amber-500/10 border-amber-500/20"
+                        issue.status === "Urgent" ? "bg-red-500/10 border-red-500/20" : "bg-amber-500/10 border-amber-500/20"
                       }`}>
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex-1">
                             <p className="text-white font-medium text-sm">{issue.provider}</p>
                             <p className="text-sm text-white font-semibold mt-1">{issue.issue}</p>
-                            <p className="text-xs text-muted-foreground mt-2">
-                              {issue.issue.includes("Fire") ? "Property was last inspected 90 days ago. Annual inspection due." : "Certificate expired on Nov 15, 2024. New certificate required to maintain active status."}
-                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">{issue.details}</p>
+                            <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
+                              <span>Contact: {issue.contact}</span>
+                              <span>Due: {issue.dueDate}</span>
+                            </div>
                           </div>
-                          <Badge className={`text-xs whitespace-nowrap ${
-                            issue.status === "Urgent" ? "bg-red-500/80" :
-                            issue.status === "Reminder Sent" ? "bg-green-500/80" :
-                            issue.status === "Update Requested" ? "bg-green-500/80" :
-                            "bg-amber-500/80"
-                          }`}>{issue.status}</Badge>
+                          <Badge className={`text-xs whitespace-nowrap ${issue.status === "Urgent" ? "bg-red-500/80" : "bg-amber-500/80"}`}>{issue.status}</Badge>
                         </div>
-                        <div className="mt-4 flex gap-2 flex-wrap">
+                        <div className="mt-3 flex gap-2 flex-wrap">
                           {issue.status === "Pending" && (
                             <Button size="sm" onClick={() => handleSendReminder(issue.id)} className="h-8 text-xs bg-amber-500/20 text-amber-500 hover:bg-amber-500/30">Send Reminder</Button>
                           )}
