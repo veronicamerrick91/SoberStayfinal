@@ -403,6 +403,16 @@ the actual document file stored on the server.
     setShowComplianceDetailsModal(true);
   };
 
+  const handleSendPaymentReminder = (provider: string, email: string) => {
+    // Simulate sending reminder email
+    console.log(`Sent payment reminder to ${provider} at ${email}`);
+  };
+
+  const handleContactProvider = (provider: string, email: string) => {
+    // Simulate contacting provider
+    console.log(`Contacting ${provider} at ${email}`);
+  };
+
   const handleUploadDocument = (docId: number) => {
     setRequiredDocs(requiredDocs.map(doc =>
       doc.id === docId ? { ...doc, uploaded: true } : doc
@@ -1304,8 +1314,23 @@ the actual document file stored on the server.
                           </div>
                         </div>
                         <div className="flex gap-2 mt-3">
-                          <Button size="sm" className="h-7 text-xs bg-amber-500/20 text-amber-500 hover:bg-amber-500/30">Send Reminder</Button>
-                          <Button size="sm" variant="outline" className="h-7 text-xs border-primary/30">Contact Provider</Button>
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleSendPaymentReminder(fail.provider, fail.contact)}
+                            className="h-7 text-xs bg-amber-500/20 text-amber-500 hover:bg-amber-500/30"
+                            data-testid={`button-send-reminder-${fail.provider.replace(/\s+/g, '_')}`}
+                          >
+                            Send Reminder
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleContactProvider(fail.provider, fail.contact)}
+                            variant="outline" 
+                            className="h-7 text-xs border-primary/30"
+                            data-testid={`button-contact-provider-${fail.provider.replace(/\s+/g, '_')}`}
+                          >
+                            Contact Provider
+                          </Button>
                         </div>
                       </div>
                     ))}
