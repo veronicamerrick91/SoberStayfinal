@@ -277,8 +277,7 @@ export function AdminDashboard() {
   const handleDownloadDocument = (doc: any) => {
     try {
       // Simulate document download
-      const documentContent = `
-===============================================
+      const documentContent = `===============================================
 DOCUMENT VERIFICATION RECORD
 ===============================================
 
@@ -294,23 +293,22 @@ Current Status: ${doc.status}
 This is a simulated PDF document download.
 In a production system, this would download
 the actual document file stored on the server.
-===============================================
-`;
+===============================================`;
       
-      const blob = new Blob([documentContent], { type: "application/octet-stream" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${doc.documentName.replace(/\s+/g, "_")}.pdf`;
-      link.style.display = "none";
-      document.body.appendChild(link);
-      link.click();
-      setTimeout(() => {
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      }, 100);
+      const element = document.createElement("a");
+      const file = new Blob([documentContent], { type: "text/plain" });
+      element.href = URL.createObjectURL(file);
+      element.download = `${doc.documentName.replace(/\s+/g, "_")}.txt`;
+      element.style.visibility = "hidden";
+      
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      
+      URL.revokeObjectURL(element.href);
     } catch (error) {
       console.error("Download failed:", error);
+      alert("Download failed. Please try again.");
     }
   };
 
