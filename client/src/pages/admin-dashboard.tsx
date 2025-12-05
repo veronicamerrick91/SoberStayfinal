@@ -1806,7 +1806,7 @@ the actual document file stored on the server.
                     <div className="space-y-2">
                       <div>
                         <label className="text-xs text-muted-foreground">Recipient Group</label>
-                        <select className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm mt-1">
+                        <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm mt-1">
                           <option>All Tenants</option>
                           <option>All Providers</option>
                           <option>Active Subscribers</option>
@@ -1815,7 +1815,7 @@ the actual document file stored on the server.
                       </div>
                       <div>
                         <label className="text-xs text-muted-foreground">Subject</label>
-                        <input type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} placeholder="Email subject" className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm mt-1" />
+                        <input type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} placeholder="Email subject" className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm mt-1" />
                       </div>
                       <Button onClick={() => setShowEmailComposer(true)} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-2">Compose Email</Button>
                     </div>
@@ -1839,7 +1839,7 @@ the actual document file stored on the server.
                   <div className="space-y-2">
                     <div>
                       <label className="text-xs text-muted-foreground">Select Audience</label>
-                      <select value={smsAudience} onChange={(e) => setSmsAudience(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm mt-1">
+                      <select value={smsAudience} onChange={(e) => setSmsAudience(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm mt-1">
                         <option>All Users</option>
                         <option>All Tenants</option>
                         <option>All Providers</option>
@@ -1852,7 +1852,7 @@ the actual document file stored on the server.
                       maxLength={160} 
                       value={smsContent}
                       onChange={(e) => setSmsContent(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm" 
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm" 
                       rows={3} 
                     />
                     <div className="flex items-center justify-between">
@@ -2055,8 +2055,8 @@ the actual document file stored on the server.
                       </div>
                       <div className="text-xs text-gray-300 mb-3">{blog.views.toLocaleString()} views</div>
                       <div className="space-y-1">
-                        <input type="text" placeholder="Meta description" className="w-full px-2 py-1 rounded text-xs bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white" />
-                        <input type="text" placeholder="SEO keywords" className="w-full px-2 py-1 rounded text-xs bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white" />
+                        <input type="text" placeholder="Meta description" className="w-full px-3 py-2 rounded-lg text-xs bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white" />
+                        <input type="text" placeholder="SEO keywords" className="w-full px-3 py-2 rounded-lg text-xs bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white" />
                       </div>
                       <div className="flex gap-2 mt-2">
                         <Button onClick={() => { setBlogTitle(blog.title); setBlogContent(""); setShowBlogEditor(true); }} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
@@ -2099,14 +2099,14 @@ the actual document file stored on the server.
                   <div className="p-4 rounded-lg bg-white/5 border border-white/10">
                     <p className="text-white font-semibold mb-3">Create Promo Code</p>
                     <div className="space-y-2">
-                      <input type="text" placeholder="Code (e.g., SUMMER30)" className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm" />
-                      <select className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm">
+                      <input type="text" placeholder="Code (e.g., SUMMER30)" className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm" />
+                      <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm">
                         <option>10% off subscription</option>
                         <option>25% off subscription</option>
                         <option>Free featured listing</option>
                         <option>Free 3x visibility boost</option>
                       </select>
-                      <input type="number" placeholder="Limit (0 = unlimited)" className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm" />
+                      <input type="number" placeholder="Limit (0 = unlimited)" className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm" />
                       <Button onClick={handleCreatePromo} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">Create Code</Button>
                     </div>
                   </div>
@@ -2164,13 +2164,13 @@ the actual document file stored on the server.
                 <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
                   <p className="text-white font-semibold mb-2">Launch New Ad Campaign</p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <select className="px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm">
+                    <select className="px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm">
                       <option>Select Ad Type</option>
                       <option>Featured Listing</option>
                       <option>Sponsored Placement</option>
                       <option>Promoted Home</option>
                     </select>
-                    <input type="number" placeholder="Budget ($)" className="px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm" />
+                    <input type="number" placeholder="Budget ($)" className="px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm" />
                     <Button onClick={handleLaunchAd} className="bg-primary text-primary-foreground hover:bg-primary/90 h-10">Launch</Button>
                   </div>
                 </div>
