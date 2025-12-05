@@ -275,8 +275,9 @@ export function AdminDashboard() {
   };
 
   const handleDownloadDocument = (doc: any) => {
+    console.log("Download clicked for:", doc.documentName);
+    
     try {
-      // Simulate document download
       const documentContent = `===============================================
 DOCUMENT VERIFICATION RECORD
 ===============================================
@@ -290,25 +291,28 @@ Submitted: ${doc.uploadedDate}
 Current Status: ${doc.status}
 
 ===============================================
-This is a simulated PDF document download.
+This is a simulated document download.
 In a production system, this would download
 the actual document file stored on the server.
 ===============================================`;
+
+      // Create data URL
+      const dataUrl = "data:text/plain;charset=utf-8," + encodeURIComponent(documentContent);
       
-      const element = document.createElement("a");
-      const file = new Blob([documentContent], { type: "text/plain" });
-      element.href = URL.createObjectURL(file);
-      element.download = `${doc.documentName.replace(/\s+/g, "_")}.txt`;
-      element.style.visibility = "hidden";
+      // Create and trigger download
+      const link = document.createElement("a");
+      link.setAttribute("href", dataUrl);
+      link.setAttribute("download", `${doc.documentName.replace(/\s+/g, "_")}.txt`);
+      link.style.display = "none";
       
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
+      document.body.appendChild(link);
+      console.log("Clicking download link...");
+      link.click();
+      document.body.removeChild(link);
       
-      URL.revokeObjectURL(element.href);
+      console.log("Download initiated successfully");
     } catch (error) {
-      console.error("Download failed:", error);
-      alert("Download failed. Please try again.");
+      console.error("Download error:", error);
     }
   };
 
