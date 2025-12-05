@@ -2281,88 +2281,183 @@ the actual document file stored on the server.
 
         {showWorkflowModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto p-4">
-            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col my-8">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden flex flex-col">
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
-                <h2 className="text-xl font-bold text-white">Create Email Workflow</h2>
-                <p className="text-xs text-muted-foreground mt-1">Set up automated email sequences</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Workflow Editor</h2>
+                    <p className="text-xs text-muted-foreground mt-1">Create automated email sequences</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{newWorkflowBody.split(' ').filter(w => w).length} words</span>
+                </div>
               </div>
-              <div className="p-6">
               
-              <div className="space-y-4 max-h-96 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto p-6 space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Workflow Name *</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter workflow name..." 
+                      value={newWorkflowName}
+                      onChange={(e) => setNewWorkflowName(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Trigger Event</label>
+                    <select 
+                      value={newWorkflowTrigger}
+                      onChange={(e) => setNewWorkflowTrigger(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                    >
+                      <option value="onSignup">On User Signup</option>
+                      <option value="onApplicationApproved">Application Approved</option>
+                      <option value="onApplicationSubmitted">Application Submitted</option>
+                      <option value="onSubscriptionRenewal">Subscription Renewal</option>
+                      <option value="onInactivity">30 Days Inactive</option>
+                      <option value="manual">Manual Send</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Workflow Name</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Subject Line (What Recipients See)</label>
                   <input 
                     type="text" 
-                    placeholder="e.g., New Tenant Onboarding" 
-                    value={newWorkflowName}
-                    onChange={(e) => setNewWorkflowName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Workflow Trigger</label>
-                  <select 
-                    value={newWorkflowTrigger}
-                    onChange={(e) => setNewWorkflowTrigger(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
-                  >
-                    <option value="onSignup">On User Signup</option>
-                    <option value="onApplicationApproved">Application Approved</option>
-                    <option value="onApplicationSubmitted">Application Submitted</option>
-                    <option value="onSubscriptionRenewal">Subscription Renewal</option>
-                    <option value="onInactivity">30 Days Inactive</option>
-                    <option value="manual">Manual Send</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Email Template</label>
-                  <select 
-                    value={newWorkflowTemplate}
-                    onChange={(e) => setNewWorkflowTemplate(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
-                  >
-                    <option value="welcome">Welcome Series</option>
-                    <option value="provider-onboard">Provider Onboarding</option>
-                    <option value="app-approved">Application Approved</option>
-                    <option value="renewal-reminder">Renewal Reminder</option>
-                    <option value="success-story">Success Stories</option>
-                    <option value="blank">Blank Template</option>
-                  </select>
-                </div>
-
-                <div className="border-t border-primary/20 pt-4">
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Email Subject Line</label>
-                  <input 
-                    type="text" 
-                    placeholder="e.g., Welcome to Sober Stay!" 
+                    placeholder="Write a compelling subject line..." 
                     value={newWorkflowSubject}
                     onChange={(e) => setNewWorkflowSubject(e.target.value)}
                     className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">This is what recipients see in their inbox</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Template</label>
+                    <select 
+                      value={newWorkflowTemplate}
+                      onChange={(e) => setNewWorkflowTemplate(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                    >
+                      <option value="welcome">Welcome</option>
+                      <option value="provider-onboard">Onboarding</option>
+                      <option value="app-approved">Approved</option>
+                      <option value="renewal-reminder">Reminder</option>
+                      <option value="success-story">Success</option>
+                      <option value="blank">Blank</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Delay</label>
+                    <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors">
+                      <option>Immediately</option>
+                      <option>1 hour</option>
+                      <option>24 hours</option>
+                      <option>3 days</option>
+                      <option>7 days</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Priority</label>
+                    <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors">
+                      <option>Normal</option>
+                      <option>High</option>
+                      <option>Low</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Audience</label>
+                    <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors">
+                      <option>All Users</option>
+                      <option>Tenants</option>
+                      <option>Providers</option>
+                      <option>New Users</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Status</label>
+                    <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors">
+                      <option>Active</option>
+                      <option>Paused</option>
+                      <option>Draft</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Email Content</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email Content *</label>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-white">B</Button>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-white italic">I</Button>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-white underline">U</Button>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-white">Link</Button>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-white">[var]</Button>
+                    </div>
+                  </div>
                   <textarea 
-                    placeholder="Write your email content here. You can use HTML or plain text. Variables: [name], [email], [role], [property]" 
+                    placeholder="Write your email content here. Use [name], [email], [role], [property] for personalization..." 
                     value={newWorkflowBody}
                     onChange={(e) => setNewWorkflowBody(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm font-mono transition-colors"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors min-h-[150px] resize-none"
                     rows={6}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Use [variable] syntax to personalize emails. Supports HTML formatting.</p>
                 </div>
 
-                <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
-                  <p className="text-xs text-primary font-medium">Preview: This workflow will send emails when a user {newWorkflowTrigger === 'onSignup' ? 'signs up' : newWorkflowTrigger === 'onApplicationApproved' ? 'has an approved application' : 'triggers this event'}.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Tags (Comma-Separated)</label>
+                    <input 
+                      type="text" 
+                      placeholder="onboarding, welcome, new-user" 
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Workflow ID</label>
+                    <input 
+                      type="text" 
+                      placeholder="auto-generated" 
+                      disabled
+                      className="w-full px-4 py-3 rounded-lg bg-background/50 border border-primary/20 text-muted-foreground text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                  <p className="text-xs font-semibold text-white mb-2">Workflow Preview</p>
+                  <p className="text-xs text-muted-foreground">
+                    This workflow will send "{newWorkflowSubject || 'your email'}" when a user {newWorkflowTrigger === 'onSignup' ? 'signs up' : newWorkflowTrigger === 'onApplicationApproved' ? 'has an approved application' : newWorkflowTrigger === 'onApplicationSubmitted' ? 'submits an application' : newWorkflowTrigger === 'onSubscriptionRenewal' ? 'renews subscription' : newWorkflowTrigger === 'onInactivity' ? 'is inactive for 30 days' : 'is manually triggered'}.
+                  </p>
                 </div>
               </div>
-              </div>
 
-              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-3">
+                <Button 
+                  onClick={() => {
+                    if (newWorkflowName.trim()) {
+                      setWorkflows([...workflows, { 
+                        name: newWorkflowName, 
+                        trigger: newWorkflowTrigger, 
+                        template: newWorkflowTemplate,
+                        subject: newWorkflowSubject,
+                        body: newWorkflowBody,
+                        status: "Draft",
+                        created: new Date().toLocaleDateString()
+                      }]);
+                      setShowWorkflowModal(false);
+                      setNewWorkflowName("");
+                      setNewWorkflowSubject("");
+                      setNewWorkflowBody("");
+                      toast({ title: "Draft Saved", description: "Workflow saved as draft" });
+                    }
+                  }} 
+                  variant="outline"
+                  className="flex-1 gap-2"
+                >
+                  <FileText className="w-4 h-4" /> Save Draft
+                </Button>
                 <Button 
                   onClick={() => {
                     if (newWorkflowName.trim() && newWorkflowSubject.trim() && newWorkflowBody.trim()) {
@@ -2379,11 +2474,12 @@ the actual document file stored on the server.
                       setNewWorkflowName("");
                       setNewWorkflowSubject("");
                       setNewWorkflowBody("");
+                      toast({ title: "Workflow Activated", description: "Workflow is now active and will send emails automatically" });
                     }
                   }} 
-                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
                 >
-                  Create Workflow
+                  <CheckCircle className="w-4 h-4" /> Activate Workflow
                 </Button>
                 <Button 
                   onClick={() => {
