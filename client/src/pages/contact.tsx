@@ -29,9 +29,9 @@ export function Contact() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 gap-8">
             {/* Contact Info */}
-            <div className="md:col-span-1 space-y-6">
+            <div className="space-y-6">
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-4">
@@ -52,7 +52,7 @@ export function Contact() {
             </div>
 
             {/* Contact Form */}
-            <div className="md:col-span-2">
+            <div>
               <Card>
                 <CardHeader>
                   <CardTitle>Send us a Message</CardTitle>
