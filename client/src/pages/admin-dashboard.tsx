@@ -1702,13 +1702,23 @@ the actual document file stored on the server.
 
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Mail className="w-5 h-5" /> Email Campaigns
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Mail className="w-5 h-5" /> Email Campaigns
+                  </CardTitle>
+                  <Button onClick={() => { setEmailSubject(""); setEmailBodyText(""); setShowEmailComposer(true); }} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
+                    <Plus className="w-4 h-4" /> Create Campaign
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 {campaigns.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-4">No campaigns yet. Create your first campaign!</p>
+                  <div className="text-center py-12 rounded-lg bg-white/5 border border-white/10 border-dashed">
+                    <Mail className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-white font-medium mb-1">No campaigns yet</p>
+                    <p className="text-xs text-muted-foreground mb-4">Create your first email campaign to engage users</p>
+                    <Button onClick={() => { setEmailSubject(""); setEmailBodyText(""); setShowEmailComposer(true); }} size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">Create Campaign</Button>
+                  </div>
                 ) : (
                   campaigns.map((campaign, i) => (
                     <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10">
@@ -1731,9 +1741,6 @@ the actual document file stored on the server.
                     </div>
                   ))
                 )}
-                <Button onClick={() => { setEmailSubject(""); setEmailBodyText(""); setShowEmailComposer(true); }} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 mt-4">
-                  <Plus className="w-4 h-4" /> Create Campaign
-                </Button>
               </CardContent>
             </Card>
 
