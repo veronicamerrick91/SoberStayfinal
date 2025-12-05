@@ -255,6 +255,7 @@ export default function Browse() {
                           <Badge variant="secondary" className="bg-secondary/60 text-xs py-0 px-2">{home.gender}</Badge>
                           <Badge variant="outline" className="border-primary/30 text-primary text-xs py-0 px-2">{home.roomType}</Badge>
                           {home.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary text-xs py-0 px-2">MAT</Badge>}
+                          {(home as any).isWaitlisted && <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs py-0 px-2">⏳ Waitlisted</Badge>}
                         </div>
                       </div>
                       
