@@ -3142,79 +3142,114 @@ Use the toolbar above for formatting, or write in Markdown:
         )}
 
         {showEmailComposer && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
-              <h2 className="text-xl font-bold text-white mb-4">Email Composer</h2>
-              <div className="space-y-4 mb-6">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Email Composer</h2>
+                <p className="text-xs text-muted-foreground mt-1">Design professional email campaigns</p>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-6 space-y-5">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Email Subject</label>
-                  <input type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} placeholder="Enter email subject" className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm" />
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Email Subject</label>
+                  <input 
+                    type="text" 
+                    value={emailSubject} 
+                    onChange={(e) => setEmailSubject(e.target.value)} 
+                    placeholder="Enter compelling subject line..." 
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                    data-testid="input-email-subject"
+                  />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Font</label>
-                    <select value={emailFont} onChange={(e) => setEmailFont(e.target.value)} className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-xs">
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Font</label>
+                    <select 
+                      value={emailFont} 
+                      onChange={(e) => setEmailFont(e.target.value)} 
+                      className="w-full px-3 py-2 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-xs transition-colors"
+                      data-testid="select-font"
+                    >
                       <option>Arial</option>
                       <option>Georgia</option>
-                      <option>Times New Roman</option>
-                      <option>Courier New</option>
                       <option>Verdana</option>
                       <option>Trebuchet MS</option>
                     </select>
                   </div>
                   
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Size</label>
-                    <select value={emailFontSize} onChange={(e) => setEmailFontSize(Number(e.target.value))} className="w-full px-2 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-xs">
-                      <option value={12}>12px</option>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Size</label>
+                    <select 
+                      value={emailFontSize} 
+                      onChange={(e) => setEmailFontSize(Number(e.target.value))} 
+                      className="w-full px-3 py-2 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-xs transition-colors"
+                      data-testid="select-size"
+                    >
                       <option value={14}>14px</option>
                       <option value={16}>16px</option>
                       <option value={18}>18px</option>
                       <option value={20}>20px</option>
-                      <option value={24}>24px</option>
-                      <option value={28}>28px</option>
                     </select>
                   </div>
                   
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Text Color</label>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Text Color</label>
                     <div className="flex gap-2">
-                      <input type="color" value={emailFontColor} onChange={(e) => setEmailFontColor(e.target.value)} className="w-full h-10 rounded-lg cursor-pointer bg-background/50 border border-white/10" />
+                      <input 
+                        type="color" 
+                        value={emailFontColor} 
+                        onChange={(e) => setEmailFontColor(e.target.value)} 
+                        className="w-full h-10 rounded-lg cursor-pointer bg-background/80 border border-primary/30 hover:border-primary/50 transition-colors"
+                        data-testid="input-color"
+                      />
                     </div>
                   </div>
                   
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Preview</label>
-                    <div className="w-full h-10 rounded-lg bg-background/50 border border-white/10 flex items-center px-3" style={{ fontSize: `${emailFontSize * 0.7}px`, fontFamily: emailFont, color: emailFontColor }}>
-                      Preview
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Preview</label>
+                    <div className="w-full h-10 rounded-lg bg-background/80 border border-primary/30 flex items-center px-3 text-center" style={{ fontSize: `${emailFontSize * 0.65}px`, fontFamily: emailFont, color: emailFontColor }}>
+                      Abc
                     </div>
                   </div>
                 </div>
                 
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Email Body</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Email Content</label>
                   <textarea
-                    placeholder="Type your email content here..."
+                    placeholder="Write your email message here. Keep it engaging and concise..."
                     value={emailBodyText}
                     onChange={(e) => setEmailBodyText(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
-                    rows={6}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors resize-none"
+                    rows={8}
                     style={{ fontFamily: emailFont, fontSize: `${emailFontSize}px`, color: emailFontColor }}
+                    data-testid="textarea-content"
                   />
                 </div>
                 
-                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                  <p className="text-xs text-muted-foreground mb-2">Live Preview</p>
-                  <div className="p-4 bg-white/5 rounded-lg border border-white/10 min-h-32" style={{ fontFamily: emailFont, fontSize: `${emailFontSize}px`, color: emailFontColor }}>
+                <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+                  <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Live Preview</p>
+                  <div className="p-4 bg-white/5 rounded-lg border border-white/10 min-h-32 max-h-40 overflow-auto" style={{ fontFamily: emailFont, fontSize: `${emailFontSize}px`, color: emailFontColor, lineHeight: "1.6" }}>
                     {emailBodyText || "Your email content will appear here..."}
                   </div>
                 </div>
               </div>
               
-              <div className="flex gap-2 justify-end">
-                <Button onClick={() => setShowEmailComposer(false)} variant="outline">Cancel</Button>
-                <Button onClick={() => { setShowEmailComposer(false); handleSendCampaign(); }} className="bg-primary hover:bg-primary/90">Send Campaign</Button>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2 justify-end">
+                <Button 
+                  onClick={() => setShowEmailComposer(false)} 
+                  variant="outline"
+                  data-testid="button-cancel-email"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={() => { setShowEmailComposer(false); handleSendCampaign(); toast({ title: "Campaign Sent", description: "Email campaign sent successfully!" }); }} 
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  data-testid="button-send-email"
+                >
+                  Send Campaign
+                </Button>
               </div>
             </div>
           </div>
