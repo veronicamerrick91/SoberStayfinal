@@ -1951,14 +1951,14 @@ the actual document file stored on the server.
             {/* Automated Campaign Creation Modal */}
             {showNewAutoCampaignModal && (
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+                <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
                   <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
                     <h2 className="text-xl font-bold text-white">Create Automated Campaign</h2>
                     <p className="text-xs text-muted-foreground mt-1">Set up automated email sequences</p>
                   </div>
-                  <div className="p-6 space-y-4">
+                  <div className="flex-1 overflow-y-auto p-6 space-y-5">
                     <div>
-                      <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Campaign Name</label>
+                      <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Campaign Name *</label>
                       <input 
                         type="text" 
                         value={newAutoCampaignName} 
@@ -1969,7 +1969,7 @@ the actual document file stored on the server.
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Trigger</label>
+                      <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Trigger *</label>
                       <select 
                         value={newAutoCampaignTrigger} 
                         onChange={(e) => setNewAutoCampaignTrigger(e.target.value)}
@@ -1984,7 +1984,7 @@ the actual document file stored on the server.
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Target Audience</label>
+                      <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Target Audience *</label>
                       <select 
                         value={newAutoCampaignAudience} 
                         onChange={(e) => setNewAutoCampaignAudience(e.target.value)}
@@ -1998,7 +1998,7 @@ the actual document file stored on the server.
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Number of Emails in Sequence</label>
+                      <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Number of Emails in Sequence *</label>
                       <input 
                         type="number" 
                         min="1" 
@@ -2010,21 +2010,20 @@ the actual document file stored on the server.
                       />
                     </div>
                   </div>
-                  <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
-                    <Button 
-                      onClick={handleCreateAutomatedCampaign} 
-                      className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                      data-testid="button-save-automated-campaign"
-                    >
-                      Create Campaign
-                    </Button>
+                  <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2 justify-end">
                     <Button 
                       onClick={() => setShowNewAutoCampaignModal(false)} 
-                      variant="outline" 
-                      className="flex-1"
+                      variant="outline"
                       data-testid="button-cancel-modal"
                     >
                       Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleCreateAutomatedCampaign} 
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      data-testid="button-save-automated-campaign"
+                    >
+                      Create Campaign
                     </Button>
                   </div>
                 </div>
@@ -2865,24 +2864,24 @@ Use the toolbar above for formatting, or write in Markdown:
 
         {showNewCampaignModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
                 <h2 className="text-xl font-bold text-white">Create New Campaign</h2>
                 <p className="text-xs text-muted-foreground mt-1">Set up a new email campaign</p>
               </div>
-              <div className="p-6 space-y-4">
+              <div className="flex-1 overflow-y-auto p-6 space-y-5">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Campaign Name</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Campaign Name *</label>
                   <input 
                     type="text" 
-                    placeholder="Campaign name" 
+                    placeholder="Enter a descriptive campaign name..." 
                     value={newCampaignName}
                     onChange={(e) => setNewCampaignName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Recipient Group</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Recipient Group *</label>
                   <select 
                     value={newCampaignRecipients}
                     onChange={(e) => setNewCampaignRecipients(e.target.value)}
@@ -2895,9 +2894,9 @@ Use the toolbar above for formatting, or write in Markdown:
                   </select>
                 </div>
               </div>
-              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
-                <Button onClick={handleSaveNewCampaign} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">Create</Button>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2 justify-end">
                 <Button onClick={() => setShowNewCampaignModal(false)} variant="outline">Cancel</Button>
+                <Button onClick={handleSaveNewCampaign} className="bg-primary text-primary-foreground hover:bg-primary/90">Create Campaign</Button>
               </div>
             </div>
           </div>
@@ -3199,7 +3198,7 @@ Use the toolbar above for formatting, or write in Markdown:
               
               <div className="flex-1 overflow-y-auto p-6 space-y-5">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Email Subject</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Email Subject *</label>
                   <input 
                     type="text" 
                     value={emailSubject} 
@@ -3216,7 +3215,7 @@ Use the toolbar above for formatting, or write in Markdown:
                     <select 
                       value={emailFont} 
                       onChange={(e) => setEmailFont(e.target.value)} 
-                      className="w-full px-3 py-2 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-xs transition-colors"
+                      className="w-full px-3 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-xs transition-colors"
                       data-testid="select-font"
                     >
                       <option>Arial</option>
@@ -3231,7 +3230,7 @@ Use the toolbar above for formatting, or write in Markdown:
                     <select 
                       value={emailFontSize} 
                       onChange={(e) => setEmailFontSize(Number(e.target.value))} 
-                      className="w-full px-3 py-2 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-xs transition-colors"
+                      className="w-full px-3 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-xs transition-colors"
                       data-testid="select-size"
                     >
                       <option value={14}>14px</option>
@@ -3243,27 +3242,25 @@ Use the toolbar above for formatting, or write in Markdown:
                   
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Text Color</label>
-                    <div className="flex gap-2">
-                      <input 
-                        type="color" 
-                        value={emailFontColor} 
-                        onChange={(e) => setEmailFontColor(e.target.value)} 
-                        className="w-full h-10 rounded-lg cursor-pointer bg-background/80 border border-primary/30 hover:border-primary/50 transition-colors"
-                        data-testid="input-color"
-                      />
-                    </div>
+                    <input 
+                      type="color" 
+                      value={emailFontColor} 
+                      onChange={(e) => setEmailFontColor(e.target.value)} 
+                      className="w-full h-11 rounded-lg cursor-pointer bg-background/80 border border-primary/30 hover:border-primary/50 transition-colors"
+                      data-testid="input-color"
+                    />
                   </div>
                   
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Preview</label>
-                    <div className="w-full h-10 rounded-lg bg-background/80 border border-primary/30 flex items-center px-3 text-center" style={{ fontSize: `${emailFontSize * 0.65}px`, fontFamily: emailFont, color: emailFontColor }}>
+                    <div className="w-full h-11 rounded-lg bg-background/80 border border-primary/30 flex items-center justify-center px-3" style={{ fontSize: `${emailFontSize * 0.65}px`, fontFamily: emailFont, color: emailFontColor }}>
                       Abc
                     </div>
                   </div>
                 </div>
                 
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Email Content</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Email Content *</label>
                   <textarea
                     placeholder="Write your email message here. Keep it engaging and concise..."
                     value={emailBodyText}
