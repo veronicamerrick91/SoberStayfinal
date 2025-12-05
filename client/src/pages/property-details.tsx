@@ -7,7 +7,7 @@ import {
   MapPin, ShieldCheck, Check, ArrowLeft, Share2, Heart, Flag,
   Wifi, Car, Utensils, Tv, Dumbbell, Calendar,
   Info, Mail, Phone, MessageSquare, Bus, ShoppingCart, Stethoscope, Users,
-  Video
+  Video, Lock
 } from "lucide-react";
 import { useRoute, Link, useLocation } from "wouter";
 import { isAuthenticated, getAuth } from "@/lib/auth";
@@ -349,6 +349,9 @@ export default function PropertyDetails() {
                    </div>
 
                    <div className="space-y-3 pt-4">
+                     <Badge className="bg-green-600/20 text-green-300 border border-green-600/30 gap-1 text-xs w-fit">
+                       <Lock className="w-3 h-3" /> Secure Application
+                     </Badge>
                      <Button 
                        onClick={() => setShowTourModal(true)}
                        className="w-full bg-primary/20 text-primary hover:bg-primary/30 h-12 border border-primary/50 gap-2"
