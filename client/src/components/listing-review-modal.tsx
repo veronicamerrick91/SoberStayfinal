@@ -35,6 +35,19 @@ interface ListingReviewModalProps {
   onDeny: (id: string, reason: string) => void;
 }
 
+const LISTING_DENIAL_REASONS = [
+  "Insufficient property photos or low quality images",
+  "Description lacks required details or clarity",
+  "Pricing information incomplete or inconsistent",
+  "Inadequate amenities or facilities listed",
+  "Supervision type not properly specified",
+  "Property does not meet safety standards",
+  "Provider not properly verified or unverified",
+  "Compliance issues with local regulations",
+  "Insufficient bed/room information",
+  "Other (specify in notes)"
+];
+
 export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }: ListingReviewModalProps) {
   const [denyReason, setDenyReason] = useState("");
   const [showDenyForm, setShowDenyForm] = useState(false);
@@ -296,11 +309,16 @@ export function ListingReviewModal({ open, onClose, listing, onApprove, onDeny }
             </div>
           ) : (
             <div className="space-y-3">
-              <Label className="text-white">Reason for Denial</Label>
-              <Textarea placeholder="Explain why..." value={denyReason} onChange={(e) => setDenyReason(e.target.value)} />
+              <Label className="text-white">Select Denial Reason *</Label>
+              <select value={denyReason} onChange={(e) => setDenyReason(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm">
+                <option value="">Choose a reason...</option>
+                {LISTING_DENIAL_REASONS.map((reason) => (
+                  <option key={reason} value={reason}>{reason}</option>
+                ))}
+              </select>
               <div className="flex gap-2 justify-end">
                 <Button variant="ghost" onClick={() => { setShowDenyForm(false); setDenyReason(""); }}>Cancel</Button>
-                <Button variant="destructive" onClick={handleDeny}>Confirm Denial</Button>
+                <Button variant="destructive" disabled={!denyReason} onClick={handleDeny}>Confirm Denial</Button>
               </div>
             </div>
           )}
