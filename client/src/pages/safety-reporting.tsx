@@ -228,7 +228,7 @@ export function SafetyReporting() {
                 If you need to report a serious issue or discuss a safety concern privately:
               </p>
               <div className="space-y-2 text-gray-300">
-                <p>📧 <strong className="text-white">Email:</strong> safety@soberstayhomes.com</p>
+                <p>📧 <strong className="text-white">Email:</strong> support@soberstayhomes.com</p>
                 <p>📱 <strong className="text-white">Phone:</strong> 1-800-SOBER-STAY</p>
                 <p>⚠️ <strong className="text-white">Emergencies:</strong> Call 911</p>
               </div>
