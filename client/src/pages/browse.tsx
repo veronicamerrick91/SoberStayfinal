@@ -258,10 +258,7 @@ export default function Browse() {
                         </div>
                       </div>
                       
-                      <div className="pt-2 border-t border-border/50 flex gap-1 mt-auto items-center">
-                        <Badge className="bg-green-600/20 text-green-300 border border-green-600/30 gap-1 text-xs shrink-0">
-                          <Lock className="w-3 h-3" /> Secure
-                        </Badge>
+                      <div className="pt-2 border-t border-border/50 flex gap-1 mt-auto">
                         <Button size="sm" className="flex-1 h-7 bg-primary text-primary-foreground hover:bg-primary/90 text-xs">
                           Details
                         </Button>
