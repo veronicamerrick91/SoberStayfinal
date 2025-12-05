@@ -3197,8 +3197,9 @@ Use the toolbar above for formatting, or write in Markdown:
               </div>
               
               <div className="flex-1 overflow-y-auto p-6 space-y-5">
+                {/* Subject Line */}
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Email Subject *</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Subject *</label>
                   <input 
                     type="text" 
                     value={emailSubject} 
@@ -3209,7 +3210,8 @@ Use the toolbar above for formatting, or write in Markdown:
                   />
                 </div>
                 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {/* Formatting Controls Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Font</label>
                     <select 
@@ -3259,35 +3261,48 @@ Use the toolbar above for formatting, or write in Markdown:
                   </div>
                 </div>
                 
+                {/* Email Content */}
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Email Content *</label>
-                  <textarea
-                    placeholder="Write your email message here. Keep it engaging and concise..."
-                    value={emailBodyText}
-                    onChange={(e) => setEmailBodyText(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors resize-none"
-                    rows={8}
-                    style={{ fontFamily: emailFont, fontSize: `${emailFontSize}px`, color: emailFontColor }}
-                    data-testid="textarea-content"
-                  />
+                  <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Content *</label>
+                  <div className="border border-primary/30 rounded-lg overflow-hidden">
+                    <div className="flex flex-wrap items-center gap-1 p-2 bg-background/50 border-b border-primary/20">
+                      <span className="text-xs text-muted-foreground px-2 py-1">Formatting toolbar</span>
+                      <div className="flex-1" />
+                      <span className="text-xs text-muted-foreground px-2">HTML supported</span>
+                    </div>
+                    <textarea
+                      placeholder="Write your email message here. Keep it engaging and concise..."
+                      value={emailBodyText}
+                      onChange={(e) => setEmailBodyText(e.target.value)}
+                      className="w-full px-4 py-4 bg-background/80 text-white h-48 resize-none border-0 focus:outline-none focus:ring-0"
+                      style={{ fontFamily: emailFont, fontSize: `${emailFontSize}px`, color: emailFontColor }}
+                      data-testid="textarea-content"
+                    />
+                  </div>
                 </div>
                 
+                {/* Live Preview */}
                 <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
-                  <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Live Preview</p>
-                  <div className="p-4 bg-white/5 rounded-lg border border-white/10 min-h-32 max-h-40 overflow-auto" style={{ fontFamily: emailFont, fontSize: `${emailFontSize}px`, color: emailFontColor, lineHeight: "1.6" }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Live Preview</p>
+                    <span className="text-xs text-muted-foreground">{emailBodyText.length} characters</span>
+                  </div>
+                  <div className="p-6 bg-background/50 rounded-lg border border-primary/20 min-h-40 max-h-48 overflow-auto" style={{ fontFamily: emailFont, fontSize: `${emailFontSize}px`, color: emailFontColor, lineHeight: "1.6" }}>
                     {emailBodyText || "Your email content will appear here..."}
                   </div>
                 </div>
               </div>
               
-              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2 justify-end">
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
                 <Button 
                   onClick={() => setShowEmailComposer(false)} 
-                  variant="outline"
+                  variant="ghost"
+                  className="text-gray-400 hover:text-white"
                   data-testid="button-cancel-email"
                 >
                   Cancel
                 </Button>
+                <div className="flex-1" />
                 <Button 
                   onClick={() => { setShowEmailComposer(false); handleSendCampaign(); toast({ title: "Campaign Sent", description: "Email campaign sent successfully!" }); }} 
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
