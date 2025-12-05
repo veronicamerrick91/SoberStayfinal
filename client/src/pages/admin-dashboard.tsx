@@ -1198,44 +1198,118 @@ the actual document file stored on the server.
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-3 gap-4 mb-6">
+                <div className="grid md:grid-cols-4 gap-4 mb-6">
                   <Card className="bg-white/5 border-border">
                     <CardContent className="pt-4">
                       <p className="text-xs font-bold text-primary mb-2">Monthly Revenue</p>
                       <p className="text-2xl font-bold text-white">$12,450</p>
+                      <p className="text-xs text-green-500 mt-1">↑ 8% vs last month</p>
                     </CardContent>
                   </Card>
                   <Card className="bg-white/5 border-border">
                     <CardContent className="pt-4">
                       <p className="text-xs font-bold text-primary mb-2">Active Subscriptions</p>
                       <p className="text-2xl font-bold text-white">127</p>
+                      <p className="text-xs text-muted-foreground mt-1">All plans combined</p>
                     </CardContent>
                   </Card>
                   <Card className="bg-white/5 border-border">
                     <CardContent className="pt-4">
                       <p className="text-xs font-bold text-primary mb-2">Failed Payments</p>
                       <p className="text-2xl font-bold text-red-500">3</p>
+                      <p className="text-xs text-red-500 mt-1">Action needed</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-white/5 border-border">
+                    <CardContent className="pt-4">
+                      <p className="text-xs font-bold text-primary mb-2">Avg Revenue/Sub</p>
+                      <p className="text-2xl font-bold text-white">$42</p>
+                      <p className="text-xs text-muted-foreground mt-1">Per provider</p>
                     </CardContent>
                   </Card>
                 </div>
-                <div className="space-y-3">
-                  <h3 className="text-white font-bold text-sm mb-3">Active Provider Subscriptions</h3>
-                  {[
-                    { provider: "Recovery First LLC", plan: "Premium", status: "Active", renewDate: "Dec 10, 2024", amount: "$49/mo" },
-                    { provider: "Hope House", plan: "Basic", status: "Active", renewDate: "Dec 22, 2024", amount: "$29/mo" },
-                    { provider: "New Path Recovery", plan: "Premium", status: "Active", renewDate: "Dec 5, 2024", amount: "$49/mo" },
-                  ].map((sub, i) => (
-                    <div key={i} className="p-3 rounded-lg bg-white/5 border border-border/50 flex items-center justify-between">
-                      <div>
-                        <p className="text-white font-medium text-sm">{sub.provider}</p>
-                        <p className="text-xs text-muted-foreground">{sub.plan} • Renews {sub.renewDate}</p>
+
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <h3 className="text-white font-bold text-sm mb-3">Active Provider Subscriptions</h3>
+                    {[
+                      { provider: "Recovery First LLC", plan: "Premium", status: "Active", renewDate: "Dec 10, 2024", amount: "$49/mo", contact: "admin@recoveryfirst.com", startDate: "Sep 10, 2024", paymentMethod: "Visa ending in 4242" },
+                      { provider: "Hope House", plan: "Basic", status: "Active", renewDate: "Dec 22, 2024", amount: "$29/mo", contact: "contact@hopehouse.org", startDate: "Oct 22, 2024", paymentMethod: "Mastercard ending in 1234" },
+                      { provider: "New Path Recovery", plan: "Premium", status: "Active", renewDate: "Dec 5, 2024", amount: "$49/mo", contact: "info@newpath.org", startDate: "Sep 5, 2024", paymentMethod: "Visa ending in 5678" },
+                    ].map((sub, i) => (
+                      <div key={i} className="p-4 rounded-lg bg-white/5 border border-border/50">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1">
+                            <p className="text-white font-medium text-sm">{sub.provider}</p>
+                            <p className="text-xs text-muted-foreground">{sub.contact}</p>
+                          </div>
+                          <Badge className="bg-green-500/80 text-xs">{sub.status}</Badge>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3 text-xs">
+                          <div>
+                            <p className="text-muted-foreground">Plan</p>
+                            <p className="text-white font-semibold">{sub.plan}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Amount</p>
+                            <p className="text-white font-semibold">{sub.amount}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Started</p>
+                            <p className="text-white font-semibold">{sub.startDate}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Renews</p>
+                            <p className="text-white font-semibold">{sub.renewDate}</p>
+                          </div>
+                        </div>
+                        <div className="pt-2 border-t border-border/50">
+                          <p className="text-xs text-muted-foreground">Payment Method: <span className="text-white">{sub.paymentMethod}</span></p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <Badge className="bg-green-500/80 text-xs mb-1">{sub.status}</Badge>
-                        <p className="text-xs font-bold text-white">{sub.amount}</p>
+                    ))}
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="text-white font-bold text-sm mb-3">Failed Payments & Issues</h3>
+                    {[
+                      { provider: "Serenity House", plan: "Premium", amount: "$49", failDate: "Dec 3, 2024", reason: "Card declined", contact: "info@serenityhouse.org", status: "Awaiting update" },
+                      { provider: "Pathway Recovery", plan: "Basic", amount: "$29", failDate: "Dec 1, 2024", reason: "Expired card", contact: "billing@pathwayrecovery.com", status: "Updated" },
+                      { provider: "New Beginnings", plan: "Premium", amount: "$49", failDate: "Nov 28, 2024", reason: "Insufficient funds", contact: "admin@newbeginnings.org", status: "Retry pending" },
+                    ].map((fail, i) => (
+                      <div key={i} className="p-4 rounded-lg bg-red-500/5 border border-red-500/20">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <p className="text-white font-medium text-sm">{fail.provider}</p>
+                            <p className="text-xs text-muted-foreground">{fail.contact}</p>
+                          </div>
+                          <Badge className="bg-red-500/80 text-xs">{fail.status}</Badge>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2 text-xs">
+                          <div>
+                            <p className="text-muted-foreground">Plan</p>
+                            <p className="text-white font-semibold">{fail.plan}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Amount</p>
+                            <p className="text-white font-semibold">{fail.amount}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Failure Date</p>
+                            <p className="text-white font-semibold">{fail.failDate}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Reason</p>
+                            <p className="text-red-400 font-semibold">{fail.reason}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <Button size="sm" className="h-7 text-xs bg-amber-500/20 text-amber-500 hover:bg-amber-500/30">Send Reminder</Button>
+                          <Button size="sm" variant="outline" className="h-7 text-xs border-primary/30">Contact Provider</Button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
