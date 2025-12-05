@@ -1878,84 +1878,25 @@ the actual document file stored on the server.
                     <p className="text-white font-semibold mb-3">Automated Sequences</p>
                     <div className="space-y-2">
                       {emailSequences.map((seq) => (
-                        <div key={seq.id} className="rounded-lg bg-white/5 overflow-hidden">
-                          <div 
-                            className="flex items-center justify-between p-3 cursor-pointer hover:bg-white/10 transition-colors"
-                            onClick={() => setExpandedSequence(expandedSequence === seq.id ? null : seq.id)}
-                          >
-                            <div className="flex items-center gap-2">
-                              <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${expandedSequence === seq.id ? 'rotate-90' : ''}`} />
-                              <span className="text-sm text-white">{seq.name}</span>
-                              <Badge variant="outline" className="text-xs">{seq.emails.length} emails</Badge>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <input 
-                                type="checkbox" 
-                                checked={seq.active}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  setEmailSequences(emailSequences.map(s => 
-                                    s.id === seq.id ? { ...s, active: !s.active } : s
-                                  ));
-                                }}
-                                className="w-4 h-4" 
-                              />
-                            </div>
+                        <div key={seq.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-300">{seq.name}</span>
+                            <Badge variant="outline" className="text-xs">{seq.emails.length} emails</Badge>
                           </div>
-                          {expandedSequence === seq.id && (
-                            <div className="border-t border-white/10 p-3 space-y-2">
-                              {seq.emails.map((email, idx) => (
-                                <div key={email.id} className="flex items-center justify-between p-2 bg-background/50 rounded-lg">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                                      <span className="text-xs text-primary font-medium">{idx + 1}</span>
-                                    </div>
-                                    <div>
-                                      <p className="text-sm text-white">{email.subject}</p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {email.day === 0 ? 'Immediately' : email.day > 0 ? `Day ${email.day}` : `${Math.abs(email.day)} days before`}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <Button 
-                                    size="sm" 
-                                    variant="ghost" 
-                                    className="h-7 text-xs"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setEditingSequenceEmail({ sequenceId: seq.id, email });
-                                      setSequenceEmailSubject(email.subject);
-                                      setSequenceEmailBody(email.body);
-                                      setShowSequenceEmailEditor(true);
-                                    }}
-                                  >
-                                    Edit
-                                  </Button>
-                                </div>
-                              ))}
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                className="w-full mt-2 h-8 text-xs gap-1"
-                                onClick={() => {
-                                  const newEmail = { 
-                                    id: seq.emails.length + 1, 
-                                    day: seq.emails.length * 7, 
-                                    subject: "New Email", 
-                                    body: "Hi [name],\n\nYour email content here..." 
-                                  };
-                                  setEmailSequences(emailSequences.map(s => 
-                                    s.id === seq.id ? { ...s, emails: [...s.emails, newEmail], emailCount: s.emailCount + 1 } : s
-                                  ));
-                                }}
-                              >
-                                <Plus className="w-3 h-3" /> Add Email
-                              </Button>
-                            </div>
-                          )}
+                          <input 
+                            type="checkbox" 
+                            checked={seq.active}
+                            onChange={() => {
+                              setEmailSequences(emailSequences.map(s => 
+                                s.id === seq.id ? { ...s, active: !s.active } : s
+                              ));
+                            }}
+                            className="w-4 h-4" 
+                          />
                         </div>
                       ))}
                     </div>
+                    <p className="text-xs text-muted-foreground mt-3">Edit sequences in the Workflows tab</p>
                   </div>
                 </div>
 
@@ -2354,20 +2295,98 @@ the actual document file stored on the server.
                 <CardTitle className="text-white">Workflow Templates</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {[
-                  { id: "welcome", name: "Welcome Series", desc: "3-email welcome sequence for new tenants", emails: 3 },
-                  { id: "provider-onboard", name: "Provider Onboarding", desc: "Complete setup guide for new providers", emails: 5 },
-                  { id: "app-approved", name: "Application Approved", desc: "Notify tenant after successful application", emails: 1 },
-                  { id: "renewal-reminder", name: "Renewal Reminder", desc: "Remind providers about subscription renewal", emails: 2 },
-                  { id: "success-story", name: "Success Stories", desc: "Share recovery testimonials monthly", emails: 4 },
-                ].map((template) => (
-                  <div key={template.id} className="p-4 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between hover:border-primary/30 transition-colors">
-                    <div className="flex-1">
-                      <p className="text-white font-medium text-sm">{template.name}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{template.desc}</p>
-                      <p className="text-xs text-primary mt-1">{template.emails} emails</p>
+                {emailSequences.map((seq) => (
+                  <div key={seq.id} className="rounded-lg bg-white/5 border border-white/10 overflow-hidden hover:border-primary/30 transition-colors">
+                    <div 
+                      className="p-4 flex items-center justify-between cursor-pointer"
+                      onClick={() => setExpandedSequence(expandedSequence === seq.id ? null : seq.id)}
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${expandedSequence === seq.id ? 'rotate-90' : ''}`} />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-white font-medium text-sm">{seq.name}</p>
+                            <Badge variant="outline" className="text-xs">{seq.emails.length} emails</Badge>
+                            {seq.active && <Badge className="bg-green-500/20 text-green-400 text-xs">Active</Badge>}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">Click to view and edit individual emails</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="checkbox" 
+                          checked={seq.active}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            setEmailSequences(emailSequences.map(s => 
+                              s.id === seq.id ? { ...s, active: !s.active } : s
+                            ));
+                          }}
+                          className="w-4 h-4" 
+                        />
+                        <Button 
+                          onClick={(e) => { e.stopPropagation(); setNewWorkflowTemplate(seq.id); setShowWorkflowModal(true); }} 
+                          size="sm" 
+                          variant="outline" 
+                          className="h-8 text-xs"
+                        >
+                          Use Template
+                        </Button>
+                      </div>
                     </div>
-                    <Button onClick={() => { setNewWorkflowTemplate(template.id); setShowWorkflowModal(true); }} size="sm" variant="outline" className="h-8 text-xs">Use Template</Button>
+                    {expandedSequence === seq.id && (
+                      <div className="border-t border-white/10 p-4 space-y-2 bg-background/30">
+                        <p className="text-xs text-muted-foreground mb-3">Emails in this sequence:</p>
+                        {seq.emails.map((email, idx) => (
+                          <div key={email.id} className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-white/5">
+                            <div className="flex items-center gap-3">
+                              <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
+                                <span className="text-xs text-primary font-medium">{idx + 1}</span>
+                              </div>
+                              <div>
+                                <p className="text-sm text-white">{email.subject}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {email.day === 0 ? 'Sent immediately' : email.day > 0 ? `Sent on Day ${email.day}` : `Sent ${Math.abs(email.day)} days before`}
+                                </p>
+                              </div>
+                            </div>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              className="h-7 text-xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingSequenceEmail({ sequenceId: seq.id, email });
+                                setSequenceEmailSubject(email.subject);
+                                setSequenceEmailBody(email.body);
+                                setShowSequenceEmailEditor(true);
+                              }}
+                            >
+                              Edit
+                            </Button>
+                          </div>
+                        ))}
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-full mt-3 h-8 text-xs gap-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newEmail = { 
+                              id: seq.emails.length + 1, 
+                              day: seq.emails.length > 0 ? seq.emails[seq.emails.length - 1].day + 7 : 0, 
+                              subject: "New Email", 
+                              body: "Hi [name],\n\nYour email content here..." 
+                            };
+                            setEmailSequences(emailSequences.map(s => 
+                              s.id === seq.id ? { ...s, emails: [...s.emails, newEmail] } : s
+                            ));
+                          }}
+                        >
+                          <Plus className="w-3 h-3" /> Add Email to Sequence
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </CardContent>
