@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { insertListingSchema, insertSubscriptionSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
+import bcrypt from "bcrypt";
 
 // Registration schema with validation
 const registerSchema = z.object({
@@ -40,11 +41,14 @@ export async function registerRoutes(
       const username = email.split("@")[0] + Math.floor(Math.random() * 1000);
       const name = `${firstName} ${lastName}`;
 
-      // Create the user (in production, hash the password!)
+      // Hash the password securely
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create the user with hashed password
       const user = await storage.createUser({
         username,
         email,
-        password, // Note: In production, this should be hashed!
+        password: hashedPassword,
         name,
         role,
       });
@@ -79,8 +83,9 @@ export async function registerRoutes(
         return res.status(401).json({ error: "Invalid email or password" });
       }
 
-      // Check password (in production, compare hashed passwords!)
-      if (user.password !== password) {
+      // Verify password against hash
+      const passwordMatch = await bcrypt.compare(password, user.password);
+      if (!passwordMatch) {
         return res.status(401).json({ error: "Invalid email or password" });
       }
 
