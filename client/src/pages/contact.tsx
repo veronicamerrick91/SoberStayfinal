@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, MapPin, Phone, Send } from "lucide-react";
+import { Mail, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export function Contact() {
@@ -41,7 +41,7 @@ export function Contact() {
                     <div>
                       <h3 className="font-bold mb-1">Email Us</h3>
                       <p className="text-sm text-muted-foreground mb-2">For general inquiries:</p>
-                      <a href="mailto:support@soberstayhomes.com" className="text-primary hover:underline text-sm">
+                      <a href="mailto:support@soberstayhomes.com" className="text-primary hover:underline text-sm break-words">
                         support@soberstayhomes.com
                       </a>
                     </div>
@@ -49,23 +49,6 @@ export function Contact() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-full bg-primary/10 text-primary">
-                      <MapPin className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold mb-1">Office</h3>
-                      <p className="text-sm text-muted-foreground">
-                        123 Recovery Way<br />
-                        Suite 100<br />
-                        New York, NY 10001
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
             {/* Contact Form */}
