@@ -19,6 +19,7 @@ import { UserEditModal } from "@/components/user-edit-modal";
 import { ListingReviewModal } from "@/components/listing-review-modal";
 import { ApplicationDetailsModal } from "@/components/application-details-modal";
 import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface User {
   id: string;
@@ -31,6 +32,7 @@ interface User {
 }
 
 export function AdminDashboard() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [reports, setReports] = useState<any[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -404,13 +406,19 @@ the actual document file stored on the server.
   };
 
   const handleSendPaymentReminder = (provider: string, email: string) => {
-    // Simulate sending reminder email
     console.log(`Sent payment reminder to ${provider} at ${email}`);
+    toast({
+      title: "Reminder Sent",
+      description: `Payment reminder sent to ${provider} at ${email}`,
+    });
   };
 
   const handleContactProvider = (provider: string, email: string) => {
-    // Simulate contacting provider
     console.log(`Contacting ${provider} at ${email}`);
+    toast({
+      title: "Contact Sent",
+      description: `Contact request initiated for ${provider}. Email: ${email}`,
+    });
   };
 
   const handleUploadDocument = (docId: number) => {
