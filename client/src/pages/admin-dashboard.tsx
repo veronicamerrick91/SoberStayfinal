@@ -11,7 +11,8 @@ import {
   Search, Download, Flag, Lock, Clock, Upload, Shield, Plus,
   CheckCircle, Bold, Italic, Underline, Strikethrough, 
   List, ListOrdered, Heading1, Heading2, Link2, Quote, 
-  AlignLeft, AlignCenter, AlignRight, Undo, Redo, Type, Save
+  AlignLeft, AlignCenter, AlignRight, Undo, Redo, Type, Save,
+  ChevronRight
 } from "lucide-react";
 import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { getReports, updateReportStatus } from "@/lib/reports";
@@ -157,6 +158,51 @@ export function AdminDashboard() {
   const [flaggedListings, setFlaggedListings] = useState<Set<string>>(new Set());
   const [showDenyApplicationModal, setShowDenyApplicationModal] = useState(false);
   const [denyApplicationReason, setDenyApplicationReason] = useState("");
+  const [expandedSequence, setExpandedSequence] = useState<string | null>(null);
+  const [showSequenceEmailEditor, setShowSequenceEmailEditor] = useState(false);
+  const [editingSequenceEmail, setEditingSequenceEmail] = useState<any | null>(null);
+  const [sequenceEmailSubject, setSequenceEmailSubject] = useState("");
+  const [sequenceEmailBody, setSequenceEmailBody] = useState("");
+  const [emailSequences, setEmailSequences] = useState([
+    {
+      id: "provider-onboarding",
+      name: "New Provider Onboarding",
+      emailCount: 7,
+      active: true,
+      emails: [
+        { id: 1, day: 0, subject: "Welcome to Sober Stay!", body: "Hi [name],\n\nWelcome to Sober Stay! We're excited to have you as a provider..." },
+        { id: 2, day: 1, subject: "Complete Your Profile", body: "Hi [name],\n\nLet's get your profile set up to attract more tenants..." },
+        { id: 3, day: 3, subject: "Add Your First Listing", body: "Hi [name],\n\nReady to showcase your property? Here's how to create a listing..." },
+        { id: 4, day: 5, subject: "Tips for Great Photos", body: "Hi [name],\n\nGreat photos make all the difference! Here are our top tips..." },
+        { id: 5, day: 7, subject: "Responding to Applications", body: "Hi [name],\n\nWhen you receive applications, quick responses help secure tenants..." },
+        { id: 6, day: 10, subject: "Boost Your Visibility", body: "Hi [name],\n\nWant more applications? Consider our featured listing options..." },
+        { id: 7, day: 14, subject: "How's It Going?", body: "Hi [name],\n\nWe'd love to hear how your experience has been so far..." },
+      ]
+    },
+    {
+      id: "tenant-recovery",
+      name: "Tenant Recovery Tips",
+      emailCount: 4,
+      active: true,
+      emails: [
+        { id: 1, day: 0, subject: "Weekly Recovery Tip: Building Routine", body: "Hi [name],\n\nThis week's tip: Establishing a daily routine is key to recovery..." },
+        { id: 2, day: 7, subject: "Weekly Recovery Tip: Support Networks", body: "Hi [name],\n\nThis week's tip: Building a strong support network..." },
+        { id: 3, day: 14, subject: "Weekly Recovery Tip: Self-Care", body: "Hi [name],\n\nThis week's tip: Prioritizing self-care in your recovery journey..." },
+        { id: 4, day: 21, subject: "Weekly Recovery Tip: Setting Goals", body: "Hi [name],\n\nThis week's tip: Setting achievable goals for your recovery..." },
+      ]
+    },
+    {
+      id: "renewal-reminders",
+      name: "Renewal Reminders",
+      emailCount: 3,
+      active: true,
+      emails: [
+        { id: 1, day: -7, subject: "Your Subscription Renews in 7 Days", body: "Hi [name],\n\nJust a heads up - your subscription renews in 7 days..." },
+        { id: 2, day: -3, subject: "Renewal Reminder: 3 Days Left", body: "Hi [name],\n\nYour subscription will renew in 3 days. Review your plan..." },
+        { id: 3, day: -1, subject: "Tomorrow: Subscription Renewal", body: "Hi [name],\n\nYour subscription renews tomorrow. Make sure your payment is up to date..." },
+      ]
+    }
+  ]);
 
   const documentDenialReasons = [
     "Document is expired or invalid",
@@ -1831,10 +1877,82 @@ the actual document file stored on the server.
                   <div className="p-4 rounded-lg bg-white/5 border border-white/10">
                     <p className="text-white font-semibold mb-3">Automated Sequences</p>
                     <div className="space-y-2">
-                      {["New Provider Onboarding (7 emails)", "Tenant Recovery Tips (Weekly)", "Renewal Reminders (7 days before)"].map((seq, i) => (
-                        <div key={i} className="flex items-center justify-between p-2 bg-white/5 rounded">
-                          <span className="text-xs text-gray-300">{seq}</span>
-                          <input type="checkbox" defaultChecked className="w-4 h-4" />
+                      {emailSequences.map((seq) => (
+                        <div key={seq.id} className="rounded-lg bg-white/5 overflow-hidden">
+                          <div 
+                            className="flex items-center justify-between p-3 cursor-pointer hover:bg-white/10 transition-colors"
+                            onClick={() => setExpandedSequence(expandedSequence === seq.id ? null : seq.id)}
+                          >
+                            <div className="flex items-center gap-2">
+                              <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${expandedSequence === seq.id ? 'rotate-90' : ''}`} />
+                              <span className="text-sm text-white">{seq.name}</span>
+                              <Badge variant="outline" className="text-xs">{seq.emails.length} emails</Badge>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input 
+                                type="checkbox" 
+                                checked={seq.active}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  setEmailSequences(emailSequences.map(s => 
+                                    s.id === seq.id ? { ...s, active: !s.active } : s
+                                  ));
+                                }}
+                                className="w-4 h-4" 
+                              />
+                            </div>
+                          </div>
+                          {expandedSequence === seq.id && (
+                            <div className="border-t border-white/10 p-3 space-y-2">
+                              {seq.emails.map((email, idx) => (
+                                <div key={email.id} className="flex items-center justify-between p-2 bg-background/50 rounded-lg">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                                      <span className="text-xs text-primary font-medium">{idx + 1}</span>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm text-white">{email.subject}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {email.day === 0 ? 'Immediately' : email.day > 0 ? `Day ${email.day}` : `${Math.abs(email.day)} days before`}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="h-7 text-xs"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingSequenceEmail({ sequenceId: seq.id, email });
+                                      setSequenceEmailSubject(email.subject);
+                                      setSequenceEmailBody(email.body);
+                                      setShowSequenceEmailEditor(true);
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                </div>
+                              ))}
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="w-full mt-2 h-8 text-xs gap-1"
+                                onClick={() => {
+                                  const newEmail = { 
+                                    id: seq.emails.length + 1, 
+                                    day: seq.emails.length * 7, 
+                                    subject: "New Email", 
+                                    body: "Hi [name],\n\nYour email content here..." 
+                                  };
+                                  setEmailSequences(emailSequences.map(s => 
+                                    s.id === seq.id ? { ...s, emails: [...s.emails, newEmail], emailCount: s.emailCount + 1 } : s
+                                  ));
+                                }}
+                              >
+                                <Plus className="w-3 h-3" /> Add Email
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -3286,6 +3404,152 @@ Use the toolbar above for formatting, or write in Markdown:
                   <CheckCircle className="w-4 h-4" /> Publish Now
                 </Button>
                 <Button onClick={() => setShowBlogEditor(false)} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showSequenceEmailEditor && editingSequenceEmail && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden flex flex-col">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Sequence Email Editor</h2>
+                    <p className="text-xs text-muted-foreground mt-1">Edit email #{editingSequenceEmail.email.id} in sequence</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{sequenceEmailBody.split(' ').filter((w: string) => w).length} words</span>
+                </div>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-6 space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Subject Line *</label>
+                    <input 
+                      type="text" 
+                      value={sequenceEmailSubject}
+                      onChange={(e) => setSequenceEmailSubject(e.target.value)}
+                      placeholder="Enter subject line..." 
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Send Timing</label>
+                    <select 
+                      defaultValue={editingSequenceEmail.email.day}
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                    >
+                      <option value={0}>Immediately</option>
+                      <option value={1}>Day 1</option>
+                      <option value={3}>Day 3</option>
+                      <option value={5}>Day 5</option>
+                      <option value={7}>Day 7</option>
+                      <option value={10}>Day 10</option>
+                      <option value={14}>Day 14</option>
+                      <option value={21}>Day 21</option>
+                      <option value={-7}>7 days before</option>
+                      <option value={-3}>3 days before</option>
+                      <option value={-1}>1 day before</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Font</label>
+                    <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors">
+                      <option>Arial</option>
+                      <option>Georgia</option>
+                      <option>Verdana</option>
+                      <option>Trebuchet MS</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Size</label>
+                    <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors">
+                      <option>Small</option>
+                      <option>Medium</option>
+                      <option>Large</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Text Color</label>
+                    <input 
+                      type="color" 
+                      defaultValue="#ffffff"
+                      className="w-full h-11 rounded-lg bg-background/80 border border-primary/30 cursor-pointer"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Preview</label>
+                    <Button variant="outline" className="w-full h-11">Preview</Button>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email Content *</label>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-white">B</Button>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-white italic">I</Button>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-white underline">U</Button>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-white">Link</Button>
+                      <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-white">[var]</Button>
+                    </div>
+                  </div>
+                  <textarea 
+                    value={sequenceEmailBody}
+                    onChange={(e) => setSequenceEmailBody(e.target.value)}
+                    placeholder="Write your email content. Use [name], [email], [role] for personalization..." 
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors min-h-[200px] resize-none"
+                    rows={8}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Live Preview</label>
+                  <div className="p-4 rounded-lg bg-white/5 border border-primary/20 min-h-32">
+                    <p className="text-sm font-semibold text-white mb-2">{sequenceEmailSubject || "Subject line..."}</p>
+                    <div className="text-sm text-gray-300 whitespace-pre-wrap">
+                      {sequenceEmailBody || "Your email content will appear here..."}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-3">
+                <Button 
+                  onClick={() => {
+                    setEmailSequences(emailSequences.map(seq => 
+                      seq.id === editingSequenceEmail.sequenceId 
+                        ? {
+                            ...seq,
+                            emails: seq.emails.map(email => 
+                              email.id === editingSequenceEmail.email.id 
+                                ? { ...email, subject: sequenceEmailSubject, body: sequenceEmailBody }
+                                : email
+                            )
+                          }
+                        : seq
+                    ));
+                    setShowSequenceEmailEditor(false);
+                    setEditingSequenceEmail(null);
+                    toast({ title: "Email Saved", description: "Sequence email updated successfully" });
+                  }}
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" /> Save Changes
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setShowSequenceEmailEditor(false);
+                    setEditingSequenceEmail(null);
+                  }}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
           </div>
