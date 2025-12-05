@@ -123,6 +123,16 @@ export function AdminDashboard() {
   const [emailFontColor, setEmailFontColor] = useState("#ffffff");
   const [emailSubject, setEmailSubject] = useState("");
   const [showEmailComposer, setShowEmailComposer] = useState(false);
+  const [automatedCampaigns, setAutomatedCampaigns] = useState<any[]>([
+    { id: 1, name: "New Provider Onboarding", trigger: "On Signup", audience: "New Providers", emails: 7, active: true, lastRun: "Dec 3, 2024", enrolled: 23 },
+    { id: 2, name: "Tenant Recovery Tips Weekly", trigger: "Weekly", audience: "All Tenants", emails: 1, active: true, lastRun: "Dec 2, 2024", enrolled: 142 },
+    { id: 3, name: "Subscription Renewal Reminder", trigger: "7 Days Before", audience: "Providers", emails: 3, active: false, lastRun: "Nov 28, 2024", enrolled: 0 },
+  ]);
+  const [newAutoCampaignName, setNewAutoCampaignName] = useState("");
+  const [newAutoCampaignTrigger, setNewAutoCampaignTrigger] = useState("on-signup");
+  const [newAutoCampaignAudience, setNewAutoCampaignAudience] = useState("tenants");
+  const [newAutoCampaignEmails, setNewAutoCampaignEmails] = useState(1);
+  const [showNewAutoCampaignModal, setShowNewAutoCampaignModal] = useState(false);
   const [emailSubscribers, setEmailSubscribers] = useState<any[]>([
     { id: 1, email: "john.doe@example.com", subscribeDate: "Dec 1, 2024", status: "Active" },
     { id: 2, email: "sarah.smith@example.com", subscribeDate: "Dec 2, 2024", status: "Active" },
@@ -473,6 +483,57 @@ the actual document file stored on the server.
       setSmsContent("");
       setTimeout(() => setSmsSentSuccess(false), 3000);
     }
+  };
+
+  const handleCreateAutomatedCampaign = () => {
+    if (!newAutoCampaignName.trim()) return;
+    const triggers: { [key: string]: string } = {
+      "on-signup": "On Signup",
+      "weekly": "Weekly",
+      "on-purchase": "On Purchase",
+      "on-renewal": "7 Days Before",
+      "on-abandonment": "On Abandonment",
+    };
+    const audiences: { [key: string]: string } = {
+      "tenants": "All Tenants",
+      "providers": "All Providers",
+      "new-users": "New Users",
+      "inactive": "Inactive Users",
+    };
+    const newCampaign = {
+      id: automatedCampaigns.length + 1,
+      name: newAutoCampaignName,
+      trigger: triggers[newAutoCampaignTrigger] || "On Signup",
+      audience: audiences[newAutoCampaignAudience] || "All Tenants",
+      emails: newAutoCampaignEmails,
+      active: true,
+      lastRun: new Date().toLocaleDateString(),
+      enrolled: Math.floor(Math.random() * 200) + 50,
+    };
+    setAutomatedCampaigns([...automatedCampaigns, newCampaign]);
+    setNewAutoCampaignName("");
+    setNewAutoCampaignTrigger("on-signup");
+    setNewAutoCampaignAudience("tenants");
+    setNewAutoCampaignEmails(1);
+    setShowNewAutoCampaignModal(false);
+    toast({
+      title: "Automated Campaign Created",
+      description: `"${newAutoCampaignName}" campaign is now active`,
+    });
+  };
+
+  const handleToggleAutoCampaign = (id: number) => {
+    setAutomatedCampaigns(automatedCampaigns.map(c =>
+      c.id === id ? { ...c, active: !c.active } : c
+    ));
+  };
+
+  const handleDeleteAutoCampaign = (id: number) => {
+    setAutomatedCampaigns(automatedCampaigns.filter(c => c.id !== id));
+    toast({
+      title: "Campaign Deleted",
+      description: "Automated campaign has been removed",
+    });
   };
 
   const handleCreateBlog = () => {
@@ -1808,6 +1869,166 @@ the actual document file stored on the server.
                 </div>
               </CardContent>
             </Card>
+
+            {/* Automated Email Marketing */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Activity className="w-5 h-5" /> Automated Email Campaigns
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                    <p className="text-xs text-muted-foreground">Active Workflows</p>
+                    <p className="text-2xl font-bold text-white">{automatedCampaigns.filter(c => c.active).length}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                    <p className="text-xs text-muted-foreground">Total Enrolled</p>
+                    <p className="text-2xl font-bold text-primary">{automatedCampaigns.reduce((sum, c) => sum + c.enrolled, 0)}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                    <p className="text-xs text-muted-foreground">Emails Sent</p>
+                    <p className="text-2xl font-bold text-green-400">2,847</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                  {automatedCampaigns.map((campaign) => (
+                    <div key={campaign.id} className="p-4 rounded-lg bg-white/5 border border-white/10">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="text-white font-medium">{campaign.name}</p>
+                            <Badge className={campaign.active ? "bg-green-500/80" : "bg-gray-600"}>{campaign.active ? "Active" : "Inactive"}</Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                            <div>
+                              <p className="text-muted-foreground">Trigger: {campaign.trigger}</p>
+                              <p className="text-muted-foreground">Audience: {campaign.audience}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Emails: {campaign.emails}</p>
+                              <p className="text-muted-foreground">Enrolled: {campaign.enrolled}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={() => handleToggleAutoCampaign(campaign.id)}
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-xs h-7"
+                            data-testid={`button-toggle-campaign-${campaign.id}`}
+                          >
+                            {campaign.active ? "Pause" : "Resume"}
+                          </Button>
+                          <Button 
+                            onClick={() => handleDeleteAutoCampaign(campaign.id)}
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-xs h-7 text-red-500"
+                            data-testid={`button-delete-campaign-${campaign.id}`}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Button 
+                  onClick={() => setShowNewAutoCampaignModal(true)} 
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 mt-4"
+                  data-testid="button-create-automated-campaign"
+                >
+                  <Plus className="w-4 h-4" /> Create Automated Campaign
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Automated Campaign Creation Modal */}
+            {showNewAutoCampaignModal && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <Card className="bg-card border-border w-full max-w-md">
+                  <CardHeader>
+                    <CardTitle className="text-white">Create Automated Campaign</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <label className="text-xs text-muted-foreground">Campaign Name</label>
+                      <input 
+                        type="text" 
+                        value={newAutoCampaignName} 
+                        onChange={(e) => setNewAutoCampaignName(e.target.value)}
+                        placeholder="e.g., Welcome New Users" 
+                        className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm mt-1"
+                        data-testid="input-campaign-name"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Trigger</label>
+                      <select 
+                        value={newAutoCampaignTrigger} 
+                        onChange={(e) => setNewAutoCampaignTrigger(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm mt-1"
+                        data-testid="select-trigger"
+                      >
+                        <option value="on-signup">On Signup</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="on-purchase">On Purchase</option>
+                        <option value="on-renewal">7 Days Before Renewal</option>
+                        <option value="on-abandonment">On Abandonment</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Target Audience</label>
+                      <select 
+                        value={newAutoCampaignAudience} 
+                        onChange={(e) => setNewAutoCampaignAudience(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm mt-1"
+                        data-testid="select-audience"
+                      >
+                        <option value="tenants">All Tenants</option>
+                        <option value="providers">All Providers</option>
+                        <option value="new-users">New Users</option>
+                        <option value="inactive">Inactive Users</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground">Number of Emails in Sequence</label>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        max="12"
+                        value={newAutoCampaignEmails} 
+                        onChange={(e) => setNewAutoCampaignEmails(parseInt(e.target.value))}
+                        className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm mt-1"
+                        data-testid="input-email-count"
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <Button 
+                        onClick={handleCreateAutomatedCampaign} 
+                        className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                        data-testid="button-save-automated-campaign"
+                      >
+                        Create Campaign
+                      </Button>
+                      <Button 
+                        onClick={() => setShowNewAutoCampaignModal(false)} 
+                        variant="outline" 
+                        className="flex-1"
+                        data-testid="button-cancel-modal"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             {/* SEO Tools */}
             <Card className="bg-card border-border">
