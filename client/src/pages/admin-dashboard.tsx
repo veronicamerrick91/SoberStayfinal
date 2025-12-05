@@ -2274,28 +2274,32 @@ the actual document file stored on the server.
         </Tabs>
 
         {showWorkflowModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-2xl w-full mx-4 my-8">
-              <h2 className="text-xl font-bold text-white mb-4">Create Email Workflow</h2>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col my-8">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Create Email Workflow</h2>
+                <p className="text-xs text-muted-foreground mt-1">Set up automated email sequences</p>
+              </div>
+              <div className="p-6">
               
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Workflow Name</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Workflow Name</label>
                   <input 
                     type="text" 
                     placeholder="e.g., New Tenant Onboarding" 
                     value={newWorkflowName}
                     onChange={(e) => setNewWorkflowName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Workflow Trigger</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Workflow Trigger</label>
                   <select 
                     value={newWorkflowTrigger}
                     onChange={(e) => setNewWorkflowTrigger(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                   >
                     <option value="onSignup">On User Signup</option>
                     <option value="onApplicationApproved">Application Approved</option>
@@ -2307,11 +2311,11 @@ the actual document file stored on the server.
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Email Template</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Email Template</label>
                   <select 
                     value={newWorkflowTemplate}
                     onChange={(e) => setNewWorkflowTemplate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                   >
                     <option value="welcome">Welcome Series</option>
                     <option value="provider-onboard">Provider Onboarding</option>
@@ -2322,25 +2326,25 @@ the actual document file stored on the server.
                   </select>
                 </div>
 
-                <div className="border-t border-border pt-4">
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Email Subject Line</label>
+                <div className="border-t border-primary/20 pt-4">
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Email Subject Line</label>
                   <input 
                     type="text" 
                     placeholder="e.g., Welcome to Sober Stay!" 
                     value={newWorkflowSubject}
                     onChange={(e) => setNewWorkflowSubject(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                   />
                   <p className="text-xs text-muted-foreground mt-1">This is what recipients see in their inbox</p>
                 </div>
 
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground mb-2 block">Email Content</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Email Content</label>
                   <textarea 
                     placeholder="Write your email content here. You can use HTML or plain text. Variables: [name], [email], [role], [property]" 
                     value={newWorkflowBody}
                     onChange={(e) => setNewWorkflowBody(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm font-mono"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm font-mono transition-colors"
                     rows={6}
                   />
                   <p className="text-xs text-muted-foreground mt-1">Use [variable] syntax to personalize emails. Supports HTML formatting.</p>
@@ -2350,8 +2354,9 @@ the actual document file stored on the server.
                   <p className="text-xs text-primary font-medium">Preview: This workflow will send emails when a user {newWorkflowTrigger === 'onSignup' ? 'signs up' : newWorkflowTrigger === 'onApplicationApproved' ? 'has an approved application' : 'triggers this event'}.</p>
                 </div>
               </div>
+              </div>
 
-              <div className="flex gap-2 mt-6">
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
                 <Button 
                   onClick={() => {
                     if (newWorkflowName.trim() && newWorkflowSubject.trim() && newWorkflowBody.trim()) {
@@ -2370,7 +2375,7 @@ the actual document file stored on the server.
                       setNewWorkflowBody("");
                     }
                   }} 
-                  className="flex-1 bg-primary hover:bg-primary/90"
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   Create Workflow
                 </Button>
@@ -2424,9 +2429,9 @@ the actual document file stored on the server.
 
         {/* Document Preview Modal */}
         {showDocumentPreviewModal && viewingDocument && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <FileText className="w-5 h-5" /> Document Preview
                 </h2>
@@ -2438,7 +2443,7 @@ the actual document file stored on the server.
                 </Button>
               </div>
               
-              <div className="space-y-4">
+              <div className="p-6 space-y-4 max-h-80 overflow-y-auto">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs text-muted-foreground">Document Name</p>
@@ -2518,21 +2523,25 @@ the actual document file stored on the server.
 
         {/* Deny Document Modal */}
         {showDenyDocumentModal && viewingDocument && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
-              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <X className="w-5 h-5 text-red-500" /> Deny Document
-              </h2>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <X className="w-5 h-5 text-red-500" /> Deny Document
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">Select a reason for denial</p>
+              </div>
+              <div className="p-6">
               <p className="text-muted-foreground mb-4">
                 You are denying: <span className="text-white font-medium">{viewingDocument.documentName}</span> from {viewingDocument.provider}
               </p>
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Select Denial Reason *</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Select Denial Reason *</label>
                   <select
                     value={denyDocumentReason}
                     onChange={(e) => setDenyDocumentReason(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                   >
                     <option value="">Choose a reason...</option>
                     {documentDenialReasons.map((reason) => (
@@ -2541,7 +2550,8 @@ the actual document file stored on the server.
                   </select>
                 </div>
               </div>
-              <div className="flex gap-2">
+              </div>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
                 <Button 
                   onClick={() => handleRejectDocument(viewingDocument.id)} 
                   disabled={!denyDocumentReason.trim()}
@@ -2561,26 +2571,29 @@ the actual document file stored on the server.
 
         {/* Request More Info Modal */}
         {showRequestInfoModal && viewingDocument && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4">
-              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-blue-400" /> Request More Information
-              </h2>
-              <p className="text-muted-foreground mb-4">
-                Request additional information for: <span className="text-white font-medium">{viewingDocument.documentName}</span> from {viewingDocument.provider}
-              </p>
-              <div className="space-y-4 mb-6">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-blue-400" /> Request More Information
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">Ask provider for additional details</p>
+              </div>
+              <div className="p-6 space-y-4">
+                <p className="text-muted-foreground text-sm">
+                  Request additional information for: <span className="text-white font-medium">{viewingDocument.documentName}</span> from {viewingDocument.provider}
+                </p>
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">What information do you need? *</label>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">What information do you need? *</label>
                   <textarea
                     placeholder="Please specify what additional information or documents are needed..."
                     value={requestInfoMessage}
                     onChange={(e) => setRequestInfoMessage(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white h-24"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white h-24 transition-colors"
                   />
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
                 <Button 
                   onClick={() => handleRequestDocumentInfo(viewingDocument.id)} 
                   disabled={!requestInfoMessage.trim()}
