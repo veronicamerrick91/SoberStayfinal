@@ -1951,28 +1951,29 @@ the actual document file stored on the server.
             {/* Automated Campaign Creation Modal */}
             {showNewAutoCampaignModal && (
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                <Card className="bg-card border-border w-full max-w-md">
-                  <CardHeader>
-                    <CardTitle className="text-white">Create Automated Campaign</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+                  <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                    <h2 className="text-xl font-bold text-white">Create Automated Campaign</h2>
+                    <p className="text-xs text-muted-foreground mt-1">Set up automated email sequences</p>
+                  </div>
+                  <div className="p-6 space-y-4">
                     <div>
-                      <label className="text-xs text-muted-foreground">Campaign Name</label>
+                      <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Campaign Name</label>
                       <input 
                         type="text" 
                         value={newAutoCampaignName} 
                         onChange={(e) => setNewAutoCampaignName(e.target.value)}
                         placeholder="e.g., Welcome New Users" 
-                        className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm mt-1"
+                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                         data-testid="input-campaign-name"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground">Trigger</label>
+                      <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Trigger</label>
                       <select 
                         value={newAutoCampaignTrigger} 
                         onChange={(e) => setNewAutoCampaignTrigger(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm mt-1"
+                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                         data-testid="select-trigger"
                       >
                         <option value="on-signup">On Signup</option>
@@ -1983,11 +1984,11 @@ the actual document file stored on the server.
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground">Target Audience</label>
+                      <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Target Audience</label>
                       <select 
                         value={newAutoCampaignAudience} 
                         onChange={(e) => setNewAutoCampaignAudience(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm mt-1"
+                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                         data-testid="select-audience"
                       >
                         <option value="tenants">All Tenants</option>
@@ -1997,36 +1998,36 @@ the actual document file stored on the server.
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground">Number of Emails in Sequence</label>
+                      <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Number of Emails in Sequence</label>
                       <input 
                         type="number" 
                         min="1" 
                         max="12"
                         value={newAutoCampaignEmails} 
                         onChange={(e) => setNewAutoCampaignEmails(parseInt(e.target.value))}
-                        className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-sm mt-1"
+                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                         data-testid="input-email-count"
                       />
                     </div>
-                    <div className="flex gap-2 pt-2">
-                      <Button 
-                        onClick={handleCreateAutomatedCampaign} 
-                        className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                        data-testid="button-save-automated-campaign"
-                      >
-                        Create Campaign
-                      </Button>
-                      <Button 
-                        onClick={() => setShowNewAutoCampaignModal(false)} 
-                        variant="outline" 
-                        className="flex-1"
-                        data-testid="button-cancel-modal"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                  <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+                    <Button 
+                      onClick={handleCreateAutomatedCampaign} 
+                      className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                      data-testid="button-save-automated-campaign"
+                    >
+                      Create Campaign
+                    </Button>
+                    <Button 
+                      onClick={() => setShowNewAutoCampaignModal(false)} 
+                      variant="outline" 
+                      className="flex-1"
+                      data-testid="button-cancel-modal"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -3014,26 +3015,31 @@ Use the toolbar above for formatting, or write in Markdown:
         )}
 
         {showBlogEditor && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-card border border-border rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[95vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">Edit Blog Post</h2>
-                <div className="flex items-center gap-3">
-                  {blogAutoSaved && (
-                    <span className="text-xs text-green-400 flex items-center gap-1">
-                      <Save className="w-3 h-3" /> Auto-saved
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] overflow-hidden flex flex-col">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Content Editor</h2>
+                    <p className="text-xs text-muted-foreground mt-1">Create and edit blog posts</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {blogAutoSaved && (
+                      <span className="text-xs text-green-400 flex items-center gap-1">
+                        <Save className="w-3 h-3" /> Auto-saved
+                      </span>
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      {getWordCount(blogContent)} words • {getReadTime(getWordCount(blogContent))}
                     </span>
-                  )}
-                  <span className="text-xs text-muted-foreground">
-                    {getWordCount(blogContent)} words • {getReadTime(getWordCount(blogContent))}
-                  </span>
+                  </div>
                 </div>
               </div>
               
-              <div className="space-y-4 mb-6">
+              <div className="flex-1 overflow-y-auto p-6 space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Post Title *</label>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Post Title *</label>
                     <input 
                       type="text" 
                       placeholder="Enter an engaging title..." 
@@ -3042,25 +3048,25 @@ Use the toolbar above for formatting, or write in Markdown:
                         setBlogTitle(e.target.value);
                         if (!blogSlug) setBlogSlug(generateSlug(e.target.value));
                       }}
-                      className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white text-lg font-medium"
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-lg font-medium transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">Author</label>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Author</label>
                     <input 
                       type="text" 
                       placeholder="Author name" 
                       value={blogAuthor}
                       onChange={(e) => setBlogAuthor(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary focus:outline-none transition-all text-white"
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Content *</label>
-                  <div className="border border-white/10 rounded-lg overflow-hidden">
-                    <div className="flex flex-wrap items-center gap-1 p-2 bg-background/30 border-b border-white/10">
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Content *</label>
+                  <div className="border border-primary/30 rounded-lg overflow-hidden">
+                    <div className="flex flex-wrap items-center gap-1 p-2 bg-background/50 border-b border-primary/20">
                       <Button size="sm" variant="ghost" onClick={() => insertFormatting("**")} className="h-8 w-8 p-0" title="Bold">
                         <Bold className="w-4 h-4" />
                       </Button>
@@ -3070,14 +3076,14 @@ Use the toolbar above for formatting, or write in Markdown:
                       <Button size="sm" variant="ghost" onClick={() => insertFormatting("~~")} className="h-8 w-8 p-0" title="Strikethrough">
                         <Strikethrough className="w-4 h-4" />
                       </Button>
-                      <div className="w-px h-6 bg-white/20 mx-1" />
+                      <div className="w-px h-6 bg-primary/30 mx-1" />
                       <Button size="sm" variant="ghost" onClick={() => insertFormatting("# ", "")} className="h-8 w-8 p-0" title="Heading 1">
                         <Heading1 className="w-4 h-4" />
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => insertFormatting("## ", "")} className="h-8 w-8 p-0" title="Heading 2">
                         <Heading2 className="w-4 h-4" />
                       </Button>
-                      <div className="w-px h-6 bg-white/20 mx-1" />
+                      <div className="w-px h-6 bg-primary/30 mx-1" />
                       <Button size="sm" variant="ghost" onClick={() => insertFormatting("- ", "")} className="h-8 w-8 p-0" title="Bullet List">
                         <List className="w-4 h-4" />
                       </Button>
@@ -3101,15 +3107,15 @@ Use the toolbar above for formatting, or write in Markdown:
                         setBlogContent(e.target.value);
                         autoSaveDraft(e.target.value, blogTitle);
                       }}
-                      className="w-full px-4 py-4 bg-background/50 text-white h-64 resize-none border-0 focus:outline-none focus:ring-0"
+                      className="w-full px-4 py-4 bg-background/80 text-white h-64 resize-none border-0 focus:outline-none focus:ring-0"
                       style={{ fontFamily: blogFont, fontSize: `${blogFontSize}px`, color: blogFontColor }}
                     />
                   </div>
                 </div>
                 
-                <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                  <p className="text-xs text-muted-foreground mb-2">Live Preview</p>
-                  <div className="p-6 bg-card rounded-lg border border-white/10 min-h-32">
+                <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+                  <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Live Preview</p>
+                  <div className="p-6 bg-background/50 rounded-lg border border-primary/20 min-h-32">
                     <h3 className="font-bold text-2xl text-white mb-2">{blogTitle || "Your title here..."}</h3>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4">
                       <span>{blogAuthor || "Author"}</span>
@@ -3128,11 +3134,11 @@ Use the toolbar above for formatting, or write in Markdown:
                 </div>
               </div>
               
-              <div className="flex gap-2 pt-4 border-t border-white/10">
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
                 <Button onClick={handleSaveBlog} className="flex-1 bg-gray-600 hover:bg-gray-700 gap-2">
                   <Save className="w-4 h-4" /> Save Draft
                 </Button>
-                <Button onClick={handlePublishBlog} className="flex-1 bg-green-600 hover:bg-green-700 gap-2">
+                <Button onClick={handlePublishBlog} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
                   <CheckCircle className="w-4 h-4" /> Publish Now
                 </Button>
                 <Button onClick={() => setShowBlogEditor(false)} variant="outline">Cancel</Button>
