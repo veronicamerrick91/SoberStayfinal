@@ -136,6 +136,9 @@ export function AdminDashboard() {
   const [blogScheduleDate, setBlogScheduleDate] = useState("");
   const [blogAutoSaved, setBlogAutoSaved] = useState(false);
   const [draftSaveTimeout, setDraftSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [flaggedListings, setFlaggedListings] = useState<Set<string>>(new Set());
+  const [showDenyApplicationModal, setShowDenyApplicationModal] = useState(false);
+  const [denyApplicationReason, setDenyApplicationReason] = useState("");
 
   useEffect(() => {
     setReports(getReports());
@@ -244,6 +247,28 @@ export function AdminDashboard() {
 
   const handleDenyApplication = (appId: string, reason: string) => {
     setApplications(applications.map(a => a.id === appId ? { ...a, status: "Denied", denialReason: reason } : a));
+    setShowDenyApplicationModal(false);
+    setDenyApplicationReason("");
+  };
+
+  const handleFlagListing = (listingId: string) => {
+    const newFlagged = new Set(flaggedListings);
+    if (newFlagged.has(listingId)) {
+      newFlagged.delete(listingId);
+    } else {
+      newFlagged.add(listingId);
+    }
+    setFlaggedListings(newFlagged);
+  };
+
+  const handleDownloadDocument = (doc: any) => {
+    const fileData = `Document: ${doc.documentName}\nProvider: ${doc.provider}\nType: ${doc.documentType}\nStatus: ${doc.status}\nSubmitted: ${doc.uploadedDate}`;
+    const blob = new Blob([fileData], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${doc.documentName}.txt`;
+    link.click();
   };
 
   const handleRequestApplicationInfo = (appId: string, message: string) => {
@@ -622,9 +647,9 @@ export function AdminDashboard() {
               <div className="space-y-2">
                 <h3 className="text-white font-semibold mb-3">Alerts & Flags</h3>
                 {[
-                  { icon: AlertTriangle, title: "Suspicious Activity", desc: "Multiple failed logins", color: "red" },
-                  { icon: Flag, title: "Inappropriate Message", desc: "Flagged by AI moderation", color: "amber" },
-                  { icon: Lock, title: "Payment Failed", desc: "Provider account suspended", color: "red" },
+                  { icon: AlertTriangle, title: "Suspicious Activity", desc: "User: john_recovery | Location: 5 failed logins from different countries in 2 hours | Email: john@example.com | Time: Dec 5, 2:30 PM", color: "red" },
+                  { icon: Flag, title: "Inappropriate Message", desc: "Conversation between mike_provider and sarah_tenant | Message contains restricted keywords | Flagged by moderation on Dec 5, 1:45 PM | Requires review", color: "amber" },
+                  { icon: Lock, title: "Payment Failed", desc: "Provider: Hope House LLC | Failed charge: $49.00 | Payment method expired | Account suspended automatically | Action required by Dec 7", color: "red" },
                 ].map((alert, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default border-b border-border/50 last:border-0">
                     <alert.icon className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
@@ -717,8 +742,9 @@ export function AdminDashboard() {
                     {listing.isVerified && <Badge className="bg-green-500/80 text-xs">Verified</Badge>}
                     <Badge variant="outline" className="text-xs">${listing.price}/{listing.pricePeriod}</Badge>
                     <Badge variant="secondary" className="text-xs">{listing.bedsAvailable} beds</Badge>
+                    {flaggedListings.has(listing.id) && <Badge className="bg-red-500/80 text-xs">⚠ Flagged</Badge>}
                     <Button size="sm" onClick={() => handleReviewListing(listing)} className="bg-primary/20 text-primary hover:bg-primary/30 h-7 text-xs">Review</Button>
-                    <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-500/10 h-7 text-xs">Flag</Button>
+                    <Button size="sm" onClick={() => handleFlagListing(listing.id)} variant="ghost" className={`h-7 text-xs ${flaggedListings.has(listing.id) ? "text-red-400" : "text-red-500"} hover:bg-red-500/10`}>{flaggedListings.has(listing.id) ? "Unflag" : "Flag"}</Button>
                   </div>
                 </div>
               ))}
@@ -748,6 +774,11 @@ export function AdminDashboard() {
                       <Badge variant="outline" className="text-xs border-primary/30 text-primary">{app.completeness}% Complete</Badge>
                     </div>
                   </div>
+                  {app.denialReason && (
+                    <div className="mb-2 p-2 bg-red-500/10 border border-red-500/20 rounded text-sm">
+                      <span className="text-red-400 font-medium">Denial Reason:</span> <span className="text-red-300">{app.denialReason}</span>
+                    </div>
+                  )}
                   <div className="w-full h-1 bg-gray-700 rounded-full overflow-hidden">
                     <div className="h-full bg-primary" style={{ width: `${app.completeness}%` }} />
                   </div>
@@ -840,7 +871,7 @@ export function AdminDashboard() {
                           <Button size="sm" variant="outline" onClick={() => handleViewDocument(doc)} className="h-8 gap-1 text-xs">
                             <Eye className="w-3 h-3" /> View Document
                           </Button>
-                          <Button size="sm" variant="outline" className="h-8 gap-1 text-xs">
+                          <Button size="sm" variant="outline" onClick={() => handleDownloadDocument(doc)} className="h-8 gap-1 text-xs">
                             <Download className="w-3 h-3" /> Download
                           </Button>
                           {(doc.status === "Pending Review" || doc.status === "More Info Requested") && (
