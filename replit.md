@@ -151,3 +151,12 @@ Preferred communication style: Simple, everyday language.
    - Selective dependency bundling reduces filesystem calls
    - Improves Replit cold start performance
    - Maintains Node.js compatibility via CommonJS output
+
+## Future Implementation Notes
+
+**Email Notifications (Pending)**
+- Send Reminder and Contact Provider buttons currently show toast notifications to admins only
+- Providers do NOT receive email notifications yet
+- To implement: Need SendGrid API key or similar email service
+- Available integrations: SendGrid, Resend, Gmail, Outlook
+- User deferred this feature for future implementation
