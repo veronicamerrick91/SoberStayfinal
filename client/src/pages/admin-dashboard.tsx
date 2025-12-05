@@ -180,6 +180,19 @@ export function AdminDashboard() {
       ]
     },
     {
+      id: "tenant-welcome",
+      name: "New Tenant Welcome",
+      emailCount: 5,
+      active: true,
+      emails: [
+        { id: 1, day: 0, subject: "Welcome to Sober Stay - Your Recovery Journey Starts Here", body: "Hi [name],\n\nWelcome to Sober Stay! We're honored to support your recovery journey..." },
+        { id: 2, day: 1, subject: "How to Find Your Perfect Sober Living Home", body: "Hi [name],\n\nReady to find your new home? Here's how to search and apply..." },
+        { id: 3, day: 3, subject: "What to Look for in a Sober Living Home", body: "Hi [name],\n\nChoosing the right home matters. Here's what to consider..." },
+        { id: 4, day: 5, subject: "Tips for a Successful Application", body: "Hi [name],\n\nWant to stand out to providers? Here are our top application tips..." },
+        { id: 5, day: 7, subject: "Resources for Your Recovery", body: "Hi [name],\n\nWe've compiled helpful resources to support your recovery journey..." },
+      ]
+    },
+    {
       id: "tenant-recovery",
       name: "Tenant Recovery Tips",
       emailCount: 4,
@@ -192,6 +205,17 @@ export function AdminDashboard() {
       ]
     },
     {
+      id: "application-followup",
+      name: "Application Follow-up",
+      emailCount: 3,
+      active: true,
+      emails: [
+        { id: 1, day: 0, subject: "Application Received - What's Next", body: "Hi [name],\n\nWe've received your application for [property]. Here's what happens next..." },
+        { id: 2, day: 3, subject: "Application Update", body: "Hi [name],\n\nJust checking in on your application status. The provider is reviewing..." },
+        { id: 3, day: 7, subject: "Need Help with Your Application?", body: "Hi [name],\n\nWe noticed your application is still pending. Is there anything we can help with?" },
+      ]
+    },
+    {
       id: "renewal-reminders",
       name: "Renewal Reminders",
       emailCount: 3,
@@ -200,6 +224,61 @@ export function AdminDashboard() {
         { id: 1, day: -7, subject: "Your Subscription Renews in 7 Days", body: "Hi [name],\n\nJust a heads up - your subscription renews in 7 days..." },
         { id: 2, day: -3, subject: "Renewal Reminder: 3 Days Left", body: "Hi [name],\n\nYour subscription will renew in 3 days. Review your plan..." },
         { id: 3, day: -1, subject: "Tomorrow: Subscription Renewal", body: "Hi [name],\n\nYour subscription renews tomorrow. Make sure your payment is up to date..." },
+      ]
+    },
+    {
+      id: "inactive-reengagement",
+      name: "Inactive User Re-engagement",
+      emailCount: 4,
+      active: false,
+      emails: [
+        { id: 1, day: 30, subject: "We Miss You at Sober Stay", body: "Hi [name],\n\nIt's been a while since we've seen you. We wanted to check in..." },
+        { id: 2, day: 45, subject: "New Homes Added - Come Take a Look", body: "Hi [name],\n\nWe've added new sober living homes in your area since your last visit..." },
+        { id: 3, day: 60, subject: "Special Offer Just for You", body: "Hi [name],\n\nAs a valued member, we're offering you exclusive access to featured listings..." },
+        { id: 4, day: 90, subject: "Is There Anything We Can Help With?", body: "Hi [name],\n\nWe noticed you haven't been active. Is there anything preventing you from finding a home?" },
+      ]
+    },
+    {
+      id: "success-stories",
+      name: "Monthly Success Stories",
+      emailCount: 1,
+      active: true,
+      emails: [
+        { id: 1, day: 30, subject: "Inspiring Recovery Stories This Month", body: "Hi [name],\n\nThis month, we're sharing inspiring stories from members of our community..." },
+      ]
+    },
+    {
+      id: "move-in-checklist",
+      name: "Move-In Preparation",
+      emailCount: 4,
+      active: true,
+      emails: [
+        { id: 1, day: -7, subject: "Your Move-In Checklist", body: "Hi [name],\n\nYour move-in date is coming up! Here's everything you need to prepare..." },
+        { id: 2, day: -3, subject: "3 Days Until Move-In: Final Preparations", body: "Hi [name],\n\nJust 3 days to go! Make sure you have these essentials ready..." },
+        { id: 3, day: -1, subject: "Tomorrow's the Big Day!", body: "Hi [name],\n\nYou're moving in tomorrow! Here's what to expect on your first day..." },
+        { id: 4, day: 1, subject: "Welcome to Your New Home", body: "Hi [name],\n\nCongratulations on your first day! Here are some tips to settle in..." },
+      ]
+    },
+    {
+      id: "provider-tips",
+      name: "Provider Best Practices",
+      emailCount: 4,
+      active: false,
+      emails: [
+        { id: 1, day: 0, subject: "Maximizing Your Listing Visibility", body: "Hi [name],\n\nWant more applications? Here are proven tips to boost your listing..." },
+        { id: 2, day: 14, subject: "Creating a Supportive Environment", body: "Hi [name],\n\nLearn how to create an environment that supports recovery..." },
+        { id: 3, day: 28, subject: "Managing Tenant Relationships", body: "Hi [name],\n\nBuilding positive relationships with tenants leads to better outcomes..." },
+        { id: 4, day: 42, subject: "Compliance and Documentation Tips", body: "Hi [name],\n\nStay compliant and organized with these documentation best practices..." },
+      ]
+    },
+    {
+      id: "review-request",
+      name: "Review & Feedback Request",
+      emailCount: 2,
+      active: true,
+      emails: [
+        { id: 1, day: 30, subject: "How's Your Experience So Far?", body: "Hi [name],\n\nYou've been with us for a month! We'd love to hear about your experience..." },
+        { id: 2, day: 60, subject: "Share Your Story", body: "Hi [name],\n\nYour feedback helps others find their path to recovery. Would you share your experience?" },
       ]
     }
   ]);
