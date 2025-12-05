@@ -275,8 +275,9 @@ export function AdminDashboard() {
   };
 
   const handleDownloadDocument = (doc: any) => {
-    // Simulate document download
-    const documentContent = `
+    try {
+      // Simulate document download
+      const documentContent = `
 ===============================================
 DOCUMENT VERIFICATION RECORD
 ===============================================
@@ -295,16 +296,22 @@ In a production system, this would download
 the actual document file stored on the server.
 ===============================================
 `;
-    
-    const blob = new Blob([documentContent], { type: "application/octet-stream" });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${doc.documentName.replace(/\s+/g, "_")}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+      
+      const blob = new Blob([documentContent], { type: "application/octet-stream" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${doc.documentName.replace(/\s+/g, "_")}.pdf`;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+    } catch (error) {
+      console.error("Download failed:", error);
+    }
   };
 
   const handleRequestApplicationInfo = (appId: string, message: string) => {
@@ -2107,7 +2114,7 @@ the actual document file stored on the server.
                   <FileText className="w-16 h-16 text-muted-foreground mb-4" />
                   <p className="text-white font-medium mb-2">{viewingDocument.documentName}</p>
                   <p className="text-muted-foreground text-sm mb-4">{viewingDocument.fileSize || "PDF Document"}</p>
-                  <Button onClick={() => handleDownloadDocument(viewingDocument)} variant="outline" className="gap-2">
+                  <Button type="button" onClick={() => handleDownloadDocument(viewingDocument)} variant="outline" className="gap-2" data-testid="button-download-document">
                     <Download className="w-4 h-4" /> Download to View Full Document
                   </Button>
                 </div>
