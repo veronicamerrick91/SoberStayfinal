@@ -244,7 +244,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/help-center" className="hover:text-primary">Help Center</Link></li>
                 <li><Link href="/safety-reporting" className="hover:text-primary">Safety & Reporting</Link></li>
-                <li><a href="mailto:support@soberstayhomes.com" className="hover:text-primary">Contact Us</a></li>
+                <li><Link href="/contact" className="hover:text-primary">Contact Us</Link></li>
                 <li><Link href="/crisis-resources" className="hover:text-primary">Crisis Resources</Link></li>
               </ul>
             </div>
