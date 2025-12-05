@@ -115,7 +115,7 @@ export function PrivacyPolicy() {
                 <li>Request portability of your data</li>
               </ul>
               <p className="mt-4">
-                To exercise these rights, contact: privacy@soberstay.com
+                To exercise these rights, contact: privacy@soberstayhomes.com
               </p>
             </section>
 
@@ -153,9 +153,9 @@ export function PrivacyPolicy() {
                 For privacy questions or to exercise your rights:
               </p>
               <p className="mt-2 text-white">
-                📧 Email: privacy@soberstay.com<br />
+                📧 Email: privacy@soberstayhomes.com<br />
                 📱 Phone: 1-800-SOBER-STAY<br />
-                💬 Help: support@soberstay.com
+                💬 Help: support@soberstayhomes.com
               </p>
             </section>
 

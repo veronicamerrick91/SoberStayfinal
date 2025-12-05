@@ -122,7 +122,7 @@ export function HelpCenter() {
           {/* Contact Quick Links */}
           <div className="grid md:grid-cols-3 gap-4">
             {[
-              { icon: "📧", title: "Email", text: "support@soberstay.com" },
+              { icon: "📧", title: "Email", text: "support@soberstayhomes.com" },
               { icon: "📱", title: "Phone", text: "1-800-SOBER-STAY" },
               { icon: "🎯", title: "Response Time", text: "Within 24 hours" }
             ].map((item, i) => (

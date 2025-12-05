@@ -41,8 +41,8 @@ export function Contact() {
                     <div>
                       <h3 className="font-bold mb-1">Email Us</h3>
                       <p className="text-sm text-muted-foreground mb-2">For general inquiries:</p>
-                      <a href="mailto:info@soberstay.com" className="text-primary hover:underline text-sm">
-                        info@soberstay.com
+                      <a href="mailto:info@soberstayhomes.com" className="text-primary hover:underline text-sm">
+                        info@soberstayhomes.com
                       </a>
                     </div>
                   </div>
