@@ -48,6 +48,19 @@ interface ApplicationDetailsModalProps {
   onDeny: (id: string, reason: string) => void;
 }
 
+const DENIAL_REASONS = [
+  "Insufficient sobriety period (less than 30 days)",
+  "Criminal history concerns",
+  "Unstable housing history with recent evictions",
+  "Incomplete application or missing documentation",
+  "Failed background check or legal hold",
+  "Inadequate income/employment verification",
+  "Active substance use indicators",
+  "Probation/parole violations",
+  "Property-specific concerns",
+  "Other (specify in notes)"
+];
+
 export function ApplicationDetailsModal({ open, onClose, application, onApprove, onDeny }: ApplicationDetailsModalProps) {
   const [denyReason, setDenyReason] = useState("");
   const [showDenyInput, setShowDenyInput] = useState(false);
@@ -174,10 +187,18 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
         <DialogFooter className="p-6 border-t bg-card flex-col gap-3">
           {showDenyInput ? (
             <div className="space-y-3">
-              <Textarea placeholder="Reason for denial..." value={denyReason} onChange={(e) => setDenyReason(e.target.value)} />
+              <div>
+                <label className="text-xs text-muted-foreground mb-2 block">Select Denial Reason *</label>
+                <select value={denyReason} onChange={(e) => setDenyReason(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm">
+                  <option value="">Choose a reason...</option>
+                  {DENIAL_REASONS.map((reason) => (
+                    <option key={reason} value={reason}>{reason}</option>
+                  ))}
+                </select>
+              </div>
               <div className="flex gap-2 justify-end">
                 <Button variant="ghost" onClick={() => { setShowDenyInput(false); setDenyReason(""); }}>Cancel</Button>
-                <Button variant="destructive" onClick={handleDenyClick}>Confirm Denial</Button>
+                <Button variant="destructive" disabled={!denyReason} onClick={handleDenyClick}>Confirm Denial</Button>
               </div>
             </div>
           ) : (

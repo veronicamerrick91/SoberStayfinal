@@ -140,6 +140,19 @@ export function AdminDashboard() {
   const [showDenyApplicationModal, setShowDenyApplicationModal] = useState(false);
   const [denyApplicationReason, setDenyApplicationReason] = useState("");
 
+  const documentDenialReasons = [
+    "Document is expired or invalid",
+    "Document is illegible or incomplete",
+    "Document does not match requirements",
+    "Unauthorized provider or wrong facility",
+    "Additional verification required",
+    "Document contains falsified information",
+    "Missing required certifications or seals",
+    "Incorrect date or filing information",
+    "Out of compliance with regulations",
+    "Other (request more info)"
+  ];
+
   useEffect(() => {
     setReports(getReports());
     setListings(MOCK_PROPERTIES.map((prop, idx) => ({
@@ -262,13 +275,36 @@ export function AdminDashboard() {
   };
 
   const handleDownloadDocument = (doc: any) => {
-    const fileData = `Document: ${doc.documentName}\nProvider: ${doc.provider}\nType: ${doc.documentType}\nStatus: ${doc.status}\nSubmitted: ${doc.uploadedDate}`;
-    const blob = new Blob([fileData], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
+    // Simulate document download
+    const documentContent = `
+===============================================
+DOCUMENT VERIFICATION RECORD
+===============================================
+
+Document Name: ${doc.documentName}
+Document Type: ${doc.documentType}
+Provider: ${doc.provider}
+Email: ${doc.providerEmail}
+File Size: ${doc.fileSize}
+Submitted: ${doc.uploadedDate}
+Current Status: ${doc.status}
+
+===============================================
+This is a simulated PDF document download.
+In a production system, this would download
+the actual document file stored on the server.
+===============================================
+`;
+    
+    const blob = new Blob([documentContent], { type: "application/octet-stream" });
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${doc.documentName}.txt`;
+    link.download = `${doc.documentName.replace(/\s+/g, "_")}.pdf`;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   };
 
   const handleRequestApplicationInfo = (appId: string, message: string) => {
@@ -2100,13 +2136,17 @@ export function AdminDashboard() {
               </p>
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="text-xs text-muted-foreground mb-2 block">Reason for Denial *</label>
-                  <textarea
-                    placeholder="Please explain why this document is being denied..."
+                  <label className="text-xs text-muted-foreground mb-2 block">Select Denial Reason *</label>
+                  <select
                     value={denyDocumentReason}
                     onChange={(e) => setDenyDocumentReason(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white h-24"
-                  />
+                    className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
+                  >
+                    <option value="">Choose a reason...</option>
+                    {documentDenialReasons.map((reason) => (
+                      <option key={reason} value={reason}>{reason}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="flex gap-2">
