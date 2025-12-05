@@ -817,11 +817,11 @@ export function ProviderDashboard() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label className="text-white text-sm">Email Address</Label>
-                    <Input placeholder="provider@example.com" className="bg-background/50 border-white/10" />
+                    <Input placeholder="provider@example.com" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-white text-sm">Phone Number</Label>
-                    <Input placeholder="+1 (555) 000-0000" className="bg-background/50 border-white/10" />
+                    <Input placeholder="+1 (555) 000-0000" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" />
                   </div>
                   <Button className="w-full bg-primary/20 text-primary hover:bg-primary/30">Update Information</Button>
                 </CardContent>
@@ -846,9 +846,9 @@ export function ProviderDashboard() {
                   
                   <div className="space-y-2">
                     <Label className="text-white text-sm">Change Password</Label>
-                    <Input type="password" placeholder="Current password" className="bg-background/50 border-white/10" />
-                    <Input type="password" placeholder="New password" className="bg-background/50 border-white/10" />
-                    <Input type="password" placeholder="Confirm password" className="bg-background/50 border-white/10" />
+                    <Input type="password" placeholder="Current password" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" />
+                    <Input type="password" placeholder="New password" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" />
+                    <Input type="password" placeholder="Confirm password" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" />
                     <Button className="w-full bg-primary/20 text-primary hover:bg-primary/30">Update Password</Button>
                   </div>
                 </CardContent>

@@ -222,23 +222,23 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="first-name">First name</Label>
-                    <Input id="first-name" placeholder="John" className="bg-background/50" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                    <Input id="first-name" placeholder="John" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="last-name">Last name</Label>
-                    <Input id="last-name" placeholder="Doe" className="bg-background/50" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                    <Input id="last-name" placeholder="Doe" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={lastName} onChange={(e) => setLastName(e.target.value)} />
                   </div>
                 </div>
               )}
               
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="m@example.com" className="bg-background/50" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input id="email" type="email" placeholder="m@example.com" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" className="bg-background/50" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <Input id="password" type="password" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
 
               <Button type="submit" disabled={isSubmitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(16,185,129,0.2)]">

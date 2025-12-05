@@ -343,7 +343,7 @@ export function CreateListing() {
                     placeholder="e.g., Serenity House Boston"
                     value={listingDraft.propertyName}
                     onChange={(e) => handleInputChange("propertyName", e.target.value)}
-                    className="bg-background/50 border-border"
+                    className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
                   />
                 </div>
 
@@ -353,7 +353,7 @@ export function CreateListing() {
                     placeholder="123 Main Street"
                     value={listingDraft.address}
                     onChange={(e) => handleInputChange("address", e.target.value)}
-                    className="bg-background/50 border-border"
+                    className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
                   />
                 </div>
 
@@ -364,7 +364,7 @@ export function CreateListing() {
                       placeholder="Boston"
                       value={listingDraft.city}
                       onChange={(e) => handleInputChange("city", e.target.value)}
-                      className="bg-background/50 border-border"
+                      className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
                     />
                   </div>
                   <div className="space-y-2">
@@ -373,7 +373,7 @@ export function CreateListing() {
                       placeholder="MA"
                       value={listingDraft.state}
                       onChange={(e) => handleInputChange("state", e.target.value)}
-                      className="bg-background/50 border-border"
+                      className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
                     />
                   </div>
                 </div>
@@ -381,7 +381,7 @@ export function CreateListing() {
                 <div className="space-y-2">
                   <Label className="text-white">Gender Preference *</Label>
                   <Select value={listingDraft.gender} onValueChange={(val) => handleInputChange("gender", val)}>
-                    <SelectTrigger className="bg-background/50 border-border">
+                    <SelectTrigger className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-border">
@@ -449,7 +449,7 @@ export function CreateListing() {
                       placeholder="1200"
                       value={listingDraft.monthlyPrice}
                       onChange={(e) => handleInputChange("monthlyPrice", e.target.value)}
-                      className="bg-background/50 border-border"
+                      className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
                     />
                   </div>
                   <div className="space-y-2">
@@ -459,7 +459,7 @@ export function CreateListing() {
                       placeholder="6"
                       value={listingDraft.totalBeds}
                       onChange={(e) => handleInputChange("totalBeds", e.target.value)}
-                      className="bg-background/50 border-border"
+                      className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
                     />
                   </div>
                 </div>
@@ -467,7 +467,7 @@ export function CreateListing() {
                 <div className="space-y-2">
                   <Label className="text-white">Room Type *</Label>
                   <Select value={listingDraft.roomType} onValueChange={(val) => handleInputChange("roomType", val)}>
-                    <SelectTrigger className="bg-background/50 border-border">
+                    <SelectTrigger className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-border">
@@ -481,7 +481,7 @@ export function CreateListing() {
                   <Label className="text-white">Supervision Type *</Label>
                   <p className="text-xs text-muted-foreground mb-2">Choose the level of staff presence and support at your property</p>
                   <Select value={listingDraft.supervisionType} onValueChange={(val) => handleInputChange("supervisionType", val)}>
-                    <SelectTrigger className="bg-background/50 border-border">
+                    <SelectTrigger className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-border">
@@ -561,7 +561,7 @@ export function CreateListing() {
                     placeholder="Describe your property, house culture, recovery approach, and what makes it special..."
                     value={listingDraft.description}
                     onChange={(e) => handleInputChange("description", e.target.value)}
-                    className="bg-background/50 border-border min-h-24"
+                    className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary min-h-24"
                   />
                 </div>
 
