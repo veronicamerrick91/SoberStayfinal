@@ -304,10 +304,70 @@ export function AdminDashboard() {
 
   useEffect(() => {
     setReports(getReports());
-    setListings(MOCK_PROPERTIES.map((prop, idx) => ({
-      ...prop,
-      status: idx % 2 === 0 ? "Pending" : "Approved"
-    })));
+    
+    // Fetch real data from database
+    const fetchAdminData = async () => {
+      try {
+        const [usersRes, listingsRes] = await Promise.all([
+          fetch('/api/admin/users', { credentials: 'include' }),
+          fetch('/api/admin/listings', { credentials: 'include' })
+        ]);
+        
+        if (usersRes.ok) {
+          const usersData = await usersRes.json();
+          const formattedUsers = usersData.map((u: any) => ({
+            id: String(u.id),
+            name: u.name || u.username,
+            role: u.role === 'tenant' ? 'Tenant' : u.role === 'provider' ? 'Provider' : u.role,
+            email: u.email,
+            phone: u.phone || '',
+            status: 'Active' as const,
+            verified: true
+          }));
+          setUsers(formattedUsers);
+        }
+        
+        if (listingsRes.ok) {
+          const listingsData = await listingsRes.json();
+          const formattedListings = listingsData.map((l: any) => ({
+            id: String(l.id),
+            propertyName: l.propertyName,
+            address: l.address,
+            city: l.city,
+            state: l.state,
+            monthlyPrice: l.monthlyPrice,
+            totalBeds: l.totalBeds,
+            gender: l.gender,
+            roomType: l.roomType,
+            description: l.description,
+            amenities: l.amenities || [],
+            status: l.status === 'approved' ? 'Approved' : l.status === 'pending' ? 'Pending' : 'Rejected',
+            providerId: l.providerId,
+            createdAt: l.createdAt
+          }));
+          setListings(formattedListings);
+        }
+        
+        // Sample applications data
+        setApplications([
+          { id: "app-1", tenantName: "John Doe", tenantEmail: "john.doe@gmail.com", listingName: "Recovery First Residence", status: "Pending", appliedDate: "Dec 5, 2024", message: "I'm seeking a supportive environment for my recovery journey." },
+          { id: "app-2", tenantName: "Sarah Miller", tenantEmail: "sarah.miller@yahoo.com", listingName: "Hope House Women's Home", status: "Pending", appliedDate: "Dec 4, 2024", message: "Looking for a women-only home with a peaceful atmosphere." },
+          { id: "app-3", tenantName: "Mike Johnson", tenantEmail: "mike.johnson@outlook.com", listingName: "Serenity Living Co-Ed", status: "Approved", appliedDate: "Dec 3, 2024", message: "I need a place that supports my recovery goals." },
+        ]);
+        
+        // Sample messages data  
+        setMessages([
+          { id: "msg-1", from: "John Doe", to: "Recovery First LLC", content: "Hi, I'm interested in your facility. Can I schedule a tour?", date: "Dec 5, 2024", flagged: false },
+          { id: "msg-2", from: "Sarah Miller", to: "Hope House", content: "What are your house rules regarding visitors?", date: "Dec 4, 2024", flagged: false },
+          { id: "msg-3", from: "Anonymous User", to: "Serenity Living", content: "This message contains inappropriate content that was flagged.", date: "Dec 3, 2024", flagged: true },
+        ]);
+        
+      } catch (error) {
+        console.error('Failed to fetch admin data:', error);
+      }
+    };
+    
+    fetchAdminData();
     
     // Initialize mock verification documents
     setDocuments([

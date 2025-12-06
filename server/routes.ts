@@ -222,6 +222,31 @@ export async function registerRoutes(
     res.json(listings);
   });
 
+  // Admin endpoints
+  app.get("/api/admin/users", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    const users = await storage.getAllUsers();
+    const safeUsers = users.map(u => {
+      const { password, ...safe } = u;
+      return safe;
+    });
+    res.json(safeUsers);
+  });
+
+  app.get("/api/admin/listings", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    const listings = await storage.getAllListings();
+    res.json(listings);
+  });
+
   // Subscriptions & Payments
   app.post("/api/subscriptions", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

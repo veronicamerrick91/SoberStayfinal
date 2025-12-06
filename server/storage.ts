@@ -12,12 +12,14 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByGoogleId(googleId: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   createUser(user: InsertUser & { googleId?: string }): Promise<User>;
   updateUser(id: number, data: Partial<{ role: string; googleId?: string }>): Promise<User | undefined>;
   updateUserPassword(id: number, hashedPassword: string): Promise<User | undefined>;
   
   createListing(listing: InsertListing): Promise<Listing>;
   getListing(id: number): Promise<Listing | undefined>;
+  getAllListings(): Promise<Listing[]>;
   getListingsByProvider(providerId: number): Promise<Listing[]>;
   updateListing(id: number, listing: Partial<InsertListing>): Promise<Listing | undefined>;
   
@@ -62,6 +64,10 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
   async createUser(insertUser: InsertUser & { googleId?: string }): Promise<User> {
     const { googleId, ...userData } = insertUser;
     const [user] = await db
@@ -95,6 +101,10 @@ export class DatabaseStorage implements IStorage {
   async getListing(id: number): Promise<Listing | undefined> {
     const [listing] = await db.select().from(listings).where(eq(listings.id, id));
     return listing;
+  }
+
+  async getAllListings(): Promise<Listing[]> {
+    return await db.select().from(listings);
   }
 
   async getListingsByProvider(providerId: number): Promise<Listing[]> {
