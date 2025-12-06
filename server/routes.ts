@@ -118,26 +118,28 @@ export async function registerRoutes(
 
       const user = await storage.getUserByEmail(email);
       
-      if (user) {
-        await storage.invalidateUserPasswordResetTokens(user.id);
-        
-        const token = crypto.randomBytes(32).toString("hex");
-        const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
-        
-        await storage.createPasswordResetToken(user.id, token, expiresAt);
-        
-        const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-          ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
-          : process.env.APP_URL || "http://localhost:5000";
-        const resetUrl = `${baseUrl}/reset-password?token=${token}`;
-        
-        const emailSent = await sendPasswordResetEmail(email, token, resetUrl);
-        if (!emailSent) {
-          return res.status(500).json({ error: "Failed to send reset email. Please try again later." });
-        }
+      if (!user) {
+        return res.status(404).json({ error: "No account found with that email address. Please check the email or sign up for a new account." });
+      }
+
+      await storage.invalidateUserPasswordResetTokens(user.id);
+      
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+      
+      await storage.createPasswordResetToken(user.id, token, expiresAt);
+      
+      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+        : process.env.APP_URL || "http://localhost:5000";
+      const resetUrl = `${baseUrl}/reset-password?token=${token}`;
+      
+      const emailSent = await sendPasswordResetEmail(email, token, resetUrl);
+      if (!emailSent) {
+        return res.status(500).json({ error: "Failed to send reset email. Please try again later." });
       }
       
-      res.json({ success: true, message: "If an account exists with that email, you will receive a password reset link." });
+      res.json({ success: true, message: "Password reset link has been sent to your email." });
     } catch (error) {
       console.error("Forgot password error:", error);
       res.status(500).json({ error: "Failed to process request. Please try again." });
