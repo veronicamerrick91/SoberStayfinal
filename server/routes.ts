@@ -131,7 +131,10 @@ export async function registerRoutes(
           : process.env.APP_URL || "http://localhost:5000";
         const resetUrl = `${baseUrl}/reset-password?token=${token}`;
         
-        await sendPasswordResetEmail(email, token, resetUrl);
+        const emailSent = await sendPasswordResetEmail(email, token, resetUrl);
+        if (!emailSent) {
+          return res.status(500).json({ error: "Failed to send reset email. Please try again later." });
+        }
       }
       
       res.json({ success: true, message: "If an account exists with that email, you will receive a password reset link." });
@@ -153,7 +156,7 @@ export async function registerRoutes(
       const resetToken = await storage.getValidPasswordResetToken(token);
       
       if (!resetToken) {
-        return res.json({ valid: false, error: "Invalid or expired reset link" });
+        return res.status(400).json({ valid: false, error: "Invalid or expired reset link" });
       }
 
       res.json({ valid: true });

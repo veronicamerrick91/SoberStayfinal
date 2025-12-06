@@ -152,11 +152,24 @@ Preferred communication style: Simple, everyday language.
    - Improves Replit cold start performance
    - Maintains Node.js compatibility via CommonJS output
 
+## Recent Updates
+
+**Password Reset Feature (Implemented)**
+- Full email-based password reset flow using Resend API
+- Database table: `password_reset_tokens` stores secure tokens with 30-minute expiration
+- Endpoints: `/api/auth/forgot-password`, `/api/auth/validate-reset-token`, `/api/auth/reset-password`
+- Frontend pages: `/forgot-password` and `/reset-password`
+- Security: Tokens are invalidated after use, previous tokens are invalidated when new one is requested
+
+**Email Integration**
+- Using Resend API for transactional emails
+- Email service abstracted in `server/email.ts`
+- Password reset emails styled to match platform branding
+
 ## Future Implementation Notes
 
-**Email Notifications (Pending)**
+**Additional Email Notifications (Pending)**
 - Send Reminder and Contact Provider buttons currently show toast notifications to admins only
 - Providers do NOT receive email notifications yet
-- To implement: Need SendGrid API key or similar email service
-- Available integrations: SendGrid, Resend, Gmail, Outlook
+- Can extend `server/email.ts` to add more email templates
 - User deferred this feature for future implementation
