@@ -21,6 +21,8 @@ import { ListingReviewModal } from "@/components/listing-review-modal";
 import { ApplicationDetailsModal } from "@/components/application-details-modal";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { getAuth, isAuthenticated } from "@/lib/auth";
+import { useLocation } from "wouter";
 
 interface User {
   id: string;
@@ -34,6 +36,8 @@ interface User {
 
 export function AdminDashboard() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [reports, setReports] = useState<any[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -303,6 +307,13 @@ export function AdminDashboard() {
   ];
 
   useEffect(() => {
+    // Check authentication and admin role
+    const user = getAuth();
+    if (!isAuthenticated() || !user || user.role !== 'admin') {
+      setLocation('/login');
+      return;
+    }
+    
     setReports(getReports());
     
     // Fetch real data from database
@@ -331,28 +342,32 @@ export function AdminDashboard() {
           const listingsData = await listingsRes.json();
           const formattedListings = listingsData.map((l: any) => ({
             id: String(l.id),
-            propertyName: l.propertyName,
+            name: l.propertyName,
             address: l.address,
             city: l.city,
             state: l.state,
-            monthlyPrice: l.monthlyPrice,
-            totalBeds: l.totalBeds,
+            price: l.monthlyPrice,
+            pricePeriod: 'month',
+            bedsAvailable: l.totalBeds,
             gender: l.gender,
             roomType: l.roomType,
             description: l.description,
             amenities: l.amenities || [],
             status: l.status === 'approved' ? 'Approved' : l.status === 'pending' ? 'Pending' : 'Rejected',
             providerId: l.providerId,
-            createdAt: l.createdAt
+            createdAt: l.createdAt,
+            isVerified: l.status === 'approved',
+            image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop'
           }));
           setListings(formattedListings);
         }
         
         // Sample applications data
         setApplications([
-          { id: "app-1", tenantName: "John Doe", tenantEmail: "john.doe@gmail.com", listingName: "Recovery First Residence", status: "Pending", appliedDate: "Dec 5, 2024", message: "I'm seeking a supportive environment for my recovery journey." },
-          { id: "app-2", tenantName: "Sarah Miller", tenantEmail: "sarah.miller@yahoo.com", listingName: "Hope House Women's Home", status: "Pending", appliedDate: "Dec 4, 2024", message: "Looking for a women-only home with a peaceful atmosphere." },
-          { id: "app-3", tenantName: "Mike Johnson", tenantEmail: "mike.johnson@outlook.com", listingName: "Serenity Living Co-Ed", status: "Approved", appliedDate: "Dec 3, 2024", message: "I need a place that supports my recovery goals." },
+          { id: "app-1", tenantName: "John Doe", email: "john.doe@gmail.com", phone: "(555) 123-4567", propertyName: "Recovery First Residence", status: "Pending", submittedDate: "2024-12-05", completeness: 85, message: "I'm seeking a supportive environment for my recovery journey.", sobrietyDate: "2024-06-15", emergencyContact: "Jane Doe - (555) 987-6543" },
+          { id: "app-2", tenantName: "Sarah Miller", email: "sarah.miller@yahoo.com", phone: "(555) 234-5678", propertyName: "Hope House Women's Home", status: "Pending", submittedDate: "2024-12-04", completeness: 100, message: "Looking for a women-only home with a peaceful atmosphere.", sobrietyDate: "2024-03-20", emergencyContact: "Tom Miller - (555) 876-5432" },
+          { id: "app-3", tenantName: "Mike Johnson", email: "mike.johnson@outlook.com", phone: "(555) 345-6789", propertyName: "Serenity Living Co-Ed", status: "Approved", submittedDate: "2024-12-03", completeness: 100, message: "I need a place that supports my recovery goals.", sobrietyDate: "2024-01-10", emergencyContact: "Lisa Johnson - (555) 765-4321" },
+          { id: "app-4", tenantName: "Emily Wilson", email: "emily.wilson@gmail.com", phone: "(555) 456-7890", propertyName: "New Beginnings Faith Home", status: "Needs Info", submittedDate: "2024-12-02", completeness: 60, message: "Interested in faith-based recovery support.", sobrietyDate: "2024-09-01", emergencyContact: "David Wilson - (555) 654-3210" },
         ]);
         
         // Sample messages data  
@@ -362,8 +377,10 @@ export function AdminDashboard() {
           { id: "msg-3", from: "Anonymous User", to: "Serenity Living", content: "This message contains inappropriate content that was flagged.", date: "Dec 3, 2024", flagged: true },
         ]);
         
+      setIsLoading(false);
       } catch (error) {
         console.error('Failed to fetch admin data:', error);
+        setIsLoading(false);
       }
     };
     
@@ -423,7 +440,7 @@ export function AdminDashboard() {
         fileSize: "1.2 MB"
       }
     ]);
-  }, []);
+  }, [setLocation]);
 
   const handleEditUser = (user: User) => {
     setEditingUser(user);
