@@ -240,18 +240,11 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
                   {type === "login" && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        toast({
-                          title: "Password Reset",
-                          description: "Please contact support@soberstayhomes.com to reset your password.",
-                        });
-                      }}
-                      className="text-xs text-primary hover:underline"
-                    >
-                      Forgot Password?
-                    </button>
+                    <Link href="/forgot-password">
+                      <span className="text-xs text-primary hover:underline cursor-pointer" data-testid="link-forgot-password">
+                        Forgot Password?
+                      </span>
+                    </Link>
                   )}
                 </div>
                 <Input id="password" type="password" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={password} onChange={(e) => setPassword(e.target.value)} />

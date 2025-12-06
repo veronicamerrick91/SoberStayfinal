@@ -30,6 +30,8 @@ import { RightsResponsibilities } from "@/pages/rights-responsibilities";
 import { CreateListing } from "@/pages/create-listing";
 import { ProviderSupport } from "@/pages/provider-support";
 import { AuthCallback } from "@/pages/auth-callback";
+import { ForgotPasswordPage } from "@/pages/forgot-password";
+import { ResetPasswordPage } from "@/pages/reset-password";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
 
@@ -89,6 +91,8 @@ function Router() {
           <AuthPage type="signup" defaultRole="provider" />
         </Route>
         <Route path="/auth/callback" component={AuthCallback} />
+        <Route path="/forgot-password" component={ForgotPasswordPage} />
+        <Route path="/reset-password" component={ResetPasswordPage} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms-of-use" component={TermsOfUse} />
         <Route path="/disclaimer" component={Disclaimer} />
