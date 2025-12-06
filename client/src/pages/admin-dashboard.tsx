@@ -134,6 +134,8 @@ export function AdminDashboard() {
   const [emailFontColor, setEmailFontColor] = useState("#ffffff");
   const [emailSubject, setEmailSubject] = useState("");
   const [showEmailComposer, setShowEmailComposer] = useState(false);
+  const [emailRecipientGroup, setEmailRecipientGroup] = useState("all");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [automatedCampaigns, setAutomatedCampaigns] = useState<any[]>([
     { id: 1, name: "New Provider Onboarding", trigger: "On Signup", audience: "New Providers", emails: 7, active: true, lastRun: "Dec 3, 2024", enrolled: 23 },
     { id: 2, name: "Tenant Recovery Tips Weekly", trigger: "Weekly", audience: "All Tenants", emails: 1, active: true, lastRun: "Dec 2, 2024", enrolled: 142 },
@@ -663,8 +665,57 @@ the actual document file stored on the server.
     link.click();
   };
 
-  const handleSendCampaign = () => {
-    // Campaign sent - action complete
+  const handleSendCampaign = async () => {
+    if (!emailSubject.trim() || !emailBodyText.trim()) {
+      toast({ 
+        title: "Missing Information", 
+        description: "Please enter both a subject and content for your email.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsSendingEmail(true);
+    
+    try {
+      const response = await fetch('/api/admin/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          subject: emailSubject,
+          body: emailBodyText,
+          audience: emailRecipientGroup
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        toast({ 
+          title: "Campaign Sent!", 
+          description: result.message || `Successfully sent ${result.sent} emails.`
+        });
+        setShowEmailComposer(false);
+        setEmailSubject("");
+        setEmailBodyText("");
+      } else {
+        toast({ 
+          title: "Send Failed", 
+          description: result.error || "Failed to send email campaign. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } catch (error: any) {
+      console.error('Email send error:', error);
+      toast({ 
+        title: "Error", 
+        description: "An error occurred while sending the campaign.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const handleCreateCampaign = () => {
@@ -3855,12 +3906,15 @@ Use the toolbar above for formatting, or write in Markdown:
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Recipient Group</label>
-                    <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors">
-                      <option>All Users</option>
-                      <option>All Tenants</option>
-                      <option>All Providers</option>
-                      <option>Active Users</option>
-                      <option>Inactive Users</option>
+                    <select 
+                      value={emailRecipientGroup}
+                      onChange={(e) => setEmailRecipientGroup(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                      data-testid="select-recipient-group"
+                    >
+                      <option value="all">All Users</option>
+                      <option value="tenants">All Tenants</option>
+                      <option value="providers">All Providers</option>
                     </select>
                   </div>
                 </div>
@@ -3953,11 +4007,12 @@ Use the toolbar above for formatting, or write in Markdown:
                   Cancel
                 </Button>
                 <Button 
-                  onClick={() => { setShowEmailComposer(false); handleSendCampaign(); toast({ title: "Campaign Sent", description: "Email campaign sent successfully!" }); }} 
+                  onClick={handleSendCampaign}
+                  disabled={isSendingEmail || !emailSubject.trim() || !emailBodyText.trim()}
                   className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
                   data-testid="button-send-email"
                 >
-                  Send Campaign
+                  {isSendingEmail ? "Sending..." : "Send Campaign"}
                 </Button>
               </div>
             </div>

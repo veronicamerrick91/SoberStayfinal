@@ -6,7 +6,7 @@ import { insertListingSchema, insertSubscriptionSchema, insertUserSchema } from 
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { sendPasswordResetEmail } from "./email";
+import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml } from "./email";
 
 // Registration schema with validation
 const registerSchema = z.object({
@@ -270,6 +270,109 @@ export async function registerRoutes(
     });
 
     res.status(201).json(subscription);
+  });
+
+  // Admin Email Endpoints
+  app.post("/api/admin/send-email", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const { to, subject, body, audience } = req.body;
+    
+    if (!subject || !body) {
+      return res.status(400).json({ error: "Subject and body are required" });
+    }
+
+    try {
+      let recipients: string[] = [];
+      
+      if (audience) {
+        // Get users based on audience type
+        const allUsers = await storage.getAllUsers();
+        
+        switch (audience) {
+          case 'all':
+            recipients = allUsers.map(u => u.email);
+            break;
+          case 'tenants':
+            recipients = allUsers.filter(u => u.role === 'tenant').map(u => u.email);
+            break;
+          case 'providers':
+            recipients = allUsers.filter(u => u.role === 'provider').map(u => u.email);
+            break;
+          default:
+            recipients = allUsers.map(u => u.email);
+        }
+      } else if (to) {
+        recipients = Array.isArray(to) ? to : [to];
+      } else {
+        return res.status(400).json({ error: "Either 'to' or 'audience' is required" });
+      }
+
+      if (recipients.length === 0) {
+        return res.status(400).json({ error: "No recipients found" });
+      }
+
+      const html = createMarketingEmailHtml(subject, body);
+      
+      if (recipients.length === 1) {
+        const result = await sendEmail({ to: recipients[0], subject, html });
+        if (result.success) {
+          res.json({ success: true, sent: 1, message: "Email sent successfully" });
+        } else {
+          res.status(500).json({ error: result.error || "Failed to send email" });
+        }
+      } else {
+        const emails = recipients.map(email => ({ to: email, subject, html }));
+        const result = await sendBulkEmails(emails);
+        res.json({ 
+          success: result.success, 
+          sent: result.sent, 
+          failed: result.failed,
+          message: `Sent ${result.sent} emails${result.failed > 0 ? `, ${result.failed} failed` : ''}`
+        });
+      }
+    } catch (error: any) {
+      console.error("Admin email error:", error);
+      res.status(500).json({ error: error.message || "Failed to send email" });
+    }
+  });
+
+  // Send email to specific user
+  app.post("/api/admin/send-user-email", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const { userId, subject, body } = req.body;
+    
+    if (!userId || !subject || !body) {
+      return res.status(400).json({ error: "userId, subject, and body are required" });
+    }
+
+    try {
+      const targetUser = await storage.getUser(parseInt(userId));
+      if (!targetUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const html = createMarketingEmailHtml(subject, body);
+      const result = await sendEmail({ to: targetUser.email, subject, html });
+      
+      if (result.success) {
+        res.json({ success: true, message: `Email sent to ${targetUser.email}` });
+      } else {
+        res.status(500).json({ error: result.error || "Failed to send email" });
+      }
+    } catch (error: any) {
+      console.error("Send user email error:", error);
+      res.status(500).json({ error: error.message || "Failed to send email" });
+    }
   });
 
   return httpServer;
