@@ -372,9 +372,9 @@ export function AdminDashboard() {
         
         // Sample messages data  
         setMessages([
-          { id: "msg-1", from: "John Doe", to: "Recovery First LLC", content: "Hi, I'm interested in your facility. Can I schedule a tour?", date: "Dec 5, 2024", flagged: false },
-          { id: "msg-2", from: "Sarah Miller", to: "Hope House", content: "What are your house rules regarding visitors?", date: "Dec 4, 2024", flagged: false },
-          { id: "msg-3", from: "Anonymous User", to: "Serenity Living", content: "This message contains inappropriate content that was flagged.", date: "Dec 3, 2024", flagged: true },
+          { id: "msg-1", tenant: "John Doe", provider: "Recovery First LLC", preview: "Hi, I'm interested in your facility. Can I schedule a tour?", date: "Dec 5, 2024", flagged: false },
+          { id: "msg-2", tenant: "Sarah Miller", provider: "Hope House", preview: "What are your house rules regarding visitors?", date: "Dec 4, 2024", flagged: false },
+          { id: "msg-3", tenant: "Anonymous User", provider: "Serenity Living", preview: "This message contains inappropriate content...", date: "Dec 3, 2024", flagged: true, reason: "Inappropriate Content" },
         ]);
         
       setIsLoading(false);
