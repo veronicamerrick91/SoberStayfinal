@@ -5,6 +5,8 @@ import { setupAuth } from "./auth";
 import { insertListingSchema, insertSubscriptionSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
+import { sendPasswordResetEmail } from "./email";
 
 // Registration schema with validation
 const registerSchema = z.object({
@@ -102,6 +104,94 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ error: "Login failed. Please try again." });
+    }
+  });
+
+  // Forgot Password - Request password reset email
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      
+      if (user) {
+        await storage.invalidateUserPasswordResetTokens(user.id);
+        
+        const token = crypto.randomBytes(32).toString("hex");
+        const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+        
+        await storage.createPasswordResetToken(user.id, token, expiresAt);
+        
+        const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+          ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+          : process.env.APP_URL || "http://localhost:5000";
+        const resetUrl = `${baseUrl}/reset-password?token=${token}`;
+        
+        await sendPasswordResetEmail(email, token, resetUrl);
+      }
+      
+      res.json({ success: true, message: "If an account exists with that email, you will receive a password reset link." });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ error: "Failed to process request. Please try again." });
+    }
+  });
+
+  // Validate reset token
+  app.get("/api/auth/validate-reset-token", async (req, res) => {
+    try {
+      const { token } = req.query;
+      
+      if (!token || typeof token !== "string") {
+        return res.status(400).json({ valid: false, error: "Token is required" });
+      }
+
+      const resetToken = await storage.getValidPasswordResetToken(token);
+      
+      if (!resetToken) {
+        return res.json({ valid: false, error: "Invalid or expired reset link" });
+      }
+
+      res.json({ valid: true });
+    } catch (error) {
+      console.error("Validate token error:", error);
+      res.status(500).json({ valid: false, error: "Failed to validate token" });
+    }
+  });
+
+  // Reset Password - Set new password
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+        return res.status(400).json({ error: "Token and new password are required" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: "Password must be at least 6 characters" });
+      }
+
+      const resetToken = await storage.getValidPasswordResetToken(token);
+      
+      if (!resetToken) {
+        return res.status(400).json({ error: "Invalid or expired reset link. Please request a new one." });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      
+      await storage.updateUserPassword(resetToken.userId, hashedPassword);
+      
+      await storage.markPasswordResetTokenUsed(resetToken.id);
+      
+      res.json({ success: true, message: "Password has been reset successfully. You can now log in with your new password." });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ error: "Failed to reset password. Please try again." });
     }
   });
 
