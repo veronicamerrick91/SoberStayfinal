@@ -217,7 +217,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
               </div>
             )}
             
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} method="POST" action="/api/auth/login" className="space-y-4">
               {type === "signup" && (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -233,7 +233,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
               
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="m@example.com" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input id="email" name="email" type="email" autoComplete="username" placeholder="m@example.com" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               
               <div className="space-y-2">
@@ -247,7 +247,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                     </Link>
                   )}
                 </div>
-                <Input id="password" type="password" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <Input id="password" name="password" type="password" autoComplete="current-password" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
 
               <Button type="submit" disabled={isSubmitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
