@@ -471,9 +471,9 @@ export function TenantDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     {[
-                      { id: 1, name: "Serenity House", status: "Under Review", date: "Submitted today", progress: 60, icon: "📋", propertyId: "property1" },
-                      { id: 2, name: "New Beginnings", status: "Action Required", date: "Submitted yesterday", progress: 40, icon: "⚠️", propertyId: "property2" },
-                      { id: 3, name: "The Harbor", status: "Submitted", date: "Submitted Nov 28", progress: 20, icon: "✓", propertyId: "property3" },
+                      { id: 1, name: "Serenity House Boston", status: "Under Review", date: "Submitted today", progress: 60, icon: "📋", propertyId: "1" },
+                      { id: 2, name: "Hope Haven for Women", status: "Action Required", date: "Submitted yesterday", progress: 40, icon: "⚠️", propertyId: "2" },
+                      { id: 3, name: "Fresh Start Recovery", status: "Submitted", date: "Submitted Nov 28", progress: 20, icon: "✓", propertyId: "3" },
                     ].map((app) => (
                       <div 
                         key={app.id} 
