@@ -22,6 +22,7 @@ import { getFavorites } from "@/lib/favorites";
 import { clearAuth, getAuth, saveAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { getEngagementStats, getRecoveryBadges, getNextStep, getDaysClean, getViewedHomes, getTourRequests, TourRequest } from "@/lib/tenant-engagement";
+import { getSubmittedApplications, initializeSampleApplications, SubmittedApplication } from "@/lib/application-profile";
 import { formatDistanceToNow } from "date-fns";
 
 interface ChatMessage {
@@ -50,20 +51,6 @@ interface TenantProfile {
   bio: string;
 }
 
-interface Application {
-  id: number;
-  name: string;
-  status: string;
-  date: string;
-  progress: number;
-  icon: string;
-  propertyId: string;
-  submittedAt: string;
-  providerEmail: string;
-  providerPhone: string;
-  nextSteps: string[];
-  timeline: { date: string; event: string; completed: boolean }[];
-}
 
 export function TenantDashboard() {
   const [location, setLocation] = useLocation();
@@ -71,7 +58,8 @@ export function TenantDashboard() {
   const [savedHomes, setSavedHomes] = useState<typeof MOCK_PROPERTIES>([]);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
-  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [selectedApplication, setSelectedApplication] = useState<SubmittedApplication | null>(null);
+  const [submittedApplications, setSubmittedApplications] = useState<SubmittedApplication[]>([]);
   const { toast } = useToast();
   const user = getAuth();
   
@@ -184,6 +172,10 @@ export function TenantDashboard() {
     
     // Load tour requests
     setTourRequests(getTourRequests());
+    
+    // Load submitted applications
+    initializeSampleApplications();
+    setSubmittedApplications(getSubmittedApplications());
     
     // Load recovery badges based on profile sobriety date
     const savedProfile = localStorage.getItem("tenant_profile");
@@ -486,98 +478,62 @@ export function TenantDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { 
-                        id: 1, 
-                        name: "Serenity House Boston", 
-                        status: "Under Review", 
-                        date: "Submitted today", 
-                        progress: 60, 
-                        icon: "📋", 
-                        propertyId: "1",
-                        submittedAt: "December 7, 2024",
-                        providerEmail: "admin@serenityhouse.com",
-                        providerPhone: "(617) 555-0123",
-                        nextSteps: ["Background check in progress", "Provider reviewing your application", "Expect response within 3-5 business days"],
-                        timeline: [
-                          { date: "Dec 7", event: "Application Submitted", completed: true },
-                          { date: "Dec 7", event: "Documents Received", completed: true },
-                          { date: "Dec 8", event: "Background Check", completed: false },
-                          { date: "Dec 10", event: "Provider Review", completed: false },
-                          { date: "Dec 12", event: "Decision", completed: false }
-                        ]
-                      },
-                      { 
-                        id: 2, 
-                        name: "Hope Haven for Women", 
-                        status: "Action Required", 
-                        date: "Submitted yesterday", 
-                        progress: 40, 
-                        icon: "⚠️", 
-                        propertyId: "2",
-                        submittedAt: "December 6, 2024",
-                        providerEmail: "contact@hopehaven.org",
-                        providerPhone: "(617) 555-0456",
-                        nextSteps: ["Please upload proof of income", "Complete the additional questionnaire", "Provider is waiting on your documents"],
-                        timeline: [
-                          { date: "Dec 6", event: "Application Submitted", completed: true },
-                          { date: "Dec 6", event: "Documents Received", completed: false },
-                          { date: "Dec 8", event: "Background Check", completed: false },
-                          { date: "Dec 10", event: "Provider Review", completed: false },
-                          { date: "Dec 12", event: "Decision", completed: false }
-                        ]
-                      },
-                      { 
-                        id: 3, 
-                        name: "Fresh Start Recovery", 
-                        status: "Submitted", 
-                        date: "Submitted Nov 28", 
-                        progress: 20, 
-                        icon: "✓", 
-                        propertyId: "3",
-                        submittedAt: "November 28, 2024",
-                        providerEmail: "info@freshstart.com",
-                        providerPhone: "(617) 555-0789",
-                        nextSteps: ["Application received and in queue", "Provider will review shortly"],
-                        timeline: [
-                          { date: "Nov 28", event: "Application Submitted", completed: true },
-                          { date: "Pending", event: "Documents Received", completed: false },
-                          { date: "Pending", event: "Background Check", completed: false },
-                          { date: "Pending", event: "Provider Review", completed: false },
-                          { date: "Pending", event: "Decision", completed: false }
-                        ]
-                      },
-                    ].map((app) => (
-                      <div 
-                        key={app.id} 
-                        className="flex items-center gap-4 p-4 rounded-lg bg-white/5 border border-border/50 hover:border-primary/50 transition-colors cursor-pointer hover:bg-white/10"
-                        onClick={() => {
-                          setSelectedApplication(app);
-                          setShowApplicationModal(true);
-                        }}
-                        data-testid={`application-card-${app.id}`}
-                      >
-                        <div className="text-3xl">{app.icon}</div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h4 className="font-bold text-white">{app.name}</h4>
-                              <p className="text-xs text-muted-foreground">{app.date}</p>
+                  {submittedApplications.length > 0 ? (
+                    <div className="space-y-4">
+                      {submittedApplications.map((app) => {
+                        const getStatusDisplay = (status: string) => {
+                          switch (status) {
+                            case "under_review": return { label: "Under Review", icon: "📋", variant: "default" as const, progress: 60 };
+                            case "action_required": return { label: "Action Required", icon: "⚠️", variant: "destructive" as const, progress: 40 };
+                            case "approved": return { label: "Approved", icon: "✅", variant: "default" as const, progress: 100 };
+                            case "denied": return { label: "Denied", icon: "❌", variant: "destructive" as const, progress: 100 };
+                            default: return { label: "Pending", icon: "✓", variant: "secondary" as const, progress: 20 };
+                          }
+                        };
+                        const statusInfo = getStatusDisplay(app.status);
+                        return (
+                          <div 
+                            key={app.id} 
+                            className="flex items-center gap-4 p-4 rounded-lg bg-white/5 border border-border/50 hover:border-primary/50 transition-colors cursor-pointer hover:bg-white/10"
+                            onClick={() => {
+                              setSelectedApplication(app);
+                              setShowApplicationModal(true);
+                            }}
+                            data-testid={`application-card-${app.id}`}
+                          >
+                            <div className="text-3xl">{statusInfo.icon}</div>
+                            <div className="flex-1">
+                              <div className="flex justify-between items-start mb-2">
+                                <div>
+                                  <h4 className="font-bold text-white">{app.propertyName}</h4>
+                                  <p className="text-xs text-muted-foreground">
+                                    Submitted {formatDistanceToNow(new Date(app.submittedAt), { addSuffix: true })}
+                                  </p>
+                                </div>
+                                <Badge variant={statusInfo.variant}>
+                                  {statusInfo.label}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Progress value={statusInfo.progress} className="h-2 flex-1" />
+                                <span className="text-xs text-muted-foreground font-medium">{statusInfo.progress}%</span>
+                              </div>
                             </div>
-                            <Badge variant={app.status === "Under Review" ? "default" : app.status === "Submitted" ? "secondary" : "destructive"}>
-                              {app.status}
-                            </Badge>
+                            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Progress value={app.progress} className="h-2 flex-1" />
-                            <span className="text-xs text-muted-foreground font-medium">{app.progress}%</span>
-                          </div>
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
-                      </div>
-                    ))}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <FileText className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+                      <h3 className="text-xl font-bold text-white mb-2">No Applications Yet</h3>
+                      <p className="text-muted-foreground mb-6">Start browsing homes and submit applications to track them here</p>
+                      <Button onClick={() => setLocation("/browse")} className="bg-primary text-primary-foreground">
+                        Browse Homes
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -966,14 +922,14 @@ export function TenantDashboard() {
 
       {/* Application Details Modal */}
       <Dialog open={showApplicationModal} onOpenChange={setShowApplicationModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-card border-border">
           <DialogHeader>
             <DialogTitle className="text-2xl text-white flex items-center gap-2">
               <FileText className="w-6 h-6 text-primary" />
-              Application Details
+              Application Preview
             </DialogTitle>
             <DialogDescription>
-              Track your application status and next steps
+              View your submitted application details and status
             </DialogDescription>
           </DialogHeader>
 
@@ -981,96 +937,166 @@ export function TenantDashboard() {
             <div className="space-y-6 py-4">
               {/* Status Banner */}
               <div className={`p-4 rounded-lg border ${
-                selectedApplication.status === "Under Review" 
+                selectedApplication.status === "under_review" 
                   ? "bg-blue-500/10 border-blue-500/30" 
-                  : selectedApplication.status === "Action Required"
+                  : selectedApplication.status === "action_required"
                   ? "bg-yellow-500/10 border-yellow-500/30"
+                  : selectedApplication.status === "approved"
+                  ? "bg-green-500/10 border-green-500/30"
+                  : selectedApplication.status === "denied"
+                  ? "bg-red-500/10 border-red-500/30"
                   : "bg-primary/10 border-primary/30"
               }`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-bold text-white">{selectedApplication.name}</h3>
-                    <p className="text-sm text-muted-foreground">Submitted: {selectedApplication.submittedAt}</p>
+                    <h3 className="text-lg font-bold text-white">{selectedApplication.propertyName}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Submitted: {new Date(selectedApplication.submittedAt).toLocaleDateString()}
+                    </p>
                   </div>
-                  <Badge variant={selectedApplication.status === "Under Review" ? "default" : selectedApplication.status === "Submitted" ? "secondary" : "destructive"} className="text-sm px-3 py-1">
-                    {selectedApplication.status}
+                  <Badge className={`text-sm px-3 py-1 ${
+                    selectedApplication.status === "approved" ? "bg-green-500" :
+                    selectedApplication.status === "denied" ? "bg-red-500" :
+                    selectedApplication.status === "action_required" ? "bg-yellow-500" :
+                    "bg-blue-500"
+                  }`}>
+                    {selectedApplication.status === "under_review" ? "Under Review" :
+                     selectedApplication.status === "action_required" ? "Action Required" :
+                     selectedApplication.status === "approved" ? "Approved" :
+                     selectedApplication.status === "denied" ? "Denied" : "Pending"}
                   </Badge>
                 </div>
-                <div className="mt-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm text-muted-foreground">Progress</span>
-                    <span className="text-sm font-bold text-primary">{selectedApplication.progress}%</span>
+                {selectedApplication.reviewNotes && (
+                  <div className="mt-3 p-3 bg-white/5 rounded-lg">
+                    <p className="text-sm text-yellow-300">
+                      <strong>Provider Note:</strong> {selectedApplication.reviewNotes}
+                    </p>
                   </div>
-                  <Progress value={selectedApplication.progress} className="h-2" />
-                </div>
+                )}
+                {selectedApplication.reviewedAt && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Reviewed: {new Date(selectedApplication.reviewedAt).toLocaleDateString()}
+                  </p>
+                )}
               </div>
 
-              {/* Timeline */}
-              <div className="space-y-3">
-                <h4 className="font-semibold text-white flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-primary" />
-                  Application Timeline
+              {/* Application Data Preview */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-white flex items-center gap-2 border-b border-border pb-2">
+                  <User className="w-4 h-4 text-primary" />
+                  Personal Information
                 </h4>
-                <div className="space-y-2">
-                  {selectedApplication.timeline.map((item, index) => (
-                    <div key={index} className="flex items-center gap-3 p-2 rounded-lg bg-white/5">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        item.completed ? "bg-primary text-white" : "bg-muted text-muted-foreground"
-                      }`}>
-                        {item.completed ? <CheckCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
-                      </div>
-                      <div className="flex-1">
-                        <p className={`text-sm font-medium ${item.completed ? "text-white" : "text-muted-foreground"}`}>
-                          {item.event}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{item.date}</p>
-                      </div>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Full Name</span>
+                    <span className="text-white">{selectedApplication.applicationData.firstName} {selectedApplication.applicationData.lastName}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Date of Birth</span>
+                    <span className="text-white">{selectedApplication.applicationData.dateOfBirth}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Gender</span>
+                    <span className="text-white capitalize">{selectedApplication.applicationData.gender}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Phone</span>
+                    <span className="text-white">{selectedApplication.applicationData.phone}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5 col-span-2">
+                    <span className="text-muted-foreground block text-xs">Email</span>
+                    <span className="text-white">{selectedApplication.applicationData.email}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5 col-span-2">
+                    <span className="text-muted-foreground block text-xs">Current Address</span>
+                    <span className="text-white">{selectedApplication.applicationData.currentAddress}</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Next Steps */}
-              <div className="space-y-3">
-                <h4 className="font-semibold text-white flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-primary" />
-                  Next Steps
-                </h4>
-                <div className="space-y-2">
-                  {selectedApplication.nextSteps.map((step, index) => (
-                    <div key={index} className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
-                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
-                        <span className="text-xs font-bold text-primary">{index + 1}</span>
-                      </div>
-                      <p className="text-sm text-white">{step}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Provider Contact */}
-              <div className="space-y-3">
-                <h4 className="font-semibold text-white flex items-center gap-2">
+              {/* Emergency Contact */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-white flex items-center gap-2 border-b border-border pb-2">
                   <Phone className="w-4 h-4 text-primary" />
-                  Provider Contact
+                  Emergency Contact
                 </h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-lg bg-white/5 border border-border">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                      <Mail className="w-3 h-3" />
-                      <span className="text-xs">Email</span>
-                    </div>
-                    <p className="text-sm text-white">{selectedApplication.providerEmail}</p>
+                <div className="grid grid-cols-3 gap-3 text-sm">
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Name</span>
+                    <span className="text-white">{selectedApplication.applicationData.emergencyContactName}</span>
                   </div>
-                  <div className="p-3 rounded-lg bg-white/5 border border-border">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                      <Phone className="w-3 h-3" />
-                      <span className="text-xs">Phone</span>
-                    </div>
-                    <p className="text-sm text-white">{selectedApplication.providerPhone}</p>
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Phone</span>
+                    <span className="text-white">{selectedApplication.applicationData.emergencyContactPhone}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Relationship</span>
+                    <span className="text-white">{selectedApplication.applicationData.emergencyContactRelationship}</span>
                   </div>
                 </div>
               </div>
+
+              {/* Recovery Information */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-white flex items-center gap-2 border-b border-border pb-2">
+                  <Shield className="w-4 h-4 text-primary" />
+                  Recovery Information
+                </h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Primary Substance(s)</span>
+                    <span className="text-white">{selectedApplication.applicationData.primarySubstances}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Length of Sobriety</span>
+                    <span className="text-white">{selectedApplication.applicationData.lengthOfSobriety}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Last Date of Use</span>
+                    <span className="text-white">{selectedApplication.applicationData.lastDateOfUse}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Has Sponsor</span>
+                    <span className="text-white capitalize">{selectedApplication.applicationData.hasSponsor}</span>
+                  </div>
+                  {selectedApplication.applicationData.currentMatMedications && (
+                    <div className="p-3 rounded-lg bg-white/5 col-span-2">
+                      <span className="text-muted-foreground block text-xs">MAT Medications</span>
+                      <span className="text-white">{selectedApplication.applicationData.currentMatMedications}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Medical Info */}
+              {(selectedApplication.applicationData.medicalConditions || selectedApplication.applicationData.mentalHealthDiagnoses) && (
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-white flex items-center gap-2 border-b border-border pb-2">
+                    <Heart className="w-4 h-4 text-primary" />
+                    Medical Information
+                  </h4>
+                  <div className="grid grid-cols-1 gap-3 text-sm">
+                    {selectedApplication.applicationData.medicalConditions && (
+                      <div className="p-3 rounded-lg bg-white/5">
+                        <span className="text-muted-foreground block text-xs">Medical Conditions</span>
+                        <span className="text-white">{selectedApplication.applicationData.medicalConditions}</span>
+                      </div>
+                    )}
+                    {selectedApplication.applicationData.mentalHealthDiagnoses && (
+                      <div className="p-3 rounded-lg bg-white/5">
+                        <span className="text-muted-foreground block text-xs">Mental Health</span>
+                        <span className="text-white">{selectedApplication.applicationData.mentalHealthDiagnoses}</span>
+                      </div>
+                    )}
+                    {selectedApplication.applicationData.currentMedications && (
+                      <div className="p-3 rounded-lg bg-white/5">
+                        <span className="text-muted-foreground block text-xs">Current Medications</span>
+                        <span className="text-white">{selectedApplication.applicationData.currentMedications}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4 border-t border-border">
