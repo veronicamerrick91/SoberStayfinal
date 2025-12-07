@@ -50,11 +50,28 @@ interface TenantProfile {
   bio: string;
 }
 
+interface Application {
+  id: number;
+  name: string;
+  status: string;
+  date: string;
+  progress: number;
+  icon: string;
+  propertyId: string;
+  submittedAt: string;
+  providerEmail: string;
+  providerPhone: string;
+  nextSteps: string[];
+  timeline: { date: string; event: string; completed: boolean }[];
+}
+
 export function TenantDashboard() {
   const [location, setLocation] = useLocation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [savedHomes, setSavedHomes] = useState<typeof MOCK_PROPERTIES>([]);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
   const { toast } = useToast();
   const user = getAuth();
   
@@ -471,14 +488,74 @@ export function TenantDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     {[
-                      { id: 1, name: "Serenity House Boston", status: "Under Review", date: "Submitted today", progress: 60, icon: "📋", propertyId: "1" },
-                      { id: 2, name: "Hope Haven for Women", status: "Action Required", date: "Submitted yesterday", progress: 40, icon: "⚠️", propertyId: "2" },
-                      { id: 3, name: "Fresh Start Recovery", status: "Submitted", date: "Submitted Nov 28", progress: 20, icon: "✓", propertyId: "3" },
+                      { 
+                        id: 1, 
+                        name: "Serenity House Boston", 
+                        status: "Under Review", 
+                        date: "Submitted today", 
+                        progress: 60, 
+                        icon: "📋", 
+                        propertyId: "1",
+                        submittedAt: "December 7, 2024",
+                        providerEmail: "admin@serenityhouse.com",
+                        providerPhone: "(617) 555-0123",
+                        nextSteps: ["Background check in progress", "Provider reviewing your application", "Expect response within 3-5 business days"],
+                        timeline: [
+                          { date: "Dec 7", event: "Application Submitted", completed: true },
+                          { date: "Dec 7", event: "Documents Received", completed: true },
+                          { date: "Dec 8", event: "Background Check", completed: false },
+                          { date: "Dec 10", event: "Provider Review", completed: false },
+                          { date: "Dec 12", event: "Decision", completed: false }
+                        ]
+                      },
+                      { 
+                        id: 2, 
+                        name: "Hope Haven for Women", 
+                        status: "Action Required", 
+                        date: "Submitted yesterday", 
+                        progress: 40, 
+                        icon: "⚠️", 
+                        propertyId: "2",
+                        submittedAt: "December 6, 2024",
+                        providerEmail: "contact@hopehaven.org",
+                        providerPhone: "(617) 555-0456",
+                        nextSteps: ["Please upload proof of income", "Complete the additional questionnaire", "Provider is waiting on your documents"],
+                        timeline: [
+                          { date: "Dec 6", event: "Application Submitted", completed: true },
+                          { date: "Dec 6", event: "Documents Received", completed: false },
+                          { date: "Dec 8", event: "Background Check", completed: false },
+                          { date: "Dec 10", event: "Provider Review", completed: false },
+                          { date: "Dec 12", event: "Decision", completed: false }
+                        ]
+                      },
+                      { 
+                        id: 3, 
+                        name: "Fresh Start Recovery", 
+                        status: "Submitted", 
+                        date: "Submitted Nov 28", 
+                        progress: 20, 
+                        icon: "✓", 
+                        propertyId: "3",
+                        submittedAt: "November 28, 2024",
+                        providerEmail: "info@freshstart.com",
+                        providerPhone: "(617) 555-0789",
+                        nextSteps: ["Application received and in queue", "Provider will review shortly"],
+                        timeline: [
+                          { date: "Nov 28", event: "Application Submitted", completed: true },
+                          { date: "Pending", event: "Documents Received", completed: false },
+                          { date: "Pending", event: "Background Check", completed: false },
+                          { date: "Pending", event: "Provider Review", completed: false },
+                          { date: "Pending", event: "Decision", completed: false }
+                        ]
+                      },
                     ].map((app) => (
                       <div 
                         key={app.id} 
                         className="flex items-center gap-4 p-4 rounded-lg bg-white/5 border border-border/50 hover:border-primary/50 transition-colors cursor-pointer hover:bg-white/10"
-                        onClick={() => setLocation(`/property/${app.propertyId}`)}
+                        onClick={() => {
+                          setSelectedApplication(app);
+                          setShowApplicationModal(true);
+                        }}
                         data-testid={`application-card-${app.id}`}
                       >
                         <div className="text-3xl">{app.icon}</div>
@@ -884,6 +961,145 @@ export function TenantDashboard() {
               Save Profile
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Application Details Modal */}
+      <Dialog open={showApplicationModal} onOpenChange={setShowApplicationModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-white flex items-center gap-2">
+              <FileText className="w-6 h-6 text-primary" />
+              Application Details
+            </DialogTitle>
+            <DialogDescription>
+              Track your application status and next steps
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedApplication && (
+            <div className="space-y-6 py-4">
+              {/* Status Banner */}
+              <div className={`p-4 rounded-lg border ${
+                selectedApplication.status === "Under Review" 
+                  ? "bg-blue-500/10 border-blue-500/30" 
+                  : selectedApplication.status === "Action Required"
+                  ? "bg-yellow-500/10 border-yellow-500/30"
+                  : "bg-primary/10 border-primary/30"
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-white">{selectedApplication.name}</h3>
+                    <p className="text-sm text-muted-foreground">Submitted: {selectedApplication.submittedAt}</p>
+                  </div>
+                  <Badge variant={selectedApplication.status === "Under Review" ? "default" : selectedApplication.status === "Submitted" ? "secondary" : "destructive"} className="text-sm px-3 py-1">
+                    {selectedApplication.status}
+                  </Badge>
+                </div>
+                <div className="mt-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm text-muted-foreground">Progress</span>
+                    <span className="text-sm font-bold text-primary">{selectedApplication.progress}%</span>
+                  </div>
+                  <Progress value={selectedApplication.progress} className="h-2" />
+                </div>
+              </div>
+
+              {/* Timeline */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-white flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary" />
+                  Application Timeline
+                </h4>
+                <div className="space-y-2">
+                  {selectedApplication.timeline.map((item, index) => (
+                    <div key={index} className="flex items-center gap-3 p-2 rounded-lg bg-white/5">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        item.completed ? "bg-primary text-white" : "bg-muted text-muted-foreground"
+                      }`}>
+                        {item.completed ? <CheckCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                      </div>
+                      <div className="flex-1">
+                        <p className={`text-sm font-medium ${item.completed ? "text-white" : "text-muted-foreground"}`}>
+                          {item.event}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{item.date}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Next Steps */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-white flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-primary" />
+                  Next Steps
+                </h4>
+                <div className="space-y-2">
+                  {selectedApplication.nextSteps.map((step, index) => (
+                    <div key={index} className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                      <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+                        <span className="text-xs font-bold text-primary">{index + 1}</span>
+                      </div>
+                      <p className="text-sm text-white">{step}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Provider Contact */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-white flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-primary" />
+                  Provider Contact
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-white/5 border border-border">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Mail className="w-3 h-3" />
+                      <span className="text-xs">Email</span>
+                    </div>
+                    <p className="text-sm text-white">{selectedApplication.providerEmail}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5 border border-border">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Phone className="w-3 h-3" />
+                      <span className="text-xs">Phone</span>
+                    </div>
+                    <p className="text-sm text-white">{selectedApplication.providerPhone}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-border">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setLocation(`/property/${selectedApplication.propertyId}`)} 
+                  className="flex-1"
+                  data-testid="button-view-listing"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  View Listing
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setShowApplicationModal(false);
+                    toast({
+                      title: "Message Sent",
+                      description: "Your message to the provider has been sent.",
+                    });
+                  }} 
+                  className="flex-1 bg-primary text-primary-foreground"
+                  data-testid="button-message-provider"
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Message Provider
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </Layout>

@@ -60,9 +60,9 @@ export default function Home() {
                   Search Homes
                 </Button>
               </Link>
-              <Link href="/for-providers">
-                <Button size="lg" variant="outline" className="text-lg h-14 px-8 rounded-full border-white/20 text-white hover:bg-white/10 hover:text-white hover:border-white/40 backdrop-blur-sm">
-                  List Your Home
+              <Link href="/quiz">
+                <Button size="lg" variant="outline" className="text-lg h-14 px-8 rounded-full border-primary/40 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary/60 backdrop-blur-sm">
+                  <Sparkles className="w-5 h-5 mr-2" /> Take Quiz
                 </Button>
               </Link>
             </div>

@@ -32,6 +32,7 @@ import { ProviderSupport } from "@/pages/provider-support";
 import { AuthCallback } from "@/pages/auth-callback";
 import { ForgotPasswordPage } from "@/pages/forgot-password";
 import { ResetPasswordPage } from "@/pages/reset-password";
+import Quiz from "@/pages/quiz";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
 
@@ -71,6 +72,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/browse" component={Browse} />
+        <Route path="/quiz" component={Quiz} />
         <Route path="/property/:id" component={PropertyDetails} />
         <Route path="/apply/:id" component={ApplicationForm} />
         <Route path="/chat/:propertyId" component={Chat} />
