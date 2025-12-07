@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import { 
   ArrowLeft, ArrowRight, Home, MapPin, DollarSign, Users, 
   Heart, Shield, Sparkles, CheckCircle, Star
@@ -234,24 +235,52 @@ export default function Quiz() {
             <div className="text-center space-y-2">
               <MapPin className="w-12 h-12 mx-auto text-primary" />
               <h2 className="text-2xl font-bold text-white">Where are you looking to live?</h2>
-              <p className="text-muted-foreground">Select your preferred area</p>
+              <p className="text-muted-foreground">Select your preferred area or search by zip code</p>
             </div>
-            <div className="grid grid-cols-2 gap-4 max-w-xl mx-auto">
-              {LOCATIONS.map((loc) => (
-                <button
-                  key={loc.value}
-                  onClick={() => setAnswers({ ...answers, location: loc.value })}
-                  className={`p-4 rounded-xl border-2 transition-all ${
-                    answers.location === loc.value
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/50 bg-white/5"
-                  }`}
-                  data-testid={`button-location-${loc.value}`}
-                >
-                  <MapPin className={`w-5 h-5 mx-auto mb-2 ${answers.location === loc.value ? "text-primary" : "text-muted-foreground"}`} />
-                  <p className="font-medium text-white">{loc.label}</p>
-                </button>
-              ))}
+            
+            {/* Zip Code Search */}
+            <div className="max-w-xl mx-auto space-y-4">
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input 
+                  placeholder="Search by zip code..." 
+                  value={answers.location.match(/^\d+$/) ? answers.location : ""}
+                  onChange={(e) => {
+                    const zipCode = e.target.value.replace(/\D/g, '');
+                    if (zipCode.length <= 5) {
+                      setAnswers({ ...answers, location: zipCode });
+                    }
+                  }}
+                  className="pl-10 h-12 bg-background/50 border-white/10 focus:border-primary/50 focus:ring-primary/20 rounded-xl"
+                  data-testid="input-zipcode"
+                  maxLength={5}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                {answers.location.match(/^\d+$/) ? `Searching for homes in zip code: ${answers.location}` : "Enter a 5-digit zip code"}
+              </p>
+            </div>
+
+            {/* Predefined Locations */}
+            <div className="space-y-3 max-w-xl mx-auto">
+              <p className="text-sm text-muted-foreground text-center">Or select from popular areas</p>
+              <div className="grid grid-cols-2 gap-4">
+                {LOCATIONS.map((loc) => (
+                  <button
+                    key={loc.value}
+                    onClick={() => setAnswers({ ...answers, location: loc.value })}
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      answers.location === loc.value
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:border-primary/50 bg-white/5"
+                    }`}
+                    data-testid={`button-location-${loc.value}`}
+                  >
+                    <MapPin className={`w-5 h-5 mx-auto mb-2 ${answers.location === loc.value ? "text-primary" : "text-muted-foreground"}`} />
+                    <p className="font-medium text-white text-sm">{loc.label}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         );
