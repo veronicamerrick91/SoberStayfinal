@@ -375,5 +375,85 @@ export async function registerRoutes(
     }
   });
 
+  // Development: Seed test accounts
+  app.post("/api/dev/seed-test-accounts", async (req, res) => {
+    if (process.env.NODE_ENV !== "development") {
+      return res.status(403).json({ error: "This endpoint is only available in development" });
+    }
+
+    try {
+      const testAccounts = [
+        {
+          email: "tenant@test.com",
+          password: "password123",
+          firstName: "Test",
+          lastName: "Tenant",
+          role: "tenant",
+        },
+        {
+          email: "provider@test.com",
+          password: "password123",
+          firstName: "Test",
+          lastName: "Provider",
+          role: "provider",
+        },
+        {
+          email: "admin@test.com",
+          password: "password123",
+          firstName: "Test",
+          lastName: "Admin",
+          role: "tenant",
+        }
+      ];
+
+      const createdUsers = [];
+
+      for (const account of testAccounts) {
+        const existing = await storage.getUserByEmail(account.email);
+        if (existing) {
+          createdUsers.push({
+            ...account,
+            created: false,
+            message: "Already exists",
+          });
+          continue;
+        }
+
+        const username = account.email.split("@")[0] + Math.floor(Math.random() * 10000);
+        const name = `${account.firstName} ${account.lastName}`;
+        const hashedPassword = await bcrypt.hash(account.password, 10);
+
+        const user = await storage.createUser({
+          username,
+          email: account.email,
+          password: hashedPassword,
+          name,
+          role: account.role as "tenant" | "provider",
+        });
+
+        // Make admin account actually admin
+        if (account.email === "admin@test.com") {
+          await storage.updateUser(user.id, { role: "admin" });
+        }
+
+        const { password: _, ...safeUser } = user;
+        createdUsers.push({
+          ...safeUser,
+          plainPassword: account.password,
+          created: true,
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Test accounts seeded",
+        accounts: createdUsers,
+      });
+    } catch (error: any) {
+      console.error("Seed test accounts error:", error);
+      res.status(500).json({ error: error.message || "Failed to seed accounts" });
+    }
+  });
+
   return httpServer;
 }
