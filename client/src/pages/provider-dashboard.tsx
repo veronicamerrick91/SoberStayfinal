@@ -159,6 +159,10 @@ function ProviderDashboardContent() {
     '1': 2, '2': 1, '3': 3, '4': 0, '5': 2, '6': 4
   });
 
+  // Marketing subsection and tab state
+  const [activeTab, setActiveTab] = useState("overview");
+  const [marketingSection, setMarketingSection] = useState<"overview" | "seo" | "campaign">("overview");
+
   const user = getAuth();
 
   const handleViewApplication = (app: ApplicationData) => {
@@ -278,7 +282,7 @@ function ProviderDashboardContent() {
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <TabsList className="bg-gradient-to-r from-card via-card to-card border border-border/50 p-2 flex flex-wrap gap-2 h-auto justify-start rounded-lg shadow-sm">
             <TabsTrigger value="overview" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Overview</TabsTrigger>
             <TabsTrigger value="properties" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Properties</TabsTrigger>
@@ -680,6 +684,40 @@ function ProviderDashboardContent() {
 
           {/* MARKETING & SEO TAB */}
           <TabsContent value="marketing" className="space-y-6">
+            {marketingSection === "seo" && (
+              <Card className="bg-primary/10 border border-primary/50 mb-4">
+                <CardHeader>
+                  <CardTitle className="text-primary flex items-center gap-2"><TrendingUp className="w-5 h-5" /> SEO Optimization Dashboard</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">Optimize your listings for maximum visibility in search results.</p>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-white/5 border border-primary/30 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-primary/20 p-2 rounded text-primary">
+                          <BarChart3 className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-white text-sm">Automatic Keyword Targeting</h4>
+                          <p className="text-xs text-muted-foreground mt-1">We optimize your listings for "sober living homes", "recovery housing", "sober living near me", "halfway houses", and more relevant keywords to your market.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-white/5 border border-primary/30 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-primary/20 p-2 rounded text-primary">
+                          <Share2 className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-white text-sm">Social Media Integration</h4>
+                          <p className="text-xs text-muted-foreground mt-1">Share listings to social media with one click - reaches more potential residents on Facebook, Instagram, LinkedIn, and Twitter. One-click sharing to expand your reach.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="bg-card border-border">
                 <CardHeader>
@@ -713,7 +751,10 @@ function ProviderDashboardContent() {
                   </div>
                   <Button 
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
-                    onClick={() => setLocation("/analytics")}
+                    onClick={() => {
+                      setActiveTab("marketing");
+                      setMarketingSection("seo");
+                    }}
                     data-testid="button-view-seo"
                   >
                     View SEO Dashboard
@@ -753,7 +794,10 @@ function ProviderDashboardContent() {
                   </div>
                   <Button 
                     className="w-full bg-amber-500 text-white hover:bg-amber-600"
-                    onClick={() => setLocation("/analytics")}
+                    onClick={() => {
+                      setActiveTab("marketing");
+                      setMarketingSection("campaign");
+                    }}
                     data-testid="button-launch-campaign"
                   >
                     Launch Campaign
@@ -788,6 +832,13 @@ function ProviderDashboardContent() {
               </CardContent>
             </Card>
 
+            {marketingSection === "campaign" && (
+              <Card className="bg-amber-500/10 border border-amber-500/50 mb-4">
+                <CardHeader>
+                  <CardTitle className="text-amber-300 flex items-center gap-2"><Mail className="w-5 h-5" /> Email Campaign Editor</CardTitle>
+                </CardHeader>
+              </Card>
+            )}
             <ContentEditor />
           </TabsContent>
 
