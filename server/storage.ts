@@ -20,6 +20,7 @@ export interface IStorage {
   createListing(listing: InsertListing): Promise<Listing>;
   getListing(id: number): Promise<Listing | undefined>;
   getAllListings(): Promise<Listing[]>;
+  getApprovedListings(): Promise<Listing[]>;
   getListingsByProvider(providerId: number): Promise<Listing[]>;
   updateListing(id: number, listing: Partial<InsertListing>): Promise<Listing | undefined>;
   
@@ -105,6 +106,10 @@ export class DatabaseStorage implements IStorage {
 
   async getAllListings(): Promise<Listing[]> {
     return await db.select().from(listings);
+  }
+
+  async getApprovedListings(): Promise<Listing[]> {
+    return await db.select().from(listings).where(eq(listings.status, "approved"));
   }
 
   async getListingsByProvider(providerId: number): Promise<Listing[]> {

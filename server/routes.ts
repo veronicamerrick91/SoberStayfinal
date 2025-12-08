@@ -222,6 +222,35 @@ export async function registerRoutes(
     res.json(listings);
   });
 
+  // Public listings endpoint - returns approved listings only
+  app.get("/api/listings", async (req, res) => {
+    try {
+      const listings = await storage.getApprovedListings();
+      res.json(listings);
+    } catch (error) {
+      console.error("Error fetching listings:", error);
+      res.status(500).json({ error: "Failed to fetch listings" });
+    }
+  });
+
+  // Get single listing by ID (public)
+  app.get("/api/listings/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid listing ID" });
+      }
+      const listing = await storage.getListing(id);
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      res.json(listing);
+    } catch (error) {
+      console.error("Error fetching listing:", error);
+      res.status(500).json({ error: "Failed to fetch listing" });
+    }
+  });
+
   // Admin endpoints
   app.get("/api/admin/users", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
