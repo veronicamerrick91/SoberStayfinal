@@ -18,6 +18,7 @@ export function SEOTools() {
   const [seoScore, setSeoScore] = useState(0);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
+  const [customKeyword, setCustomKeyword] = useState("");
 
   useEffect(() => {
     if (!user || user.role !== "provider") {
@@ -205,6 +206,37 @@ export function SEOTools() {
               <p className="text-xs text-muted-foreground">
                 Separate keywords with commas. Use long-tail keywords for better results (3-5 words per phrase).
               </p>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-white">Add Custom Keyword</p>
+              <div className="flex gap-2">
+                <Input
+                  value={customKeyword}
+                  onChange={(e) => setCustomKeyword(e.target.value)}
+                  placeholder="Type your own keyword..."
+                  className="bg-white/5 border-border/50 text-white"
+                  data-testid="input-custom-keyword"
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter" && customKeyword.trim()) {
+                      setKeywords((prev) => (prev ? `${prev}, ${customKeyword.trim()}` : customKeyword.trim()));
+                      setCustomKeyword("");
+                    }
+                  }}
+                />
+                <Button
+                  onClick={() => {
+                    if (customKeyword.trim()) {
+                      setKeywords((prev) => (prev ? `${prev}, ${customKeyword.trim()}` : customKeyword.trim()));
+                      setCustomKeyword("");
+                    }
+                  }}
+                  className="bg-primary/50 hover:bg-primary/70 text-primary-foreground shrink-0"
+                  data-testid="button-add-custom-keyword"
+                >
+                  Add
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-2">
