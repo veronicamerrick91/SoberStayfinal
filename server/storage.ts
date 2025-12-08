@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, users, listings, subscriptions, passwordResetTokens } from "@shared/schema";
+import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, users, listings, subscriptions, passwordResetTokens, tenantProfiles } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt } from "drizzle-orm";
 import session from "express-session";
@@ -32,6 +32,9 @@ export interface IStorage {
   getValidPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
   markPasswordResetTokenUsed(id: number): Promise<void>;
   invalidateUserPasswordResetTokens(userId: number): Promise<void>;
+  
+  getTenantProfile(tenantId: number): Promise<TenantProfile | undefined>;
+  createOrUpdateTenantProfile(tenantId: number, profile: Partial<InsertTenantProfile>): Promise<TenantProfile>;
   
   sessionStore: session.Store;
 }
@@ -200,6 +203,33 @@ export class DatabaseStorage implements IStorage {
       .update(passwordResetTokens)
       .set({ usedAt: new Date() })
       .where(eq(passwordResetTokens.userId, userId));
+  }
+
+  async getTenantProfile(tenantId: number): Promise<TenantProfile | undefined> {
+    const [profile] = await db
+      .select()
+      .from(tenantProfiles)
+      .where(eq(tenantProfiles.tenantId, tenantId));
+    return profile;
+  }
+
+  async createOrUpdateTenantProfile(tenantId: number, profile: Partial<InsertTenantProfile>): Promise<TenantProfile> {
+    const existingProfile = await this.getTenantProfile(tenantId);
+    
+    if (existingProfile) {
+      const [updated] = await db
+        .update(tenantProfiles)
+        .set({ ...profile, updatedAt: new Date() })
+        .where(eq(tenantProfiles.tenantId, tenantId))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(tenantProfiles)
+        .values({ ...profile, tenantId })
+        .returning();
+      return created;
+    }
   }
 }
 

@@ -35,6 +35,7 @@ import { ResetPasswordPage } from "@/pages/reset-password";
 import Quiz from "@/pages/quiz";
 import { Analytics } from "@/pages/analytics";
 import { SEOTools } from "@/pages/seo-tools";
+import { TenantProfile } from "@/pages/tenant-profile";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
 
@@ -79,6 +80,7 @@ function Router() {
         <Route path="/apply/:id" component={ApplicationForm} />
         <Route path="/chat/:propertyId" component={Chat} />
         <Route path="/tenant-dashboard" component={TenantDashboard} />
+        <Route path="/tenant-profile" component={TenantProfile} />
         <Route path="/provider-dashboard" component={ProviderDashboard} />
         <Route path="/admin-dashboard" component={AdminDashboard} />
         <Route path="/admin" component={AdminDashboard} />

@@ -215,6 +215,23 @@ Preferred communication style: Simple, everyday language.
 - Frontend pages: `/forgot-password` and `/reset-password`
 - Security: Tokens are invalidated after use, previous tokens are invalidated when new one is requested
 
+**Tenant Profile & Document Upload (Implemented)**
+- Tenant portal at `/tenant-profile` for uploading reusable documents
+- Tenants can upload: profile photo, government ID, and pre-filled application
+- Documents stored in database and associated with tenant profile
+- Features: Profile bio/summary, status display for uploaded documents, replace functionality
+- Database table: `tenant_profiles` stores photo URLs, ID URLs, application files, and bio
+- Endpoints:
+  - `GET /api/tenant/profile` - Retrieve tenant's profile and documents
+  - `POST /api/tenant/profile` - Update bio and application data
+  - `POST /api/tenant/upload` - Upload documents (converts to base64 data URLs)
+- Benefits: Tenants no longer fill out applications repeatedly - share saved documents with providers
+
+**Listing Features Updates**
+- Added "Accepts Couples" checkbox to listing creation form
+- Badge displays on browse page and property details with rose/pink styling
+- New column `accepts_couples` in listings table
+
 ## Future Implementation Notes
 
 **Email Notification Enhancements**

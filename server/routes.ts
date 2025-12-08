@@ -684,5 +684,64 @@ export async function registerRoutes(
     }
   });
 
+  // Tenant Profile Routes
+  app.get("/api/tenant/profile", async (req, res) => {
+    if (!req.isAuthenticated() || req.user?.role !== "tenant") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const profile = await storage.getTenantProfile(req.user.id);
+      if (!profile) {
+        return res.json({ id: 0, tenantId: req.user.id });
+      }
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      res.status(500).json({ error: "Failed to fetch profile" });
+    }
+  });
+
+  app.post("/api/tenant/profile", async (req, res) => {
+    if (!req.isAuthenticated() || req.user?.role !== "tenant") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { bio, applicationData } = req.body;
+      const profile = await storage.createOrUpdateTenantProfile(req.user.id, {
+        bio,
+        applicationData,
+      });
+      res.json(profile);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      res.status(500).json({ error: "Failed to save profile" });
+    }
+  });
+
+  app.post("/api/tenant/upload", async (req, res) => {
+    if (!req.isAuthenticated() || req.user?.role !== "tenant") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { type, fileUrl } = req.body;
+      
+      // Store file URL (in production, upload to cloud storage and get the URL)
+      const updateData: any = {};
+      if (type === "profile") updateData.profilePhotoUrl = fileUrl;
+      if (type === "id") updateData.idPhotoUrl = fileUrl;
+      if (type === "application") updateData.applicationUrl = fileUrl;
+
+      await storage.createOrUpdateTenantProfile(req.user.id, updateData);
+      
+      res.json({ 
+        success: true, 
+        url: fileUrl
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      res.status(500).json({ error: "Failed to upload file" });
+    }
+  });
+
   return httpServer;
 }
