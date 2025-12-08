@@ -53,8 +53,8 @@ export default function Chat() {
 
   // Load tenant profile photo
   useEffect(() => {
-    if (user?.role === "tenant") {
-      fetchTenantProfile(user.id).then((profile) => {
+    if (user?.role === "tenant" && user?.id) {
+      fetchTenantProfile(user.id as number).then((profile) => {
         if (profile?.profilePhotoUrl) {
           setTenantAvatar(profile.profilePhotoUrl);
         }

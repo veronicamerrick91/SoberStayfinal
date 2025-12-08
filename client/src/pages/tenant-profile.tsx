@@ -156,11 +156,11 @@ export function TenantProfile() {
   };
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
   const handleCheckboxChange = (field: string, checked: boolean) => {
-    setFormData(prev => ({ ...prev, [field]: checked }));
+    setFormData((prev: any) => ({ ...prev, [field]: checked }));
   };
 
   const handleSaveProfile = async () => {
