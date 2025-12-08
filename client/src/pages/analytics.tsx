@@ -166,6 +166,50 @@ export function Analytics() {
           </Card>
         </div>
 
+        {/* Top Performing Listings */}
+        <Card className="bg-card border-border mb-8">
+          <CardHeader>
+            <CardTitle className="text-white">Top Performing Listings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[
+                { name: "Serenity House Boston", views: 1247, clicks: 342, applications: 48, conversion: "3.8%" },
+                { name: "Coastal Recovery Residence", views: 892, clicks: 201, applications: 35, conversion: "3.9%" },
+                { name: "Worcester Wellness Home", views: 654, clicks: 156, applications: 18, conversion: "2.8%" },
+                { name: "Hope Haven for Women", views: 512, clicks: 98, applications: 12, conversion: "2.3%" },
+                { name: "New Beginnings Co-ed", views: 342, clicks: 87, applications: 8, conversion: "2.3%" }
+              ].map((listing, i) => (
+                <div key={i} className="p-4 bg-white/5 border border-border rounded-lg hover:border-primary/50 transition-colors">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h4 className="font-semibold text-white">{listing.name}</h4>
+                      <p className="text-xs text-muted-foreground mt-1">Conversion Rate: <span className="text-emerald-400 font-bold">{listing.conversion}</span></p>
+                    </div>
+                    {i === 0 && <span className="text-2xl">🥇</span>}
+                    {i === 1 && <span className="text-2xl">🥈</span>}
+                    {i === 2 && <span className="text-2xl">🥉</span>}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div>
+                      <p className="text-muted-foreground mb-1">Views</p>
+                      <p className="text-lg font-bold text-primary">{listing.views}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">Clicks</p>
+                      <p className="text-lg font-bold text-blue-400">{listing.clicks}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground mb-1">Applications</p>
+                      <p className="text-lg font-bold text-green-400">{listing.applications}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Tenant Demographics */}
         <Card className="bg-card border-border">
           <CardHeader>

@@ -711,7 +711,13 @@ function ProviderDashboardContent() {
                       </div>
                     </div>
                   </div>
-                  <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">View SEO Dashboard</Button>
+                  <Button 
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
+                    onClick={() => setLocation("/analytics")}
+                    data-testid="button-view-seo"
+                  >
+                    View SEO Dashboard
+                  </Button>
                 </CardContent>
               </Card>
 
@@ -745,7 +751,13 @@ function ProviderDashboardContent() {
                       </div>
                     </div>
                   </div>
-                  <Button className="w-full bg-amber-500 text-white hover:bg-amber-600">Launch Campaign</Button>
+                  <Button 
+                    className="w-full bg-amber-500 text-white hover:bg-amber-600"
+                    onClick={() => setLocation("/analytics")}
+                    data-testid="button-launch-campaign"
+                  >
+                    Launch Campaign
+                  </Button>
                 </CardContent>
               </Card>
             </div>
@@ -817,8 +829,32 @@ function ProviderDashboardContent() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="ghost" className="text-primary hover:bg-primary/10">View</Button>
-                        <Button size="sm" variant="ghost" className="text-muted-foreground hover:bg-white/10">Download</Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="text-primary hover:bg-primary/10"
+                          onClick={() => window.open(`data:text/plain;base64,${btoa(file.name)}`, '_blank')}
+                          data-testid={`button-view-file-${i}`}
+                        >
+                          View
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="text-muted-foreground hover:bg-white/10"
+                          onClick={() => {
+                            const element = document.createElement("a");
+                            element.setAttribute("href", `data:text/plain;base64,${btoa(file.name)}`);
+                            element.setAttribute("download", file.name);
+                            element.style.display = "none";
+                            document.body.appendChild(element);
+                            element.click();
+                            document.body.removeChild(element);
+                          }}
+                          data-testid={`button-download-file-${i}`}
+                        >
+                          Download
+                        </Button>
                       </div>
                     </div>
                   ))}

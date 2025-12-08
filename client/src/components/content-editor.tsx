@@ -16,6 +16,7 @@ export function ContentEditor() {
   const [subject, setSubject] = useState("Discover Safe Recovery Housing");
   const [body, setBody] = useState("Start your journey to recovery with supportive sober living communities...");
   const [preview, setPreview] = useState(false);
+  const [scheduleTime, setScheduleTime] = useState("");
 
   const handleSave = () => {
     console.log("Saving content:", { contentType, title, subject, body });
@@ -25,6 +26,16 @@ export function ContentEditor() {
     setTitle("");
     setSubject("");
     setBody("");
+  };
+
+  const handleSchedule = () => {
+    if (scheduleTime) {
+      console.log("Campaign scheduled for:", scheduleTime);
+      alert(`Campaign scheduled for ${new Date(scheduleTime).toLocaleString()}`);
+      setScheduleTime("");
+    } else {
+      alert("Please select a date and time");
+    }
   };
 
   return (
@@ -171,9 +182,20 @@ export function ContentEditor() {
               <div className="p-4 bg-white/5 border border-border/50 rounded-lg space-y-3">
                 <div>
                   <Label className="text-sm text-muted-foreground">Send time</Label>
-                  <Input type="datetime-local" className="bg-white/5 border-border/50 text-white mt-1" />
+                  <Input 
+                    type="datetime-local" 
+                    className="bg-white/5 border-border/50 text-white mt-1"
+                    value={scheduleTime}
+                    onChange={(e) => setScheduleTime(e.target.value)}
+                    data-testid="input-schedule-time"
+                  />
                 </div>
-                <Button variant="outline" className="w-full border-border/50 hover:bg-white/5">
+                <Button 
+                  variant="outline" 
+                  className="w-full border-border/50 hover:bg-white/5"
+                  onClick={handleSchedule}
+                  data-testid="button-schedule-campaign"
+                >
                   Schedule for later
                 </Button>
               </div>
