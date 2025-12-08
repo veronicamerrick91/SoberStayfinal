@@ -713,7 +713,7 @@ function ProviderDashboardContent() {
                   </div>
                   <Button 
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
-                    onClick={() => setLocation("/analytics")}
+                    onClick={() => document.querySelector('[value="marketing"]')?.scrollIntoView({ behavior: 'smooth' })}
                     data-testid="button-view-seo"
                   >
                     View SEO Dashboard
@@ -753,7 +753,10 @@ function ProviderDashboardContent() {
                   </div>
                   <Button 
                     className="w-full bg-amber-500 text-white hover:bg-amber-600"
-                    onClick={() => setLocation("/analytics")}
+                    onClick={() => {
+                      const contentEditor = document.querySelector('[value="marketing"]')?.closest('[role="tabpanel"]')?.querySelector('form, [class*="content"]');
+                      if (contentEditor) contentEditor.scrollIntoView({ behavior: 'smooth' });
+                    }}
                     data-testid="button-launch-campaign"
                   >
                     Launch Campaign
