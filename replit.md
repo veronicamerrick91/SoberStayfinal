@@ -123,10 +123,24 @@ Preferred communication style: Simple, everyday language.
     - Bulk email sending for campaigns
     - Single and multiple recipient support
 
-**Payment Processing (Planned)**
-- Subscription payment flow exists but uses mock processing
-- Ready for Stripe/PayPal/Apple Pay integration
-- Payment methods tracked in subscriptions table
+**Payment Processing (Stripe - SETUP COMPLETE ✓)**
+- Stripe integration via `stripe-replit-sync` package
+- Real credit card payments for provider subscriptions
+- Products and prices:
+  - Provider Listing Subscription: $49/month or $399/year
+- Stripe data synced to PostgreSQL `stripe` schema tables
+- Endpoints:
+  - `POST /api/stripe/checkout` - Create checkout session for subscription
+  - `GET /api/stripe/subscription` - Get user's current subscription status
+  - `POST /api/stripe/portal` - Create customer portal session
+  - `GET /api/stripe/products` - List available products/prices
+  - `GET /api/stripe/config` - Get Stripe publishable key
+- Webhook: `/api/stripe/webhook/:uuid` - Handles Stripe events
+- Files:
+  - `server/stripeClient.ts` - Stripe client with Replit connection API
+  - `server/stripeService.ts` - Checkout and portal session creation
+  - `server/webhookHandlers.ts` - Webhook processing
+  - `scripts/seed-stripe-products.ts` - Product creation script
 
 **Third-Party UI Libraries**
 - **Radix UI**: Accessible component primitives (15+ components)
@@ -170,6 +184,15 @@ Preferred communication style: Simple, everyday language.
    - Maintains Node.js compatibility via CommonJS output
 
 ## Recent Updates
+
+**Stripe Payment Integration (Implemented)**
+- Real credit card payment processing for provider subscriptions
+- Uses `stripe-replit-sync` for automatic data synchronization
+- Provider Listing Subscription: $49/month or $399/year
+- Secure Stripe Checkout flow redirects users to Stripe's hosted payment page
+- Subscription status fetched from real Stripe data via `/api/stripe/subscription`
+- Customer portal for managing billing at `/api/stripe/portal`
+- Products seeded via `scripts/seed-stripe-products.ts`
 
 **Email Sending Setup (Implemented)**
 - Resend API integrated for transactional emails

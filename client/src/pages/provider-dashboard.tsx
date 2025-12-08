@@ -8,7 +8,7 @@ import {
   Users, Building, MessageSquare, AlertCircle, 
   Plus, Check, X, MoreHorizontal, Search, ChevronRight,
   Bed, FileText, Settings, Lock, Mail, Phone, Upload, Shield, ToggleRight,
-  Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video, Eye
+  Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video, Eye, CreditCard
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
@@ -26,7 +26,6 @@ import { HelpCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { PaymentModal } from "@/components/payment-modal";
-import { isSubscriptionActive, getProviderSubscription } from "@/lib/subscriptions";
 import { getAuth } from "@/lib/auth";
 import { TourRequest } from "@/components/tour-schedule-modal";
 import { ApplicationDetailsModal, ApplicationData } from "@/components/application-details-modal";
@@ -170,14 +169,70 @@ function ProviderDashboardContent() {
       }
     }
 
-    // Check subscription status
-    if (user?.id) {
-      const isActive = isSubscriptionActive(user.id);
-      setHasActiveSubscription(isActive);
-      const sub = getProviderSubscription(user.id);
-      setSubscriptionStatus(sub);
-    }
+    // Check subscription status from real Stripe data via API
+    const fetchSubscription = async () => {
+      try {
+        const res = await fetch('/api/stripe/subscription', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.subscription && (data.subscription.status === 'active' || data.subscription.status === 'trialing')) {
+            setHasActiveSubscription(true);
+            setSubscriptionStatus({
+              subscriptionStatus: 'active',
+              monthlyFee: 49,
+              stripeSubscriptionId: data.subscription.id
+            });
+          } else {
+            setHasActiveSubscription(false);
+            setSubscriptionStatus(null);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching subscription:", err);
+        setHasActiveSubscription(false);
+      }
+    };
+    fetchSubscription();
   }, [user?.id]);
+
+  // Handle return from Stripe checkout - refetch subscription status
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') === 'success') {
+      // User returned from successful Stripe checkout - refetch subscription with retry
+      const checkSubscription = async (attempts = 0) => {
+        try {
+          const res = await fetch('/api/stripe/subscription', { credentials: 'include' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.subscription && (data.subscription.status === 'active' || data.subscription.status === 'trialing')) {
+              setHasActiveSubscription(true);
+              setSubscriptionStatus({
+                subscriptionStatus: 'active',
+                monthlyFee: 49,
+                stripeSubscriptionId: data.subscription.id
+              });
+              // Clear the query param
+              window.history.replaceState({}, '', '/provider-dashboard');
+              return;
+            }
+          }
+          // Subscription not active yet - webhook may still be processing
+          if (attempts < 5) {
+            setTimeout(() => checkSubscription(attempts + 1), 2000);
+          } else {
+            // Clear param after max attempts
+            window.history.replaceState({}, '', '/provider-dashboard');
+          }
+        } catch (err) {
+          console.error("Error checking subscription:", err);
+        }
+      };
+      
+      // Start checking after a short delay to allow webhook processing
+      setTimeout(() => checkSubscription(0), 1000);
+    }
+  }, []);
 
   const handleTourResponse = (tourId: string, status: "approved" | "denied" | "rescheduled", notes?: string) => {
     const updatedTours = tourRequests.map(tour =>
@@ -311,6 +366,26 @@ function ProviderDashboardContent() {
                 </CardContent>
               </Card>
             </div>
+
+            {!hasActiveSubscription && (
+              <Card className="bg-gradient-to-r from-primary/20 via-primary/10 to-card border-primary/30">
+                <CardContent className="pt-6">
+                  <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-1">Subscribe to List Properties</h3>
+                      <p className="text-sm text-muted-foreground">Get access to unlimited listings, tenant messaging, and more.</p>
+                    </div>
+                    <Button 
+                      onClick={() => setShowPaymentModal(true)}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                      data-testid="button-subscribe"
+                    >
+                      <CreditCard className="w-4 h-4" /> Subscribe Now
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             <h3 className="text-xl font-bold text-white mt-8 mb-4">Recent Messages</h3>
             <Card className="bg-card border-border">
@@ -1122,14 +1197,25 @@ function ProviderDashboardContent() {
         <PaymentModal 
           open={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
-          onSuccess={() => {
-            setHasActiveSubscription(true);
-            if (user?.id) {
-              const sub = getProviderSubscription(user.id);
-              setSubscriptionStatus(sub);
+          onSuccess={async () => {
+            try {
+              const res = await fetch('/api/stripe/subscription', { credentials: 'include' });
+              if (res.ok) {
+                const data = await res.json();
+                if (data.subscription && (data.subscription.status === 'active' || data.subscription.status === 'trialing')) {
+                  setHasActiveSubscription(true);
+                  setSubscriptionStatus({
+                    subscriptionStatus: 'active',
+                    monthlyFee: 49,
+                    stripeSubscriptionId: data.subscription.id
+                  });
+                }
+              }
+            } catch (err) {
+              console.error("Error refreshing subscription status:", err);
             }
           }}
-          providerId={user?.id || ""}
+          providerId={String(user?.id || "")}
         />
       </div>
     </Layout>

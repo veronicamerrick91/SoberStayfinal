@@ -321,7 +321,18 @@ export async function registerRoutes(
     if (!req.isAuthenticated()) return res.sendStatus(401);
     
     try {
-      const user = req.user as any;
+      const sessionUser = req.user as any;
+      
+      // Only providers can create checkout sessions
+      if (sessionUser.role !== 'provider') {
+        return res.status(403).json({ error: "Only providers can subscribe" });
+      }
+      
+      // Fetch fresh user data from database to get latest stripeCustomerId
+      const user = await storage.getUser(sessionUser.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
       const { billingPeriod, priceId: directPriceId } = req.body;
 
       let priceId = directPriceId;
@@ -403,7 +414,18 @@ export async function registerRoutes(
     if (!req.isAuthenticated()) return res.sendStatus(401);
     
     try {
-      const user = req.user as any;
+      const sessionUser = req.user as any;
+      
+      // Only providers can check their subscription status
+      if (sessionUser.role !== 'provider') {
+        return res.status(403).json({ error: "Only providers have subscriptions" });
+      }
+      
+      // Fetch fresh user data from database to get latest stripeCustomerId
+      const user = await storage.getUser(sessionUser.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
       
       if (!user.stripeCustomerId) {
         return res.json({ subscription: null });
@@ -430,7 +452,18 @@ export async function registerRoutes(
     if (!req.isAuthenticated()) return res.sendStatus(401);
     
     try {
-      const user = req.user as any;
+      const sessionUser = req.user as any;
+      
+      // Only providers can access the portal
+      if (sessionUser.role !== 'provider') {
+        return res.status(403).json({ error: "Only providers can access billing" });
+      }
+      
+      // Fetch fresh user data from database
+      const user = await storage.getUser(sessionUser.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
       
       if (!user.stripeCustomerId) {
         return res.status(400).json({ error: "No subscription found" });
