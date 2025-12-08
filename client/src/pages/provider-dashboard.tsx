@@ -379,18 +379,33 @@ function ProviderDashboardContent() {
           {/* PROPERTIES TAB */}
           <TabsContent value="properties">
             <div className="grid md:grid-cols-3 gap-6">
-              {MOCK_PROPERTIES.map((home) => (
+              {listings.length === 0 ? (
+                <Card className="bg-card border-border col-span-3">
+                  <CardContent className="p-8 text-center">
+                    <Building className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
+                    <h3 className="text-lg font-bold text-white mb-2">No Properties Listed</h3>
+                    <p className="text-muted-foreground mb-4">Add your first sober living property to get started</p>
+                    <Button onClick={() => setLocation("/create-listing")} className="bg-primary text-primary-foreground">
+                      <Plus className="w-4 h-4 mr-2" /> Add Property
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : listings.map((home) => (
                 <Card key={home.id} className="bg-card border-border group overflow-hidden">
-                   <div className="relative h-40 overflow-hidden">
-                      <img src={home.image} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                   <div className="relative h-40 overflow-hidden bg-primary/20 flex items-center justify-center">
+                      {home.photos && home.photos.length > 0 ? (
+                        <img src={home.photos[0]} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                      ) : (
+                        <Building className="w-12 h-12 text-primary/50" />
+                      )}
                       <div className="absolute top-2 right-2">
-                        <Badge className={home.bedsAvailable > 0 ? "bg-green-500" : "bg-red-500"}>
-                          {home.bedsAvailable} Beds Open
+                        <Badge className={home.totalBeds > 0 ? "bg-green-500" : "bg-red-500"}>
+                          {home.totalBeds} Beds
                         </Badge>
                       </div>
                    </div>
                    <CardContent className="p-4">
-                      <h3 className="font-bold text-white mb-1">{home.name}</h3>
+                      <h3 className="font-bold text-white mb-1">{home.propertyName}</h3>
                       <p className="text-sm text-muted-foreground mb-4">{home.address}</p>
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline" className="flex-1" onClick={() => setLocation(`/edit-listing/${home.id}`)} data-testid={`button-edit-${home.id}`}>Edit</Button>
@@ -558,13 +573,24 @@ function ProviderDashboardContent() {
           {/* BED MANAGER TAB */}
           <TabsContent value="beds" className="space-y-6">
             <div className="grid md:grid-cols-4 gap-6">
-              {MOCK_PROPERTIES.map((property) => {
-                const currentAvailable = bedsAvailable[property.id] ?? property.bedsAvailable;
-                const occupancy = ((property.totalBeds - currentAvailable) / property.totalBeds) * 100;
+              {listings.length === 0 ? (
+                <Card className="bg-card border-border col-span-4">
+                  <CardContent className="p-8 text-center">
+                    <Bed className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
+                    <h3 className="text-lg font-bold text-white mb-2">No Properties to Manage</h3>
+                    <p className="text-muted-foreground mb-4">Add properties to start managing bed availability</p>
+                    <Button onClick={() => setLocation("/create-listing")} className="bg-primary text-primary-foreground">
+                      <Plus className="w-4 h-4 mr-2" /> Add Property
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : listings.map((property) => {
+                const currentAvailable = bedsAvailable[property.id] ?? property.totalBeds;
+                const occupancy = property.totalBeds > 0 ? ((property.totalBeds - currentAvailable) / property.totalBeds) * 100 : 0;
                 return (
                   <Card key={property.id} className="bg-card border-border hover:border-primary/50 transition-colors">
                     <CardHeader>
-                      <CardTitle className="text-lg text-white">{property.name}</CardTitle>
+                      <CardTitle className="text-lg text-white">{property.propertyName}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">

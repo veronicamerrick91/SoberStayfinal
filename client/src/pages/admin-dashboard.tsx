@@ -14,7 +14,6 @@ import {
   AlignLeft, AlignCenter, AlignRight, Undo, Redo, Type, Save,
   ChevronRight
 } from "lucide-react";
-import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { getReports, updateReportStatus } from "@/lib/reports";
 import { UserEditModal } from "@/components/user-edit-modal";
 import { ListingReviewModal } from "@/components/listing-review-modal";
