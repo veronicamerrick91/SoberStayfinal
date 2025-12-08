@@ -322,10 +322,55 @@ export async function registerRoutes(
     
     try {
       const user = req.user as any;
-      const { priceId } = req.body;
+      const { billingPeriod, priceId: directPriceId } = req.body;
+
+      let priceId = directPriceId;
+
+      // If billingPeriod is provided, look up the price from the database or Stripe API
+      if (!priceId && billingPeriod) {
+        const interval = billingPeriod === 'annual' ? 'year' : 'month';
+        
+        // Try database first
+        const result = await db.execute(sql`
+          SELECT pr.id as price_id
+          FROM stripe.prices pr
+          JOIN stripe.products p ON pr.product = p.id
+          WHERE (p.name ILIKE '%Provider%Subscription%' OR p.metadata->>'type' = 'provider_subscription')
+          AND pr.active = true
+          AND pr.recurring->>'interval' = ${interval}
+          LIMIT 1
+        `);
+        
+        if (result.rows.length > 0) {
+          priceId = (result.rows[0] as any).price_id;
+        }
+        
+        // If not in database, try Stripe API directly
+        if (!priceId) {
+          const { getUncachableStripeClient } = await import('./stripeClient');
+          const stripe = await getUncachableStripeClient();
+          
+          // Search for provider subscription products
+          const products = await stripe.products.search({ 
+            query: "name~'Provider' AND active:'true'" 
+          });
+          
+          for (const product of products.data) {
+            const prices = await stripe.prices.list({ 
+              product: product.id, 
+              active: true 
+            });
+            const matchingPrice = prices.data.find(p => p.recurring?.interval === interval);
+            if (matchingPrice) {
+              priceId = matchingPrice.id;
+              break;
+            }
+          }
+        }
+      }
 
       if (!priceId) {
-        return res.status(400).json({ error: "Price ID is required" });
+        return res.status(400).json({ error: "Price not found for the selected billing period" });
       }
 
       // Get or create Stripe customer for this user

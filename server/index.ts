@@ -31,14 +31,19 @@ async function initStripe() {
 
     console.log('Setting up managed webhook...');
     const webhookBaseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
-    const { webhook, uuid } = await stripeSync.findOrCreateManagedWebhook(
+    const result = await stripeSync.findOrCreateManagedWebhook(
       `${webhookBaseUrl}/api/stripe/webhook`,
       {
         enabled_events: ['*'],
         description: 'Managed webhook for Stripe sync',
       }
     );
-    console.log(`Webhook configured: ${webhook.url}`);
+    
+    if (result?.webhook) {
+      console.log(`Webhook configured: ${result.webhook.url}`);
+    } else {
+      console.log('Webhook setup skipped (no webhook returned - may need Stripe keys configured)');
+    }
 
     stripeSync.syncBackfill()
       .then(() => {
