@@ -1,0 +1,59 @@
+You are an expert full-stack engineer helping me get this Replit project 100% ready for launch.
+
+This app is a live production site that connects tenants to sober living homes (with tenant, provider, and admin features). I need you to do ONE FINAL PASS before launch with the following goals:
+
+1. RUN A FULL FUNCTIONAL TEST
+- Identify all key flows and test them end-to-end:
+  - Tenant: sign up, login, profile, browse/search listings, view property details, send messages, submit applications, log out.
+  - Provider: sign up, login, create/edit/delete listings, view tenant messages/applications, respond, log out.
+  - Admin: login, approve/reject listings, view/manage tenants and providers, see submissions, any dashboards, and any marketing/reporting features.
+- Check all forms for validation, required fields, success/error messages, and correct redirects.
+- Confirm all buttons, links, and menus work and don’t lead to 404s or blank pages.
+
+2. FIX ERRORS & CONFLICTS
+- Look for:
+  - Console errors (frontend).
+  - Server/runtime errors (backend logs).
+  - Broken API endpoints or routes.
+  - Bad or missing environment variables.
+- Specifically check for and fix any Stripe or payment initialization errors so that the payment/checkout flow works cleanly with no errors.
+- Resolve any inconsistent or conflicting information in the UI, such as:
+  - Different prices for the same thing on different pages.
+  - Conflicting rules or requirements.
+  - Buttons/links with confusing or duplicate labels.
+  - Leftover placeholder text like “test”, “dummy”, “lorem ipsum”, etc.
+
+3. CLEAN UP ALL TEST / PRACTICE DATA
+- IMPORTANT: BEFORE DELETING ANYTHING, create a backup or export of the current database (or data files) so I can restore if needed.
+- Then remove ALL non-real, practice, or seed data, including:
+  - Test tenant accounts and fake profiles.
+  - Test provider accounts.
+  - Dummy listings/properties.
+  - Test messages, applications, and other obviously fake records.
+- Keep all schemas, migrations, and production-ready configuration intact.
+- If it’s helpful, write a one-time “cleanup” script or database command to delete this data. Show me the script/commands first, then run them after confirming they only delete test/practice data.
+
+4. PRODUCTION-READY SETTINGS
+- Make sure the app is configured for a real launch:
+  - Turn OFF any debug modes.
+  - Turn ON any production or optimized settings.
+  - Remove any obviously unsafe test credentials or hard-coded secrets.
+  - Confirm environment variables are used properly for keys, URLs, and mode (dev vs prod).
+  - Ensure error pages are user-friendly and do not leak stack traces or secrets.
+
+5. FINAL POLISH
+- Scan for:
+  - Typos and obvious text mistakes on main user-facing pages.
+  - Inconsistent branding, labels, or navigation.
+  - Pages that should be protected but aren’t (e.g., admin pages accessible without login).
+- Make sure login/logout behavior is consistent and secure across tenant, provider, and admin roles.
+
+6. SUMMARY REPORT
+- When you’re done, provide a clear summary that includes:
+  - What you tested.
+  - What you fixed (with a brief list of files and changes).
+  - What data you deleted and how you backed it up.
+  - Any remaining issues or manual checks I should do.
+  - Step-by-step instructions I should follow to officially launch/deploy this site from Replit.
+
+Please start now and walk me through what you’re doing step-by-step, explaining your reasoning as you go.
