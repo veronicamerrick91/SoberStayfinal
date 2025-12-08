@@ -33,6 +33,7 @@ import { AuthCallback } from "@/pages/auth-callback";
 import { ForgotPasswordPage } from "@/pages/forgot-password";
 import { ResetPasswordPage } from "@/pages/reset-password";
 import Quiz from "@/pages/quiz";
+import { Analytics } from "@/pages/analytics";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
 
@@ -110,6 +111,8 @@ function Router() {
         <Route path="/rights-responsibilities" component={RightsResponsibilities} />
         <Route path="/contact" component={Contact} />
         <Route path="/create-listing" component={CreateListing} />
+        <Route path="/edit-listing/:id" component={CreateListing} />
+        <Route path="/analytics" component={Analytics} />
         <Route path="/provider-support" component={ProviderSupport} />
         <Route component={NotFound} />
       </Switch>

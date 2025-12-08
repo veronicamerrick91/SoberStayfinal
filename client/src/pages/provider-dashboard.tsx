@@ -259,13 +259,23 @@ function ProviderDashboardContent() {
               </div>
             )}
           </div>
-          <Button 
-            onClick={() => setLocation("/create-listing")}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-            data-testid="button-list-property"
-          >
-            <Plus className="w-4 h-4" /> List New Property
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setLocation("/analytics")}
+              variant="outline"
+              className="gap-2 border-primary/50 text-primary hover:bg-primary/10"
+              data-testid="button-analytics"
+            >
+              <TrendingUp className="w-4 h-4" /> Analytics
+            </Button>
+            <Button 
+              onClick={() => setLocation("/create-listing")}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+              data-testid="button-list-property"
+            >
+              <Plus className="w-4 h-4" /> List New Property
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-8">
@@ -435,8 +445,8 @@ function ProviderDashboardContent() {
                       <h3 className="font-bold text-white mb-1">{home.name}</h3>
                       <p className="text-sm text-muted-foreground mb-4">{home.address}</p>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="flex-1" onClick={() => setLocation(`/create-listing`)} data-testid={`button-edit-${home.id}`}>Edit</Button>
-                        <Button size="sm" className="flex-1 bg-primary text-primary-foreground" onClick={() => setLocation(`/create-listing`)} data-testid={`button-manage-${home.id}`}>Manage</Button>
+                        <Button size="sm" variant="outline" className="flex-1" onClick={() => setLocation(`/edit-listing/${home.id}`)} data-testid={`button-edit-${home.id}`}>Edit</Button>
+                        <Button size="sm" className="flex-1 bg-primary text-primary-foreground" onClick={() => setLocation(`/edit-listing/${home.id}`)} data-testid={`button-manage-${home.id}`}>Manage</Button>
                       </div>
                    </CardContent>
                 </Card>
