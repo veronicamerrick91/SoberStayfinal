@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useQuery } from "@tanstack/react-query";
 import type { Listing } from "@shared/schema";
 
-import home1 from "@assets/home1.jpg";
+import placeholderHome from "@assets/stock_images/modern_comfortable_l_a00ffa5e.jpg";
 
 async function fetchListings(): Promise<Listing[]> {
   const response = await fetch("/api/listings");
@@ -265,7 +265,7 @@ export default function Browse() {
                   <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] cursor-pointer h-full flex flex-col" data-testid={`card-listing-${listing.id}`}>
                     <div className="relative h-40 overflow-hidden shrink-0">
                       <img 
-                        src={listing.photos?.[0] || home1} 
+                        src={listing.photos?.[0] || placeholderHome} 
                         alt={listing.propertyName} 
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
@@ -324,7 +324,7 @@ export default function Browse() {
                     <div className="flex gap-4 p-4">
                       <div className="relative w-32 h-32 shrink-0 overflow-hidden rounded-lg">
                         <img 
-                          src={listing.photos?.[0] || home1} 
+                          src={listing.photos?.[0] || placeholderHome} 
                           alt={listing.propertyName} 
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
