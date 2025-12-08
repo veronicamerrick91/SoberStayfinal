@@ -337,7 +337,7 @@ export default function PropertyDetails() {
                   >
                     <Calendar className="w-4 h-4 mr-2" /> Schedule a Tour
                   </Button>
-                  <Link href={`/chat/${listing.providerId}`} className="block w-full">
+                  <Link href={`/chat/${listing.id}`} className="block w-full">
                     <Button variant="outline" className="w-full border-white/10 hover:bg-card h-10">
                       <MessageSquare className="w-4 h-4 mr-2" /> Message Provider
                     </Button>
