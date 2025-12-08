@@ -206,49 +206,63 @@ export function TenantProfile() {
     }
   };
 
-  const FileUploadBox = ({ label, type, currentFile }: { label: string; type: "profile" | "id"; currentFile: string | null }) => (
-    <div className="space-y-2">
-      <Label className="text-white">{label}</Label>
-      {currentFile ? (
-        <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-          <Check className="w-5 h-5 text-emerald-400" />
-          <span className="text-sm text-gray-300">File uploaded</span>
-          <button
-            onClick={() => {
-              const input = document.createElement("input");
-              input.type = "file";
-              input.onchange = (e) => {
-                const file = (e.target as HTMLInputElement).files?.[0];
-                if (file) handleFileUpload(file, type);
-              };
-              input.click();
-            }}
-            className="ml-auto text-xs text-primary hover:underline"
-          >
-            Replace
-          </button>
-        </div>
-      ) : (
-        <div className="border-2 border-dashed border-border/50 rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
-          <label className="cursor-pointer flex flex-col items-center gap-2">
-            <Upload className="w-6 h-6 text-primary" />
-            <span className="text-sm text-white font-medium">Click to upload</span>
-            <span className="text-xs text-muted-foreground">JPG, PNG up to 5MB</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleFileUpload(file, type);
-              }}
-              className="hidden"
+  const FileUploadBox = ({ label, type, currentFile }: { label: string; type: "profile" | "id"; currentFile: string | null }) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      console.log("File selected:", file?.name, file?.size);
+      if (file) {
+        handleFileUpload(file, type);
+      }
+    };
+
+    const triggerFileInput = () => {
+      const input = document.getElementById(`file-input-${type}`) as HTMLInputElement;
+      if (input) {
+        input.click();
+      }
+    };
+
+    return (
+      <div className="space-y-2">
+        <Label className="text-white">{label}</Label>
+        {currentFile ? (
+          <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+            <Check className="w-5 h-5 text-emerald-400" />
+            <span className="text-sm text-gray-300">File uploaded</span>
+            <button
+              onClick={triggerFileInput}
               disabled={isLoading}
-            />
-          </label>
-        </div>
-      )}
-    </div>
-  );
+              className="ml-auto text-xs text-primary hover:underline disabled:opacity-50"
+            >
+              Replace
+            </button>
+          </div>
+        ) : (
+          <div 
+            onClick={() => {
+              const input = document.getElementById(`file-input-${type}`) as HTMLInputElement;
+              input?.click();
+            }}
+            className="border-2 border-dashed border-border/50 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+          >
+            <div className="flex flex-col items-center gap-2">
+              <Upload className="w-6 h-6 text-primary" />
+              <span className="text-sm text-white font-medium">Click to upload</span>
+              <span className="text-xs text-muted-foreground">JPG, PNG up to 5MB</span>
+            </div>
+          </div>
+        )}
+        <input
+          id={`file-input-${type}`}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+          disabled={isLoading}
+        />
+      </div>
+    );
+  };
 
   return (
     <Layout>
