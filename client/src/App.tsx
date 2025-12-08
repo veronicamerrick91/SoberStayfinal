@@ -34,6 +34,7 @@ import { ForgotPasswordPage } from "@/pages/forgot-password";
 import { ResetPasswordPage } from "@/pages/reset-password";
 import Quiz from "@/pages/quiz";
 import { Analytics } from "@/pages/analytics";
+import { SEOTools } from "@/pages/seo-tools";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
 
@@ -113,6 +114,7 @@ function Router() {
         <Route path="/create-listing" component={CreateListing} />
         <Route path="/edit-listing/:id" component={CreateListing} />
         <Route path="/analytics" component={Analytics} />
+        <Route path="/seo-tools" component={SEOTools} />
         <Route path="/provider-support" component={ProviderSupport} />
         <Route component={NotFound} />
       </Switch>

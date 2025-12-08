@@ -751,10 +751,7 @@ function ProviderDashboardContent() {
                   </div>
                   <Button 
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
-                    onClick={() => {
-                      setActiveTab("marketing");
-                      setMarketingSection("seo");
-                    }}
+                    onClick={() => setLocation("/seo-tools")}
                     data-testid="button-view-seo"
                   >
                     View SEO Dashboard
