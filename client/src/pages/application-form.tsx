@@ -5,12 +5,21 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, CheckCircle2, Upload } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Upload, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { isAuthenticated } from "@/lib/auth";
 import { incrementStat } from "@/lib/tenant-engagement";
+import { useQuery } from "@tanstack/react-query";
+import type { Listing } from "@shared/schema";
+
+async function fetchListing(id: string): Promise<Listing> {
+  const response = await fetch(`/api/listings/${id}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch listing");
+  }
+  return response.json();
+}
 
 export default function ApplicationForm() {
   const [match, params] = useRoute("/apply/:id");
@@ -18,15 +27,22 @@ export default function ApplicationForm() {
   const [idUploaded, setIdUploaded] = useState(false);
   
   const isPreview = params?.id === "preview";
+  
+  const { data: listing, isLoading } = useQuery({
+    queryKey: ["listing", params?.id],
+    queryFn: () => fetchListing(params?.id || ""),
+    enabled: !!params?.id && !isPreview,
+  });
+
   const property = isPreview 
     ? { 
         id: "preview", 
-        name: "Example Sober Living Home", 
+        propertyName: "Example Sober Living Home", 
         address: "123 Recovery Way", 
         city: "Cityville", 
         state: "ST" 
       } 
-    : MOCK_PROPERTIES.find(p => p.id === params?.id);
+    : listing;
 
   useEffect(() => {
     // Redirect to login if not authenticated (skip for preview)
@@ -35,7 +51,22 @@ export default function ApplicationForm() {
     }
   }, [params?.id, setLocation, isPreview]);
 
+  if (isLoading && !isPreview) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading application form...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   if (!property) return <Layout><div className="text-center py-12">Property not found</div></Layout>;
+
+  const propertyName = "propertyName" in property ? property.propertyName : "Property";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +108,7 @@ export default function ApplicationForm() {
                 </div>
               </div>
             )}
-            <h1 className="text-3xl font-bold text-white mb-2">Apply to {property.name}</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">Apply to {propertyName}</h1>
             <p className="text-muted-foreground">Complete this comprehensive application. All fields marked * are required.</p>
           </div>
 

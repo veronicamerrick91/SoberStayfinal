@@ -369,13 +369,13 @@ export default function PropertyDetails() {
       </div>
 
       <ReportModal 
-        isOpen={showReportModal} 
+        open={showReportModal} 
         onClose={() => setShowReportModal(false)} 
         propertyId={String(listing.id)}
         propertyName={listing.propertyName}
       />
       <TourScheduleModal
-        isOpen={showTourModal}
+        open={showTourModal}
         onClose={() => setShowTourModal(false)}
         propertyId={String(listing.id)}
         propertyName={listing.propertyName}
