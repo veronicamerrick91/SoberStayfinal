@@ -31,6 +31,7 @@ interface ListingDraft {
   isPetFriendly: boolean;
   isLgbtqFriendly: boolean;
   isFaithBased: boolean;
+  acceptsCouples: boolean;
   isWaitlisted: boolean;
   inclusions: string[];
   photos: string[];
@@ -76,6 +77,7 @@ export function CreateListing() {
     isPetFriendly: false,
     isLgbtqFriendly: false,
     isFaithBased: false,
+    acceptsCouples: false,
     isWaitlisted: false,
     inclusions: [],
     photos: [],
@@ -208,6 +210,7 @@ export function CreateListing() {
                     <div className="bg-blue-500/20 text-blue-300 text-xs px-2 py-1 rounded">{listingDraft.totalBeds} Beds</div>
                     <div className="bg-purple-500/20 text-purple-300 text-xs px-2 py-1 rounded">{listingDraft.supervisionType}</div>
                     <div className="bg-emerald-500/20 text-emerald-300 text-xs px-2 py-1 rounded">{listingDraft.roomType}</div>
+                    {listingDraft.acceptsCouples && <div className="bg-pink-500/20 text-pink-300 text-xs px-2 py-1 rounded">💕 Accepts Couples</div>}
                     {listingDraft.isWaitlisted && <div className="bg-amber-500/20 text-amber-300 text-xs px-2 py-1 rounded">⏳ Waitlisted</div>}
                   </div>
 
@@ -538,6 +541,7 @@ export function CreateListing() {
                       { key: "isPetFriendly", label: "Pet Friendly" },
                       { key: "isLgbtqFriendly", label: "LGBTQ+ Friendly" },
                       { key: "isFaithBased", label: "Faith-Based Program" },
+                      { key: "acceptsCouples", label: "Accepts Couples" },
                       { key: "isWaitlisted", label: "Currently Waitlisted" },
                     ].map(({ key, label }) => (
                       <div key={key} className="flex items-center gap-2">

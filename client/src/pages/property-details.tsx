@@ -202,6 +202,7 @@ export default function PropertyDetails() {
                  {listing.isPetFriendly && <Badge className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-3 py-1 text-xs font-medium">Pet Friendly</Badge>}
                  {listing.isLgbtqFriendly && <Badge className="bg-pink-500/20 text-pink-300 border border-pink-500/30 px-3 py-1 text-xs font-medium">LGBTQ+ Friendly</Badge>}
                  {listing.isFaithBased && <Badge className="bg-orange-500/20 text-orange-300 border border-orange-500/30 px-3 py-1 text-xs font-medium">Faith Based</Badge>}
+                 {listing.acceptsCouples && <Badge className="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-1 text-xs font-medium">Accepts Couples</Badge>}
               </div>
             </div>
 

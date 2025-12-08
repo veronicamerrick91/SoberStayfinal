@@ -298,6 +298,7 @@ export default function Browse() {
                           <Badge variant="secondary" className="bg-secondary/60 text-xs py-0 px-2">{listing.gender}</Badge>
                           <Badge variant="outline" className="border-primary/30 text-primary text-xs py-0 px-2">{listing.roomType}</Badge>
                           {listing.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary text-xs py-0 px-2">MAT</Badge>}
+                          {listing.acceptsCouples && <Badge variant="outline" className="border-rose-500/30 text-rose-300 text-xs py-0 px-2">Couples</Badge>}
                         </div>
                       </div>
                       
@@ -358,6 +359,7 @@ export default function Browse() {
                             <Badge variant="outline" className="border-primary/30 text-primary text-xs">{listing.roomType}</Badge>
                             <Badge variant="outline" className="border-primary/30 text-primary text-xs">{listing.supervisionType}</Badge>
                             {listing.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary">MAT Friendly</Badge>}
+                            {listing.acceptsCouples && <Badge variant="outline" className="border-rose-500/30 text-rose-300">Accepts Couples</Badge>}
                             <Badge variant="outline" className="border-primary/30 text-primary">
                               {listing.totalBeds} Beds
                             </Badge>

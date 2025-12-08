@@ -34,6 +34,7 @@ export const listings = pgTable("listings", {
   isPetFriendly: boolean("is_pet_friendly").default(false).notNull(),
   isLgbtqFriendly: boolean("is_lgbtq_friendly").default(false).notNull(),
   isFaithBased: boolean("is_faith_based").default(false).notNull(),
+  acceptsCouples: boolean("accepts_couples").default(false).notNull(),
   status: text("status").default("draft").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
