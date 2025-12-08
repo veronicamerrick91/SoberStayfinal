@@ -64,82 +64,7 @@ function ProviderDashboardWrapper(props: any) {
   return <ProviderDashboardContent {...props} />;
 }
 
-// Mock Application Data for the detailed view
-const MOCK_APPLICATIONS: ApplicationData[] = [
-  {
-    id: "app-1",
-    applicantName: "John Doe",
-    email: "john.doe@example.com",
-    phone: "(555) 123-4567",
-    property: "Serenity House Boston",
-    submittedDate: "2024-05-15",
-    status: "New",
-    dob: "1990-04-12",
-    gender: "Male",
-    currentAddress: "123 Main St, Boston MA",
-    primarySubstance: "Alcohol",
-    soberDate: "2024-01-15",
-    soberLength: "4 months",
-    matStatus: true,
-    matMeds: "Suboxone 8mg daily",
-    probation: true,
-    pendingCases: false,
-    medicalConditions: "Hypertension",
-    medications: "Lisinopril",
-    employmentStatus: "Employed Full-time",
-    incomeSource: "Construction",
-    evictionHistory: false,
-    reasonForLeaving: "Lease ended, looking for sober environment",
-  },
-  {
-    id: "app-2",
-    applicantName: "Michael Smith",
-    email: "mike.smith@example.com",
-    phone: "(555) 987-6543",
-    property: "Hope Haven",
-    submittedDate: "2024-05-14",
-    status: "Screening",
-    dob: "1985-08-22",
-    gender: "Male",
-    currentAddress: "Shelter",
-    primarySubstance: "Opioids",
-    soberDate: "2023-11-01",
-    soberLength: "6 months",
-    matStatus: false,
-    probation: false,
-    pendingCases: true,
-    medicalConditions: "None",
-    medications: "None",
-    employmentStatus: "Unemployed",
-    incomeSource: "Seeking work",
-    evictionHistory: true,
-    reasonForLeaving: "Evicted from previous apartment",
-  },
-  {
-    id: "app-3",
-    applicantName: "Sarah Jones",
-    email: "sarah.j@example.com",
-    phone: "(555) 456-7890",
-    property: "Serenity House Boston",
-    submittedDate: "2024-05-10",
-    status: "Approved",
-    dob: "1992-02-14",
-    gender: "Female",
-    currentAddress: "Parents' home",
-    primarySubstance: "Alcohol",
-    soberDate: "2023-05-10",
-    soberLength: "1 year",
-    matStatus: false,
-    probation: false,
-    pendingCases: false,
-    medicalConditions: "Anxiety",
-    medications: "Lexapro",
-    employmentStatus: "Employed Part-time",
-    incomeSource: "Retail",
-    evictionHistory: false,
-    reasonForLeaving: "Need more independence",
-  }
-];
+// Applications will be fetched from the database - no test data
 
 function ProviderDashboardContent() {
   const [location, setLocation] = useLocation();
@@ -150,14 +75,12 @@ function ProviderDashboardContent() {
   const [tourRequests, setTourRequests] = useState<TourRequest[]>([]);
   
   // Application Review State
-  const [applications, setApplications] = useState<ApplicationData[]>(MOCK_APPLICATIONS);
+  const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [selectedApplication, setSelectedApplication] = useState<ApplicationData | null>(null);
   const [isAppDetailsOpen, setIsAppDetailsOpen] = useState(false);
   
-  // Beds Management State
-  const [bedsAvailable, setBedsAvailable] = useState<Record<string, number>>({
-    '1': 2, '2': 1, '3': 3, '4': 0, '5': 2, '6': 4
-  });
+  // Beds Management State - initialized from real listings
+  const [bedsAvailable, setBedsAvailable] = useState<Record<string, number>>({});
 
   // Marketing subsection and tab state
   const [activeTab, setActiveTab] = useState("overview");

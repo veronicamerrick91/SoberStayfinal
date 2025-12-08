@@ -57,11 +57,7 @@ export function AdminDashboard() {
     { id: 3, label: "Require provider verification", enabled: true },
     { id: 4, label: "Enable duplicate account detection", enabled: true },
   ]);
-  const [campaigns, setCampaigns] = useState<any[]>([
-    { name: "Provider Onboarding Series", status: "Active", recipients: 145, sent: "Dec 1, 2024", opens: "52", clicks: "18" },
-    { name: "Tenant Recovery Resources", status: "Scheduled", recipients: 320, sent: "Dec 8, 2024", opens: "-", clicks: "-" },
-    { name: "Featured Listing Promotion", status: "Draft", recipients: 0, sent: "-", opens: "-", clicks: "-" },
-  ]);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
   const [adCampaigns, setAdCampaigns] = useState<any[]>([]);
   const [showBlogModal, setShowBlogModal] = useState(false);
@@ -78,9 +74,7 @@ export function AdminDashboard() {
   const [waiverSearchEmail, setWaiverSearchEmail] = useState("");
   const [waiverReason, setWaiverReason] = useState("");
   const [waiverDuration, setWaiverDuration] = useState("permanent");
-  const [waivedProviders, setWaivedProviders] = useState<any[]>([
-    { id: 1, provider: "Recovery First LLC", email: "admin@recoveryfirst.com", status: "Active Waiver", reason: "Partnership Agreement", duration: "Permanent", grantedDate: "Nov 15, 2024" },
-  ]);
+  const [waivedProviders, setWaivedProviders] = useState<any[]>([]);
   const [workflows, setWorkflows] = useState<any[]>([]);
   const [showWorkflowModal, setShowWorkflowModal] = useState(false);
   const [newWorkflowName, setNewWorkflowName] = useState("");
@@ -88,16 +82,8 @@ export function AdminDashboard() {
   const [newWorkflowTemplate, setNewWorkflowTemplate] = useState("welcome");
   const [newWorkflowSubject, setNewWorkflowSubject] = useState("");
   const [newWorkflowBody, setNewWorkflowBody] = useState("");
-  const [incidentReports, setIncidentReports] = useState<any[]>([
-    { id: 1, provider: "Recovery First LLC", incident: "Staff training overdue", severity: "High", reported: "Dec 3, 2024", dueDate: "Dec 5, 2024", description: "Annual staff safety training not completed for 3 staff members" },
-    { id: 2, provider: "Hope House", incident: "Maintenance issue reported", severity: "Medium", reported: "Dec 2, 2024", dueDate: "Dec 8, 2024", description: "Faulty exit sign in dormitory - needs immediate replacement" },
-    { id: 3, provider: "Serenity Living", incident: "Policy violation", severity: "High", reported: "Dec 1, 2024", dueDate: "Dec 4, 2024", description: "Unauthorized guest overnight - requires incident investigation" },
-  ]);
-  const [complianceIssues, setComplianceIssues] = useState<any[]>([
-    { id: 1, provider: "Recovery First LLC", issue: "Missing Fire Inspection", status: "Pending", dueDate: "Dec 10, 2024", details: "Annual fire safety inspection overdue by 15 days", contact: "admin@recoveryfirst.com" },
-    { id: 2, provider: "Hope House", issue: "Expired Insurance Certificate", status: "Urgent", dueDate: "Dec 5, 2024", details: "Liability insurance expires Dec 15, 2024. Renewal required", contact: "contact@hopehouse.org" },
-    { id: 3, provider: "New Beginnings Home", issue: "Staff Background Check", status: "Pending", dueDate: "Dec 12, 2024", details: "Two new staff members require updated background checks", contact: "office@newbeginnings.org" },
-  ]);
+  const [incidentReports, setIncidentReports] = useState<any[]>([]);
+  const [complianceIssues, setComplianceIssues] = useState<any[]>([]);
   const [viewingComplianceIssue, setViewingComplianceIssue] = useState<any | null>(null);
   const [showComplianceDetailsModal, setShowComplianceDetailsModal] = useState(false);
   const [requiredDocs, setRequiredDocs] = useState<any[]>([
@@ -107,20 +93,16 @@ export function AdminDashboard() {
     { id: 4, name: "Safety Compliance Report", uploaded: false },
     { id: 5, name: "Property Inspection Report", uploaded: false }
   ]);
-  const [supportTickets, setSupportTickets] = useState<any[]>([
-    { id: "#2451", user: "John Doe (Tenant)", subject: "Payment issue on application", status: "Open", priority: "high", created: "2 hours ago", message: "I'm unable to complete my application due to payment processing error" },
-    { id: "#2450", user: "Recovery LLC (Provider)", subject: "Can't upload photos", status: "In Progress", priority: "medium", created: "4 hours ago", message: "Getting an error when trying to upload facility photos" },
-    { id: "#2449", user: "Sarah Connor (Tenant)", subject: "Message notification not working", status: "Resolved", priority: "low", created: "1 day ago", message: "Not receiving message notifications from providers" },
-  ]);
+  const [supportTickets, setSupportTickets] = useState<any[]>([]);
   const newTicketsCount = supportTickets.filter(t => t.status === "Open").length;
   const [viewingSupportTicket, setViewingSupportTicket] = useState<any | null>(null);
   const [showSupportDetailsModal, setShowSupportDetailsModal] = useState(false);
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [replyMessage, setReplyMessage] = useState("");
-  const [newUsers, setNewUsers] = useState(3);
-  const [newListings, setNewListings] = useState(2);
-  const [newApplications, setNewApplications] = useState(5);
-  const [newVerifications, setNewVerifications] = useState(1);
+  const [newUsers, setNewUsers] = useState(0);
+  const [newListings, setNewListings] = useState(0);
+  const [newApplications, setNewApplications] = useState(0);
+  const [newVerifications, setNewVerifications] = useState(0);
   const [viewingDocument, setViewingDocument] = useState<any | null>(null);
   const [showDocumentPreviewModal, setShowDocumentPreviewModal] = useState(false);
   const [showRequestInfoModal, setShowRequestInfoModal] = useState(false);
