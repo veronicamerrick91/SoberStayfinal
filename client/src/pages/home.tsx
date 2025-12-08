@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Zap, MapPin, CheckCircle2, ShieldCheck, FileText, HeartHandshake, ArrowRight, Sparkles, Building, Heart } from "lucide-react";
+import { Search, Zap, MapPin, CheckCircle2, ShieldCheck, FileText, HeartHandshake, ArrowRight, Sparkles, Plus, Heart, Building } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import heroBg from "@assets/generated_images/luxury_warm_home_exterior_at_dusk.png";
 import pathBg from "@assets/generated_images/dark_luxury_home_front_facade.png";
@@ -68,9 +68,9 @@ export default function Home() {
             </div>
 
             <div className="pt-2">
-              <Link href="/provider-listing">
+              <Link href="/create-listing">
                 <Button size="lg" variant="ghost" className="text-lg h-12 px-8 rounded-full text-emerald-300 hover:bg-emerald-500/10 hover:text-emerald-200 border border-emerald-500/30 hover:border-emerald-500/60 backdrop-blur-sm" data-testid="button-list-property">
-                  <Building className="w-5 h-5 mr-2" /> List Your Property
+                  <Plus className="w-5 h-5 mr-2" /> List Your Property
                 </Button>
               </Link>
             </div>

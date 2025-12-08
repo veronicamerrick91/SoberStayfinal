@@ -414,6 +414,19 @@ export default function Quiz() {
                 </button>
               ))}
             </div>
+            <div className="max-w-xl mx-auto pt-2">
+              <button
+                onClick={() => setAnswers({ ...answers, lgbtqFriendly: null, faithBased: null })}
+                className={`w-full p-4 rounded-xl border-2 transition-all text-center ${
+                  answers.lgbtqFriendly === null && answers.faithBased === null
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-primary/50 bg-white/5"
+                }`}
+                data-testid="button-lifestyle-no-preference"
+              >
+                <p className="font-medium text-white">No Preference</p>
+              </button>
+            </div>
           </div>
         );
 
