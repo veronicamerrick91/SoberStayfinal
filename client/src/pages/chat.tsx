@@ -6,6 +6,7 @@ import { ArrowLeft, Send, Phone, Video, MoreVertical, MessageCircle, MapPin, Shi
 import { useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
+import { getAuth } from "@/lib/auth";
 import type { Listing } from "@shared/schema";
 
 interface Message {
@@ -14,6 +15,7 @@ interface Message {
   senderName: string;
   text: string;
   timestamp: Date;
+  avatarUrl?: string;
 }
 
 async function fetchListing(id: string): Promise<Listing> {
@@ -22,18 +24,43 @@ async function fetchListing(id: string): Promise<Listing> {
   return response.json();
 }
 
+async function fetchTenantProfile(tenantId: number) {
+  try {
+    const response = await fetch(`/api/tenant/profile`);
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.error("Failed to fetch tenant profile:", error);
+  }
+  return null;
+}
+
 export default function Chat() {
   const [match, params] = useRoute("/chat/:propertyId");
   const [location, setLocation] = useLocation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [tenantAvatar, setTenantAvatar] = useState<string | null>(null);
+  const user = getAuth();
   
   const { data: property, isLoading } = useQuery({
     queryKey: ["listing", params?.propertyId],
     queryFn: () => fetchListing(params?.propertyId || ""),
     enabled: !!params?.propertyId,
   });
+
+  // Load tenant profile photo
+  useEffect(() => {
+    if (user?.role === "tenant") {
+      fetchTenantProfile(user.id).then((profile) => {
+        if (profile?.profilePhotoUrl) {
+          setTenantAvatar(profile.profilePhotoUrl);
+        }
+      });
+    }
+  }, [user?.id, user?.role]);
 
   // Load messages from localStorage
   useEffect(() => {
@@ -44,17 +71,19 @@ export default function Chat() {
       const parsed = JSON.parse(stored);
       setMessages(parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })));
     } else {
-      // Initialize with welcome message from provider
+      // Initialize with welcome message from provider (with listing logo)
+      const providerAvatar = property.photos && property.photos[0] ? property.photos[0] : undefined;
       const welcome: Message = {
         id: "welcome",
         sender: "provider",
         senderName: "Listing Manager",
         text: `Hi! Thanks for your interest in ${property?.propertyName}. We'd be happy to answer any questions about our home. What would you like to know?`,
         timestamp: new Date(),
+        avatarUrl: providerAvatar,
       };
       setMessages([welcome]);
     }
-  }, [property?.id, property?.propertyName]);
+  }, [property?.id, property?.propertyName, property?.photos]);
 
   // Save messages to localStorage and scroll to bottom
   useEffect(() => {
@@ -74,6 +103,7 @@ export default function Chat() {
       senderName: "You",
       text: input.trim(),
       timestamp: new Date(),
+      avatarUrl: tenantAvatar || undefined,
     };
 
     setMessages([...messages, newMessage]);
@@ -181,7 +211,21 @@ export default function Chat() {
 
                 {/* Messages */}
                 {group.messages.map((msg: Message) => (
-                  <div key={msg.id} className={`flex ${msg.sender === "tenant" ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-2 fade-in duration-300`}>
+                  <div key={msg.id} className={`flex ${msg.sender === "tenant" ? "justify-end" : "justify-start"} gap-3 animate-in slide-in-from-bottom-2 fade-in duration-300`}>
+                    {/* Provider Avatar (Left) */}
+                    {msg.sender === "provider" && msg.avatarUrl && (
+                      <img
+                        src={msg.avatarUrl}
+                        alt="Property"
+                        className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-primary/30"
+                      />
+                    )}
+                    {msg.sender === "provider" && !msg.avatarUrl && (
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 border border-primary/30">
+                        <MessageCircle className="w-4 h-4 text-primary" />
+                      </div>
+                    )}
+
                     <div className={`flex flex-col ${msg.sender === "tenant" ? "items-end" : "items-start"} gap-1 max-w-sm`}>
                       <div
                         className={`px-5 py-3 rounded-2xl transition-all ${
@@ -198,6 +242,20 @@ export default function Chat() {
                         {formatTime(msg.timestamp)}
                       </span>
                     </div>
+
+                    {/* Tenant Avatar (Right) */}
+                    {msg.sender === "tenant" && msg.avatarUrl && (
+                      <img
+                        src={msg.avatarUrl}
+                        alt="Profile"
+                        className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-primary/30 order-first"
+                      />
+                    )}
+                    {msg.sender === "tenant" && !msg.avatarUrl && (
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 border border-primary/30 order-first">
+                        <MessageCircle className="w-4 h-4 text-primary" />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
