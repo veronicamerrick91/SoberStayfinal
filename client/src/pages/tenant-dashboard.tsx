@@ -15,7 +15,7 @@ import {
   Clock, CheckCircle, XCircle, ChevronRight, MapPin, Send, 
   Zap, Settings, LogOut, User, Phone, Mail, Calendar, Shield
 } from "lucide-react";
-import { MOCK_PROPERTIES } from "@/lib/mock-data";
+import type { Listing } from "@shared/schema";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { getFavorites } from "@/lib/favorites";
@@ -55,7 +55,7 @@ interface TenantProfile {
 export function TenantDashboard() {
   const [location, setLocation] = useLocation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [savedHomes, setSavedHomes] = useState<typeof MOCK_PROPERTIES>([]);
+  const [savedHomes, setSavedHomes] = useState<Listing[]>([]);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<SubmittedApplication | null>(null);
@@ -66,7 +66,7 @@ export function TenantDashboard() {
   const [engagementStats, setEngagementStats] = useState(getEngagementStats());
   const [recoveryBadges, setRecoveryBadges] = useState(getRecoveryBadges(""));
   const [daysClean, setDaysClean] = useState(0);
-  const [viewedHomes, setViewedHomes] = useState<typeof MOCK_PROPERTIES>([]);
+  const [viewedHomes, setViewedHomes] = useState<Listing[]>([]);
   const [tourRequests, setTourRequests] = useState<TourRequest[]>([]);
   
   const [profile, setProfile] = useState<TenantProfile>(() => {
@@ -131,50 +131,63 @@ export function TenantDashboard() {
   };
 
   useEffect(() => {
-    // Load all conversations from localStorage
-    const allConversations: Conversation[] = [];
-    
-    MOCK_PROPERTIES.forEach(property => {
-      const key = `chat_${property.id}`;
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        try {
-          const messages = JSON.parse(stored) as ChatMessage[];
-          if (messages.length > 0) {
-            const lastMsg = messages[messages.length - 1];
-            allConversations.push({
-              propertyId: property.id,
-              propertyName: property.name,
-              lastMessage: lastMsg.text.substring(0, 60),
-              lastMessageTime: new Date(lastMsg.timestamp),
-              unreadCount: messages.filter(m => m.sender === "provider").length,
-            });
+    // Fetch listings from API and load user data
+    const loadData = async () => {
+      try {
+        const response = await fetch('/api/listings');
+        const listings: Listing[] = response.ok ? await response.json() : [];
+        
+        // Load all conversations from localStorage based on real listings
+        const allConversations: Conversation[] = [];
+        listings.forEach(listing => {
+          const key = `chat_${listing.id}`;
+          const stored = localStorage.getItem(key);
+          if (stored) {
+            try {
+              const messages = JSON.parse(stored) as ChatMessage[];
+              if (messages.length > 0) {
+                const lastMsg = messages[messages.length - 1];
+                allConversations.push({
+                  propertyId: String(listing.id),
+                  propertyName: listing.propertyName,
+                  lastMessage: lastMsg.text.substring(0, 60),
+                  lastMessageTime: new Date(lastMsg.timestamp),
+                  unreadCount: messages.filter(m => m.sender === "provider").length,
+                });
+              }
+            } catch (e) {
+              // Ignore parsing errors
+            }
           }
-        } catch (e) {
-          // Ignore parsing errors
-        }
+        });
+
+        setConversations(allConversations.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime()));
+
+        // Load saved homes (favorites) - match against real listings
+        const favorites = getFavorites();
+        const favorited = listings.filter(p => favorites.includes(String(p.id)));
+        setSavedHomes(favorited);
+        
+        // Load viewed homes - match against real listings
+        const viewedData = getViewedHomes();
+        const viewedProperties = viewedData
+          .map(v => listings.find(p => String(p.id) === v.propertyId))
+          .filter((p): p is Listing => p !== undefined);
+        setViewedHomes(viewedProperties);
+        
+        // Update engagement stats with saved homes count
+        setEngagementStats(prev => ({ ...prev, savedHomes: favorited.length }));
+      } catch (error) {
+        console.error('Failed to load listings:', error);
       }
-    });
+    };
 
-    setConversations(allConversations.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime()));
-
-    // Load saved homes (favorites)
-    const favorites = getFavorites();
-    const favorited = MOCK_PROPERTIES.filter(p => favorites.includes(p.id));
-    setSavedHomes(favorited);
-    
-    // Load viewed homes
-    const viewedData = getViewedHomes();
-    const viewedProperties = viewedData
-      .map(v => MOCK_PROPERTIES.find(p => p.id === v.propertyId))
-      .filter((p): p is typeof MOCK_PROPERTIES[0] => p !== undefined);
-    setViewedHomes(viewedProperties);
+    loadData();
     
     // Load tour requests
     setTourRequests(getTourRequests());
     
-    // Load submitted applications
-    initializeSampleApplications();
+    // Load submitted applications (from localStorage, not mock)
     setSubmittedApplications(getSubmittedApplications());
     
     // Load recovery badges based on profile sobriety date
@@ -184,9 +197,6 @@ export function TenantDashboard() {
       setRecoveryBadges(getRecoveryBadges(parsed.sobrietyDate));
       setDaysClean(getDaysClean(parsed.sobrietyDate));
     }
-    
-    // Update engagement stats with saved homes count
-    setEngagementStats(prev => ({ ...prev, savedHomes: favorited.length }));
   }, []);
 
   const handleSignOut = () => {
@@ -376,15 +386,21 @@ export function TenantDashboard() {
                   {savedHomes.map((home) => (
                     <Card key={home.id} className="bg-card border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/20 group" onClick={() => setLocation(`/property/${home.id}`)}>
                       <div className="relative h-48 overflow-hidden cursor-pointer">
-                        <img src={home.image} alt={home.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                        {home.photos && home.photos.length > 0 ? (
+                          <img src={home.photos[0]} alt={home.propertyName} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                        ) : (
+                          <div className="w-full h-full bg-primary/20 flex items-center justify-center">
+                            <Home className="w-12 h-12 text-primary" />
+                          </div>
+                        )}
                         <Badge className="absolute top-3 left-3 bg-primary text-white">Saved</Badge>
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                          <p className="text-white font-bold text-lg">${home.price}/{home.pricePeriod}</p>
+                          <p className="text-white font-bold text-lg">${home.monthlyPrice}/month</p>
                         </div>
                       </div>
                       <CardContent className="p-4 space-y-3">
                         <div>
-                          <h3 className="font-bold text-white group-hover:text-primary transition-colors">{home.name}</h3>
+                          <h3 className="font-bold text-white group-hover:text-primary transition-colors">{home.propertyName}</h3>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                             <MapPin className="w-4 h-4" />
                             {home.city}, {home.state}
@@ -423,7 +439,13 @@ export function TenantDashboard() {
                   {viewedHomes.map((home) => (
                     <Card key={home.id} className="bg-card border-border hover:border-primary/50 transition-all cursor-pointer group overflow-hidden" onClick={() => setLocation(`/property/${home.id}`)} data-testid={`viewed-home-${home.id}`}>
                       <div className="relative">
-                        <img src={home.image} alt={home.name} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
+                        {home.photos && home.photos.length > 0 ? (
+                          <img src={home.photos[0]} alt={home.propertyName} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
+                        ) : (
+                          <div className="w-full h-40 bg-primary/20 flex items-center justify-center">
+                            <Home className="w-12 h-12 text-primary" />
+                          </div>
+                        )}
                         <div className="absolute top-2 right-2">
                           <Badge className="bg-blue-500/90 text-white">
                             <Eye className="w-3 h-3 mr-1" />
@@ -431,12 +453,12 @@ export function TenantDashboard() {
                           </Badge>
                         </div>
                         <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded-md">
-                          <p className="text-white font-bold text-lg">${home.price}/{home.pricePeriod}</p>
+                          <p className="text-white font-bold text-lg">${home.monthlyPrice}/month</p>
                         </div>
                       </div>
                       <CardContent className="p-4 space-y-3">
                         <div>
-                          <h3 className="font-bold text-white group-hover:text-primary transition-colors">{home.name}</h3>
+                          <h3 className="font-bold text-white group-hover:text-primary transition-colors">{home.propertyName}</h3>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                             <MapPin className="w-4 h-4" />
                             {home.city}, {home.state}
@@ -551,7 +573,6 @@ export function TenantDashboard() {
                   {tourRequests.length > 0 ? (
                     <div className="space-y-4">
                       {tourRequests.map((tour) => {
-                        const property = MOCK_PROPERTIES.find(p => p.id === tour.propertyId);
                         return (
                           <div 
                             key={tour.id} 
@@ -559,10 +580,8 @@ export function TenantDashboard() {
                             onClick={() => setLocation(`/property/${tour.propertyId}`)}
                             data-testid={`tour-request-${tour.id}`}
                           >
-                            <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0">
-                              {property && (
-                                <img src={property.image} alt={tour.propertyName} className="w-full h-full object-cover" />
-                              )}
+                            <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-primary/20 flex items-center justify-center">
+                              <CalendarCheck className="w-8 h-8 text-primary" />
                             </div>
                             <div className="flex-1">
                               <div className="flex justify-between items-start mb-2">

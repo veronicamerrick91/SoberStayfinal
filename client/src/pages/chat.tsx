@@ -2,10 +2,11 @@ import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, Send, Phone, Video, MoreVertical, MessageCircle, MapPin, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Send, Phone, Video, MoreVertical, MessageCircle, MapPin, ShieldCheck, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { MOCK_PROPERTIES } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import type { Listing } from "@shared/schema";
 
 interface Message {
   id: string;
@@ -15,13 +16,24 @@ interface Message {
   timestamp: Date;
 }
 
+async function fetchListing(id: string): Promise<Listing> {
+  const response = await fetch(`/api/listings/${id}`);
+  if (!response.ok) throw new Error("Listing not found");
+  return response.json();
+}
+
 export default function Chat() {
   const [match, params] = useRoute("/chat/:propertyId");
   const [location, setLocation] = useLocation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const property = MOCK_PROPERTIES.find(p => p.id === params?.propertyId);
+  
+  const { data: property, isLoading } = useQuery({
+    queryKey: ["listing", params?.propertyId],
+    queryFn: () => fetchListing(params?.propertyId || ""),
+    enabled: !!params?.propertyId,
+  });
 
   // Load messages from localStorage
   useEffect(() => {
@@ -37,12 +49,12 @@ export default function Chat() {
         id: "welcome",
         sender: "provider",
         senderName: "Listing Manager",
-        text: `Hi! Thanks for your interest in ${property?.name}. We'd be happy to answer any questions about our home. What would you like to know?`,
+        text: `Hi! Thanks for your interest in ${property?.propertyName}. We'd be happy to answer any questions about our home. What would you like to know?`,
         timestamp: new Date(),
       };
       setMessages([welcome]);
     }
-  }, [property?.id]);
+  }, [property?.id, property?.propertyName]);
 
   // Save messages to localStorage and scroll to bottom
   useEffect(() => {
@@ -97,6 +109,16 @@ export default function Chat() {
     return groups;
   }, []);
 
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
   if (!property) return <Layout><div className="text-center py-12">Conversation not found</div></Layout>;
 
   return (
@@ -115,10 +137,8 @@ export default function Chat() {
               </Button>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h2 className="font-bold text-lg text-white">{property.name}</h2>
-                  {property.isVerified && (
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  )}
+                  <h2 className="font-bold text-lg text-white">{property.propertyName}</h2>
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center text-sm text-muted-foreground gap-1">
@@ -126,7 +146,7 @@ export default function Chat() {
                     {property.city}, {property.state}
                   </div>
                   <div className="text-sm text-primary font-semibold">
-                    ${property.price}/<span className="text-xs">{property.pricePeriod}</span>
+                    ${property.monthlyPrice}/<span className="text-xs">month</span>
                   </div>
                 </div>
               </div>

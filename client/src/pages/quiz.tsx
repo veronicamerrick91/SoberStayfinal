@@ -7,11 +7,11 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { 
   ArrowLeft, ArrowRight, Home, MapPin, DollarSign, Users, 
-  Heart, Shield, Sparkles, CheckCircle, Star
+  Heart, Shield, Sparkles, CheckCircle, Star, Loader2
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { MOCK_PROPERTIES } from "@/lib/mock-data";
+import type { Listing } from "@shared/schema";
 
 interface QuizAnswers {
   budget: number;
@@ -46,6 +46,8 @@ const LOCATIONS = [
 export default function Quiz() {
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [answers, setAnswers] = useState<QuizAnswers>({
     budget: 1500,
     gender: "",
@@ -57,6 +59,16 @@ export default function Quiz() {
     faithBased: null,
     supervisionLevel: "",
   });
+
+  useEffect(() => {
+    fetch('/api/listings')
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        setListings(data);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
+  }, []);
 
   const progress = ((currentStep) / (STEPS.length - 1)) * 100;
 
@@ -73,14 +85,14 @@ export default function Quiz() {
   };
 
   const getRecommendedProperties = () => {
-    return MOCK_PROPERTIES.map(property => {
+    return listings.map(property => {
       let score = 0;
       let matchReasons: string[] = [];
 
-      if (property.price <= answers.budget) {
+      if (property.monthlyPrice <= answers.budget) {
         score += 30;
         matchReasons.push("Within budget");
-      } else if (property.price <= answers.budget * 1.1) {
+      } else if (property.monthlyPrice <= answers.budget * 1.1) {
         score += 15;
         matchReasons.push("Slightly above budget");
       }
@@ -124,7 +136,7 @@ export default function Quiz() {
       }
 
       if (answers.supervisionLevel) {
-        if (property.supervisionType.toLowerCase().includes(answers.supervisionLevel.toLowerCase())) {
+        if (property.supervisionType?.toLowerCase().includes(answers.supervisionLevel.toLowerCase())) {
           score += 10;
           matchReasons.push("Supervision level match");
         }
@@ -460,46 +472,65 @@ export default function Quiz() {
             </div>
 
             <div className="space-y-4 max-w-2xl mx-auto">
-              {recommendations.slice(0, 5).map((property, index) => (
-                <Card 
-                  key={property.id} 
-                  className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer"
-                  onClick={() => setLocation(`/property/${property.id}`)}
-                  data-testid={`result-property-${property.id}`}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex gap-4">
-                      <div className="w-24 h-24 rounded-lg overflow-hidden shrink-0">
-                        <img src={property.image} alt={property.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              {index === 0 && <Badge className="bg-primary text-primary-foreground">Best Match</Badge>}
-                              <h3 className="font-bold text-white">{property.name}</h3>
-                            </div>
-                            <p className="text-sm text-muted-foreground flex items-center gap-1">
-                              <MapPin className="w-3 h-3" /> {property.city}, {property.state}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-lg font-bold text-primary">${property.price}</p>
-                            <p className="text-xs text-muted-foreground">/month</p>
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {property.matchReasons.slice(0, 3).map((reason, i) => (
-                            <Badge key={i} variant="secondary" className="text-xs">
-                              <CheckCircle className="w-3 h-3 mr-1" /> {reason}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+              {recommendations.length === 0 ? (
+                <Card className="bg-card border-border">
+                  <CardContent className="p-8 text-center">
+                    <Home className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
+                    <h3 className="text-lg font-bold text-white mb-2">No Listings Available Yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      We're building our network of verified sober living homes. Check back soon!
+                    </p>
+                    <Button onClick={() => setLocation("/browse")} className="bg-primary text-primary-foreground">
+                      Browse All Homes
+                    </Button>
                   </CardContent>
                 </Card>
-              ))}
+              ) : (
+                recommendations.slice(0, 5).map((property, index) => (
+                  <Card 
+                    key={property.id} 
+                    className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer"
+                    onClick={() => setLocation(`/property/${property.id}`)}
+                    data-testid={`result-property-${property.id}`}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex gap-4">
+                        <div className="w-24 h-24 rounded-lg overflow-hidden shrink-0 bg-primary/20 flex items-center justify-center">
+                          {property.photos && property.photos.length > 0 ? (
+                            <img src={property.photos[0]} alt={property.propertyName} className="w-full h-full object-cover" />
+                          ) : (
+                            <Home className="w-8 h-8 text-primary" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                {index === 0 && <Badge className="bg-primary text-primary-foreground">Best Match</Badge>}
+                                <h3 className="font-bold text-white">{property.propertyName}</h3>
+                              </div>
+                              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                <MapPin className="w-3 h-3" /> {property.city}, {property.state}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-primary">${property.monthlyPrice}</p>
+                              <p className="text-xs text-muted-foreground">/month</p>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {property.matchReasons.slice(0, 3).map((reason, i) => (
+                              <Badge key={i} variant="secondary" className="text-xs">
+                                <CheckCircle className="w-3 h-3 mr-1" /> {reason}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
 
             <div className="flex gap-3 justify-center pt-4">
