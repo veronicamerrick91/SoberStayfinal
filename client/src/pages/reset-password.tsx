@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useLocation } from "wouter";
-import { KeyRound, CheckCircle2, AlertCircle, XCircle, Loader2 } from "lucide-react";
+import { KeyRound, CheckCircle2, AlertCircle, XCircle, Loader2, Eye, EyeOff } from "lucide-react";
 
 export function ResetPasswordPage() {
   const [, setLocation] = useLocation();
@@ -17,6 +17,8 @@ export function ResetPasswordPage() {
   const [isValid, setIsValid] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -193,32 +195,54 @@ export function ResetPasswordPage() {
               
               <div className="space-y-2">
                 <Label htmlFor="new-password">New Password</Label>
-                <Input 
-                  id="new-password" 
-                  type="password" 
-                  placeholder="Enter new password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
-                  required
-                  minLength={6}
-                  data-testid="input-new-password"
-                />
+                <div className="relative">
+                  <Input 
+                    id="new-password" 
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary pr-10"
+                    required
+                    minLength={6}
+                    data-testid="input-new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    data-testid="button-toggle-new-password"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="confirm-password">Confirm Password</Label>
-                <Input 
-                  id="confirm-password" 
-                  type="password" 
-                  placeholder="Confirm new password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
-                  required
-                  minLength={6}
-                  data-testid="input-confirm-password"
-                />
+                <div className="relative">
+                  <Input 
+                    id="confirm-password" 
+                    type={showConfirmPassword ? "text" : "password"} 
+                    placeholder="Confirm new password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary pr-10"
+                    required
+                    minLength={6}
+                    data-testid="input-confirm-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    data-testid="button-toggle-confirm-password"
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <p className="text-xs text-muted-foreground">

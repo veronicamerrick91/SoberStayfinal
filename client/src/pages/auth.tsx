@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldCheck, AlertCircle, Mail, CheckCircle2, Sparkles, Building } from "lucide-react";
+import { ShieldCheck, AlertCircle, Mail, CheckCircle2, Sparkles, Building, Eye, EyeOff } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { saveAuth } from "@/lib/auth";
@@ -26,6 +26,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [lastName, setLastName] = useState("");
   const [loginError, setLoginError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     setRole(defaultRole as any);
@@ -247,7 +248,27 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                     </Link>
                   )}
                 </div>
-                <Input id="password" name="password" type="password" autoComplete="current-password" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <div className="relative">
+                  <Input 
+                    id="password" 
+                    name="password" 
+                    type={showPassword ? "text" : "password"} 
+                    autoComplete="current-password" 
+                    className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary pr-10" 
+                    value={password} 
+                    onChange={(e) => setPassword(e.target.value)}
+                    data-testid="input-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    data-testid="button-toggle-password"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <Button type="submit" disabled={isSubmitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
