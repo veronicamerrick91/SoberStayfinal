@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, Check, Loader2, AlertCircle } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { getAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -207,39 +207,56 @@ export function TenantProfile() {
   };
 
   const FileUploadBox = ({ label, type, currentFile }: { label: string; type: "profile" | "id"; currentFile: string | null }) => (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <Label className="text-white">{label}</Label>
       {currentFile ? (
-        <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-          <Check className="w-5 h-5 text-emerald-400" />
-          <span className="text-sm text-gray-300">File uploaded</span>
-          <label htmlFor={`upload-${type}`} className="ml-auto text-xs text-primary hover:underline cursor-pointer">
-            Replace
-          </label>
+        <div className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Check className="w-5 h-5 text-emerald-400" />
+            <span className="text-sm text-gray-300">File uploaded</span>
+          </div>
+          <Button 
+            asChild
+            variant="ghost"
+            size="sm"
+            className="text-primary hover:text-primary/80"
+          >
+            <label className="cursor-pointer">
+              Replace
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileUpload(file, type);
+                }}
+                className="hidden"
+              />
+            </label>
+          </Button>
         </div>
       ) : (
-        <label 
-          htmlFor={`upload-${type}`}
-          className="block border-2 border-dashed border-border/50 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+        <Button 
+          asChild
+          variant="outline"
+          className="w-full h-32 border-2 border-dashed border-border/50 hover:border-primary/50 flex flex-col items-center justify-center"
         >
-          <div className="flex flex-col items-center gap-2">
+          <label className="cursor-pointer flex flex-col items-center justify-center gap-2">
             <Upload className="w-6 h-6 text-primary" />
             <span className="text-sm text-white font-medium">Click to upload</span>
             <span className="text-xs text-muted-foreground">JPG, PNG up to 5MB</span>
-          </div>
-        </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleFileUpload(file, type);
+              }}
+              className="hidden"
+            />
+          </label>
+        </Button>
       )}
-      <input
-        id={`upload-${type}`}
-        type="file"
-        accept="image/*"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          console.log("File selected:", file?.name);
-          if (file) handleFileUpload(file, type);
-        }}
-        className="hidden"
-      />
     </div>
   );
 
