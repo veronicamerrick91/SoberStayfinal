@@ -215,47 +215,46 @@ export function TenantProfile() {
             <Check className="w-5 h-5 text-emerald-400" />
             <span className="text-sm text-gray-300">File uploaded</span>
           </div>
-          <Button 
-            asChild
-            variant="ghost"
-            size="sm"
-            className="text-primary hover:text-primary/80"
-          >
-            <label className="cursor-pointer">
-              Replace
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleFileUpload(file, type);
-                }}
-                className="hidden"
-              />
-            </label>
-          </Button>
+          <input
+            id={`replace-${type}`}
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileUpload(file, type);
+            }}
+            className="hidden"
+          />
+          <label htmlFor={`replace-${type}`} className="text-xs text-primary hover:underline cursor-pointer">
+            Replace
+          </label>
         </div>
       ) : (
-        <Button 
-          asChild
-          variant="outline"
-          className="w-full h-32 border-2 border-dashed border-border/50 hover:border-primary/50 flex flex-col items-center justify-center"
-        >
-          <label className="cursor-pointer flex flex-col items-center justify-center gap-2">
-            <Upload className="w-6 h-6 text-primary" />
-            <span className="text-sm text-white font-medium">Click to upload</span>
-            <span className="text-xs text-muted-foreground">JPG, PNG up to 5MB</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleFileUpload(file, type);
-              }}
-              className="hidden"
-            />
+        <div className="space-y-3">
+          <input
+            id={`upload-${type}`}
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileUpload(file, type);
+            }}
+            className="hidden"
+          />
+          <label 
+            htmlFor={`upload-${type}`}
+            className="flex justify-center cursor-pointer"
+          >
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-dashed border-primary/50 hover:border-primary hover:from-primary/30 hover:to-primary/20 transition-all flex items-center justify-center"
+            >
+              <Upload className="w-8 h-8 text-primary" />
+            </div>
           </label>
-        </Button>
+          <div className="text-center">
+            <p className="text-sm text-white font-medium">Upload {type === "profile" ? "Photo" : "ID"}</p>
+            <p className="text-xs text-muted-foreground">Click the bubble</p>
+          </div>
+        </div>
       )}
     </div>
   );
