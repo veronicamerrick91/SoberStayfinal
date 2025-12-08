@@ -435,8 +435,8 @@ function ProviderDashboardContent() {
                       <h3 className="font-bold text-white mb-1">{home.name}</h3>
                       <p className="text-sm text-muted-foreground mb-4">{home.address}</p>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="flex-1" onClick={() => setLocation(`/property/${home.id}`)} data-testid={`button-edit-${home.id}`}>Edit</Button>
-                        <Button size="sm" className="flex-1 bg-primary text-primary-foreground" onClick={() => setLocation(`/property/${home.id}`)} data-testid={`button-manage-${home.id}`}>Manage</Button>
+                        <Button size="sm" variant="outline" className="flex-1" onClick={() => setLocation(`/create-listing`)} data-testid={`button-edit-${home.id}`}>Edit</Button>
+                        <Button size="sm" className="flex-1 bg-primary text-primary-foreground" onClick={() => setLocation(`/create-listing`)} data-testid={`button-manage-${home.id}`}>Manage</Button>
                       </div>
                    </CardContent>
                 </Card>
