@@ -1,5 +1,5 @@
 import { Layout } from "@/components/layout";
-import { MOCK_PROPERTIES, SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
+import { SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,36 +9,34 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { 
   Search, MapPin, ShieldCheck, Filter, LayoutGrid, List,
-  Info, HelpCircle, Map, Lock
+  HelpCircle, Map, Home, Loader2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { useQuery } from "@tanstack/react-query";
+import type { Listing } from "@shared/schema";
 
-const customIcon = new L.Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
+import home1 from "@assets/home1.jpg";
+
+async function fetchListings(): Promise<Listing[]> {
+  const response = await fetch("/api/listings");
+  if (!response.ok) {
+    throw new Error("Failed to fetch listings");
+  }
+  return response.json();
+}
 
 export default function Browse() {
-  const [priceRange, setPriceRange] = useState([500]);
-  const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
+  const [priceRange, setPriceRange] = useState([2000]);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchLocation, setSearchLocation] = useState("");
   const [location] = useLocation();
+
+  const { data: listings = [], isLoading, error } = useQuery({
+    queryKey: ["listings"],
+    queryFn: fetchListings,
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -48,6 +46,20 @@ export default function Browse() {
       setSearchLocation(decodeURIComponent(search));
     }
   }, [location]);
+
+  const filteredListings = listings.filter((listing) => {
+    if (searchLocation) {
+      const searchLower = searchLocation.toLowerCase();
+      return (
+        listing.city.toLowerCase().includes(searchLower) ||
+        listing.state.toLowerCase().includes(searchLower) ||
+        listing.propertyName.toLowerCase().includes(searchLower)
+      );
+    }
+    return true;
+  }).filter((listing) => {
+    return listing.monthlyPrice <= priceRange[0];
+  });
   
   return (
     <Layout>
@@ -68,7 +80,8 @@ export default function Browse() {
               placeholder="City, zip, or name" 
               value={searchLocation}
               onChange={(e) => setSearchLocation(e.target.value)}
-              className="pl-9 bg-card border-border" 
+              className="pl-9 bg-card border-border"
+              data-testid="input-search-location"
             />
           </div>
 
@@ -152,23 +165,19 @@ export default function Browse() {
                       <Checkbox id="faith" />
                       <Label htmlFor="faith" className="font-normal text-muted-foreground">Faith Based</Label>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="insurance" />
-                      <Label htmlFor="insurance" className="font-normal text-muted-foreground">Accepts Insurance</Label>
-                    </div>
                   </div>
                 </div>
 
                 {/* Price */}
                 <div className="space-y-4 pt-4 border-t border-border">
                   <div className="flex justify-between">
-                    <Label className="text-white font-semibold">Max Price (Weekly)</Label>
+                    <Label className="text-white font-semibold">Max Price (Monthly)</Label>
                     <span className="text-sm text-primary font-bold">${priceRange[0]}</span>
                   </div>
                   <Slider 
-                    defaultValue={[500]} 
-                    max={1000} 
-                    step={50} 
+                    defaultValue={[2000]} 
+                    max={5000} 
+                    step={100} 
                     value={priceRange}
                     onValueChange={setPriceRange}
                     className="py-4"
@@ -183,7 +192,11 @@ export default function Browse() {
         <div className="flex-1">
           <div className="flex justify-between items-center mb-6">
             <div className="text-sm text-muted-foreground">
-              Showing <span className="text-foreground font-bold">{MOCK_PROPERTIES.length}</span> homes
+              {isLoading ? (
+                "Loading..."
+              ) : (
+                <>Showing <span className="text-foreground font-bold">{filteredListings.length}</span> homes</>
+              )}
             </div>
             <div className="flex gap-2">
               <Button 
@@ -204,32 +217,62 @@ export default function Browse() {
               >
                 <List className="h-4 w-4" />
               </Button>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={() => setViewMode("map")}
-                className={`h-8 w-8 ${viewMode === "map" ? "bg-primary/10 border-primary/20 text-primary" : ""}`}
-                data-testid="button-view-map"
-              >
-                <Map className="h-4 w-4" />
-              </Button>
             </div>
           </div>
 
-          {viewMode === "grid" && <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
-              {MOCK_PROPERTIES.map((home) => (
-                <Link key={home.id} href={`/property/${home.id}`}>
-                  <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] cursor-pointer h-full flex flex-col">
+          {isLoading && (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+              <p className="text-muted-foreground">Loading listings...</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="text-center py-20">
+              <p className="text-red-400 mb-4">Failed to load listings. Please try again.</p>
+              <Button onClick={() => window.location.reload()} variant="outline">
+                Retry
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && !error && filteredListings.length === 0 && (
+            <div className="text-center py-20 bg-card/30 rounded-xl border border-border">
+              <Home className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-xl font-bold text-white mb-2">No Listings Available</h3>
+              <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                {searchLocation 
+                  ? `No sober homes found matching "${searchLocation}". Try adjusting your search.`
+                  : "There are currently no approved sober homes listed. Check back soon as providers add their properties."
+                }
+              </p>
+              {searchLocation && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSearchLocation("")}
+                  className="border-primary/20 text-primary hover:bg-primary/10"
+                >
+                  Clear Search
+                </Button>
+              )}
+            </div>
+          )}
+
+          {viewMode === "grid" && !isLoading && !error && filteredListings.length > 0 && (
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredListings.map((listing) => (
+                <Link key={listing.id} href={`/property/${listing.id}`}>
+                  <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] cursor-pointer h-full flex flex-col" data-testid={`card-listing-${listing.id}`}>
                     <div className="relative h-40 overflow-hidden shrink-0">
                       <img 
-                        src={home.image} 
-                        alt={home.name} 
+                        src={listing.photos?.[0] || home1} 
+                        alt={listing.propertyName} 
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
                       
                       <div className="absolute top-2 left-2">
-                        {home.isVerified && (
+                        {listing.status === "approved" && (
                           <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md bg-opacity-90 text-xs">
                             <ShieldCheck className="w-3 h-3" /> Verified
                           </Badge>
@@ -238,24 +281,23 @@ export default function Browse() {
                       
                       <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end">
                         <div className="text-sm font-bold text-white drop-shadow-md">
-                          ${home.price}<span className="text-xs font-normal text-gray-200">/{home.pricePeriod}</span>
+                          ${listing.monthlyPrice}<span className="text-xs font-normal text-gray-200">/month</span>
                         </div>
                       </div>
                     </div>
 
                     <CardContent className="p-3 space-y-2 flex-1 flex flex-col">
                       <div className="flex-1">
-                        <h3 className="font-bold text-sm text-white line-clamp-1 group-hover:text-primary transition-colors">{home.name}</h3>
+                        <h3 className="font-bold text-sm text-white line-clamp-1 group-hover:text-primary transition-colors">{listing.propertyName}</h3>
                         <div className="flex items-center text-xs text-muted-foreground mb-2">
                           <MapPin className="w-3 h-3 mr-1 text-primary" />
-                          {home.city}, {home.state}
+                          {listing.city}, {listing.state}
                         </div>
                         
                         <div className="flex flex-wrap gap-1">
-                          <Badge variant="secondary" className="bg-secondary/60 text-xs py-0 px-2">{home.gender}</Badge>
-                          <Badge variant="outline" className="border-primary/30 text-primary text-xs py-0 px-2">{home.roomType}</Badge>
-                          {home.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary text-xs py-0 px-2">MAT</Badge>}
-                          {(home as any).isWaitlisted && <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs py-0 px-2">⏳ Waitlisted</Badge>}
+                          <Badge variant="secondary" className="bg-secondary/60 text-xs py-0 px-2">{listing.gender}</Badge>
+                          <Badge variant="outline" className="border-primary/30 text-primary text-xs py-0 px-2">{listing.roomType}</Badge>
+                          {listing.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary text-xs py-0 px-2">MAT</Badge>}
                         </div>
                       </div>
                       
@@ -271,21 +313,22 @@ export default function Browse() {
                   </Card>
                 </Link>
               ))}
-            </div>}
+            </div>
+          )}
 
-          {viewMode === "list" && (
+          {viewMode === "list" && !isLoading && !error && filteredListings.length > 0 && (
             <div className="space-y-3">
-              {MOCK_PROPERTIES.map((home) => (
-                <Link key={home.id} href={`/property/${home.id}`}>
-                  <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] cursor-pointer">
+              {filteredListings.map((listing) => (
+                <Link key={listing.id} href={`/property/${listing.id}`}>
+                  <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] cursor-pointer" data-testid={`card-listing-list-${listing.id}`}>
                     <div className="flex gap-4 p-4">
                       <div className="relative w-32 h-32 shrink-0 overflow-hidden rounded-lg">
                         <img 
-                          src={home.image} 
-                          alt={home.name} 
+                          src={listing.photos?.[0] || home1} 
+                          alt={listing.propertyName} 
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
-                        {home.isVerified && (
+                        {listing.status === "approved" && (
                           <Badge className="absolute top-2 left-2 bg-primary text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md bg-opacity-90 text-xs">
                             <ShieldCheck className="w-3 h-3" /> Verified
                           </Badge>
@@ -295,28 +338,28 @@ export default function Browse() {
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
                           <div className="flex justify-between items-start gap-4 mb-2">
-                            <h3 className="font-bold text-sm text-white group-hover:text-primary transition-colors line-clamp-1">{home.name}</h3>
+                            <h3 className="font-bold text-sm text-white group-hover:text-primary transition-colors line-clamp-1">{listing.propertyName}</h3>
                             <div className="text-sm font-bold text-primary shrink-0">
-                              ${home.price}<span className="text-xs font-normal text-gray-300">/{home.pricePeriod}</span>
+                              ${listing.monthlyPrice}<span className="text-xs font-normal text-gray-300">/month</span>
                             </div>
                           </div>
                           
                           <div className="flex items-center text-sm text-muted-foreground mb-3">
                             <MapPin className="w-4 h-4 mr-2 text-primary" />
-                            {home.address}, {home.city}, {home.state}
+                            {listing.address}, {listing.city}, {listing.state}
                           </div>
                           
                           <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                            {home.description}
+                            {listing.description}
                           </p>
 
                           <div className="flex flex-wrap gap-2">
-                            <Badge variant="secondary" className="bg-secondary/60">{home.gender}</Badge>
-                            <Badge variant="outline" className="border-primary/30 text-primary text-xs">{home.roomType}</Badge>
-                            <Badge variant="outline" className="border-primary/30 text-primary text-xs">{home.supervisionType}</Badge>
-                            {home.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary">MAT Friendly</Badge>}
-                            <Badge variant="outline" className={home.bedsAvailable > 0 ? "border-green-500/30 text-green-500" : "border-red-500/30 text-red-500"}>
-                              {home.bedsAvailable > 0 ? `${home.bedsAvailable} Beds Open` : "Waitlist"}
+                            <Badge variant="secondary" className="bg-secondary/60">{listing.gender}</Badge>
+                            <Badge variant="outline" className="border-primary/30 text-primary text-xs">{listing.roomType}</Badge>
+                            <Badge variant="outline" className="border-primary/30 text-primary text-xs">{listing.supervisionType}</Badge>
+                            {listing.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary">MAT Friendly</Badge>}
+                            <Badge variant="outline" className="border-primary/30 text-primary">
+                              {listing.totalBeds} Beds
                             </Badge>
                           </div>
                         </div>
@@ -334,60 +377,6 @@ export default function Browse() {
                   </Card>
                 </Link>
               ))}
-            </div>
-          )}
-
-          {viewMode === "map" && (
-            <div className="rounded-xl overflow-hidden border border-border shadow-xl" style={{ height: "600px" }}>
-              <MapContainer
-                center={[42.3601, -71.0589]}
-                zoom={9}
-                style={{ height: "100%", width: "100%" }}
-                scrollWheelZoom={true}
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                />
-                {MOCK_PROPERTIES.map((home) => (
-                  <Marker
-                    key={home.id}
-                    position={[home.latitude, home.longitude]}
-                    icon={customIcon}
-                  >
-                    <Popup>
-                      <div className="min-w-[200px]">
-                        <img 
-                          src={home.image} 
-                          alt={home.name}
-                          className="w-full h-24 object-cover rounded-t mb-2"
-                        />
-                        <h3 className="font-bold text-sm mb-1">{home.name}</h3>
-                        <p className="text-xs text-gray-600 mb-1">
-                          {home.city}, {home.state}
-                        </p>
-                        <p className="text-sm font-bold text-emerald-600 mb-2">
-                          ${home.price}/{home.pricePeriod}
-                        </p>
-                        <div className="flex gap-1 mb-2 flex-wrap">
-                          <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{home.gender}</span>
-                          <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{home.roomType}</span>
-                          {home.bedsAvailable > 0 && (
-                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
-                              {home.bedsAvailable} beds
-                            </span>
-                          )}
-                        </div>
-                        <Link href={`/property/${home.id}`}>
-                          <button className="w-full bg-emerald-500 text-white text-xs py-1.5 rounded hover:bg-emerald-600 transition-colors">
-                            View Details
-                          </button>
-                        </Link>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
             </div>
           )}
         </div>
