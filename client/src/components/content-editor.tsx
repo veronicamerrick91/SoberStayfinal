@@ -47,28 +47,25 @@ export function ContentEditor() {
       </CardHeader>
       <CardContent className="p-6">
         <Tabs defaultValue="editor" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-white/5 border border-border/50 rounded-lg p-1">
-            <TabsTrigger value="editor" className="gap-2 data-[state=active]:bg-primary/20">
-              <Type className="w-4 h-4" />
-              <span className="hidden sm:inline">Editor</span>
+          <TabsList className="grid w-full grid-cols-3 bg-transparent border-b border-border p-0 h-auto gap-0">
+            <TabsTrigger value="editor" className="gap-2 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-muted-foreground data-[state=active]:text-primary hover:text-white transition-colors">
+              Editor
             </TabsTrigger>
-            <TabsTrigger value="preview" className="gap-2 data-[state=active]:bg-primary/20">
-              <Eye className="w-4 h-4" />
-              <span className="hidden sm:inline">Preview</span>
+            <TabsTrigger value="preview" className="gap-2 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-muted-foreground data-[state=active]:text-primary hover:text-white transition-colors">
+              Preview
             </TabsTrigger>
-            <TabsTrigger value="settings" className="gap-2 data-[state=active]:bg-primary/20">
-              <Settings className="w-4 h-4" />
-              <span className="hidden sm:inline">Settings</span>
+            <TabsTrigger value="settings" className="gap-2 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none px-4 py-3 font-medium text-muted-foreground data-[state=active]:text-primary hover:text-white transition-colors">
+              Settings
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="editor" className="space-y-4 mt-6">
-            <div className="space-y-2">
+          <TabsContent value="editor" className="space-y-6 mt-6">
+            <div className="space-y-3">
               <Label className="text-white font-semibold flex items-center gap-2">
                 <Palette className="w-4 h-4 text-primary" />
                 Content Type
               </Label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-3">
                 {[
                   { value: "email", label: "Email" },
                   { value: "sms", label: "SMS" },
@@ -77,10 +74,10 @@ export function ContentEditor() {
                   <button
                     key={type.value}
                     onClick={() => setContentType(type.value)}
-                    className={`py-2 px-3 rounded-lg border transition-all text-sm font-medium ${
+                    className={`py-3 px-4 rounded-lg border transition-all text-sm font-medium ${
                       contentType === type.value
-                        ? "bg-primary/20 border-primary/50 text-primary"
-                        : "bg-white/5 border-border/50 text-muted-foreground hover:border-primary/30"
+                        ? "bg-transparent border-primary text-primary"
+                        : "bg-transparent border-border/50 text-muted-foreground hover:border-primary/50 hover:text-white"
                     }`}
                     data-testid={`button-content-type-${type.value}`}
                   >
@@ -90,43 +87,43 @@ export function ContentEditor() {
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label htmlFor="title" className="text-white font-semibold">Title</Label>
               <Input
                 id="title"
-                placeholder="Enter content title..."
+                placeholder="Welcome to Sober Stay"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="bg-white/5 border-border/50 text-white placeholder:text-muted-foreground/50"
+                className="bg-white/5 border-border/30 text-white placeholder:text-muted-foreground/60 focus-visible:border-primary/50"
                 data-testid="input-content-title"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label htmlFor="subject" className="text-white font-semibold">Subject Line</Label>
               <Input
                 id="subject"
                 placeholder="Enter email subject or headline..."
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="bg-white/5 border-border/50 text-white placeholder:text-muted-foreground/50"
+                className="bg-white/5 border-border/30 text-white placeholder:text-muted-foreground/60 focus-visible:border-primary/50"
                 data-testid="input-content-subject"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label htmlFor="body" className="text-white font-semibold">Content Body</Label>
               <Textarea
                 id="body"
                 placeholder="Write your content here... You can use plain text or HTML."
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
-                className="bg-white/5 border-border/50 text-white placeholder:text-muted-foreground/50 min-h-48 resize-none"
+                className="bg-white/5 border-border/30 text-white placeholder:text-muted-foreground/60 min-h-48 resize-none focus-visible:border-primary/50"
                 data-testid="textarea-content-body"
               />
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-3 pt-2">
               <Button
                 onClick={handleSave}
                 className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold gap-2"
@@ -138,7 +135,7 @@ export function ContentEditor() {
               <Button
                 onClick={handleReset}
                 variant="outline"
-                className="flex-1 border-border/50 hover:bg-white/5 gap-2"
+                className="flex-1 border-border/50 text-muted-foreground hover:bg-white/5 hover:text-white gap-2"
                 data-testid="button-reset-content"
               >
                 <RotateCcw className="w-4 h-4" />
