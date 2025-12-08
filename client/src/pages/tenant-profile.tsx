@@ -219,63 +219,6 @@ export function TenantProfile() {
     }
   };
 
-  const FileUploadBox = ({ label, type, currentFile }: { label: string; type: "profile" | "id"; currentFile: string | null }) => {
-    const inputRef = type === "profile" ? profileInputRef : idInputRef;
-    
-    return (
-      <div className="space-y-3">
-        <Label className="text-white">{label}</Label>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            console.log("📂 Input onChange triggered for:", type);
-            const file = e.target.files?.[0];
-            console.log("📁 Selected file:", file?.name);
-            if (file) handleFileUpload(file, type);
-          }}
-          className="hidden"
-        />
-        {currentFile ? (
-          <div className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-            <div className="flex items-center gap-2">
-              <Check className="w-5 h-5 text-emerald-400" />
-              <span className="text-sm text-gray-300">File uploaded</span>
-            </div>
-            <button 
-              onClick={() => {
-                console.log("Replace button clicked");
-                inputRef.current?.click();
-              }}
-              className="text-xs text-primary hover:underline"
-            >
-              Replace
-            </button>
-          </div>
-        ) : (
-          <button 
-            onClick={() => {
-              console.log("Bubble clicked for:", type);
-              inputRef.current?.click();
-            }}
-            className="w-full flex justify-center cursor-pointer"
-          >
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-dashed border-primary/50 hover:border-primary hover:from-primary/30 hover:to-primary/20 transition-all flex items-center justify-center"
-            >
-              <Upload className="w-8 h-8 text-primary" />
-            </div>
-          </button>
-        )}
-        {!currentFile && (
-          <div className="text-center">
-            <p className="text-sm text-white font-medium">Upload {type === "profile" ? "Photo" : "ID"}</p>
-            <p className="text-xs text-muted-foreground">Click the bubble</p>
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <Layout>
@@ -310,8 +253,123 @@ export function TenantProfile() {
               <CardTitle className="text-white">Documents</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <FileUploadBox label="Profile Photo" type="profile" currentFile={profilePhoto} />
-              <FileUploadBox label="Government ID Photo" type="id" currentFile={idPhoto} />
+              {/* Profile Photo Upload */}
+              <div className="space-y-3">
+                <Label className="text-white">Profile Photo</Label>
+                <input
+                  ref={profileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    console.log("Profile input onChange triggered");
+                    const file = e.target.files?.[0];
+                    console.log("Selected file:", file?.name);
+                    if (file) handleFileUpload(file, "profile");
+                  }}
+                  style={{ display: 'none' }}
+                />
+                {profilePhoto ? (
+                  <div className="flex items-center gap-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                    <img 
+                      src={profilePhoto} 
+                      alt="Profile" 
+                      className="w-16 h-16 rounded-full object-cover border-2 border-emerald-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-emerald-400" />
+                        <span className="text-sm text-gray-300">Photo uploaded</span>
+                      </div>
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        console.log("Replace profile button clicked");
+                        profileInputRef.current?.click();
+                      }}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Replace
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        console.log("Profile bubble clicked");
+                        profileInputRef.current?.click();
+                      }}
+                      className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-dashed border-primary/50 hover:border-primary hover:from-primary/30 hover:to-primary/20 transition-all flex items-center justify-center"
+                    >
+                      <Upload className="w-8 h-8 text-primary" />
+                    </button>
+                    <div className="text-center">
+                      <p className="text-sm text-white font-medium">Upload Photo</p>
+                      <p className="text-xs text-muted-foreground">Click the bubble</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ID Photo Upload */}
+              <div className="space-y-3">
+                <Label className="text-white">Government ID Photo</Label>
+                <input
+                  ref={idInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    console.log("ID input onChange triggered");
+                    const file = e.target.files?.[0];
+                    console.log("Selected file:", file?.name);
+                    if (file) handleFileUpload(file, "id");
+                  }}
+                  style={{ display: 'none' }}
+                />
+                {idPhoto ? (
+                  <div className="flex items-center gap-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                    <img 
+                      src={idPhoto} 
+                      alt="ID" 
+                      className="w-16 h-16 rounded-lg object-cover border-2 border-emerald-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-emerald-400" />
+                        <span className="text-sm text-gray-300">ID uploaded</span>
+                      </div>
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        console.log("Replace ID button clicked");
+                        idInputRef.current?.click();
+                      }}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Replace
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        console.log("ID bubble clicked");
+                        idInputRef.current?.click();
+                      }}
+                      className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-dashed border-primary/50 hover:border-primary hover:from-primary/30 hover:to-primary/20 transition-all flex items-center justify-center"
+                    >
+                      <Upload className="w-8 h-8 text-primary" />
+                    </button>
+                    <div className="text-center">
+                      <p className="text-sm text-white font-medium">Upload ID</p>
+                      <p className="text-xs text-muted-foreground">Click the bubble</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
