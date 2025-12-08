@@ -124,43 +124,54 @@ export function TenantProfile() {
   const handleFileUpload = async (file: File, type: "profile" | "id") => {
     if (!user?.id) return;
 
+    console.log("🔵 Starting upload for:", type, file.name);
     setIsLoading(true);
+    
     try {
       // Convert file to base64 using FileReader
       const fileData = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
+        reader.onload = () => {
+          const result = reader.result as string;
+          console.log("📸 File converted to base64, length:", result.length);
+          resolve(result);
+        };
         reader.onerror = () => reject(new Error("Failed to read file"));
         reader.readAsDataURL(file);
       });
 
+      // Show preview immediately while uploading
+      if (type === "profile") {
+        setProfilePhoto(fileData);
+      } else if (type === "id") {
+        setIdPhoto(fileData);
+      }
+
       // Send to server
+      console.log("📤 Sending upload request to /api/tenant/upload");
       const response = await fetch("/api/tenant/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type, fileUrl: fileData }),
       });
 
+      console.log("✅ Upload response status:", response.status);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Upload failed" }));
+        console.error("❌ Upload error response:", errorData);
         throw new Error(errorData.error || "Upload failed");
       }
 
       const result = await response.json();
-      
-      // Update the correct photo state
-      if (type === "profile") {
-        setProfilePhoto(result.url);
-      } else if (type === "id") {
-        setIdPhoto(result.url);
-      }
+      console.log("💾 Upload successful, saved URL:", result.url);
 
       toast({
         title: "Success",
         description: `${type === "profile" ? "Profile photo" : "ID photo"} uploaded successfully`,
       });
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error("❌ Upload error:", error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to upload file. Please try again.",
@@ -220,7 +231,9 @@ export function TenantProfile() {
             type="file"
             accept="image/*"
             onChange={(e) => {
+              console.log("🔄 Replace input onChange triggered for:", type);
               const file = e.target.files?.[0];
+              console.log("📁 Selected file:", file?.name);
               if (file) handleFileUpload(file, type);
             }}
             className="hidden"
@@ -236,7 +249,9 @@ export function TenantProfile() {
             type="file"
             accept="image/*"
             onChange={(e) => {
+              console.log("📂 Upload input onChange triggered for:", type);
               const file = e.target.files?.[0];
+              console.log("📁 Selected file:", file?.name);
               if (file) handleFileUpload(file, type);
             }}
             className="hidden"
