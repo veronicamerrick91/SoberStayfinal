@@ -686,13 +686,14 @@ export async function registerRoutes(
 
   // Tenant Profile Routes
   app.get("/api/tenant/profile", async (req, res) => {
-    if (!req.isAuthenticated() || req.user?.role !== "tenant") {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "tenant") {
       return res.status(401).json({ error: "Unauthorized" });
     }
     try {
-      const profile = await storage.getTenantProfile(req.user.id);
+      const profile = await storage.getTenantProfile(user.id);
       if (!profile) {
-        return res.json({ id: 0, tenantId: req.user.id });
+        return res.json({ id: 0, tenantId: user.id });
       }
       res.json(profile);
     } catch (error) {
@@ -702,12 +703,13 @@ export async function registerRoutes(
   });
 
   app.post("/api/tenant/profile", async (req, res) => {
-    if (!req.isAuthenticated() || req.user?.role !== "tenant") {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "tenant") {
       return res.status(401).json({ error: "Unauthorized" });
     }
     try {
       const { bio, applicationData } = req.body;
-      const profile = await storage.createOrUpdateTenantProfile(req.user.id, {
+      const profile = await storage.createOrUpdateTenantProfile(user.id, {
         bio,
         applicationData,
       });
@@ -719,7 +721,8 @@ export async function registerRoutes(
   });
 
   app.post("/api/tenant/upload", async (req, res) => {
-    if (!req.isAuthenticated() || req.user?.role !== "tenant") {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "tenant") {
       return res.status(401).json({ error: "Unauthorized" });
     }
     try {
@@ -731,7 +734,7 @@ export async function registerRoutes(
       if (type === "id") updateData.idPhotoUrl = fileUrl;
       if (type === "application") updateData.applicationUrl = fileUrl;
 
-      await storage.createOrUpdateTenantProfile(req.user.id, updateData);
+      await storage.createOrUpdateTenantProfile(user.id, updateData);
       
       res.json({ 
         success: true, 
