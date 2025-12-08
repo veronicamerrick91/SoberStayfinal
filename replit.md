@@ -107,6 +107,22 @@ Preferred communication style: Simple, everyday language.
   - Passport strategy configured in `server/auth.ts`
   - Callback URL must be configured in Google Cloud Console
 
+**Email Service**
+- **Resend API**: Transactional email service (SETUP COMPLETE ✓)
+  - API key: `RESEND_API_KEY` (configured as secret)
+  - Email service abstracted in `server/email.ts`
+  - Endpoints:
+    - `/api/auth/forgot-password` - Request password reset
+    - `/api/auth/validate-reset-token` - Validate reset token
+    - `/api/auth/reset-password` - Complete password reset
+    - `/api/admin/send-email` - Send campaign emails to audience (all, tenants, providers)
+    - `/api/admin/send-user-email` - Send email to specific user
+  - Features:
+    - Password reset emails with 30-minute token expiration
+    - Marketing campaign emails with branded HTML templates
+    - Bulk email sending for campaigns
+    - Single and multiple recipient support
+
 **Payment Processing (Planned)**
 - Subscription payment flow exists but uses mock processing
 - Ready for Stripe/PayPal/Apple Pay integration
@@ -154,6 +170,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
+**Email Sending Setup (Implemented)**
+- Resend API integrated for transactional emails
+- Email service fully functional in `server/email.ts`
+- Admin email campaign endpoints working
+- Password reset emails with branded templates
+
+**SEO Tools Portal (Implemented)**
+- Dedicated portal at `/seo-tools` for provider SEO optimization
+- Features: SEO score calculator, title/description optimizer, keyword tool
+- Custom keyword input with suggestion engine
+- Score breakdown showing point allocation
+- Social media preview (Facebook, Twitter/X)
+- Real-time optimization recommendations
+
 **Password Reset Feature (Implemented)**
 - Full email-based password reset flow using Resend API
 - Database table: `password_reset_tokens` stores secure tokens with 30-minute expiration
@@ -161,15 +191,17 @@ Preferred communication style: Simple, everyday language.
 - Frontend pages: `/forgot-password` and `/reset-password`
 - Security: Tokens are invalidated after use, previous tokens are invalidated when new one is requested
 
-**Email Integration**
-- Using Resend API for transactional emails
-- Email service abstracted in `server/email.ts`
-- Password reset emails styled to match platform branding
-
 ## Future Implementation Notes
 
-**Additional Email Notifications (Pending)**
-- Send Reminder and Contact Provider buttons currently show toast notifications to admins only
-- Providers do NOT receive email notifications yet
-- Can extend `server/email.ts` to add more email templates
-- User deferred this feature for future implementation
+**Email Notification Enhancements**
+- Can extend email functionality to send provider notifications for applications
+- Automated workflows for application approvals/rejections
+- Tenant notification system for listing updates and matches
+- Use existing endpoints: `/api/admin/send-email` and `/api/admin/send-user-email`
+
+**Additional Email Templates**
+- Application notification emails
+- Provider onboarding sequence
+- Tenant resources and tips
+- Platform announcements
+- Can extend templates in `server/email.ts` with new functions
