@@ -42,6 +42,14 @@ export function CreateListing() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReview, setShowReview] = useState(false);
 
+  // Check authentication and role
+  React.useEffect(() => {
+    const user = getAuth();
+    if (!user || user.role !== "provider") {
+      setLocation("/login");
+    }
+  }, [setLocation]);
+
   // Scroll to top on mount
   React.useEffect(() => {
     window.scrollTo(0, 0);

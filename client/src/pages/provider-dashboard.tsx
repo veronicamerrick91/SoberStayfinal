@@ -45,6 +45,25 @@ interface Conversation {
   unreadCount: number;
 }
 
+// Add authentication check component
+function ProviderDashboardWrapper(props: any) {
+  const [location, setLocation] = useLocation();
+  
+  useEffect(() => {
+    const user = getAuth();
+    if (!user || user.role !== "provider") {
+      setLocation("/login");
+    }
+  }, [setLocation]);
+  
+  const user = getAuth();
+  if (!user || user.role !== "provider") {
+    return null;
+  }
+  
+  return <ProviderDashboardContent {...props} />;
+}
+
 // Mock Application Data for the detailed view
 const MOCK_APPLICATIONS: ApplicationData[] = [
   {
@@ -122,7 +141,7 @@ const MOCK_APPLICATIONS: ApplicationData[] = [
   }
 ];
 
-export function ProviderDashboard() {
+function ProviderDashboardContent() {
   const [location, setLocation] = useLocation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -999,4 +1018,8 @@ export function ProviderDashboard() {
       </div>
     </Layout>
   );
+}
+
+export function ProviderDashboard() {
+  return <ProviderDashboardWrapper />;
 }
