@@ -86,6 +86,16 @@ function ProviderDashboardContent() {
   const [activeTab, setActiveTab] = useState("overview");
   const [marketingSection, setMarketingSection] = useState<"overview" | "seo" | "campaign">("overview");
   
+  // Provider marketing templates with triggers
+  const [providerTemplates, setProviderTemplates] = useState([
+    { id: 1, name: "New Listing Announcement", type: "Email", uses: 12, trigger: "none", audience: "interested-tenants" },
+    { id: 2, name: "Vacancy Available Alert", type: "Email", uses: 28, trigger: "none", audience: "waitlist" },
+    { id: 3, name: "Tour Follow-Up", type: "Email", uses: 45, trigger: "on-tour-completed", audience: "tour-attendees" },
+    { id: 4, name: "Application Received", type: "Email", uses: 67, trigger: "on-application-received", audience: "applicants" },
+    { id: 5, name: "Welcome New Resident", type: "Email", uses: 34, trigger: "on-move-in", audience: "new-residents" },
+    { id: 6, name: "Monthly Newsletter", type: "Email", uses: 8, trigger: "monthly", audience: "all-contacts" },
+  ]);
+  
   // Provider listings from API
   const [listings, setListings] = useState<Listing[]>([]);
 
@@ -120,7 +130,7 @@ function ProviderDashboardContent() {
           const data = await res.json();
           // Filter to only show listings owned by the current provider
           const providerListings = user?.id 
-            ? data.filter((l: Listing) => l.providerId === user.id)
+            ? data.filter((l: Listing) => String(l.providerId) === String(user.id))
             : [];
           setListings(providerListings);
           
@@ -233,6 +243,45 @@ function ProviderDashboardContent() {
       setTimeout(() => checkSubscription(0), 1000);
     }
   }, []);
+
+  const handleUpdateProviderTemplateTrigger = (templateId: number, newTrigger: string) => {
+    const template = providerTemplates.find(t => t.id === templateId);
+    setProviderTemplates(providerTemplates.map(t =>
+      t.id === templateId ? { ...t, trigger: newTrigger } : t
+    ));
+    
+    if (template) {
+      const triggerLabels: { [key: string]: string } = {
+        "none": "Manual Only",
+        "on-tour-completed": "After Tour Completed",
+        "on-application-received": "On Application Received",
+        "on-move-in": "On Move-In",
+        "on-vacancy": "When Vacancy Opens",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+      };
+      
+      if (newTrigger === "none") {
+        // Show toast for deactivation - using console for now since toast may not be available
+        console.log(`Template "${template.name}" trigger deactivated`);
+      } else {
+        console.log(`Template "${template.name}" will now send ${triggerLabels[newTrigger] || newTrigger}`);
+      }
+    }
+  };
+
+  const getProviderTriggerLabel = (trigger: string) => {
+    const labels: { [key: string]: string } = {
+      "none": "Manual Only",
+      "on-tour-completed": "After Tour",
+      "on-application-received": "On Application",
+      "on-move-in": "On Move-In",
+      "on-vacancy": "On Vacancy",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+    };
+    return labels[trigger] || trigger;
+  };
 
   const handleTourResponse = (tourId: string, status: "approved" | "denied" | "rescheduled", notes?: string) => {
     const updatedTours = tourRequests.map(tour =>
@@ -870,6 +919,76 @@ function ProviderDashboardContent() {
                     <div className="text-3xl font-bold text-amber-400 mb-1">8.4%</div>
                     <p className="text-xs text-muted-foreground">Conversion Rate</p>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Email Templates with Triggers */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Mail className="w-5 h-5 text-amber-500" /> Email Templates
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Set up automated emails to engage with tenants. Choose a trigger to automatically send emails based on specific events.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {providerTemplates.map((template) => (
+                    <div key={template.id} className="p-4 rounded-lg bg-white/5 border border-white/10 flex flex-col gap-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-white text-sm font-medium">{template.name}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{template.type} • Used {template.uses} times</p>
+                        </div>
+                        {template.trigger !== "none" && (
+                          <Badge variant="outline" className="text-xs bg-amber-500/20 text-amber-400 border-amber-500/30">
+                            {getProviderTriggerLabel(template.trigger)}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Auto-send Trigger</label>
+                        <select 
+                          value={template.trigger}
+                          onChange={(e) => handleUpdateProviderTemplateTrigger(template.id, e.target.value)}
+                          className="w-full px-3 py-2 rounded-md bg-background/80 border border-amber-500/30 hover:border-amber-500/50 focus:border-amber-500 focus:outline-none transition-colors text-white text-xs"
+                          data-testid={`select-provider-trigger-${template.id}`}
+                        >
+                          <option value="none">Manual Only (No Trigger)</option>
+                          <option value="on-tour-completed">After Tour Completed</option>
+                          <option value="on-application-received">On Application Received</option>
+                          <option value="on-move-in">On Move-In</option>
+                          <option value="on-vacancy">When Vacancy Opens</option>
+                          <option value="weekly">Weekly</option>
+                          <option value="monthly">Monthly</option>
+                        </select>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={() => setMarketingSection("campaign")}
+                          size="sm" 
+                          variant="ghost" 
+                          className="text-xs flex-1 text-amber-400 hover:bg-amber-500/10"
+                          data-testid={`button-use-provider-template-${template.id}`}
+                        >
+                          Use Template
+                        </Button>
+                        <Button 
+                          onClick={() => setMarketingSection("campaign")}
+                          size="sm" 
+                          variant="outline" 
+                          className="text-xs border-amber-500/30 hover:bg-amber-500/10"
+                          data-testid={`button-edit-provider-template-${template.id}`}
+                        >
+                          Edit
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
