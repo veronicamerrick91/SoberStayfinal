@@ -5,8 +5,14 @@ import { storage } from "./storage";
 import { User } from "@shared/schema";
 
 export function setupAuth(app: Express) {
+  const sessionSecret = process.env.SESSION_SECRET || "replit_session_secret";
+  
+  if (app.get("env") === "production" && sessionSecret === "replit_session_secret") {
+    console.warn("WARNING: Using default session secret in production. Set SESSION_SECRET environment variable.");
+  }
+
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "replit_session_secret",
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,
