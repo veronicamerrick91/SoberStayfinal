@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, Check, Loader2, AlertCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,8 @@ export function TenantProfile() {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [idPhoto, setIdPhoto] = useState<string | null>(null);
   const [hasCompletedApplication, setHasCompletedApplication] = useState(false);
+  const profileInputRef = useRef<HTMLInputElement>(null);
+  const idInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState<any>({
     // Personal Information
@@ -217,62 +219,63 @@ export function TenantProfile() {
     }
   };
 
-  const FileUploadBox = ({ label, type, currentFile }: { label: string; type: "profile" | "id"; currentFile: string | null }) => (
-    <div className="space-y-3">
-      <Label className="text-white">{label}</Label>
-      {currentFile ? (
-        <div className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-          <div className="flex items-center gap-2">
-            <Check className="w-5 h-5 text-emerald-400" />
-            <span className="text-sm text-gray-300">File uploaded</span>
+  const FileUploadBox = ({ label, type, currentFile }: { label: string; type: "profile" | "id"; currentFile: string | null }) => {
+    const inputRef = type === "profile" ? profileInputRef : idInputRef;
+    
+    return (
+      <div className="space-y-3">
+        <Label className="text-white">{label}</Label>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          onChange={(e) => {
+            console.log("📂 Input onChange triggered for:", type);
+            const file = e.target.files?.[0];
+            console.log("📁 Selected file:", file?.name);
+            if (file) handleFileUpload(file, type);
+          }}
+          className="hidden"
+        />
+        {currentFile ? (
+          <div className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Check className="w-5 h-5 text-emerald-400" />
+              <span className="text-sm text-gray-300">File uploaded</span>
+            </div>
+            <button 
+              onClick={() => {
+                console.log("Replace button clicked");
+                inputRef.current?.click();
+              }}
+              className="text-xs text-primary hover:underline"
+            >
+              Replace
+            </button>
           </div>
-          <input
-            id={`replace-${type}`}
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              console.log("🔄 Replace input onChange triggered for:", type);
-              const file = e.target.files?.[0];
-              console.log("📁 Selected file:", file?.name);
-              if (file) handleFileUpload(file, type);
+        ) : (
+          <button 
+            onClick={() => {
+              console.log("Bubble clicked for:", type);
+              inputRef.current?.click();
             }}
-            className="hidden"
-          />
-          <label htmlFor={`replace-${type}`} className="text-xs text-primary hover:underline cursor-pointer">
-            Replace
-          </label>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <input
-            id={`upload-${type}`}
-            type="file"
-            accept="image/*"
-            onChange={(e) => {
-              console.log("📂 Upload input onChange triggered for:", type);
-              const file = e.target.files?.[0];
-              console.log("📁 Selected file:", file?.name);
-              if (file) handleFileUpload(file, type);
-            }}
-            className="hidden"
-          />
-          <label 
-            htmlFor={`upload-${type}`}
-            className="flex justify-center cursor-pointer"
+            className="w-full flex justify-center cursor-pointer"
           >
             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-dashed border-primary/50 hover:border-primary hover:from-primary/30 hover:to-primary/20 transition-all flex items-center justify-center"
             >
               <Upload className="w-8 h-8 text-primary" />
             </div>
-          </label>
+          </button>
+        )}
+        {!currentFile && (
           <div className="text-center">
             <p className="text-sm text-white font-medium">Upload {type === "profile" ? "Photo" : "ID"}</p>
             <p className="text-xs text-muted-foreground">Click the bubble</p>
           </div>
-        </div>
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
+  };
 
   return (
     <Layout>
