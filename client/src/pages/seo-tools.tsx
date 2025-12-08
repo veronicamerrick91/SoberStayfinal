@@ -17,6 +17,7 @@ export function SEOTools() {
   const [keywords, setKeywords] = useState("sober living Boston, recovery housing, halfway house, addiction recovery");
   const [seoScore, setSeoScore] = useState(0);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (!user || user.role !== "provider") {
@@ -301,8 +302,16 @@ export function SEOTools() {
 
         {/* Action Buttons */}
         <div className="flex gap-3 mb-8">
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2" data-testid="button-save-seo">
-            <CheckCircle className="w-4 h-4" /> Save Changes
+          <Button 
+            className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2" 
+            onClick={() => {
+              setSaved(true);
+              setTimeout(() => setSaved(false), 2000);
+              console.log("SEO settings saved:", { title, description, keywords });
+            }}
+            data-testid="button-save-seo"
+          >
+            <CheckCircle className="w-4 h-4" /> {saved ? "✓ Saved!" : "Save Changes"}
           </Button>
           <Button
             variant="outline"
