@@ -93,33 +93,68 @@ export function SEOTools() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-8">
-              <div className="flex-shrink-0">
-                <div className="relative w-32 h-32">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="#374151" strokeWidth="8" />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="45"
-                      fill="none"
-                      stroke="#10b981"
-                      strokeWidth="8"
-                      strokeDasharray={`${seoScore * 2.827} 282.7`}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-3xl font-bold text-primary">{seoScore}</span>
+            <div className="flex flex-col gap-8">
+              <div className="flex items-center gap-8">
+                <div className="flex-shrink-0">
+                  <div className="relative w-32 h-32">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="45" fill="none" stroke="#374151" strokeWidth="8" />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="none"
+                        stroke="#10b981"
+                        strokeWidth="8"
+                        strokeDasharray={`${seoScore * 2.827} 282.7`}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-3xl font-bold text-primary">{seoScore}</span>
+                    </div>
                   </div>
                 </div>
+                <div className="flex-1 space-y-2">
+                  <p className="text-muted-foreground">Optimize these elements to improve your search ranking</p>
+                  <Button onClick={calculateSeoScore} className="bg-primary hover:bg-primary/90 gap-2" data-testid="button-calculate-score">
+                    <BarChart3 className="w-4 h-4" /> Calculate Score
+                  </Button>
+                </div>
               </div>
-              <div className="flex-1 space-y-2">
-                <p className="text-muted-foreground">Optimize these elements to improve your search ranking</p>
-                <Button onClick={calculateSeoScore} className="bg-primary hover:bg-primary/90 gap-2">
-                  <BarChart3 className="w-4 h-4" /> Calculate Score
-                </Button>
-              </div>
+
+              {/* Score Breakdown */}
+              {seoScore > 0 && (
+                <div className="space-y-3 pt-4 border-t border-border">
+                  <p className="text-sm font-semibold text-white">Score Breakdown</p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between p-2 bg-white/5 rounded">
+                      <span className="text-muted-foreground">Title Optimization</span>
+                      <span className={title.length >= 30 && title.length <= 60 ? "text-emerald-400" : "text-amber-400"}>
+                        {title.length >= 30 && title.length <= 60 ? "25 pts" : "10 pts"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-white/5 rounded">
+                      <span className="text-muted-foreground">Meta Description</span>
+                      <span className={description.length >= 120 && description.length <= 160 ? "text-emerald-400" : "text-amber-400"}>
+                        {description.length >= 120 && description.length <= 160 ? "25 pts" : "10 pts"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-white/5 rounded">
+                      <span className="text-muted-foreground">Keywords</span>
+                      <span className={keywords.split(",").length >= 3 ? "text-emerald-400" : "text-amber-400"}>
+                        {keywords.split(",").length >= 3 ? "25 pts" : "10 pts"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-white/5 rounded">
+                      <span className="text-muted-foreground">Keyword Relevance</span>
+                      <span className={title.toLowerCase().includes("sober") || title.toLowerCase().includes("recovery") ? "text-emerald-400" : "text-gray-500"}>
+                        {title.toLowerCase().includes("sober") || title.toLowerCase().includes("recovery") ? "15 pts" : "0 pts"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
