@@ -153,6 +153,11 @@ function ProviderDashboardContent() {
   const [applications, setApplications] = useState<ApplicationData[]>(MOCK_APPLICATIONS);
   const [selectedApplication, setSelectedApplication] = useState<ApplicationData | null>(null);
   const [isAppDetailsOpen, setIsAppDetailsOpen] = useState(false);
+  
+  // Beds Management State
+  const [bedsAvailable, setBedsAvailable] = useState<Record<string, number>>({
+    '1': 2, '2': 1, '3': 3, '4': 0, '5': 2, '6': 4
+  });
 
   const user = getAuth();
 
@@ -430,8 +435,8 @@ function ProviderDashboardContent() {
                       <h3 className="font-bold text-white mb-1">{home.name}</h3>
                       <p className="text-sm text-muted-foreground mb-4">{home.address}</p>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="flex-1">Edit</Button>
-                        <Button size="sm" className="flex-1 bg-primary text-primary-foreground">Manage</Button>
+                        <Button size="sm" variant="outline" className="flex-1" onClick={() => setLocation(`/property/${home.id}`)} data-testid={`button-edit-${home.id}`}>Edit</Button>
+                        <Button size="sm" className="flex-1 bg-primary text-primary-foreground" onClick={() => setLocation(`/property/${home.id}`)} data-testid={`button-manage-${home.id}`}>Manage</Button>
                       </div>
                    </CardContent>
                 </Card>
@@ -595,24 +600,71 @@ function ProviderDashboardContent() {
           {/* BED MANAGER TAB */}
           <TabsContent value="beds" className="space-y-6">
             <div className="grid md:grid-cols-4 gap-6">
-              {MOCK_PROPERTIES.map((property) => (
-                <Card key={property.id} className="bg-card border-border hover:border-primary/50 transition-colors">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-white">{property.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>Occupancy</span>
-                        <span>{(property.totalBeds - property.bedsAvailable) / property.totalBeds * 100}%</span>
+              {MOCK_PROPERTIES.map((property) => {
+                const currentAvailable = bedsAvailable[property.id] ?? property.bedsAvailable;
+                const occupancy = ((property.totalBeds - currentAvailable) / property.totalBeds) * 100;
+                return (
+                  <Card key={property.id} className="bg-card border-border hover:border-primary/50 transition-colors">
+                    <CardHeader>
+                      <CardTitle className="text-lg text-white">{property.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm text-muted-foreground">
+                          <span>Occupancy</span>
+                          <span>{Math.round(occupancy)}%</span>
+                        </div>
+                        <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary" style={{ width: `${occupancy}%` }} />
+                        </div>
                       </div>
-                      <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: `${(property.totalBeds - property.bedsAvailable) / property.totalBeds * 100}%` }} />
+                      
+                      <div className="space-y-3 pt-3 border-t border-border">
+                        <div className="text-center">
+                          <p className="text-sm text-muted-foreground mb-2">Available Beds</p>
+                          <p className="text-3xl font-bold text-primary">{currentAvailable}</p>
+                          <p className="text-xs text-muted-foreground">of {property.totalBeds}</p>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => {
+                              if (currentAvailable > 0) {
+                                setBedsAvailable(prev => ({
+                                  ...prev,
+                                  [property.id]: currentAvailable - 1
+                                }));
+                              }
+                            }}
+                            data-testid={`button-decrease-beds-${property.id}`}
+                          >
+                            -
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => {
+                              if (currentAvailable < property.totalBeds) {
+                                setBedsAvailable(prev => ({
+                                  ...prev,
+                                  [property.id]: currentAvailable + 1
+                                }));
+                              }
+                            }}
+                            data-testid={`button-increase-beds-${property.id}`}
+                          >
+                            +
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </TabsContent>
 
