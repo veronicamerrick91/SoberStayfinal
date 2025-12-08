@@ -7,6 +7,10 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml } from "./email";
+import { stripeService } from "./stripeService";
+import { getStripePublishableKey } from "./stripeClient";
+import { sql } from "drizzle-orm";
+import { db } from "./db";
 
 // Registration schema with validation
 const registerSchema = z.object({
@@ -276,17 +280,135 @@ export async function registerRoutes(
     res.json(listings);
   });
 
-  // Subscriptions & Payments
+  // Stripe Configuration
+  app.get("/api/stripe/config", async (req, res) => {
+    try {
+      const publishableKey = await getStripePublishableKey();
+      res.json({ publishableKey });
+    } catch (error) {
+      console.error("Error getting Stripe config:", error);
+      res.status(500).json({ error: "Failed to get Stripe configuration" });
+    }
+  });
+
+  // Get available subscription products/prices from Stripe
+  app.get("/api/stripe/products", async (req, res) => {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          p.id as product_id,
+          p.name as product_name,
+          p.description as product_description,
+          p.metadata as product_metadata,
+          pr.id as price_id,
+          pr.unit_amount,
+          pr.currency,
+          pr.recurring
+        FROM stripe.products p
+        LEFT JOIN stripe.prices pr ON pr.product = p.id AND pr.active = true
+        WHERE p.active = true
+        ORDER BY pr.unit_amount
+      `);
+      res.json({ products: result.rows });
+    } catch (error) {
+      console.error("Error fetching Stripe products:", error);
+      res.status(500).json({ error: "Failed to fetch products" });
+    }
+  });
+
+  // Create Stripe Checkout Session for provider subscription
+  app.post("/api/stripe/checkout", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const user = req.user as any;
+      const { priceId } = req.body;
+
+      if (!priceId) {
+        return res.status(400).json({ error: "Price ID is required" });
+      }
+
+      // Get or create Stripe customer for this user
+      let customerId = user.stripeCustomerId;
+      if (!customerId) {
+        const customer = await stripeService.createCustomer(user.email, user.id);
+        await storage.updateUserStripeCustomerId(user.id, customer.id);
+        customerId = customer.id;
+      }
+
+      // Create checkout session
+      const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      const session = await stripeService.createCheckoutSession(
+        customerId,
+        priceId,
+        `${baseUrl}/provider-dashboard?payment=success`,
+        `${baseUrl}/provider-dashboard?payment=cancelled`,
+        { providerId: String(user.id) }
+      );
+
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      res.status(500).json({ error: "Failed to create checkout session" });
+    }
+  });
+
+  // Get user's subscription status
+  app.get("/api/stripe/subscription", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const user = req.user as any;
+      
+      if (!user.stripeCustomerId) {
+        return res.json({ subscription: null });
+      }
+
+      // Query subscription from Stripe synced data
+      const result = await db.execute(sql`
+        SELECT * FROM stripe.subscriptions 
+        WHERE customer = ${user.stripeCustomerId}
+        AND status IN ('active', 'trialing')
+        ORDER BY created DESC
+        LIMIT 1
+      `);
+
+      res.json({ subscription: result.rows[0] || null });
+    } catch (error) {
+      console.error("Error fetching subscription:", error);
+      res.status(500).json({ error: "Failed to fetch subscription" });
+    }
+  });
+
+  // Create customer portal session for managing subscription
+  app.post("/api/stripe/portal", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const user = req.user as any;
+      
+      if (!user.stripeCustomerId) {
+        return res.status(400).json({ error: "No subscription found" });
+      }
+
+      const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      const session = await stripeService.createCustomerPortalSession(
+        user.stripeCustomerId,
+        `${baseUrl}/provider-dashboard`
+      );
+
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error("Error creating portal session:", error);
+      res.status(500).json({ error: "Failed to create portal session" });
+    }
+  });
+
+  // Legacy subscription endpoint (for backwards compatibility)
   app.post("/api/subscriptions", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     
-    // In a real app, this is where we'd verify the Stripe/PayPal/ApplePay payment
-    // For now, we'll simulate a successful payment processing
-    
     const { paymentMethod } = req.body;
-    
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 1000));
 
     const nextMonth = new Date();
     nextMonth.setMonth(nextMonth.getMonth() + 1);
