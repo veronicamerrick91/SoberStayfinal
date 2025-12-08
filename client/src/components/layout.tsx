@@ -85,11 +85,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div className="flex items-center gap-3">
                 <span className="text-sm text-muted-foreground">Welcome, {user?.name}</span>
                 {user?.role === "tenant" && (
-                  <Link href="/tenant-dashboard">
-                    <Button size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10">
-                      Dashboard
-                    </Button>
-                  </Link>
+                  <>
+                    <Link href="/tenant-profile">
+                      <Button size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10">
+                        My Profile
+                      </Button>
+                    </Link>
+                    <Link href="/tenant-dashboard">
+                      <Button size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10">
+                        Dashboard
+                      </Button>
+                    </Link>
+                  </>
                 )}
                 {user?.role === "provider" && (
                   <Link href="/provider-dashboard">
@@ -169,11 +176,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   {authenticated ? (
                     <>
                       {user?.role === "tenant" && (
-                        <Link href="/tenant-dashboard" onClick={() => setMenuOpen(false)}>
-                          <Button variant="outline" className="w-full justify-start border-primary/50 text-primary">
-                            Tenant Dashboard
-                          </Button>
-                        </Link>
+                        <>
+                          <Link href="/tenant-profile" onClick={() => setMenuOpen(false)}>
+                            <Button variant="outline" className="w-full justify-start border-primary/50 text-primary">
+                              My Profile
+                            </Button>
+                          </Link>
+                          <Link href="/tenant-dashboard" onClick={() => setMenuOpen(false)}>
+                            <Button variant="outline" className="w-full justify-start border-primary/50 text-primary">
+                              Tenant Dashboard
+                            </Button>
+                          </Link>
+                        </>
                       )}
                       {user?.role === "provider" && (
                         <Link href="/provider-dashboard" onClick={() => setMenuOpen(false)}>
