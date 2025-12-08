@@ -21,8 +21,6 @@ export function TenantProfile() {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [idPhoto, setIdPhoto] = useState<string | null>(null);
   const [hasCompletedApplication, setHasCompletedApplication] = useState(false);
-  const profileInputRef = useRef<HTMLInputElement>(null);
-  const idInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState<any>({
     // Personal Information
@@ -126,60 +124,48 @@ export function TenantProfile() {
   const handleFileUpload = async (file: File, type: "profile" | "id") => {
     if (!user?.id) return;
 
-    console.log("🔵 Starting upload for:", type, file.name);
     setIsLoading(true);
-    
     try {
-      // Convert file to base64 using FileReader
-      const fileData = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          console.log("📸 File converted to base64, length:", result.length);
-          resolve(result);
-        };
-        reader.onerror = () => reject(new Error("Failed to read file"));
-        reader.readAsDataURL(file);
-      });
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const fileUrl = reader.result as string;
+          
+          if (type === "profile") setProfilePhoto(fileUrl);
+          else if (type === "id") setIdPhoto(fileUrl);
 
-      // Show preview immediately while uploading
-      if (type === "profile") {
-        setProfilePhoto(fileData);
-      } else if (type === "id") {
-        setIdPhoto(fileData);
-      }
+          const response = await fetch("/api/tenant/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type, fileUrl }),
+          });
 
-      // Send to server
-      console.log("📤 Sending upload request to /api/tenant/upload");
-      const response = await fetch("/api/tenant/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, fileUrl: fileData }),
-      });
+          if (!response.ok) throw new Error("Upload failed");
 
-      console.log("✅ Upload response status:", response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Upload failed" }));
-        console.error("❌ Upload error response:", errorData);
-        throw new Error(errorData.error || "Upload failed");
-      }
-
-      const result = await response.json();
-      console.log("💾 Upload successful, saved URL:", result.url);
-
-      toast({
-        title: "Success",
-        description: `${type === "profile" ? "Profile photo" : "ID photo"} uploaded successfully`,
-      });
+          toast({
+            title: "Success",
+            description: `${type === "profile" ? "Profile photo" : "ID photo"} uploaded successfully`,
+          });
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Failed to upload file",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      reader.onerror = () => {
+        toast({
+          title: "Error",
+          description: "Failed to read file",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
-      console.error("❌ Upload error:", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to upload file. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -256,18 +242,6 @@ export function TenantProfile() {
               {/* Profile Photo Upload */}
               <div className="space-y-3">
                 <Label className="text-white">Profile Photo</Label>
-                <input
-                  ref={profileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    console.log("Profile input onChange triggered");
-                    const file = e.target.files?.[0];
-                    console.log("Selected file:", file?.name);
-                    if (file) handleFileUpload(file, "profile");
-                  }}
-                  style={{ display: 'none' }}
-                />
                 {profilePhoto ? (
                   <div className="flex items-center gap-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
                     <img 
@@ -281,52 +255,44 @@ export function TenantProfile() {
                         <span className="text-sm text-gray-300">Photo uploaded</span>
                       </div>
                     </div>
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        console.log("Replace profile button clicked");
-                        profileInputRef.current?.click();
-                      }}
-                      className="text-xs text-primary hover:underline"
-                    >
+                    <label className="text-xs text-primary hover:underline cursor-pointer">
                       Replace
-                    </button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, "profile");
+                        }}
+                        className="hidden"
+                      />
+                    </label>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-3">
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        console.log("Profile bubble clicked");
-                        profileInputRef.current?.click();
-                      }}
-                      className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-dashed border-primary/50 hover:border-primary hover:from-primary/30 hover:to-primary/20 transition-all flex items-center justify-center"
-                    >
+                  <label className="flex flex-col items-center gap-3 cursor-pointer">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-dashed border-primary/50 hover:border-primary hover:from-primary/30 hover:to-primary/20 transition-all flex items-center justify-center">
                       <Upload className="w-8 h-8 text-primary" />
-                    </button>
+                    </div>
                     <div className="text-center">
                       <p className="text-sm text-white font-medium">Upload Photo</p>
                       <p className="text-xs text-muted-foreground">Click the bubble</p>
                     </div>
-                  </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, "profile");
+                      }}
+                      className="hidden"
+                    />
+                  </label>
                 )}
               </div>
 
               {/* ID Photo Upload */}
               <div className="space-y-3">
                 <Label className="text-white">Government ID Photo</Label>
-                <input
-                  ref={idInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    console.log("ID input onChange triggered");
-                    const file = e.target.files?.[0];
-                    console.log("Selected file:", file?.name);
-                    if (file) handleFileUpload(file, "id");
-                  }}
-                  style={{ display: 'none' }}
-                />
                 {idPhoto ? (
                   <div className="flex items-center gap-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
                     <img 
@@ -340,34 +306,38 @@ export function TenantProfile() {
                         <span className="text-sm text-gray-300">ID uploaded</span>
                       </div>
                     </div>
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        console.log("Replace ID button clicked");
-                        idInputRef.current?.click();
-                      }}
-                      className="text-xs text-primary hover:underline"
-                    >
+                    <label className="text-xs text-primary hover:underline cursor-pointer">
                       Replace
-                    </button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, "id");
+                        }}
+                        className="hidden"
+                      />
+                    </label>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-3">
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        console.log("ID bubble clicked");
-                        idInputRef.current?.click();
-                      }}
-                      className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-dashed border-primary/50 hover:border-primary hover:from-primary/30 hover:to-primary/20 transition-all flex items-center justify-center"
-                    >
+                  <label className="flex flex-col items-center gap-3 cursor-pointer">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-dashed border-primary/50 hover:border-primary hover:from-primary/30 hover:to-primary/20 transition-all flex items-center justify-center">
                       <Upload className="w-8 h-8 text-primary" />
-                    </button>
+                    </div>
                     <div className="text-center">
                       <p className="text-sm text-white font-medium">Upload ID</p>
                       <p className="text-xs text-muted-foreground">Click the bubble</p>
                     </div>
-                  </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, "id");
+                      }}
+                      className="hidden"
+                    />
+                  </label>
                 )}
               </div>
             </CardContent>
