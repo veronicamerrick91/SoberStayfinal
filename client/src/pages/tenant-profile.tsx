@@ -123,34 +123,50 @@ export function TenantProfile() {
 
   const handleFileUpload = async (file: File, type: "profile" | "id") => {
     if (!user?.id) return;
+
     setIsLoading(true);
     try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const fileUrl = reader.result as string;
-        const response = await fetch("/api/tenant/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type, fileUrl }),
-        });
-        if (!response.ok) throw new Error("Upload failed");
-        const result = await response.json();
-        if (type === "profile") setProfilePhoto(result.url);
-        else if (type === "id") setIdPhoto(result.url);
-        toast({
-          title: "Success",
-          description: `${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully`,
-        });
-        setIsLoading(false);
-      };
-      reader.readAsDataURL(file);
+      // Convert file to base64 using FileReader
+      const fileData = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error("Failed to read file"));
+        reader.readAsDataURL(file);
+      });
+
+      // Send to server
+      const response = await fetch("/api/tenant/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, fileUrl: fileData }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Upload failed" }));
+        throw new Error(errorData.error || "Upload failed");
+      }
+
+      const result = await response.json();
+      
+      // Update the correct photo state
+      if (type === "profile") {
+        setProfilePhoto(result.url);
+      } else if (type === "id") {
+        setIdPhoto(result.url);
+      }
+
+      toast({
+        title: "Success",
+        description: `${type === "profile" ? "Profile photo" : "ID photo"} uploaded successfully`,
+      });
     } catch (error) {
       console.error("Upload error:", error);
       toast({
         title: "Error",
-        description: "Failed to upload file. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to upload file. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };
