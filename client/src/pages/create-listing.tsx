@@ -46,7 +46,7 @@ export function CreateListing() {
   React.useEffect(() => {
     const user = getAuth();
     if (!user || user.role !== "provider") {
-      setLocation("/login");
+      setLocation("/for-providers");
     }
   }, [setLocation]);
 
