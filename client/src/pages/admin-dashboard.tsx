@@ -127,6 +127,16 @@ export function AdminDashboard() {
   const [newAutoCampaignAudience, setNewAutoCampaignAudience] = useState("tenants");
   const [newAutoCampaignEmails, setNewAutoCampaignEmails] = useState(1);
   const [showNewAutoCampaignModal, setShowNewAutoCampaignModal] = useState(false);
+  const [marketingTemplates, setMarketingTemplates] = useState([
+    { id: 1, name: "Welcome New Providers", type: "Email", uses: 24, trigger: "none", audience: "providers" },
+    { id: 2, name: "Recovery Success Stories", type: "Social Post", uses: 12, trigger: "none", audience: "all" },
+    { id: 3, name: "Available Listings Alert", type: "SMS", uses: 156, trigger: "none", audience: "tenants" },
+    { id: 4, name: "Testimonial Campaign", type: "Email", uses: 8, trigger: "none", audience: "all" },
+    { id: 5, name: "Property Compliance Reminder", type: "Email", uses: 42, trigger: "monthly", audience: "providers" },
+    { id: 6, name: "Tenant Application Approved", type: "Email", uses: 67, trigger: "on-application-approved", audience: "tenants" },
+    { id: 7, name: "Provider Subscription Renewal", type: "Email", uses: 89, trigger: "7-days-before-renewal", audience: "providers" },
+    { id: 8, name: "Resource Updates Newsletter", type: "Email", uses: 34, trigger: "weekly", audience: "all" },
+  ]);
   const [emailSubscribers, setEmailSubscribers] = useState<any[]>([
     { id: 1, email: "john.doe@example.com", subscribeDate: "Dec 1, 2024", status: "Active" },
     { id: 2, email: "sarah.smith@example.com", subscribeDate: "Dec 2, 2024", status: "Active" },
@@ -774,6 +784,52 @@ the actual document file stored on the server.
       title: "Campaign Deleted",
       description: "Automated campaign has been removed",
     });
+  };
+
+  const handleUpdateTemplateTrigger = (templateId: number, newTrigger: string) => {
+    const template = marketingTemplates.find(t => t.id === templateId);
+    setMarketingTemplates(marketingTemplates.map(t =>
+      t.id === templateId ? { ...t, trigger: newTrigger } : t
+    ));
+    
+    if (template) {
+      const triggerLabels: { [key: string]: string } = {
+        "none": "Manual Only",
+        "on-signup": "On Signup",
+        "on-application-approved": "On Application Approved",
+        "on-application-submitted": "On Application Submitted",
+        "7-days-before-renewal": "7 Days Before Renewal",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "daily": "Daily",
+      };
+      
+      if (newTrigger === "none") {
+        toast({
+          title: "Trigger Deactivated",
+          description: `"${template.name}" will now only send manually`,
+        });
+      } else {
+        toast({
+          title: "Trigger Activated",
+          description: `"${template.name}" will now send ${triggerLabels[newTrigger] || newTrigger}`,
+        });
+      }
+    }
+  };
+
+  const getTriggerLabel = (trigger: string) => {
+    const labels: { [key: string]: string } = {
+      "none": "Manual Only",
+      "on-signup": "On Signup",
+      "on-application-approved": "On App Approved",
+      "on-application-submitted": "On App Submitted",
+      "7-days-before-renewal": "7 Days Before Renewal",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "daily": "Daily",
+    };
+    return labels[trigger] || trigger;
   };
 
   const handleCreateBlog = () => {
@@ -2108,21 +2164,60 @@ the actual document file stored on the server.
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-2">
-                  {[
-                    { name: "Welcome New Providers", type: "Email", uses: 24 },
-                    { name: "Recovery Success Stories", type: "Social Post", uses: 12 },
-                    { name: "Available Listings Alert", type: "SMS", uses: 156 },
-                    { name: "Testimonial Campaign", type: "Email", uses: 8 },
-                    { name: "Property Compliance Reminder", type: "Email", uses: 42 },
-                    { name: "Tenant Application Approved", type: "Email", uses: 67 },
-                    { name: "Provider Subscription Renewal", type: "Email", uses: 89 },
-                    { name: "Resource Updates Newsletter", type: "Email", uses: 34 },
-                  ].map((template, i) => (
-                    <div key={i} className="p-3 rounded-lg bg-white/5 border border-white/10 flex flex-col">
-                      <p className="text-white text-sm font-medium">{template.name}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{template.type} • Used {template.uses} times</p>
-                      <Button onClick={() => { setEmailSubject(template.name); setEmailBodyText(""); setShowEmailComposer(true); }} size="sm" variant="ghost" className="text-xs mt-2 self-start">Use Template</Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-2">
+                  {marketingTemplates.map((template) => (
+                    <div key={template.id} className="p-4 rounded-lg bg-white/5 border border-white/10 flex flex-col gap-2">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-white text-sm font-medium">{template.name}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{template.type} • Used {template.uses} times</p>
+                        </div>
+                        {template.trigger !== "none" && (
+                          <Badge variant="outline" className="text-xs bg-primary/20 text-primary border-primary/30">
+                            {getTriggerLabel(template.trigger)}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <div className="mt-2">
+                        <label className="text-xs text-muted-foreground mb-1 block">Auto-send Trigger</label>
+                        <select 
+                          value={template.trigger}
+                          onChange={(e) => handleUpdateTemplateTrigger(template.id, e.target.value)}
+                          className="w-full px-3 py-2 rounded-md bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-xs"
+                          data-testid={`select-trigger-${template.id}`}
+                        >
+                          <option value="none">Manual Only (No Trigger)</option>
+                          <option value="on-signup">On User Signup</option>
+                          <option value="on-application-submitted">On Application Submitted</option>
+                          <option value="on-application-approved">On Application Approved</option>
+                          <option value="7-days-before-renewal">7 Days Before Renewal</option>
+                          <option value="daily">Daily</option>
+                          <option value="weekly">Weekly</option>
+                          <option value="monthly">Monthly</option>
+                        </select>
+                      </div>
+                      
+                      <div className="flex gap-2 mt-2">
+                        <Button 
+                          onClick={() => { setEmailSubject(template.name); setEmailBodyText(""); setShowEmailComposer(true); }} 
+                          size="sm" 
+                          variant="ghost" 
+                          className="text-xs flex-1"
+                          data-testid={`button-use-template-${template.id}`}
+                        >
+                          Use Template
+                        </Button>
+                        <Button 
+                          onClick={() => { setEmailSubject(template.name); setEmailBodyText(""); setShowEmailComposer(true); }} 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-xs"
+                          data-testid={`button-edit-template-${template.id}`}
+                        >
+                          Edit
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
