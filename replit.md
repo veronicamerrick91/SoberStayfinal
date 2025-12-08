@@ -153,10 +153,11 @@ Preferred communication style: Simple, everyday language.
    - Simpler server-side session invalidation
    - Database-backed sessions survive server restarts
 
-3. **Mock Data Strategy**: 
-   - Extensive mock data in `client/src/lib/mock-data.ts`
-   - Allows full UI development without complete API implementation
-   - LocalStorage persistence for demo functionality
+3. **Real Data Architecture**: 
+   - Main user flows (Home, Browse, Property Details, Applications) fetch real data from PostgreSQL API
+   - Public endpoint: GET /api/listings returns approved listings
+   - Secondary pages (Quiz, Dashboards) may use mock data for complex logic during development
+   - Empty states display gracefully when no listings exist
 
 4. **Dark-First Design**: 
    - Platform defaults to dark mode for modern aesthetic
