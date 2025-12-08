@@ -21,8 +21,6 @@ export function TenantProfile() {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [idPhoto, setIdPhoto] = useState<string | null>(null);
   const [hasCompletedApplication, setHasCompletedApplication] = useState(false);
-  const profilePhotoRef = useRef<HTMLInputElement>(null);
-  const idPhotoRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState<any>({
     // Personal Information
@@ -208,40 +206,36 @@ export function TenantProfile() {
     }
   };
 
-  const FileUploadBox = ({ label, type, currentFile, inputRef }: { label: string; type: "profile" | "id"; currentFile: string | null; inputRef: React.RefObject<HTMLInputElement> }) => (
+  const FileUploadBox = ({ label, type, currentFile }: { label: string; type: "profile" | "id"; currentFile: string | null }) => (
     <div className="space-y-2">
       <Label className="text-white">{label}</Label>
       {currentFile ? (
         <div className="flex items-center gap-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
           <Check className="w-5 h-5 text-emerald-400" />
           <span className="text-sm text-gray-300">File uploaded</span>
-          <button
-            onClick={() => inputRef.current?.click()}
-            disabled={isLoading}
-            type="button"
-            className="ml-auto text-xs text-primary hover:underline disabled:opacity-50"
-          >
+          <label htmlFor={`upload-${type}`} className="ml-auto text-xs text-primary hover:underline cursor-pointer">
             Replace
-          </button>
+          </label>
         </div>
       ) : (
-        <div 
-          onClick={() => inputRef.current?.click()}
-          className="border-2 border-dashed border-border/50 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+        <label 
+          htmlFor={`upload-${type}`}
+          className="block border-2 border-dashed border-border/50 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
         >
           <div className="flex flex-col items-center gap-2">
             <Upload className="w-6 h-6 text-primary" />
             <span className="text-sm text-white font-medium">Click to upload</span>
             <span className="text-xs text-muted-foreground">JPG, PNG up to 5MB</span>
           </div>
-        </div>
+        </label>
       )}
       <input
-        ref={inputRef}
+        id={`upload-${type}`}
         type="file"
         accept="image/*"
         onChange={(e) => {
           const file = e.target.files?.[0];
+          console.log("File selected:", file?.name);
           if (file) handleFileUpload(file, type);
         }}
         className="hidden"
@@ -282,8 +276,8 @@ export function TenantProfile() {
               <CardTitle className="text-white">Documents</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <FileUploadBox label="Profile Photo" type="profile" currentFile={profilePhoto} inputRef={profilePhotoRef} />
-              <FileUploadBox label="Government ID Photo" type="id" currentFile={idPhoto} inputRef={idPhotoRef} />
+              <FileUploadBox label="Profile Photo" type="profile" currentFile={profilePhoto} />
+              <FileUploadBox label="Government ID Photo" type="id" currentFile={idPhoto} />
             </CardContent>
           </Card>
 
