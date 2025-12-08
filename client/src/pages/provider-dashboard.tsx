@@ -11,7 +11,8 @@ import {
   Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video, Eye
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { MOCK_PROPERTIES, SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
+import { SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
+import type { Listing } from "@shared/schema";
 import { 
   Tooltip,
   TooltipContent,
@@ -85,6 +86,9 @@ function ProviderDashboardContent() {
   // Marketing subsection and tab state
   const [activeTab, setActiveTab] = useState("overview");
   const [marketingSection, setMarketingSection] = useState<"overview" | "seo" | "campaign">("overview");
+  
+  // Provider listings from API
+  const [listings, setListings] = useState<Listing[]>([]);
 
   const user = getAuth();
 
@@ -109,34 +113,51 @@ function ProviderDashboardContent() {
   };
 
   useEffect(() => {
-    // Load all conversations from localStorage
-    const allConversations: Conversation[] = [];
-    
-    MOCK_PROPERTIES.forEach(property => {
-      const key = `chat_${property.id}`;
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        try {
-          const messages = JSON.parse(stored) as ChatMessage[];
-          if (messages.length > 0) {
-            const lastMsg = messages[messages.length - 1];
-            const unreadFromTenant = messages.filter(m => m.sender === "tenant" && m.text).length;
-            allConversations.push({
-              propertyId: property.id,
-              propertyName: property.name,
-              tenantName: "Interested Tenant",
-              lastMessage: lastMsg.text.substring(0, 60),
-              lastMessageTime: new Date(lastMsg.timestamp),
-              unreadCount: unreadFromTenant,
-            });
-          }
-        } catch (e) {
-          // Ignore parsing errors
+    // Fetch provider's listings from API
+    const fetchListings = async () => {
+      try {
+        const res = await fetch('/api/listings');
+        if (res.ok) {
+          const data = await res.json();
+          // Filter to only show listings owned by the current provider
+          const providerListings = user?.id 
+            ? data.filter((l: Listing) => l.providerId === user.id)
+            : [];
+          setListings(providerListings);
+          
+          // Load conversations based on real listings
+          const allConversations: Conversation[] = [];
+          providerListings.forEach((property: Listing) => {
+            const key = `chat_${property.id}`;
+            const stored = localStorage.getItem(key);
+            if (stored) {
+              try {
+                const messages = JSON.parse(stored) as ChatMessage[];
+                if (messages.length > 0) {
+                  const lastMsg = messages[messages.length - 1];
+                  const unreadFromTenant = messages.filter(m => m.sender === "tenant" && m.text).length;
+                  allConversations.push({
+                    propertyId: String(property.id),
+                    propertyName: property.propertyName,
+                    tenantName: "Interested Tenant",
+                    lastMessage: lastMsg.text.substring(0, 60),
+                    lastMessageTime: new Date(lastMsg.timestamp),
+                    unreadCount: unreadFromTenant,
+                  });
+                }
+              } catch (e) {
+                // Ignore parsing errors
+              }
+            }
+          });
+          setConversations(allConversations.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime()));
         }
+      } catch (err) {
+        console.error("Error fetching listings:", err);
       }
-    });
-
-    setConversations(allConversations.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime()));
+    };
+    
+    fetchListings();
 
     // Load tour requests from localStorage
     const storedTours = localStorage.getItem("tour_requests");
