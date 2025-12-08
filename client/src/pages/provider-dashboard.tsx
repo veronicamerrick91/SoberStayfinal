@@ -253,8 +253,11 @@ function ProviderDashboardContent() {
     if (template) {
       const triggerLabels: { [key: string]: string } = {
         "none": "Manual Only",
+        "on-tenant-signup": "On Tenant Signup",
+        "on-tour-scheduled": "On Tour Scheduled",
         "on-tour-completed": "After Tour Completed",
         "on-application-received": "On Application Received",
+        "on-application-approved": "On Application Approved",
         "on-move-in": "On Move-In",
         "on-vacancy": "When Vacancy Opens",
         "weekly": "Weekly",
@@ -262,7 +265,6 @@ function ProviderDashboardContent() {
       };
       
       if (newTrigger === "none") {
-        // Show toast for deactivation - using console for now since toast may not be available
         console.log(`Template "${template.name}" trigger deactivated`);
       } else {
         console.log(`Template "${template.name}" will now send ${triggerLabels[newTrigger] || newTrigger}`);
@@ -273,8 +275,11 @@ function ProviderDashboardContent() {
   const getProviderTriggerLabel = (trigger: string) => {
     const labels: { [key: string]: string } = {
       "none": "Manual Only",
+      "on-tenant-signup": "Tenant Signup",
+      "on-tour-scheduled": "Tour Scheduled",
       "on-tour-completed": "After Tour",
       "on-application-received": "On Application",
+      "on-application-approved": "App Approved",
       "on-move-in": "On Move-In",
       "on-vacancy": "On Vacancy",
       "weekly": "Weekly",
@@ -958,12 +963,23 @@ function ProviderDashboardContent() {
                           data-testid={`select-provider-trigger-${template.id}`}
                         >
                           <option value="none">Manual Only (No Trigger)</option>
-                          <option value="on-tour-completed">After Tour Completed</option>
-                          <option value="on-application-received">On Application Received</option>
-                          <option value="on-move-in">On Move-In</option>
-                          <option value="on-vacancy">When Vacancy Opens</option>
-                          <option value="weekly">Weekly</option>
-                          <option value="monthly">Monthly</option>
+                          <optgroup label="Tenant Events">
+                            <option value="on-tenant-signup">On Tenant Signup</option>
+                            <option value="on-application-received">On Application Received</option>
+                            <option value="on-application-approved">On Application Approved</option>
+                          </optgroup>
+                          <optgroup label="Tour Events">
+                            <option value="on-tour-scheduled">On Tour Scheduled</option>
+                            <option value="on-tour-completed">After Tour Completed</option>
+                          </optgroup>
+                          <optgroup label="Resident Events">
+                            <option value="on-move-in">On Move-In</option>
+                            <option value="on-vacancy">When Vacancy Opens</option>
+                          </optgroup>
+                          <optgroup label="Scheduled">
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                          </optgroup>
                         </select>
                       </div>
                       

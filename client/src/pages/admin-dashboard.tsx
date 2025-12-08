@@ -795,9 +795,13 @@ the actual document file stored on the server.
     if (template) {
       const triggerLabels: { [key: string]: string } = {
         "none": "Manual Only",
-        "on-signup": "On Signup",
+        "on-provider-signup": "On Provider Signup",
+        "on-tenant-signup": "On Tenant Signup",
         "on-application-approved": "On Application Approved",
         "on-application-submitted": "On Application Submitted",
+        "on-tour-scheduled": "On Tour Scheduled",
+        "on-tour-completed": "On Tour Completed",
+        "on-listing-approved": "On Listing Approved",
         "7-days-before-renewal": "7 Days Before Renewal",
         "weekly": "Weekly",
         "monthly": "Monthly",
@@ -821,10 +825,14 @@ the actual document file stored on the server.
   const getTriggerLabel = (trigger: string) => {
     const labels: { [key: string]: string } = {
       "none": "Manual Only",
-      "on-signup": "On Signup",
-      "on-application-approved": "On App Approved",
-      "on-application-submitted": "On App Submitted",
-      "7-days-before-renewal": "7 Days Before Renewal",
+      "on-provider-signup": "Provider Signup",
+      "on-tenant-signup": "Tenant Signup",
+      "on-application-approved": "App Approved",
+      "on-application-submitted": "App Submitted",
+      "on-tour-scheduled": "Tour Scheduled",
+      "on-tour-completed": "Tour Completed",
+      "on-listing-approved": "Listing Approved",
+      "7-days-before-renewal": "Before Renewal",
       "weekly": "Weekly",
       "monthly": "Monthly",
       "daily": "Daily",
@@ -2188,13 +2196,27 @@ the actual document file stored on the server.
                           data-testid={`select-trigger-${template.id}`}
                         >
                           <option value="none">Manual Only (No Trigger)</option>
-                          <option value="on-signup">On User Signup</option>
-                          <option value="on-application-submitted">On Application Submitted</option>
-                          <option value="on-application-approved">On Application Approved</option>
-                          <option value="7-days-before-renewal">7 Days Before Renewal</option>
-                          <option value="daily">Daily</option>
-                          <option value="weekly">Weekly</option>
-                          <option value="monthly">Monthly</option>
+                          <optgroup label="Signup Events">
+                            <option value="on-provider-signup">On Provider Signup</option>
+                            <option value="on-tenant-signup">On Tenant Signup</option>
+                          </optgroup>
+                          <optgroup label="Application Events">
+                            <option value="on-application-submitted">On Application Submitted</option>
+                            <option value="on-application-approved">On Application Approved</option>
+                          </optgroup>
+                          <optgroup label="Tour Events">
+                            <option value="on-tour-scheduled">On Tour Scheduled</option>
+                            <option value="on-tour-completed">On Tour Completed</option>
+                          </optgroup>
+                          <optgroup label="Provider Events">
+                            <option value="on-listing-approved">On Listing Approved</option>
+                            <option value="7-days-before-renewal">7 Days Before Renewal</option>
+                          </optgroup>
+                          <optgroup label="Scheduled">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                          </optgroup>
                         </select>
                       </div>
                       
