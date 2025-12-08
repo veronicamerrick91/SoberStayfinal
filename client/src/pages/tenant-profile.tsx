@@ -11,6 +11,17 @@ import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import type { TenantProfile } from "@shared/schema";
 
+interface ApplicationData {
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  sobrietyStartDate: string;
+  employmentStatus: string;
+  monthlyIncome: string;
+  references: string;
+  reasonForApplying: string;
+  specialNeeds: string;
+}
+
 export function TenantProfile() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
@@ -19,7 +30,17 @@ export function TenantProfile() {
   const [bio, setBio] = useState("");
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [idPhoto, setIdPhoto] = useState<string | null>(null);
-  const [applicationFile, setApplicationFile] = useState<string | null>(null);
+  const [applicationData, setApplicationData] = useState<ApplicationData>({
+    emergencyContactName: "",
+    emergencyContactPhone: "",
+    sobrietyStartDate: "",
+    employmentStatus: "",
+    monthlyIncome: "",
+    references: "",
+    reasonForApplying: "",
+    specialNeeds: "",
+  });
+  const [hasCompletedApplication, setHasCompletedApplication] = useState(false);
 
   const user = getAuth();
 
@@ -40,7 +61,10 @@ export function TenantProfile() {
         setBio(data.bio || "");
         setProfilePhoto(data.profilePhotoUrl);
         setIdPhoto(data.idPhotoUrl);
-        setApplicationFile(data.applicationUrl);
+        if (data.applicationData) {
+          setApplicationData(data.applicationData);
+          setHasCompletedApplication(true);
+        }
       }
     } catch (error) {
       console.error("Failed to load profile", error);
@@ -49,13 +73,12 @@ export function TenantProfile() {
 
   const handleFileUpload = async (
     file: File,
-    type: "profile" | "id" | "application"
+    type: "profile" | "id"
   ) => {
     if (!user?.id) return;
 
     setIsLoading(true);
     try {
-      // Convert file to base64 URL for storage
       const reader = new FileReader();
       reader.onloadend = async () => {
         const fileUrl = reader.result as string;
@@ -76,8 +99,6 @@ export function TenantProfile() {
           setProfilePhoto(result.url);
         } else if (type === "id") {
           setIdPhoto(result.url);
-        } else if (type === "application") {
-          setApplicationFile(result.url);
         }
 
         toast({
@@ -98,6 +119,13 @@ export function TenantProfile() {
     }
   };
 
+  const handleApplicationChange = (field: keyof ApplicationData, value: string) => {
+    setApplicationData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
   const handleSaveProfile = async () => {
     if (!user?.id) return;
 
@@ -106,13 +134,17 @@ export function TenantProfile() {
       const response = await fetch("/api/tenant/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bio }),
+        body: JSON.stringify({ 
+          bio,
+          applicationData,
+        }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to save profile");
       }
 
+      setHasCompletedApplication(true);
       toast({
         title: "Success",
         description: "Profile updated successfully",
@@ -135,7 +167,7 @@ export function TenantProfile() {
     currentFile,
   }: {
     label: string;
-    type: "profile" | "id" | "application";
+    type: "profile" | "id";
     currentFile: string | null;
   }) => (
     <div className="space-y-2">
@@ -167,11 +199,11 @@ export function TenantProfile() {
             <Upload className="w-6 h-6 text-primary" />
             <span className="text-sm text-white font-medium">Click to upload</span>
             <span className="text-xs text-muted-foreground">
-              {type === "application" ? "PDF, DOC up to 10MB" : "JPG, PNG up to 5MB"}
+              JPG, PNG up to 5MB
             </span>
             <input
               type="file"
-              accept={type === "application" ? ".pdf,.doc,.docx" : "image/*"}
+              accept="image/*"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
@@ -194,7 +226,7 @@ export function TenantProfile() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">Your Profile</h1>
             <p className="text-muted-foreground">
-              Upload your documents once and use them for all your applications.
+              Complete your profile once and reuse it for all your applications.
             </p>
           </div>
 
@@ -227,7 +259,7 @@ export function TenantProfile() {
                 <span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
                   2
                 </span>
-                Documents
+                Photos
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -236,16 +268,143 @@ export function TenantProfile() {
                 type="profile"
                 currentFile={profilePhoto}
               />
-              <FileUploadBox label="ID Photo" type="id" currentFile={idPhoto} />
-              <FileUploadBox
-                label="Completed Application (Pre-filled)"
-                type="application"
-                currentFile={applicationFile}
-              />
+              <FileUploadBox label="Government ID Photo" type="id" currentFile={idPhoto} />
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border mb-6">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
+                  3
+                </span>
+                Application
+              </CardTitle>
+              {hasCompletedApplication && (
+                <p className="text-sm text-emerald-400 font-medium mt-2 flex items-center gap-1">
+                  <Check className="w-4 h-4" /> Application saved
+                </p>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="emergencyContactName" className="text-white">
+                    Emergency Contact Name
+                  </Label>
+                  <Input
+                    id="emergencyContactName"
+                    placeholder="Full name"
+                    value={applicationData.emergencyContactName}
+                    onChange={(e) => handleApplicationChange("emergencyContactName", e.target.value)}
+                    className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
+                    data-testid="input-emergency-contact-name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="emergencyContactPhone" className="text-white">
+                    Emergency Contact Phone
+                  </Label>
+                  <Input
+                    id="emergencyContactPhone"
+                    placeholder="Phone number"
+                    value={applicationData.emergencyContactPhone}
+                    onChange={(e) => handleApplicationChange("emergencyContactPhone", e.target.value)}
+                    className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
+                    data-testid="input-emergency-contact-phone"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="sobrietyStartDate" className="text-white">
+                    Sobriety Start Date
+                  </Label>
+                  <Input
+                    id="sobrietyStartDate"
+                    type="date"
+                    value={applicationData.sobrietyStartDate}
+                    onChange={(e) => handleApplicationChange("sobrietyStartDate", e.target.value)}
+                    className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
+                    data-testid="input-sobriety-start-date"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="employmentStatus" className="text-white">
+                    Employment Status
+                  </Label>
+                  <Input
+                    id="employmentStatus"
+                    placeholder="e.g., Employed, Unemployed, Student"
+                    value={applicationData.employmentStatus}
+                    onChange={(e) => handleApplicationChange("employmentStatus", e.target.value)}
+                    className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
+                    data-testid="input-employment-status"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="monthlyIncome" className="text-white">
+                  Monthly Income (Optional)
+                </Label>
+                <Input
+                  id="monthlyIncome"
+                  placeholder="e.g., $2,000"
+                  value={applicationData.monthlyIncome}
+                  onChange={(e) => handleApplicationChange("monthlyIncome", e.target.value)}
+                  className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
+                  data-testid="input-monthly-income"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="references" className="text-white">
+                  References
+                </Label>
+                <Textarea
+                  id="references"
+                  placeholder="Provide 2-3 references (name, relationship, phone number)"
+                  value={applicationData.references}
+                  onChange={(e) => handleApplicationChange("references", e.target.value)}
+                  className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary min-h-20"
+                  data-testid="textarea-references"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reasonForApplying" className="text-white">
+                  Why are you interested in this housing?
+                </Label>
+                <Textarea
+                  id="reasonForApplying"
+                  placeholder="Tell providers about your motivation and goals..."
+                  value={applicationData.reasonForApplying}
+                  onChange={(e) => handleApplicationChange("reasonForApplying", e.target.value)}
+                  className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary min-h-20"
+                  data-testid="textarea-reason-for-applying"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="specialNeeds" className="text-white">
+                  Any Special Needs or Considerations? (Optional)
+                </Label>
+                <Textarea
+                  id="specialNeeds"
+                  placeholder="e.g., Mobility needs, service animal, medical accommodations, etc."
+                  value={applicationData.specialNeeds}
+                  onChange={(e) => handleApplicationChange("specialNeeds", e.target.value)}
+                  className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary min-h-20"
+                  data-testid="textarea-special-needs"
+                />
+              </div>
+
               <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg flex gap-3">
                 <AlertCircle className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
                 <p className="text-sm text-gray-300">
-                  Once uploaded, you can quickly apply to properties by sharing these documents instead of filling out forms each time.
+                  Once you complete your application, you can quickly apply to properties without having to fill it out again.
                 </p>
               </div>
             </CardContent>
