@@ -122,16 +122,12 @@ function ProviderDashboardContent() {
   };
 
   useEffect(() => {
-    // Fetch provider's listings from API
+    // Fetch provider's listings from API (includes drafts)
     const fetchListings = async () => {
       try {
-        const res = await fetch('/api/listings');
+        const res = await fetch('/api/listings/provider', { credentials: 'include' });
         if (res.ok) {
-          const data = await res.json();
-          // Filter to only show listings owned by the current provider
-          const providerListings = user?.id 
-            ? data.filter((l: Listing) => String(l.providerId) === String(user.id))
-            : [];
+          const providerListings = await res.json();
           setListings(providerListings);
           
           // Load conversations based on real listings
@@ -528,6 +524,17 @@ function ProviderDashboardContent() {
                       ) : (
                         <Building className="w-12 h-12 text-primary/50" />
                       )}
+                      <div className="absolute top-2 left-2">
+                        {home.status === "draft" && (
+                          <Badge className="bg-amber-500 text-black">Draft</Badge>
+                        )}
+                        {home.status === "pending" && (
+                          <Badge className="bg-blue-500">Pending Review</Badge>
+                        )}
+                        {home.status === "active" && (
+                          <Badge className="bg-green-500">Active</Badge>
+                        )}
+                      </div>
                       <div className="absolute top-2 right-2">
                         <Badge className={home.totalBeds > 0 ? "bg-green-500" : "bg-red-500"}>
                           {home.totalBeds} Beds
@@ -536,10 +543,16 @@ function ProviderDashboardContent() {
                    </div>
                    <CardContent className="p-4">
                       <h3 className="font-bold text-white mb-1">{home.propertyName}</h3>
-                      <p className="text-sm text-muted-foreground mb-4">{home.address}</p>
+                      <p className="text-sm text-muted-foreground mb-4">{home.address || "No address yet"}</p>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="flex-1" onClick={() => setLocation(`/edit-listing/${home.id}`)} data-testid={`button-edit-${home.id}`}>Edit</Button>
-                        <Button size="sm" className="flex-1 bg-primary text-primary-foreground" onClick={() => setLocation(`/edit-listing/${home.id}`)} data-testid={`button-manage-${home.id}`}>Manage</Button>
+                        {home.status === "draft" ? (
+                          <Button size="sm" className="flex-1 bg-amber-500 hover:bg-amber-600 text-black" onClick={() => setLocation(`/edit-listing/${home.id}`)} data-testid={`button-continue-${home.id}`}>Continue Editing</Button>
+                        ) : (
+                          <>
+                            <Button size="sm" variant="outline" className="flex-1" onClick={() => setLocation(`/edit-listing/${home.id}`)} data-testid={`button-edit-${home.id}`}>Edit</Button>
+                            <Button size="sm" className="flex-1 bg-primary text-primary-foreground" onClick={() => setLocation(`/edit-listing/${home.id}`)} data-testid={`button-manage-${home.id}`}>Manage</Button>
+                          </>
+                        )}
                       </div>
                    </CardContent>
                 </Card>

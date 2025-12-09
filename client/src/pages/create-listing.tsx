@@ -10,7 +10,7 @@ import { PaymentModal } from "@/components/payment-modal";
 import { ArrowLeft, CheckCircle, AlertCircle, Upload, X, Check, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
 import * as React from "react";
-import { useLocation } from "wouter";
+import { useLocation, useRoute } from "wouter";
 import { getAuth } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -39,9 +39,14 @@ interface ListingDraft {
 
 export function CreateListing() {
   const [location, setLocation] = useLocation();
+  const [, params] = useRoute("/edit-listing/:id");
+  const editId = params?.id ? parseInt(params.id) : null;
+  const isEditMode = !!editId;
+  
   const { toast } = useToast();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReview, setShowReview] = useState(false);
+  const [isLoading, setIsLoading] = useState(isEditMode);
 
   // Check authentication and role
   React.useEffect(() => {
@@ -60,6 +65,49 @@ export function CreateListing() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [showReview]);
+
+  // Load existing listing data when editing
+  useEffect(() => {
+    if (editId) {
+      const fetchListing = async () => {
+        try {
+          const res = await fetch(`/api/listings`);
+          if (res.ok) {
+            const listings = await res.json();
+            const listing = listings.find((l: any) => l.id === editId);
+            if (listing) {
+              setListingDraft({
+                propertyName: listing.propertyName || "",
+                address: listing.address || "",
+                city: listing.city || "",
+                state: listing.state || "",
+                monthlyPrice: listing.monthlyPrice?.toString() || "",
+                totalBeds: listing.totalBeds?.toString() || "",
+                gender: listing.gender || "Men",
+                roomType: listing.roomType || "Private Room",
+                description: listing.description || "",
+                amenities: listing.amenities || [],
+                supervisionType: listing.supervisionType || "Supervised",
+                isMatFriendly: listing.isMatFriendly || false,
+                isPetFriendly: listing.isPetFriendly || false,
+                isLgbtqFriendly: listing.isLgbtqFriendly || false,
+                isFaithBased: listing.isFaithBased || false,
+                acceptsCouples: listing.acceptsCouples || false,
+                isWaitlisted: listing.isWaitlisted || false,
+                inclusions: listing.inclusions || [],
+                photos: listing.photos || [],
+              });
+            }
+          }
+        } catch (error) {
+          console.error("Error loading listing:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchListing();
+    }
+  }, [editId]);
 
   const [listingDraft, setListingDraft] = useState<ListingDraft>({
     propertyName: "",
@@ -155,7 +203,10 @@ export function CreateListing() {
     }
     
     try {
-      await apiRequest("POST", "/api/listings", {
+      const method = isEditMode ? "PUT" : "POST";
+      const url = isEditMode ? `/api/listings/${editId}` : "/api/listings";
+      
+      await apiRequest(method, url, {
         ...listingDraft,
         monthlyPrice: listingDraft.monthlyPrice ? parseInt(listingDraft.monthlyPrice) : 0,
         totalBeds: listingDraft.totalBeds ? parseInt(listingDraft.totalBeds) : 0,
@@ -195,7 +246,10 @@ export function CreateListing() {
 
   const handlePaymentSuccess = async () => {
     try {
-      await apiRequest("POST", "/api/listings", {
+      const method = isEditMode ? "PUT" : "POST";
+      const url = isEditMode ? `/api/listings/${editId}` : "/api/listings";
+      
+      await apiRequest(method, url, {
         ...listingDraft,
         monthlyPrice: parseInt(listingDraft.monthlyPrice),
         totalBeds: parseInt(listingDraft.totalBeds),
@@ -375,6 +429,19 @@ export function CreateListing() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-background py-8 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading listing...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="min-h-screen bg-background py-8">
@@ -388,9 +455,14 @@ export function CreateListing() {
           </Button>
 
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Create Property Listing</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              {isEditMode ? "Edit Property Listing" : "Create Property Listing"}
+            </h1>
             <p className="text-muted-foreground">
-              Complete this form to create your listing. You'll review and confirm payment before publishing.
+              {isEditMode 
+                ? "Continue editing your listing. Save as draft or publish when ready."
+                : "Complete this form to create your listing. You'll review and confirm payment before publishing."
+              }
             </p>
           </div>
 

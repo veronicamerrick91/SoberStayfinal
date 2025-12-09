@@ -18,7 +18,7 @@ export interface IStorage {
   updateUserPassword(id: number, hashedPassword: string): Promise<User | undefined>;
   updateUserStripeCustomerId(id: number, stripeCustomerId: string): Promise<User | undefined>;
   
-  createListing(listing: InsertListing): Promise<Listing>;
+  createListing(listing: InsertListing & { providerId: number }): Promise<Listing>;
   getListing(id: number): Promise<Listing | undefined>;
   getAllListings(): Promise<Listing[]>;
   getApprovedListings(): Promise<Listing[]>;
@@ -111,7 +111,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createListing(insertListing: InsertListing): Promise<Listing> {
+  async createListing(insertListing: InsertListing & { providerId: number }): Promise<Listing> {
     const [listing] = await db
       .insert(listings)
       .values(insertListing)

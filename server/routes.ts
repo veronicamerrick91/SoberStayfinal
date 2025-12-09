@@ -301,6 +301,47 @@ export async function registerRoutes(
     }
   });
 
+  // Update listing (PUT)
+  app.put("/api/listings/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Your session has expired. Please log in again." });
+    }
+    
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid listing ID" });
+    }
+    
+    const user = req.user as any;
+    const existingListing = await storage.getListing(id);
+    
+    if (!existingListing) {
+      return res.status(404).json({ error: "Listing not found" });
+    }
+    
+    // Only allow owner or admin to update
+    if (existingListing.providerId !== user.id && user.role !== "admin") {
+      return res.status(403).json({ error: "You don't have permission to edit this listing" });
+    }
+    
+    // Check subscription for publishing (not for drafts)
+    const isDraft = req.body.status === "draft";
+    if (!isDraft) {
+      const subscription = await storage.getSubscriptionByProvider(user.id);
+      if (!subscription || subscription.status !== "active") {
+        return res.status(402).json({ error: "Active subscription required to publish listings" });
+      }
+    }
+    
+    const parsed = insertListingSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+    
+    const updatedListing = await storage.updateListing(id, parsed.data);
+    res.json(updatedListing);
+  });
+
   // Admin endpoints
   app.get("/api/admin/users", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
