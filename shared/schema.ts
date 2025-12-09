@@ -84,6 +84,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export const insertListingSchema = createInsertSchema(listings).omit({
   id: true,
+  providerId: true,
   createdAt: true,
   isVisible: true,
 });
