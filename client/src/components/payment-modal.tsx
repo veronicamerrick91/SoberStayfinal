@@ -82,7 +82,7 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Billed monthly, cancel anytime
+                  $49/month per listing slot
                 </p>
               </div>
             </div>
@@ -107,7 +107,7 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Best value - 2 months free!
+                  Best value - $399/year for unlimited listings
                 </p>
               </div>
             </div>

@@ -436,8 +436,8 @@ export async function registerRoutes(
       const session = await stripeService.createCheckoutSession(
         customerId,
         priceId,
-        `${baseUrl}/provider-dashboard?payment=success`,
-        `${baseUrl}/provider-dashboard?payment=cancelled`,
+        `${baseUrl}/provider-dashboard`,
+        `${baseUrl}/provider-dashboard`,
         { providerId: String(user.id) }
       );
 
