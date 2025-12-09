@@ -29,6 +29,14 @@ const tenantDemoData = [
   { label: "Non-binary", value: 20, fill: "#10b981" }
 ];
 
+const topListings = [
+  { name: "Serenity House Boston", views: 1247, clicks: 342, applications: 48, conversion: "3.8%" },
+  { name: "Coastal Recovery Residence", views: 892, clicks: 201, applications: 35, conversion: "3.9%" },
+  { name: "Worcester Wellness Home", views: 654, clicks: 156, applications: 18, conversion: "2.8%" },
+  { name: "Hope Haven for Women", views: 512, clicks: 98, applications: 12, conversion: "2.3%" },
+  { name: "New Beginnings Co-ed", views: 342, clicks: 87, applications: 8, conversion: "2.3%" }
+];
+
 export function Analytics() {
   const [location, setLocation] = useLocation();
   const user = getAuth();
@@ -39,6 +47,57 @@ export function Analytics() {
     }
     window.scrollTo(0, 0);
   }, [user, setLocation]);
+
+  const handleExportReport = () => {
+    const today = new Date().toLocaleDateString();
+    
+    let csvContent = "Sober Stay Analytics Report\n";
+    csvContent += `Generated: ${today}\n\n`;
+    
+    csvContent += "SUMMARY METRICS\n";
+    csvContent += "Metric,Value,Change\n";
+    csvContent += "Total Views,2847,+23%\n";
+    csvContent += "Total Clicks,670,+18%\n";
+    csvContent += "Applications,108,+31%\n";
+    csvContent += "Conversion Rate,16.1%,+2.4%\n\n";
+    
+    csvContent += "WEEKLY PERFORMANCE\n";
+    csvContent += "Day,Views,Clicks,Applications\n";
+    viewsData.forEach(row => {
+      csvContent += `${row.date},${row.views},${row.clicks},${row.applications}\n`;
+    });
+    csvContent += "\n";
+    
+    csvContent += "VISITOR FUNNEL\n";
+    csvContent += "Status,Count\n";
+    conversionData.forEach(row => {
+      csvContent += `${row.name},${row.value}\n`;
+    });
+    csvContent += "\n";
+    
+    csvContent += "TOP PERFORMING LISTINGS\n";
+    csvContent += "Listing Name,Views,Clicks,Applications,Conversion Rate\n";
+    topListings.forEach(listing => {
+      csvContent += `"${listing.name}",${listing.views},${listing.clicks},${listing.applications},${listing.conversion}\n`;
+    });
+    csvContent += "\n";
+    
+    csvContent += "TENANT DEMOGRAPHICS - GENDER\n";
+    csvContent += "Gender,Percentage\n";
+    tenantDemoData.forEach(row => {
+      csvContent += `${row.label},${row.value}%\n`;
+    });
+    
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `sober-stay-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <Layout>
@@ -52,7 +111,7 @@ export function Analytics() {
             <p className="text-muted-foreground">Track your listings' performance and tenant engagement</p>
           </div>
           <div className="ml-auto">
-            <Button className="gap-2 bg-primary hover:bg-primary/90">
+            <Button className="gap-2 bg-primary hover:bg-primary/90" onClick={handleExportReport} data-testid="button-export-report">
               <Download className="w-4 h-4" />
               Export Report
             </Button>
@@ -173,13 +232,7 @@ export function Analytics() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { name: "Serenity House Boston", views: 1247, clicks: 342, applications: 48, conversion: "3.8%" },
-                { name: "Coastal Recovery Residence", views: 892, clicks: 201, applications: 35, conversion: "3.9%" },
-                { name: "Worcester Wellness Home", views: 654, clicks: 156, applications: 18, conversion: "2.8%" },
-                { name: "Hope Haven for Women", views: 512, clicks: 98, applications: 12, conversion: "2.3%" },
-                { name: "New Beginnings Co-ed", views: 342, clicks: 87, applications: 8, conversion: "2.3%" }
-              ].map((listing, i) => (
+              {topListings.map((listing, i) => (
                 <div key={i} className="p-4 bg-white/5 border border-border rounded-lg hover:border-primary/50 transition-colors">
                   <div className="flex justify-between items-start mb-3">
                     <div>
