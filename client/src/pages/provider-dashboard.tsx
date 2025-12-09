@@ -334,7 +334,7 @@ function ProviderDashboardContent() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <TabsList className="bg-gradient-to-r from-card via-card to-card border border-border/50 p-2 flex flex-wrap gap-2 h-auto justify-start rounded-lg shadow-sm">
             <TabsTrigger value="overview" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Overview</TabsTrigger>
-            <TabsTrigger value="properties" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Properties</TabsTrigger>
+            <TabsTrigger value="properties" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Listings</TabsTrigger>
             <TabsTrigger value="messages" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Messages</TabsTrigger>
             <TabsTrigger value="inbox" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Applications</TabsTrigger>
             <TabsTrigger value="beds" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Bed className="w-4 h-4" /> Beds</TabsTrigger>
@@ -509,7 +509,7 @@ function ProviderDashboardContent() {
                 <Card className="bg-card border-border col-span-3">
                   <CardContent className="p-8 text-center">
                     <Building className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
-                    <h3 className="text-lg font-bold text-white mb-2">No Properties Listed</h3>
+                    <h3 className="text-lg font-bold text-white mb-2">No Listings Yet</h3>
                     <p className="text-muted-foreground mb-4">Add your first sober living property to get started</p>
                     <Button onClick={() => setLocation("/create-listing")} className="bg-primary text-primary-foreground">
                       <Plus className="w-4 h-4 mr-2" /> Add Property
