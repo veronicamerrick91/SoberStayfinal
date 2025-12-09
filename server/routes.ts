@@ -206,7 +206,9 @@ export async function registerRoutes(
 
   // Listings
   app.post("/api/listings", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Your session has expired. Please log in again." });
+    }
     
     const providerId = (req.user as any).id;
     const user = await storage.getUser(providerId);
@@ -216,26 +218,31 @@ export async function registerRoutes(
       return res.status(403).json({ error: "Only providers can create listings" });
     }
     
-    // Check if provider has active subscription
-    const subscription = await storage.getSubscriptionByProvider(providerId);
-    if (!subscription || subscription.status !== 'active') {
-      return res.status(402).json({ 
-        error: "You need an active subscription to create listings",
-        requiresSubscription: true 
-      });
-    }
+    const isDraft = req.body.status === 'draft';
     
-    // Check if provider has listing allowance available (metered billing: $49 = 1 listing slot)
-    const currentListingCount = await storage.getActiveListingCount(providerId);
-    const allowance = subscription.listingAllowance || 0;
-    
-    if (currentListingCount >= allowance) {
-      return res.status(402).json({ 
-        error: `You can create ${allowance} listing(s). Pay $49 to add another listing slot.`,
-        currentListings: currentListingCount,
-        allowance,
-        requiresPayment: true 
-      });
+    // Drafts can be saved without subscription - only check subscription for publishing
+    if (!isDraft) {
+      // Check if provider has active subscription
+      const subscription = await storage.getSubscriptionByProvider(providerId);
+      if (!subscription || subscription.status !== 'active') {
+        return res.status(402).json({ 
+          error: "You need an active subscription to publish listings",
+          requiresSubscription: true 
+        });
+      }
+      
+      // Check if provider has listing allowance available (metered billing: $49 = 1 listing slot)
+      const currentListingCount = await storage.getActiveListingCount(providerId);
+      const allowance = subscription.listingAllowance || 0;
+      
+      if (currentListingCount >= allowance) {
+        return res.status(402).json({ 
+          error: `You can create ${allowance} listing(s). Pay $49 to add another listing slot.`,
+          currentListings: currentListingCount,
+          allowance,
+          requiresPayment: true 
+        });
+      }
     }
     
     const parsed = insertListingSchema.safeParse(req.body);

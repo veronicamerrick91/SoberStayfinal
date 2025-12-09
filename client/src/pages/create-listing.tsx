@@ -171,11 +171,20 @@ export function CreateListing() {
       setLocation("/provider-dashboard?tab=properties");
     } catch (error: any) {
       console.error("Failed to save draft", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save draft. Please try again.",
-        variant: "destructive"
-      });
+      if (error.message?.includes("401") || error.message?.includes("session")) {
+        toast({
+          title: "Session expired",
+          description: "Please log in again to continue.",
+          variant: "destructive"
+        });
+        setTimeout(() => setLocation("/login"), 1500);
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to save draft. Please try again.",
+          variant: "destructive"
+        });
+      }
     }
   };
 
