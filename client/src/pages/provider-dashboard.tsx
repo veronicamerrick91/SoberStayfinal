@@ -311,7 +311,7 @@ function ProviderDashboardContent() {
             {subscriptionStatus && (
               <div className="mt-2 text-sm">
                 <Badge className={subscriptionStatus.subscriptionStatus === "active" ? "bg-green-500/80" : "bg-amber-500/80"}>
-                  {subscriptionStatus.subscriptionStatus === "active" ? `✓ Subscription Active · $${subscriptionStatus.monthlyFee}/month` : "No Active Subscription"}
+                  {subscriptionStatus.subscriptionStatus === "active" ? `✓ Subscription Active · $${subscriptionStatus.monthlyFee}/month per listing` : "No Active Subscription"}
                 </Badge>
               </div>
             )}
@@ -1340,10 +1340,10 @@ function ProviderDashboardContent() {
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-white">Active Subscription</h3>
-                          <p className="text-sm text-green-300">${subscriptionStatus.monthlyFee}/month</p>
+                          <p className="text-sm text-green-300">${subscriptionStatus.monthlyFee}/month per listing</p>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-400">Your subscription is active. You can list unlimited properties on Sober Stay Homes.</p>
+                      <p className="text-sm text-gray-400">Your subscription is active. Each property listing is billed at $49/month.</p>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-4">
@@ -1447,7 +1447,7 @@ function ProviderDashboardContent() {
                       data-testid="button-subscribe-now"
                     >
                       <CreditCard className="w-4 h-4" />
-                      Subscribe Now - $49/month
+                      Subscribe Now - $49/month per listing
                     </Button>
                   </div>
                 )}
