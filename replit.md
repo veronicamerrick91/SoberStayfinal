@@ -232,6 +232,27 @@ Preferred communication style: Simple, everyday language.
 - Badge displays on browse page and property details with rose/pink styling
 - New column `accepts_couples` in listings table
 
+**Subscription Cancellation Lifecycle (Implemented)**
+- Automatic listing visibility management based on subscription status
+- Features:
+  - **Renewal reminders**: Emails sent 3 days before subscription renewal
+  - **7-day grace period**: Listings remain visible for 7 days after cancellation
+  - **Auto-hide listings**: Listings hidden from public after grace period expires
+  - **Reactivation support**: Listings restored when subscription is renewed
+- Database fields added:
+  - `subscriptions.gracePeriodEndsAt` - When grace period expires
+  - `subscriptions.renewalReminderSent` - Whether reminder email was sent
+  - `subscriptions.canceledAt` - When subscription was canceled
+  - `listings.isVisible` - Whether listing appears in public search
+- Files:
+  - `server/subscriptionScheduler.ts` - Hourly checks for reminders and grace period expiration
+  - `server/webhookHandlers.ts` - Processes Stripe subscription events
+  - `server/email.ts` - Email templates for renewal reminders and cancellation notices
+- Email notifications:
+  - Renewal reminder (3 days before billing)
+  - Subscription canceled (with grace period info)
+  - Listings hidden (after grace period expires)
+
 ## Future Implementation Notes
 
 **Email Notification Enhancements**

@@ -226,10 +226,10 @@ export async function registerRoutes(
     res.json(listings);
   });
 
-  // Public listings endpoint - returns approved listings only
+  // Public listings endpoint - returns approved and visible listings only
   app.get("/api/listings", async (req, res) => {
     try {
-      const listings = await storage.getApprovedListings();
+      const listings = await storage.getVisibleApprovedListings();
       res.json(listings);
     } catch (error) {
       console.error("Error fetching listings:", error);
@@ -237,7 +237,7 @@ export async function registerRoutes(
     }
   });
 
-  // Get single listing by ID (public)
+  // Get single listing by ID (public - only shows visible approved listings)
   app.get("/api/listings/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -247,6 +247,15 @@ export async function registerRoutes(
       const listing = await storage.getListing(id);
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });
+      }
+      // Only show if approved and visible (or if user is the provider/admin)
+      if (listing.status !== 'approved' || !listing.isVisible) {
+        const user = req.user as any;
+        const isOwner = user && listing.providerId === user.id;
+        const isAdmin = user && user.role === 'admin';
+        if (!isOwner && !isAdmin) {
+          return res.status(404).json({ error: "Listing not found" });
+        }
       }
       res.json(listing);
     } catch (error) {

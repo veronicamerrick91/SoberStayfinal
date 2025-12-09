@@ -173,3 +173,216 @@ export async function sendPasswordResetEmail(email: string, resetToken: string, 
     return false;
   }
 }
+
+export async function sendRenewalReminderEmail(email: string, providerName: string, renewalDate: Date): Promise<boolean> {
+  try {
+    const formattedDate = renewalDate.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+    
+    const { data, error } = await resend.emails.send({
+      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      to: email,
+      subject: 'Your Subscription Renews Soon - Sober Stay Homes',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f172a; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+                  <tr>
+                    <td style="padding: 40px 30px; text-align: center;">
+                      <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 60px; height: 60px; border-radius: 12px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 28px;">🏠</span>
+                      </div>
+                      <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 16px;">Subscription Renewal Reminder</h1>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Hi ${providerName},
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Your Sober Stay Homes subscription will automatically renew on <strong style="color: #10b981;">${formattedDate}</strong>. You'll be charged $49 per active listing.
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 32px;">
+                        If you'd like to update your payment method or make any changes, visit your Provider Dashboard.
+                      </p>
+                      <p style="color: #64748b; font-size: 14px; margin: 0;">
+                        Thank you for helping people find sober housing!
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 24px 30px; border-top: 1px solid #334155; text-align: center;">
+                      <p style="color: #475569; font-size: 12px; margin: 0;">
+                        © ${new Date().getFullYear()} Sober Stay Homes. All rights reserved.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error('Failed to send renewal reminder email:', error);
+      return false;
+    }
+
+    console.log('Renewal reminder email sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Error sending renewal reminder email:', error);
+    return false;
+  }
+}
+
+export async function sendSubscriptionCanceledEmail(email: string, providerName: string, gracePeriodEndDate: Date): Promise<boolean> {
+  try {
+    const formattedDate = gracePeriodEndDate.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+    
+    const { data, error } = await resend.emails.send({
+      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      to: email,
+      subject: 'Your Subscription Has Been Canceled - Sober Stay Homes',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f172a; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+                  <tr>
+                    <td style="padding: 40px 30px; text-align: center;">
+                      <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); width: 60px; height: 60px; border-radius: 12px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 28px;">⚠️</span>
+                      </div>
+                      <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 16px;">Subscription Canceled</h1>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Hi ${providerName},
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Your Sober Stay Homes subscription has been canceled. Your listings will remain visible during a <strong style="color: #f59e0b;">7-day grace period</strong> until <strong style="color: #f59e0b;">${formattedDate}</strong>.
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 32px;">
+                        After this date, your listings will be hidden from public view. You can reactivate your subscription at any time to restore visibility.
+                      </p>
+                      <p style="color: #64748b; font-size: 14px; margin: 0;">
+                        We hope to see you again soon!
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 24px 30px; border-top: 1px solid #334155; text-align: center;">
+                      <p style="color: #475569; font-size: 12px; margin: 0;">
+                        © ${new Date().getFullYear()} Sober Stay Homes. All rights reserved.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error('Failed to send cancellation email:', error);
+      return false;
+    }
+
+    console.log('Cancellation email sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Error sending cancellation email:', error);
+    return false;
+  }
+}
+
+export async function sendListingsHiddenEmail(email: string, providerName: string): Promise<boolean> {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      to: email,
+      subject: 'Your Listings Are Now Hidden - Sober Stay Homes',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f172a; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+                  <tr>
+                    <td style="padding: 40px 30px; text-align: center;">
+                      <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); width: 60px; height: 60px; border-radius: 12px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 28px;">🔒</span>
+                      </div>
+                      <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 16px;">Listings Hidden</h1>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Hi ${providerName},
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Your grace period has ended and your listings are now <strong style="color: #ef4444;">hidden from public view</strong> on Sober Stay Homes.
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 32px;">
+                        Ready to get back online? Simply reactivate your subscription from your Provider Dashboard to make your listings visible again.
+                      </p>
+                      <p style="color: #64748b; font-size: 14px; margin: 0;">
+                        We're here when you need us!
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 24px 30px; border-top: 1px solid #334155; text-align: center;">
+                      <p style="color: #475569; font-size: 12px; margin: 0;">
+                        © ${new Date().getFullYear()} Sober Stay Homes. All rights reserved.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error('Failed to send listings hidden email:', error);
+      return false;
+    }
+
+    console.log('Listings hidden email sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Error sending listings hidden email:', error);
+    return false;
+  }
+}

@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, users, listings, subscriptions, passwordResetTokens, tenantProfiles } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gt, lt, isNull, or } from "drizzle-orm";
+import { eq, and, gt, lt, isNull, or, desc } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -38,6 +38,7 @@ export interface IStorage {
   
   // Subscription lifecycle methods
   updateSubscription(providerId: number, data: Partial<Subscription>): Promise<Subscription | undefined>;
+  updateSubscriptionById(subscriptionId: number, data: Partial<Subscription>): Promise<Subscription | undefined>;
   getSubscriptionsNeedingRenewalReminder(): Promise<Subscription[]>;
   getExpiredGracePeriodSubscriptions(): Promise<Subscription[]>;
   getAllActiveSubscriptions(): Promise<Subscription[]>;
@@ -149,11 +150,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSubscriptionByProvider(providerId: number): Promise<Subscription | undefined> {
+    // Get the most recent subscription (order by createdAt DESC)
     const [subscription] = await db
       .select()
       .from(subscriptions)
       .where(eq(subscriptions.providerId, providerId))
-      .orderBy(subscriptions.createdAt)
+      .orderBy(desc(subscriptions.createdAt))
       .limit(1);
       
     return subscription;
@@ -245,10 +247,27 @@ export class DatabaseStorage implements IStorage {
 
   // Subscription lifecycle methods
   async updateSubscription(providerId: number, data: Partial<Subscription>): Promise<Subscription | undefined> {
+    // First, find the most recent subscription for this provider
+    const existingSubscription = await this.getSubscriptionByProvider(providerId);
+    if (!existingSubscription) {
+      console.log(`[Storage] No subscription found for provider ${providerId}`);
+      return undefined;
+    }
+    
+    // Update by subscription ID, not provider ID
     const [subscription] = await db
       .update(subscriptions)
       .set(data)
-      .where(eq(subscriptions.providerId, providerId))
+      .where(eq(subscriptions.id, existingSubscription.id))
+      .returning();
+    return subscription;
+  }
+  
+  async updateSubscriptionById(subscriptionId: number, data: Partial<Subscription>): Promise<Subscription | undefined> {
+    const [subscription] = await db
+      .update(subscriptions)
+      .set(data)
+      .where(eq(subscriptions.id, subscriptionId))
       .returning();
     return subscription;
   }
@@ -256,6 +275,7 @@ export class DatabaseStorage implements IStorage {
   async getSubscriptionsNeedingRenewalReminder(): Promise<Subscription[]> {
     const threeDaysFromNow = new Date();
     threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+    const now = new Date();
     
     return await db
       .select()
@@ -263,6 +283,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(subscriptions.status, 'active'),
+          gt(subscriptions.currentPeriodEnd, now),
           lt(subscriptions.currentPeriodEnd, threeDaysFromNow),
           or(
             eq(subscriptions.renewalReminderSent, false),
