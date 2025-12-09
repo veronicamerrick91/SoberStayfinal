@@ -105,6 +105,10 @@ export class WebhookHandlers {
             status: 'active',
             renewalReminderSent: false 
           });
+          
+          // Increment listing allowance by 1 for each $49 payment (metered billing)
+          await storage.incrementListingAllowance(provider.id, 1);
+          console.log(`[Webhook] Listing allowance incremented for provider ${provider.id}`);
         }
         break;
       }

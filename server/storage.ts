@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, users, listings, subscriptions, passwordResetTokens, tenantProfiles } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gt, lt, isNull, or, desc } from "drizzle-orm";
+import { eq, and, gt, lt, isNull, or, desc, count } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -47,6 +47,10 @@ export interface IStorage {
   hideProviderListings(providerId: number): Promise<void>;
   showProviderListings(providerId: number): Promise<void>;
   getVisibleApprovedListings(): Promise<Listing[]>;
+  
+  // Listing allowance
+  getActiveListingCount(providerId: number): Promise<number>;
+  incrementListingAllowance(providerId: number, amount: number): Promise<void>;
   
   sessionStore: session.Store;
 }
@@ -338,6 +342,27 @@ export class DatabaseStorage implements IStorage {
           eq(listings.isVisible, true)
         )
       );
+  }
+
+  async getActiveListingCount(providerId: number): Promise<number> {
+    const [result] = await db
+      .select({ count: count() })
+      .from(listings)
+      .where(eq(listings.providerId, providerId));
+    return result?.count || 0;
+  }
+
+  async incrementListingAllowance(providerId: number, amount: number): Promise<void> {
+    const subscription = await this.getSubscriptionByProvider(providerId);
+    if (!subscription) {
+      console.log(`[Storage] No subscription found for provider ${providerId}`);
+      return;
+    }
+    
+    const newAllowance = (subscription.listingAllowance || 0) + amount;
+    await this.updateSubscriptionById(subscription.id, {
+      listingAllowance: newAllowance as any
+    });
   }
 }
 

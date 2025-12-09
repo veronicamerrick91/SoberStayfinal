@@ -225,6 +225,19 @@ export async function registerRoutes(
       });
     }
     
+    // Check if provider has listing allowance available (metered billing: $49 = 1 listing slot)
+    const currentListingCount = await storage.getActiveListingCount(providerId);
+    const allowance = subscription.listingAllowance || 0;
+    
+    if (currentListingCount >= allowance) {
+      return res.status(402).json({ 
+        error: `You can create ${allowance} listing(s). Pay $49 to add another listing slot.`,
+        currentListings: currentListingCount,
+        allowance,
+        requiresPayment: true 
+      });
+    }
+    
     const parsed = insertListingSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json(parsed.error);

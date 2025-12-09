@@ -46,6 +46,7 @@ export const subscriptions = pgTable("subscriptions", {
   status: text("status").notNull(), // active, canceled, past_due, grace_period
   currentPeriodEnd: timestamp("current_period_end").notNull(),
   paymentMethod: text("payment_method").notNull(), // debit, paypal, applepay
+  listingAllowance: integer("listing_allowance").default(0).notNull(),
   gracePeriodEndsAt: timestamp("grace_period_ends_at"),
   renewalReminderSent: boolean("renewal_reminder_sent").default(false),
   canceledAt: timestamp("canceled_at"),
