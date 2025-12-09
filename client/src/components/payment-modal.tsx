@@ -117,7 +117,7 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
             <CardContent className="pt-4 pb-3">
               <p className="text-sm font-medium text-primary mb-2">What's Included:</p>
               <ul className="text-xs text-gray-300 space-y-1">
-                <li>✓ Unlimited property listings</li>
+                <li>✓ 1 property listing slot per $49 payment</li>
                 <li>✓ Access to thousands of clients seeking sober living</li>
                 <li>✓ Direct tenant messaging</li>
                 <li>✓ Application management tools</li>
