@@ -5,7 +5,8 @@ import { useLocation } from "wouter";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { ArrowLeft, TrendingUp, Users, Eye, Download, Filter } from "lucide-react";
 import { getAuth } from "@/lib/auth";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const viewsData = [
   { date: "Mon", views: 124, clicks: 32, applications: 8 },
@@ -40,6 +41,8 @@ const topListings = [
 export function Analytics() {
   const [location, setLocation] = useLocation();
   const user = getAuth();
+  const { toast } = useToast();
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     if (!user || user.role !== "provider") {
@@ -49,54 +52,96 @@ export function Analytics() {
   }, [user, setLocation]);
 
   const handleExportReport = () => {
-    const today = new Date().toLocaleDateString();
+    setIsExporting(true);
     
-    let csvContent = "Sober Stay Analytics Report\n";
-    csvContent += `Generated: ${today}\n\n`;
-    
-    csvContent += "SUMMARY METRICS\n";
-    csvContent += "Metric,Value,Change\n";
-    csvContent += "Total Views,2847,+23%\n";
-    csvContent += "Total Clicks,670,+18%\n";
-    csvContent += "Applications,108,+31%\n";
-    csvContent += "Conversion Rate,16.1%,+2.4%\n\n";
-    
-    csvContent += "WEEKLY PERFORMANCE\n";
-    csvContent += "Day,Views,Clicks,Applications\n";
-    viewsData.forEach(row => {
-      csvContent += `${row.date},${row.views},${row.clicks},${row.applications}\n`;
-    });
-    csvContent += "\n";
-    
-    csvContent += "VISITOR FUNNEL\n";
-    csvContent += "Status,Count\n";
-    conversionData.forEach(row => {
-      csvContent += `${row.name},${row.value}\n`;
-    });
-    csvContent += "\n";
-    
-    csvContent += "TOP PERFORMING LISTINGS\n";
-    csvContent += "Listing Name,Views,Clicks,Applications,Conversion Rate\n";
-    topListings.forEach(listing => {
-      csvContent += `"${listing.name}",${listing.views},${listing.clicks},${listing.applications},${listing.conversion}\n`;
-    });
-    csvContent += "\n";
-    
-    csvContent += "TENANT DEMOGRAPHICS - GENDER\n";
-    csvContent += "Gender,Percentage\n";
-    tenantDemoData.forEach(row => {
-      csvContent += `${row.label},${row.value}%\n`;
-    });
-    
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `sober-stay-analytics-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      const today = new Date().toLocaleDateString();
+      
+      let csvContent = "Sober Stay Analytics Report\n";
+      csvContent += `Generated: ${today}\n\n`;
+      
+      csvContent += "SUMMARY METRICS\n";
+      csvContent += "Metric,Value,Change\n";
+      csvContent += "Total Views,2847,+23%\n";
+      csvContent += "Total Clicks,670,+18%\n";
+      csvContent += "Applications,108,+31%\n";
+      csvContent += "Conversion Rate,16.1%,+2.4%\n\n";
+      
+      csvContent += "WEEKLY PERFORMANCE\n";
+      csvContent += "Day,Views,Clicks,Applications\n";
+      viewsData.forEach(row => {
+        csvContent += `${row.date},${row.views},${row.clicks},${row.applications}\n`;
+      });
+      csvContent += "\n";
+      
+      csvContent += "VISITOR FUNNEL\n";
+      csvContent += "Status,Count\n";
+      conversionData.forEach(row => {
+        csvContent += `${row.name},${row.value}\n`;
+      });
+      csvContent += "\n";
+      
+      csvContent += "TOP PERFORMING LISTINGS\n";
+      csvContent += "Listing Name,Views,Clicks,Applications,Conversion Rate\n";
+      topListings.forEach(listing => {
+        csvContent += `"${listing.name}",${listing.views},${listing.clicks},${listing.applications},${listing.conversion}\n`;
+      });
+      csvContent += "\n";
+      
+      csvContent += "TENANT DEMOGRAPHICS - GENDER\n";
+      csvContent += "Gender,Percentage\n";
+      tenantDemoData.forEach(row => {
+        csvContent += `${row.label},${row.value}%\n`;
+      });
+      
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const filename = `sober-stay-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+      
+      // Try modern download approach first
+      if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+        // iOS Safari - open in new tab for download
+        const newWindow = window.open(url, '_blank');
+        if (newWindow) {
+          toast({
+            title: "Report ready!",
+            description: "Your report is opening. Use 'Save to Files' to download.",
+          });
+        } else {
+          // Fallback: copy to clipboard
+          navigator.clipboard?.writeText(csvContent);
+          toast({
+            title: "Report copied!",
+            description: "Report data copied to clipboard. Paste into a spreadsheet app.",
+          });
+        }
+      } else {
+        // Standard browser download
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast({
+          title: "Report downloaded!",
+          description: "Check your downloads folder for the CSV file.",
+        });
+      }
+      
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+      console.error("Export failed:", error);
+      toast({
+        title: "Export failed",
+        description: "Unable to download report. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -111,9 +156,14 @@ export function Analytics() {
             <p className="text-muted-foreground">Track your listings' performance and tenant engagement</p>
           </div>
           <div className="ml-auto">
-            <Button className="gap-2 bg-primary hover:bg-primary/90" onClick={handleExportReport} data-testid="button-export-report">
+            <Button 
+              className="gap-2 bg-primary hover:bg-primary/90" 
+              onClick={handleExportReport} 
+              disabled={isExporting}
+              data-testid="button-export-report"
+            >
               <Download className="w-4 h-4" />
-              Export Report
+              {isExporting ? "Exporting..." : "Export Report"}
             </Button>
           </div>
         </div>

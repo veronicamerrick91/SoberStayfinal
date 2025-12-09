@@ -159,7 +159,6 @@ export function CreateListing() {
         ...listingDraft,
         monthlyPrice: listingDraft.monthlyPrice ? parseInt(listingDraft.monthlyPrice) : 0,
         totalBeds: listingDraft.totalBeds ? parseInt(listingDraft.totalBeds) : 0,
-        providerId: user.id,
         status: "draft"
       });
       
@@ -200,7 +199,6 @@ export function CreateListing() {
         ...listingDraft,
         monthlyPrice: parseInt(listingDraft.monthlyPrice),
         totalBeds: parseInt(listingDraft.totalBeds),
-        providerId: user.id,
         status: "pending"
       });
       
