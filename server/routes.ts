@@ -208,6 +208,23 @@ export async function registerRoutes(
   app.post("/api/listings", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     
+    const providerId = (req.user as any).id;
+    const user = await storage.getUser(providerId);
+    
+    // Only providers can create listings
+    if (user?.role !== 'provider') {
+      return res.status(403).json({ error: "Only providers can create listings" });
+    }
+    
+    // Check if provider has active subscription
+    const subscription = await storage.getSubscriptionByProvider(providerId);
+    if (!subscription || subscription.status !== 'active') {
+      return res.status(402).json({ 
+        error: "You need an active subscription to create listings",
+        requiresSubscription: true 
+      });
+    }
+    
     const parsed = insertListingSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json(parsed.error);
@@ -215,7 +232,7 @@ export async function registerRoutes(
 
     const listing = await storage.createListing({
       ...parsed.data,
-      providerId: (req.user as any).id,
+      providerId,
     });
     res.status(201).json(listing);
   });
