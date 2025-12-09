@@ -26,7 +26,7 @@ async function createProducts() {
   // Create the product
   const product = await stripe.products.create({
     name: 'Provider Listing Subscription',
-    description: 'Monthly subscription for sober living home providers to list properties on Sober Stay Homes',
+    description: 'Metered billing: $49/month per listing slot. Each payment unlocks 1 listing slot for sober living home providers on Sober Stay Homes',
     metadata: {
       type: 'provider_subscription',
     },

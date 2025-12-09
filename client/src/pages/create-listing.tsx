@@ -142,6 +142,34 @@ export function CreateListing() {
     }
   };
 
+  const handleSaveDraft = async () => {
+    if (user?.id && isFormComplete) {
+      try {
+        await apiRequest("POST", "/api/listings", {
+          ...listingDraft,
+          monthlyPrice: parseInt(listingDraft.monthlyPrice),
+          totalBeds: parseInt(listingDraft.totalBeds),
+          providerId: user.id,
+          status: "draft"
+        });
+        
+        toast({
+          title: "Success!",
+          description: "Your listing has been saved as a draft.",
+        });
+        
+        setLocation("/provider-dashboard?tab=properties");
+      } catch (error: any) {
+        console.error("Failed to save draft", error);
+        toast({
+          title: "Error",
+          description: error.message || "Failed to save draft. Please try again.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
   const handlePublish = () => {
     if (user?.id && isFormComplete) {
       setShowPaymentModal(true);
@@ -154,12 +182,13 @@ export function CreateListing() {
         ...listingDraft,
         monthlyPrice: parseInt(listingDraft.monthlyPrice),
         totalBeds: parseInt(listingDraft.totalBeds),
-        providerId: user.id
+        providerId: user.id,
+        status: "pending"
       });
       
       toast({
         title: "Success!",
-        description: "Your listing has been published.",
+        description: "Your listing has been published and is pending admin approval.",
       });
       
       setLocation("/provider-dashboard?tab=properties");
@@ -278,7 +307,7 @@ export function CreateListing() {
                     <div className="text-sm">
                       <p className="text-white font-semibold mb-1">Ready to Publish</p>
                       <p className="text-muted-foreground">
-                        Click "Publish & Pay" to complete your $49/month subscription and publish this listing.
+                        Save as a draft to finish later, or click "Publish & Pay" to complete your $49/month subscription and publish this listing.
                       </p>
                     </div>
                   </div>
@@ -294,14 +323,25 @@ export function CreateListing() {
               >
                 Back
               </Button>
-              <Button
-                onClick={handlePublish}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-                data-testid="button-publish-listing"
-              >
-                <CheckCircle className="w-4 h-4" />
-                Publish & Pay
-              </Button>
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleSaveDraft}
+                  variant="outline"
+                  className="border-border gap-2"
+                  data-testid="button-save-draft"
+                >
+                  <Clock className="w-4 h-4" />
+                  Save as Draft
+                </Button>
+                <Button
+                  onClick={handlePublish}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                  data-testid="button-publish-listing"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Publish & Pay
+                </Button>
+              </div>
             </div>
           </div>
         </div>
