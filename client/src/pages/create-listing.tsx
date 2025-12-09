@@ -143,30 +143,39 @@ export function CreateListing() {
   };
 
   const handleSaveDraft = async () => {
-    if (user?.id && isFormComplete) {
-      try {
-        await apiRequest("POST", "/api/listings", {
-          ...listingDraft,
-          monthlyPrice: parseInt(listingDraft.monthlyPrice),
-          totalBeds: parseInt(listingDraft.totalBeds),
-          providerId: user.id,
-          status: "draft"
-        });
-        
-        toast({
-          title: "Success!",
-          description: "Your listing has been saved as a draft.",
-        });
-        
-        setLocation("/provider-dashboard?tab=properties");
-      } catch (error: any) {
-        console.error("Failed to save draft", error);
-        toast({
-          title: "Error",
-          description: error.message || "Failed to save draft. Please try again.",
-          variant: "destructive"
-        });
-      }
+    if (!user?.id) return;
+    
+    if (!listingDraft.propertyName) {
+      toast({
+        title: "Property name required",
+        description: "Please enter at least a property name to save as draft.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      await apiRequest("POST", "/api/listings", {
+        ...listingDraft,
+        monthlyPrice: listingDraft.monthlyPrice ? parseInt(listingDraft.monthlyPrice) : 0,
+        totalBeds: listingDraft.totalBeds ? parseInt(listingDraft.totalBeds) : 0,
+        providerId: user.id,
+        status: "draft"
+      });
+      
+      toast({
+        title: "Draft saved!",
+        description: "Your listing has been saved as a draft. You can continue editing it later.",
+      });
+      
+      setLocation("/provider-dashboard?tab=properties");
+    } catch (error: any) {
+      console.error("Failed to save draft", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save draft. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -644,8 +653,19 @@ export function CreateListing() {
             </Card>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 justify-end pt-4">
+            <div className="flex gap-3 justify-between pt-4">
               <Button
+                type="button"
+                onClick={handleSaveDraft}
+                variant="outline"
+                className="border-border gap-2"
+                data-testid="button-save-draft-main"
+              >
+                <Clock className="w-4 h-4" />
+                Save as Draft
+              </Button>
+              <Button
+                type="button"
                 onClick={handleReview}
                 disabled={!isFormComplete}
                 className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
