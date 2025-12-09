@@ -36,15 +36,19 @@ export const listings = pgTable("listings", {
   isFaithBased: boolean("is_faith_based").default(false).notNull(),
   acceptsCouples: boolean("accepts_couples").default(false).notNull(),
   status: text("status").default("draft").notNull(),
+  isVisible: boolean("is_visible").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const subscriptions = pgTable("subscriptions", {
   id: serial("id").primaryKey(),
   providerId: integer("provider_id").notNull().references(() => users.id),
-  status: text("status").notNull(), // active, canceled, past_due
+  status: text("status").notNull(), // active, canceled, past_due, grace_period
   currentPeriodEnd: timestamp("current_period_end").notNull(),
   paymentMethod: text("payment_method").notNull(), // debit, paypal, applepay
+  gracePeriodEndsAt: timestamp("grace_period_ends_at"),
+  renewalReminderSent: boolean("renewal_reminder_sent").default(false),
+  canceledAt: timestamp("canceled_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -80,6 +84,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export const insertListingSchema = createInsertSchema(listings).omit({
   id: true,
   createdAt: true,
+  isVisible: true,
 });
 
 export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({

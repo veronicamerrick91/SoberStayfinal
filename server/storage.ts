@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, users, listings, subscriptions, passwordResetTokens, tenantProfiles } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, gt, lt, isNull, or } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -35,6 +35,17 @@ export interface IStorage {
   
   getTenantProfile(tenantId: number): Promise<TenantProfile | undefined>;
   createOrUpdateTenantProfile(tenantId: number, profile: Partial<InsertTenantProfile>): Promise<TenantProfile>;
+  
+  // Subscription lifecycle methods
+  updateSubscription(providerId: number, data: Partial<Subscription>): Promise<Subscription | undefined>;
+  getSubscriptionsNeedingRenewalReminder(): Promise<Subscription[]>;
+  getExpiredGracePeriodSubscriptions(): Promise<Subscription[]>;
+  getAllActiveSubscriptions(): Promise<Subscription[]>;
+  
+  // Listing visibility methods
+  hideProviderListings(providerId: number): Promise<void>;
+  showProviderListings(providerId: number): Promise<void>;
+  getVisibleApprovedListings(): Promise<Listing[]>;
   
   sessionStore: session.Store;
 }
@@ -230,6 +241,82 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return created;
     }
+  }
+
+  // Subscription lifecycle methods
+  async updateSubscription(providerId: number, data: Partial<Subscription>): Promise<Subscription | undefined> {
+    const [subscription] = await db
+      .update(subscriptions)
+      .set(data)
+      .where(eq(subscriptions.providerId, providerId))
+      .returning();
+    return subscription;
+  }
+
+  async getSubscriptionsNeedingRenewalReminder(): Promise<Subscription[]> {
+    const threeDaysFromNow = new Date();
+    threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+    
+    return await db
+      .select()
+      .from(subscriptions)
+      .where(
+        and(
+          eq(subscriptions.status, 'active'),
+          lt(subscriptions.currentPeriodEnd, threeDaysFromNow),
+          or(
+            eq(subscriptions.renewalReminderSent, false),
+            isNull(subscriptions.renewalReminderSent)
+          )
+        )
+      );
+  }
+
+  async getExpiredGracePeriodSubscriptions(): Promise<Subscription[]> {
+    const now = new Date();
+    return await db
+      .select()
+      .from(subscriptions)
+      .where(
+        and(
+          eq(subscriptions.status, 'grace_period'),
+          lt(subscriptions.gracePeriodEndsAt, now)
+        )
+      );
+  }
+
+  async getAllActiveSubscriptions(): Promise<Subscription[]> {
+    return await db
+      .select()
+      .from(subscriptions)
+      .where(eq(subscriptions.status, 'active'));
+  }
+
+  // Listing visibility methods
+  async hideProviderListings(providerId: number): Promise<void> {
+    await db
+      .update(listings)
+      .set({ isVisible: false })
+      .where(eq(listings.providerId, providerId));
+  }
+
+  async showProviderListings(providerId: number): Promise<void> {
+    await db
+      .update(listings)
+      .set({ isVisible: true })
+      .where(eq(listings.providerId, providerId));
+  }
+
+  async getVisibleApprovedListings(): Promise<Listing[]> {
+    return await db
+      .select()
+      .from(listings)
+      .where(
+        and(
+          eq(listings.status, 'approved'),
+          eq(listings.isVisible, true)
+        )
+      );
   }
 }
 
