@@ -347,6 +347,7 @@ function ProviderDashboardContent() {
             <TabsTrigger value="verification" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Shield className="w-4 h-4" /> Verify</TabsTrigger>
             <TabsTrigger value="settings" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
             <TabsTrigger value="tours" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Calendar className="w-4 h-4" /> Tour Requests</TabsTrigger>
+            <TabsTrigger value="billing" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><CreditCard className="w-4 h-4" /> Billing</TabsTrigger>
           </TabsList>
 
           {/* OVERVIEW */}
@@ -1318,6 +1319,140 @@ function ProviderDashboardContent() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* BILLING TAB */}
+          <TabsContent value="billing" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-primary" />
+                  Subscription & Billing
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {subscriptionStatus?.subscriptionStatus === "active" ? (
+                  <>
+                    <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-green-500/20 rounded-full">
+                          <Check className="w-5 h-5 text-green-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-white">Active Subscription</h3>
+                          <p className="text-sm text-green-300">${subscriptionStatus.monthlyFee}/month</p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-400">Your subscription is active. You can list unlimited properties on Sober Stay Homes.</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Card className="bg-background/50 border-border">
+                        <CardContent className="pt-6">
+                          <h4 className="font-semibold text-white mb-2">Payment Method</h4>
+                          <p className="text-sm text-muted-foreground mb-4">Update your credit card or payment method</p>
+                          <Button
+                            onClick={async () => {
+                              try {
+                                const res = await fetch('/api/stripe/portal', {
+                                  method: 'POST',
+                                  credentials: 'include'
+                                });
+                                const data = await res.json();
+                                if (data.url) {
+                                  window.location.href = data.url;
+                                }
+                              } catch (err) {
+                                console.error("Error opening billing portal:", err);
+                              }
+                            }}
+                            className="w-full bg-primary hover:bg-primary/90"
+                            data-testid="button-update-payment"
+                          >
+                            Update Payment Method
+                          </Button>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-background/50 border-border">
+                        <CardContent className="pt-6">
+                          <h4 className="font-semibold text-white mb-2">Billing History</h4>
+                          <p className="text-sm text-muted-foreground mb-4">View invoices and past payments</p>
+                          <Button
+                            onClick={async () => {
+                              try {
+                                const res = await fetch('/api/stripe/portal', {
+                                  method: 'POST',
+                                  credentials: 'include'
+                                });
+                                const data = await res.json();
+                                if (data.url) {
+                                  window.location.href = data.url;
+                                }
+                              } catch (err) {
+                                console.error("Error opening billing portal:", err);
+                              }
+                            }}
+                            variant="outline"
+                            className="w-full border-primary/50 text-primary hover:bg-primary/10"
+                            data-testid="button-view-invoices"
+                          >
+                            View Invoices
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <Card className="bg-background/50 border-border">
+                      <CardContent className="pt-6">
+                        <h4 className="font-semibold text-white mb-2">Manage Subscription</h4>
+                        <p className="text-sm text-muted-foreground mb-4">Change your plan, update billing details, or cancel your subscription</p>
+                        <Button
+                          onClick={async () => {
+                            try {
+                              const res = await fetch('/api/stripe/portal', {
+                                method: 'POST',
+                                credentials: 'include'
+                              });
+                              const data = await res.json();
+                              if (data.url) {
+                                window.location.href = data.url;
+                              }
+                            } catch (err) {
+                              console.error("Error opening billing portal:", err);
+                            }
+                          }}
+                          variant="outline"
+                          className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+                          data-testid="button-manage-subscription"
+                        >
+                          <Settings className="w-4 h-4 mr-2" />
+                          Manage Subscription
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg inline-block mb-4">
+                      <CreditCard className="w-12 h-12 text-amber-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-2">No Active Subscription</h3>
+                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                      Subscribe to list your properties on Sober Stay Homes and connect with tenants looking for recovery housing.
+                    </p>
+                    <Button
+                      onClick={() => setShowPaymentModal(true)}
+                      className="bg-primary hover:bg-primary/90 gap-2"
+                      data-testid="button-subscribe-now"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      Subscribe Now - $49/month
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 
