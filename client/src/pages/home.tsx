@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, MapPin, CheckCircle2, ShieldCheck, FileText, HeartHandshake, ArrowRight, Sparkles, Plus, Heart, Building, Home as HomeIcon } from "lucide-react";
+import { MapPin, CheckCircle2, ShieldCheck, FileText, HeartHandshake, ArrowRight, Sparkles, Plus, Heart, Building, Home as HomeIcon, Search } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import heroBg from "@assets/generated_images/luxury_warm_home_exterior_at_dusk.png";
 import pathBg from "@assets/generated_images/dark_luxury_home_front_facade.png";
@@ -166,9 +166,9 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-12 relative">
             {[
-              { icon: Search, title: "Search Quality Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit.", step: "01", link: "/browse" },
-              { icon: FileText, title: "Apply Securely", desc: "Fill out one detailed application and submit it to multiple homes instantly.", step: "02", link: "/tenant-profile" },
-              { icon: HeartHandshake, title: "Connect & Move In", desc: "Chat directly with providers, schedule visits, and secure your spot.", step: "03", link: "/for-tenants" }
+              { icon: HomeIcon, title: "Search Quality Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit.", step: "01", link: "/browse", showLearnMore: true },
+              { icon: FileText, title: "Apply Securely", desc: "Fill out one detailed application and submit it to multiple homes instantly.", step: "02", link: "/tenant-profile", showLearnMore: true },
+              { icon: HeartHandshake, title: "Connect & Move In", desc: "Chat directly with providers, schedule visits, and secure your spot.", step: "03", link: "/for-tenants", showLearnMore: false }
             ].map((step, i) => (
               <div key={i} className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-emerald-600/50 rounded-2xl blur opacity-20 group-hover:opacity-70 transition duration-500"></div>
@@ -182,9 +182,11 @@ export default function Home() {
                   <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-primary transition-colors">{step.title}</h3>
                   <p className="text-gray-400 leading-relaxed text-lg">{step.desc}</p>
                   
-                  <Link href={step.link} className="mt-8 flex items-center text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                    Learn more <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
+                  {step.showLearnMore && (
+                    <Link href={step.link} className="mt-8 flex items-center text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                      Learn more <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}
