@@ -166,9 +166,9 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-12 relative">
             {[
-              { icon: Search, title: "Search Quality Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit.", step: "01" },
-              { icon: FileText, title: "Apply Securely", desc: "Fill out one detailed application and submit it to multiple homes instantly.", step: "02" },
-              { icon: HeartHandshake, title: "Connect & Move In", desc: "Chat directly with providers, schedule visits, and secure your spot.", step: "03" }
+              { icon: Search, title: "Search Quality Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit.", step: "01", link: "/browse" },
+              { icon: FileText, title: "Apply Securely", desc: "Fill out one detailed application and submit it to multiple homes instantly.", step: "02", link: "/tenant-profile" },
+              { icon: HeartHandshake, title: "Connect & Move In", desc: "Chat directly with providers, schedule visits, and secure your spot.", step: "03", link: "/for-tenants" }
             ].map((step, i) => (
               <div key={i} className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-emerald-600/50 rounded-2xl blur opacity-20 group-hover:opacity-70 transition duration-500"></div>
@@ -176,13 +176,13 @@ export default function Home() {
                   <div className="absolute top-0 right-0 p-6 text-6xl font-bold text-white/5 select-none font-heading">{step.step}</div>
                   
                   <div className="w-20 h-20 mb-8 rounded-2xl bg-gradient-to-br from-primary/20 to-background border border-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-                    <step.icon className="w-10 h-10 text-primary" />
+                    <step.icon className="w-10 h-10 text-primary" strokeWidth={2.5} />
                   </div>
                   
                   <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-primary transition-colors">{step.title}</h3>
                   <p className="text-gray-400 leading-relaxed text-lg">{step.desc}</p>
                   
-                  <Link href="/browse" className="mt-8 flex items-center text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                  <Link href={step.link} className="mt-8 flex items-center text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                     Learn more <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                 </div>
