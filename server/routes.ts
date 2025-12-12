@@ -78,7 +78,7 @@ export async function registerRoutes(
   // User Login (email/password)
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password, rememberMe } = req.body;
 
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password are required" });
@@ -93,6 +93,11 @@ export async function registerRoutes(
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
         return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      // Set session maxAge based on rememberMe
+      if (rememberMe) {
+        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
       }
 
       // Log the user in

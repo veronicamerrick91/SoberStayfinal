@@ -27,6 +27,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [loginError, setLoginError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
     setRole(defaultRole as any);
@@ -110,7 +111,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password, rememberMe }),
         });
 
         const data = await response.json();
@@ -284,6 +285,22 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                   </button>
                 </div>
               </div>
+
+              {type === "login" && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="remember-me"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 rounded border-primary/40 bg-background/60 text-primary focus:ring-primary/50 cursor-pointer"
+                    data-testid="checkbox-remember-me"
+                  />
+                  <Label htmlFor="remember-me" className="text-sm text-muted-foreground cursor-pointer">
+                    Remember me for 30 days
+                  </Label>
+                </div>
+              )}
 
               <Button type="submit" disabled={isSubmitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
                 {isSubmitting ? "Please wait..." : (type === "login" ? "Sign In" : "Create Account")}
