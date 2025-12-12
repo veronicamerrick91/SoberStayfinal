@@ -71,7 +71,8 @@ export function CreateListing() {
     if (editId) {
       const fetchListing = async () => {
         try {
-          const res = await fetch(`/api/listings`);
+          // Fetch provider's own listings (includes drafts)
+          const res = await fetch(`/api/listings/provider`, { credentials: 'include' });
           if (res.ok) {
             const listings = await res.json();
             const listing = listings.find((l: any) => l.id === editId);
