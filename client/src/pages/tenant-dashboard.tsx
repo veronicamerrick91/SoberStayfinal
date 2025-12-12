@@ -19,7 +19,7 @@ import type { Listing } from "@shared/schema";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { getFavorites } from "@/lib/favorites";
-import { clearAuth, getAuth, saveAuth } from "@/lib/auth";
+import { logout, getAuth, saveAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { getEngagementStats, getRecoveryBadges, getNextStep, getDaysClean, getViewedHomes, getTourRequests, TourRequest } from "@/lib/tenant-engagement";
 import { getSubmittedApplications, initializeSampleApplications, SubmittedApplication } from "@/lib/application-profile";
@@ -199,8 +199,8 @@ export function TenantDashboard() {
     }
   }, []);
 
-  const handleSignOut = () => {
-    clearAuth();
+  const handleSignOut = async () => {
+    await logout();
     setLocation("/");
   };
 

@@ -16,7 +16,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import logo from "@assets/C442C7B9-08EE-40E8-9A2E-1D38827FBB5B_1764526673965.jpeg";
-import { isAuthenticated, getAuth, clearAuth } from "@/lib/auth";
+import { isAuthenticated, getAuth, logout } from "@/lib/auth";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
@@ -25,8 +25,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const user = getAuth();
   const authenticated = isAuthenticated();
 
-  const handleSignOut = () => {
-    clearAuth();
+  const handleSignOut = async () => {
+    await logout();
     setLocation("/");
     setMenuOpen(false);
   };

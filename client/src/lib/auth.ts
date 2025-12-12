@@ -24,6 +24,15 @@ export function clearAuth() {
   localStorage.removeItem(AUTH_KEY);
 }
 
+export async function logout() {
+  try {
+    await fetch("/api/auth/logout", { credentials: "include" });
+  } catch (e) {
+    console.error("Logout error:", e);
+  }
+  clearAuth();
+}
+
 export function isAuthenticated(): boolean {
   return getAuth() !== null;
 }
