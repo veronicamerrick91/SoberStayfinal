@@ -122,6 +122,19 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
           return;
         }
 
+        // Check if user role matches the portal they're trying to log into
+        const userRole = data.user.role;
+        if (role !== userRole) {
+          // Role mismatch - show appropriate error
+          const portalName = role === "admin" ? "Admin" : role === "provider" ? "Provider" : "Tenant";
+          const correctPortal = userRole === "admin" ? "Admin" : userRole === "provider" ? "Provider" : "Tenant";
+          setLoginError(`This account is registered as a ${correctPortal}. Please use the ${correctPortal} portal to log in.`);
+          // Log them out from the server session
+          await fetch("/api/auth/logout", { credentials: "include" });
+          setIsSubmitting(false);
+          return;
+        }
+
         // Login successful - save auth and redirect
         saveAuth({
           id: String(data.user.id),
