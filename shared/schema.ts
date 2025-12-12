@@ -74,6 +74,18 @@ export const tenantProfiles = pgTable("tenant_profiles", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const applications = pgTable("applications", {
+  id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").notNull().references(() => users.id),
+  listingId: integer("listing_id").notNull().references(() => listings.id),
+  applicationData: jsonb("application_data").$type<Record<string, any>>(),
+  bio: text("bio"),
+  profilePhotoUrl: text("profile_photo_url"),
+  idPhotoUrl: text("id_photo_url"),
+  status: text("status").default("pending").notNull(), // pending, approved, rejected
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   email: true,
@@ -100,6 +112,11 @@ export const insertTenantProfileSchema = createInsertSchema(tenantProfiles).omit
   updatedAt: true,
 });
 
+export const insertApplicationSchema = createInsertSchema(applications).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Listing = typeof listings.$inferSelect;
@@ -109,3 +126,5 @@ export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type TenantProfile = typeof tenantProfiles.$inferSelect;
 export type InsertTenantProfile = z.infer<typeof insertTenantProfileSchema>;
+export type Application = typeof applications.$inferSelect;
+export type InsertApplication = z.infer<typeof insertApplicationSchema>;

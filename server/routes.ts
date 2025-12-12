@@ -838,5 +838,50 @@ export async function registerRoutes(
     }
   });
 
+  // Submit application to a property
+  app.post("/api/applications", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "tenant") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { listingId, applicationData, bio, profilePhotoUrl, idPhotoUrl } = req.body;
+      
+      if (!listingId) {
+        return res.status(400).json({ error: "Listing ID is required" });
+      }
+      
+      const application = await storage.createApplication({
+        tenantId: user.id,
+        listingId,
+        applicationData,
+        bio,
+        profilePhotoUrl,
+        idPhotoUrl,
+        status: "pending",
+      });
+      
+      res.status(201).json(application);
+    } catch (error) {
+      console.error("Error creating application:", error);
+      res.status(500).json({ error: "Failed to submit application" });
+    }
+  });
+
+  // Get applications for a tenant
+  app.get("/api/applications", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const applications = await storage.getApplicationsByTenant(user.id);
+      res.json(applications);
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+      res.status(500).json({ error: "Failed to fetch applications" });
+    }
+  });
+
   return httpServer;
 }

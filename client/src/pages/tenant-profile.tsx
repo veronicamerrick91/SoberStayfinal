@@ -5,12 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, Check, Loader2, AlertCircle } from "lucide-react";
+import { Upload, Check, Loader2, AlertCircle, Send, MapPin, Building } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { getAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import type { TenantProfile } from "@shared/schema";
+import type { TenantProfile, Listing } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
+
+async function fetchListings(): Promise<Listing[]> {
+  const response = await fetch("/api/listings");
+  if (!response.ok) throw new Error("Failed to fetch listings");
+  return response.json();
+}
 
 export function TenantProfile() {
   const [location, setLocation] = useLocation();
@@ -21,6 +28,14 @@ export function TenantProfile() {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [idPhoto, setIdPhoto] = useState<string | null>(null);
   const [hasCompletedApplication, setHasCompletedApplication] = useState(false);
+  
+  const [selectedListings, setSelectedListings] = useState<number[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { data: listings = [] } = useQuery({
+    queryKey: ["listings"],
+    queryFn: fetchListings,
+  });
   
   const [formData, setFormData] = useState<any>({
     // Personal Information
@@ -205,6 +220,70 @@ export function TenantProfile() {
     }
   };
 
+  const toggleListingSelection = (listingId: number) => {
+    setSelectedListings(prev => 
+      prev.includes(listingId) 
+        ? prev.filter(id => id !== listingId)
+        : [...prev, listingId]
+    );
+  };
+
+  const handleSubmitToProperties = async () => {
+    if (!hasCompletedApplication) {
+      toast({
+        title: "Complete your application first",
+        description: "Please fill out and save your application before submitting to properties.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (selectedListings.length === 0) {
+      toast({
+        title: "Select properties",
+        description: "Please select at least one property to apply to.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      // Submit application to each selected property
+      const results = await Promise.all(
+        selectedListings.map(listingId =>
+          fetch("/api/applications", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              listingId, 
+              applicationData: formData,
+              bio,
+              profilePhotoUrl: profilePhoto,
+              idPhotoUrl: idPhoto,
+            }),
+          })
+        )
+      );
+      
+      const successCount = results.filter(r => r.ok).length;
+      
+      toast({
+        title: "Applications submitted!",
+        description: `Successfully submitted to ${successCount} of ${selectedListings.length} properties.`,
+      });
+      
+      setSelectedListings([]);
+    } catch (error) {
+      console.error("Error submitting applications:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit some applications. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Layout>
@@ -854,6 +933,101 @@ export function TenantProfile() {
               )}
             </Button>
           </div>
+
+          {/* Apply to Multiple Properties Section */}
+          <Card className="bg-card border-border mt-8">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Send className="w-5 h-5 text-primary" />
+                Apply to Properties
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                Select multiple properties and submit your saved application to all of them at once.
+                {!hasCompletedApplication && (
+                  <span className="text-yellow-400 block mt-1">
+                    <AlertCircle className="w-4 h-4 inline mr-1" />
+                    Complete and save your application above first.
+                  </span>
+                )}
+              </p>
+            </CardHeader>
+            <CardContent>
+              {listings.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Building className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No properties available at the moment.</p>
+                  <p className="text-sm">Check back soon for new listings!</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid gap-3">
+                    {listings.map((listing) => (
+                      <div
+                        key={listing.id}
+                        onClick={() => toggleListingSelection(listing.id)}
+                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          selectedListings.includes(listing.id)
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                        data-testid={`listing-select-${listing.id}`}
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                            selectedListings.includes(listing.id)
+                              ? "border-primary bg-primary"
+                              : "border-gray-500"
+                          }`}>
+                            {selectedListings.includes(listing.id) && (
+                              <Check className="w-4 h-4 text-white" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-white truncate">{listing.propertyName}</h4>
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                              <MapPin className="w-3 h-3" />
+                              <span>{listing.city}, {listing.state}</span>
+                            </div>
+                            <div className="text-sm text-primary font-medium mt-1">
+                              ${listing.monthlyPrice}/month
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {selectedListings.length > 0 && (
+                    <div className="pt-4 border-t border-border">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-300">
+                          {selectedListings.length} {selectedListings.length === 1 ? "property" : "properties"} selected
+                        </span>
+                        <Button
+                          onClick={handleSubmitToProperties}
+                          disabled={isSubmitting || !hasCompletedApplication}
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                          data-testid="button-submit-applications"
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Submitting...
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-4 h-4" />
+                              Submit to {selectedListings.length} {selectedListings.length === 1 ? "Property" : "Properties"}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </Layout>

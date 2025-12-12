@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, users, listings, subscriptions, passwordResetTokens, tenantProfiles } from "@shared/schema";
+import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type Application, type InsertApplication, users, listings, subscriptions, passwordResetTokens, tenantProfiles, applications } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, lt, isNull, or, desc, count } from "drizzle-orm";
 import session from "express-session";
@@ -51,6 +51,11 @@ export interface IStorage {
   // Listing allowance
   getActiveListingCount(providerId: number): Promise<number>;
   incrementListingAllowance(providerId: number, amount: number): Promise<void>;
+  
+  // Applications
+  createApplication(application: InsertApplication): Promise<Application>;
+  getApplicationsByTenant(tenantId: number): Promise<Application[]>;
+  getApplicationsByListing(listingId: number): Promise<Application[]>;
   
   sessionStore: session.Store;
 }
@@ -363,6 +368,31 @@ export class DatabaseStorage implements IStorage {
     await this.updateSubscriptionById(subscription.id, {
       listingAllowance: newAllowance as any
     });
+  }
+
+  // Applications
+  async createApplication(application: InsertApplication): Promise<Application> {
+    const [newApplication] = await db
+      .insert(applications)
+      .values(application)
+      .returning();
+    return newApplication;
+  }
+
+  async getApplicationsByTenant(tenantId: number): Promise<Application[]> {
+    return await db
+      .select()
+      .from(applications)
+      .where(eq(applications.tenantId, tenantId))
+      .orderBy(desc(applications.createdAt));
+  }
+
+  async getApplicationsByListing(listingId: number): Promise<Application[]> {
+    return await db
+      .select()
+      .from(applications)
+      .where(eq(applications.listingId, listingId))
+      .orderBy(desc(applications.createdAt));
   }
 }
 
