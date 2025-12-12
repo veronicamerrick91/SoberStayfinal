@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldCheck, AlertCircle, Mail, CheckCircle2, Sparkles, Building, Eye, EyeOff } from "lucide-react";
+import { ShieldCheck, AlertCircle, Mail, CheckCircle2, Sparkles, Building, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { saveAuth } from "@/lib/auth";
@@ -142,7 +142,21 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
 
   return (
     <Layout>
-      <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 bg-background">
+      <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 bg-background relative">
+        <button 
+          onClick={() => {
+            if (window.history.length > 1) {
+              window.history.back();
+            } else {
+              setLocation("/");
+            }
+          }} 
+          className="absolute top-6 left-4 md:left-8 flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-sm font-medium">Back</span>
+        </button>
         <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-12 items-center">
           {/* Benefits Section - Only visible on desktop/large screens */}
           <div className="hidden lg:block space-y-8 animate-in slide-in-from-left-8 duration-700">

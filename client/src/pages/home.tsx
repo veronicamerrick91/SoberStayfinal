@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Zap, MapPin, CheckCircle2, ShieldCheck, FileText, HeartHandshake, ArrowRight, Sparkles, Plus, Heart, Building, Home as HomeIcon } from "lucide-react";
+import { Search, MapPin, CheckCircle2, ShieldCheck, FileText, HeartHandshake, ArrowRight, Sparkles, Plus, Heart, Building, Home as HomeIcon } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import heroBg from "@assets/generated_images/luxury_warm_home_exterior_at_dusk.png";
 import pathBg from "@assets/generated_images/dark_luxury_home_front_facade.png";
@@ -25,6 +25,16 @@ async function fetchListings(): Promise<Listing[]> {
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [, setLocation] = useLocation();
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterMessage, setNewsletterMessage] = useState("");
+
+  const handleNewsletterSubscribe = () => {
+    if (newsletterEmail.trim()) {
+      setNewsletterMessage(`✓ Subscribed! Check ${newsletterEmail} for updates.`);
+      setNewsletterEmail("");
+      setTimeout(() => setNewsletterMessage(""), 4000);
+    }
+  };
   
   const { data: listings = [] } = useQuery({
     queryKey: ["listings"],
@@ -156,7 +166,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-12 relative">
             {[
-              { icon: Zap, title: "Search Quality Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit.", step: "01" },
+              { icon: Search, title: "Search Quality Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit.", step: "01" },
               { icon: FileText, title: "Apply Securely", desc: "Fill out one detailed application and submit it to multiple homes instantly.", step: "02" },
               { icon: HeartHandshake, title: "Connect & Move In", desc: "Chat directly with providers, schedule visits, and secure your spot.", step: "03" }
             ].map((step, i) => (
@@ -172,9 +182,9 @@ export default function Home() {
                   <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-primary transition-colors">{step.title}</h3>
                   <p className="text-gray-400 leading-relaxed text-lg">{step.desc}</p>
                   
-                  <div className="mt-8 flex items-center text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                  <Link href="/browse" className="mt-8 flex items-center text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                     Learn more <ArrowRight className="w-4 h-4 ml-2" />
-                  </div>
+                  </Link>
                 </div>
               </div>
             ))}
@@ -347,9 +357,23 @@ export default function Home() {
           <h2 className="text-4xl font-bold mb-6 text-white">Stay Connected to Recovery</h2>
           <p className="text-xl text-muted-foreground mb-10">Get updates on new openings, recovery resources, and community events delivered to your inbox.</p>
           <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <Input placeholder="Enter your email address" className="bg-background/50 border-white/10 h-12 text-lg rounded-xl" />
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 text-lg rounded-xl shadow-lg shadow-primary/20">Subscribe</Button>
+            <Input 
+              placeholder="Enter your email address" 
+              className="bg-background/50 border-white/10 h-12 text-lg rounded-xl"
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && handleNewsletterSubscribe()}
+            />
+            <Button 
+              onClick={handleNewsletterSubscribe}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 text-lg rounded-xl shadow-lg shadow-primary/20"
+            >
+              Subscribe
+            </Button>
           </div>
+          {newsletterMessage && (
+            <p className="text-sm text-green-400 mt-3">{newsletterMessage}</p>
+          )}
         </div>
       </section>
     </Layout>

@@ -638,7 +638,10 @@ export function Blog() {
                 {categories.map(category => (
                   <button
                     key={category}
-                    onClick={() => setSelectedCategory(category)}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setSelectedPost(null);
+                    }}
                     className={`w-full px-4 py-2 text-left rounded-md transition-all ${selectedCategory === category ? 'bg-primary text-primary-foreground' : 'bg-transparent text-foreground hover:bg-white/10'}`}
                   >
                     {category}
