@@ -129,18 +129,49 @@ export default function Home() {
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-8 text-center">
-              Find Sober Living Homes Near You
-            </h1>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+              What Is a Sober Living Home?
+            </h2>
             <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-              Sober Stay helps individuals and families find safe, structured sober living homes 
-              that support long-term recovery. Our platform connects people with recovery housing 
-              options that promote accountability, stability, and community.
+              A sober living home is a safe, substance-free residence designed for people in recovery from addiction. 
+              These homes provide structure, peer support, and accountability while residents work, attend school, 
+              or transition back into independent living. Unlike rehab centers, sober living homes offer more freedom 
+              and allow residents to practice daily life skills in a supportive community environment.
+            </p>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-10">
+              Most sober living homes require residents to stay sober, participate in house meetings, follow curfews, 
+              and contribute to household chores. Many also encourage attendance at 12-step meetings or other recovery 
+              support groups. The goal is to help residents build healthy habits and a strong foundation for lasting sobriety.
+            </p>
+
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+              How Sober Stay Helps You Find the Right Home
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+              Sober Stay makes it easy to find verified sober living homes that match your needs. Our platform lets you 
+              search by location, price, gender, amenities, and more. Every listing includes photos, house rules, and 
+              detailed information so you can make an informed decision.
+            </p>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-10">
+              You can contact providers directly through Sober Stay, schedule tours, and submit applications online. 
+              Our goal is to remove the stress from finding recovery housing so you can focus on what matters most—your recovery.
+            </p>
+
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+              Who Sober Stay Is For
+            </h2>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+              <strong className="text-white">For Individuals in Recovery:</strong> Whether you're leaving treatment, seeking a fresh start, 
+              or need a supportive environment, Sober Stay helps you find safe housing that fits your recovery goals.
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-              Sober living homes provide a substance-free environment for individuals transitioning 
-              from treatment into independent living. These homes help residents build routines, 
-              maintain sobriety, and create a strong foundation for recovery.
+              <strong className="text-white">For Families:</strong> If you're helping a loved one find sober living, 
+              our platform provides the information you need to make confident decisions and support their journey.
+            </p>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+              <strong className="text-white">For Sober Living Providers:</strong> List your property on Sober Stay to connect 
+              with individuals actively seeking recovery housing. Our tools help you manage applications, communicate with 
+              prospective residents, and fill vacancies faster.
             </p>
           </div>
         </div>
