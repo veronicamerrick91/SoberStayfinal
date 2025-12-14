@@ -145,6 +145,24 @@ export default function Home() {
         </div>
       </section>
 
+      {/* What Is Sober Living - SEO Content */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h3 className="text-3xl md:text-4xl font-bold mb-6 text-white">What Is Sober Living?</h3>
+            <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+              Sober living homes provide a safe, substance-free environment for individuals 
+              transitioning from treatment to independent living. These homes support recovery 
+              through accountability, structure, and community.
+            </p>
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              Sober Stay makes it easy to find verified sober living homes near you. 
+              Browse listings, review house rules, and apply directly through our platform.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works - Redesigned */}
       <section className="relative py-32 bg-background overflow-hidden">
         {/* Background Path Visual */}
