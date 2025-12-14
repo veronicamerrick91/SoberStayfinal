@@ -71,13 +71,12 @@ export default function Home() {
             </div>
             
             <h1 className="text-5xl md:text-7xl font-heading font-bold tracking-tight text-white leading-[1.1]">
-              Find Your <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">Safe Haven</span>
+              Find Sober Living Homes Near You
             </h1>
             
-            <p className="text-xl text-gray-300 max-w-lg leading-relaxed">
-              Connect with supportive sober living homes that understand your journey. Take the next step toward lasting recovery.
-            </p>
+            <h2 className="text-xl md:text-2xl text-gray-300 max-w-lg leading-relaxed font-medium">
+              Safe, Structured Housing for Recovery & Long-Term Sobriety
+            </h2>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link href="/browse">
@@ -157,10 +156,10 @@ export default function Home() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-20">
             <Badge variant="outline" className="mb-4 border-primary/50 text-primary px-4 py-1 text-sm uppercase tracking-widest">Simple Process</Badge>
-            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-white tracking-tight">
+            <h3 className="text-4xl md:text-6xl font-bold mb-6 text-white tracking-tight">
               Your Journey to <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">Safe Living</span>
-            </h2>
+            </h3>
             <p className="text-xl text-muted-foreground">Finding a safe environment shouldn't be harder than the recovery itself. We've simplified the process into three seamless steps.</p>
           </div>
 
@@ -282,7 +281,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-16 gap-6">
             <div>
-              <h2 className="text-4xl font-bold mb-4 text-white">Featured Homes</h2>
+              <h3 className="text-4xl font-bold mb-4 text-white">Featured Homes</h3>
               <p className="text-xl text-muted-foreground">Top-rated sober living environments near you.</p>
             </div>
             <Link href="/browse">
@@ -356,7 +355,7 @@ export default function Home() {
           <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-8">
              <Sparkles className="w-8 h-8 text-primary" />
           </div>
-          <h2 className="text-4xl font-bold mb-6 text-white">Stay Connected to Recovery</h2>
+          <h3 className="text-4xl font-bold mb-6 text-white">Stay Connected to Recovery</h3>
           <p className="text-xl text-muted-foreground mb-10">Get updates on new openings, recovery resources, and community events delivered to your inbox.</p>
           <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <Input 
