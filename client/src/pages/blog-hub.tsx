@@ -16,6 +16,7 @@ interface BlogPost {
   category: string;
   author: string;
   date: string;
+  dateISO: string;
   readTime: string;
   featured?: boolean;
 }
@@ -94,6 +95,7 @@ The structure and support of sober living exist to help you succeed. Take advant
     category: "Sober Living Tips",
     author: "Sober Stay Team",
     date: "December 10, 2025",
+    dateISO: "2025-12-10",
     readTime: "8 min read",
     featured: true
   },
@@ -186,6 +188,7 @@ The right sober living home will feel supportive, structured, and safe. Take you
     category: "Finding Housing",
     author: "Sober Stay Team",
     date: "December 8, 2025",
+    dateISO: "2025-12-08",
     readTime: "7 min read"
   },
   {
@@ -289,6 +292,7 @@ Building healthy relationships is a skill that improves with practice. Your sobe
     category: "Recovery Life",
     author: "Sober Stay Team",
     date: "December 5, 2025",
+    dateISO: "2025-12-05",
     readTime: "6 min read"
   },
   {
@@ -419,6 +423,7 @@ Regardless of which option you choose, the goal is the same: a safe, supportive 
     category: "Recovery Education",
     author: "Sober Stay Team",
     date: "December 1, 2025",
+    dateISO: "2025-12-01",
     readTime: "7 min read"
   },
   {
@@ -562,6 +567,7 @@ The bottom line: Finding employment in recovery is absolutely possible. It may t
     category: "Career & Finance",
     author: "Sober Stay Team",
     date: "November 28, 2025",
+    dateISO: "2025-11-28",
     readTime: "9 min read"
   }
 ];
@@ -659,6 +665,62 @@ export function BlogHub() {
                   ))}
                 </div>
               </div>
+
+              {/* Article Schema for SEO */}
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                  __html: JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "Article",
+                    "headline": currentPost.title,
+                    "description": currentPost.excerpt,
+                    "author": {
+                      "@type": "Organization",
+                      "name": currentPost.author
+                    },
+                    "publisher": {
+                      "@type": "Organization",
+                      "name": "Sober Stay",
+                      "url": "https://soberstay.com"
+                    },
+                    "datePublished": currentPost.dateISO,
+                    "url": `https://soberstay.com/blog/${currentPost.slug}`,
+                    "articleSection": currentPost.category
+                  })
+                }}
+              />
+
+              {/* BreadcrumbList Schema */}
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                  __html: JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                      {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": "Home",
+                        "item": "https://soberstay.com"
+                      },
+                      {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": "Blog",
+                        "item": "https://soberstay.com/blog"
+                      },
+                      {
+                        "@type": "ListItem",
+                        "position": 3,
+                        "name": currentPost.title,
+                        "item": `https://soberstay.com/blog/${currentPost.slug}`
+                      }
+                    ]
+                  })
+                }}
+              />
             </div>
           </div>
         </article>

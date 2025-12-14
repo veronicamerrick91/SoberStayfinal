@@ -497,7 +497,7 @@ export default function Quiz() {
                       <div className="flex gap-4">
                         <div className="w-24 h-24 rounded-lg overflow-hidden shrink-0 bg-primary/20 flex items-center justify-center">
                           {property.photos && property.photos.length > 0 ? (
-                            <img src={property.photos[0]} alt={property.propertyName} className="w-full h-full object-cover" />
+                            <img src={property.photos[0]} alt={property.propertyName} loading="lazy" className="w-full h-full object-cover" />
                           ) : (
                             <Home className="w-8 h-8 text-primary" />
                           )}

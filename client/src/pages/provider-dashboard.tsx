@@ -520,7 +520,7 @@ function ProviderDashboardContent() {
                 <Card key={home.id} className="bg-card border-border group overflow-hidden">
                    <div className="relative h-40 overflow-hidden bg-primary/20 flex items-center justify-center">
                       {home.photos && home.photos.length > 0 ? (
-                        <img src={home.photos[0]} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                        <img src={home.photos[0]} loading="lazy" alt={home.propertyName} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                       ) : (
                         <Building className="w-12 h-12 text-primary/50" />
                       )}

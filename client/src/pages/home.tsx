@@ -448,6 +448,48 @@ export default function Home() {
           )}
         </div>
       </section>
+
+      {/* Organization Schema for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Sober Stay",
+            "url": "https://soberstay.com",
+            "logo": "https://soberstay.com/logo.png",
+            "description": "Sober Stay connects individuals seeking recovery housing with verified sober living providers.",
+            "sameAs": [],
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "contactType": "customer service",
+              "email": "support@soberstayhomes.com"
+            }
+          })
+        }}
+      />
+
+      {/* WebSite Schema with SearchAction */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Sober Stay",
+            "url": "https://soberstay.com",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://soberstay.com/browse?search={search_term_string}"
+              },
+              "query-input": "required name=search_term_string"
+            }
+          })
+        }}
+      />
     </Layout>
   );
 }

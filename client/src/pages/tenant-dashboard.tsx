@@ -387,7 +387,7 @@ export function TenantDashboard() {
                     <Card key={home.id} className="bg-card border-border overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/20 group" onClick={() => setLocation(`/property/${home.id}`)}>
                       <div className="relative h-48 overflow-hidden cursor-pointer">
                         {home.photos && home.photos.length > 0 ? (
-                          <img src={home.photos[0]} alt={home.propertyName} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                          <img src={home.photos[0]} alt={home.propertyName} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                         ) : (
                           <div className="w-full h-full bg-primary/20 flex items-center justify-center">
                             <Home className="w-12 h-12 text-primary" />
@@ -440,7 +440,7 @@ export function TenantDashboard() {
                     <Card key={home.id} className="bg-card border-border hover:border-primary/50 transition-all cursor-pointer group overflow-hidden" onClick={() => setLocation(`/property/${home.id}`)} data-testid={`viewed-home-${home.id}`}>
                       <div className="relative">
                         {home.photos && home.photos.length > 0 ? (
-                          <img src={home.photos[0]} alt={home.propertyName} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
+                          <img src={home.photos[0]} alt={home.propertyName} loading="lazy" className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
                         ) : (
                           <div className="w-full h-40 bg-primary/20 flex items-center justify-center">
                             <Home className="w-12 h-12 text-primary" />

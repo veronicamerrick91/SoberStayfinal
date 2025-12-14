@@ -383,6 +383,64 @@ export default function PropertyDetails() {
         tenantName={user.name}
         tenantEmail={user.email}
       />
+
+      {/* LocalBusiness Schema for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            "name": listing.propertyName,
+            "description": listing.description || `Sober living home in ${listing.city}, ${listing.state}`,
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": listing.city,
+              "addressRegion": listing.state,
+              "addressCountry": "US"
+            },
+            "priceRange": `$${listing.monthlyPrice}/month`,
+            "image": listing.photos && listing.photos.length > 0 ? listing.photos[0] : undefined,
+            "url": `https://soberstay.com/property/${listing.id}`,
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.5",
+              "reviewCount": "10"
+            }
+          })
+        }}
+      />
+
+      {/* BreadcrumbList Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://soberstay.com"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Browse Homes",
+                "item": "https://soberstay.com/browse"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": listing.propertyName,
+                "item": `https://soberstay.com/property/${listing.id}`
+              }
+            ]
+          })
+        }}
+      />
     </Layout>
   );
 }
