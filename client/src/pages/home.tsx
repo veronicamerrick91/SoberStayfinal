@@ -125,6 +125,27 @@ export default function Home() {
         </div>
       </section>
 
+      {/* SEO Content Section - Important for Google */}
+      <section className="py-16 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-8 text-center">
+              Find Sober Living Homes Near You
+            </h1>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+              Sober Stay helps individuals and families find safe, structured sober living homes 
+              that support long-term recovery. Our platform connects people with recovery housing 
+              options that promote accountability, stability, and community.
+            </p>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+              Sober living homes provide a substance-free environment for individuals transitioning 
+              from treatment into independent living. These homes help residents build routines, 
+              maintain sobriety, and create a strong foundation for recovery.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Stats Banner */}
       <section className="relative py-16 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border-y border-primary/20">
         <div className="container mx-auto px-4">
