@@ -148,7 +148,7 @@ export default function PropertyDetails() {
           <div className="lg:col-span-2 space-y-8">
             {/* Image Gallery (Main Image) */}
             <div className="relative h-[400px] rounded-2xl overflow-hidden border border-border/50 shadow-2xl">
-              <img src={listing.photos?.[0] || placeholderHome} className="w-full h-full object-cover" alt={listing.propertyName} />
+              <img src={listing.photos?.[0] || placeholderHome} loading="lazy" className="w-full h-full object-cover" alt={listing.propertyName} />
               <div className="absolute top-4 left-4">
                 {listing.status === "approved" && (
                   <Badge className="bg-emerald-500/90 backdrop-blur text-white border-none flex gap-1 items-center px-3 py-1.5 shadow-lg">

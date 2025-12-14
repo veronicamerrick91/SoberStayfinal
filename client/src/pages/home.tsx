@@ -167,7 +167,7 @@ export default function Home() {
       <section className="relative py-32 bg-background overflow-hidden">
         {/* Background Path Visual */}
         <div className="absolute inset-0 opacity-20 pointer-events-none">
-           <img src={pathBg} className="w-full h-full object-cover" alt="" />
+           <img src={pathBg} loading="lazy" className="w-full h-full object-cover" alt="" />
            <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
         </div>
 
@@ -218,7 +218,7 @@ export default function Home() {
           {/* Tenants Side */}
           <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full">
             <div className="absolute inset-0">
-              <img src={tenantBg} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
+              <img src={tenantBg} loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
               <div className="absolute inset-0 bg-blue-950/80 mix-blend-multiply" />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90" />
             </div>
@@ -254,7 +254,7 @@ export default function Home() {
           {/* Providers Side */}
           <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full border-t lg:border-t-0 lg:border-l border-white/10">
             <div className="absolute inset-0">
-              <img src={providerBg} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
+              <img src={providerBg} loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
               <div className="absolute inset-0 bg-emerald-950/80 mix-blend-multiply" />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90" />
             </div>
@@ -330,7 +330,8 @@ export default function Home() {
                     <div className="relative h-64 overflow-hidden">
                       <img 
                         src={listing.photos?.[0] || placeholderHome} 
-                        alt={listing.propertyName} 
+                        alt={listing.propertyName}
+                        loading="lazy"
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-90" />

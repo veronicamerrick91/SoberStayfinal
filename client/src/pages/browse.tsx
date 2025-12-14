@@ -266,7 +266,8 @@ export default function Browse() {
                     <div className="relative h-40 overflow-hidden shrink-0">
                       <img 
                         src={listing.photos?.[0] || placeholderHome} 
-                        alt={listing.propertyName} 
+                        alt={listing.propertyName}
+                        loading="lazy"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
@@ -326,7 +327,8 @@ export default function Browse() {
                       <div className="relative w-32 h-32 shrink-0 overflow-hidden rounded-lg">
                         <img 
                           src={listing.photos?.[0] || placeholderHome} 
-                          alt={listing.propertyName} 
+                          alt={listing.propertyName}
+                          loading="lazy"
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                         {listing.status === "approved" && (
