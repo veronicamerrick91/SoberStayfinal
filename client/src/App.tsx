@@ -40,6 +40,9 @@ import { SoberLivingNearMe } from "@/pages/sober-living-near-me";
 import { WhatIsSoberLiving } from "@/pages/what-is-sober-living";
 import { ApplyForSoberLiving } from "@/pages/apply-for-sober-living";
 import { SoberLivingCalifornia } from "@/pages/sober-living-california";
+import { LocationLanding } from "@/pages/location-landing";
+import { ResourceCenter } from "@/pages/resource-center";
+import { BlogHub } from "@/pages/blog-hub";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
 
@@ -126,6 +129,10 @@ function Router() {
         <Route path="/what-is-sober-living" component={WhatIsSoberLiving} />
         <Route path="/apply-for-sober-living" component={ApplyForSoberLiving} />
         <Route path="/sober-living-california" component={SoberLivingCalifornia} />
+        <Route path="/sober-living-:slug" component={LocationLanding} />
+        <Route path="/locations" component={LocationLanding} />
+        <Route path="/resource-center" component={ResourceCenter} />
+        <Route path="/blog/:slug" component={BlogHub} />
         <Route component={NotFound} />
       </Switch>
     </>
