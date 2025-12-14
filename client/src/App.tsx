@@ -36,6 +36,10 @@ import Quiz from "@/pages/quiz";
 import { Analytics } from "@/pages/analytics";
 import { SEOTools } from "@/pages/seo-tools";
 import { TenantProfile } from "@/pages/tenant-profile";
+import { SoberLivingNearMe } from "@/pages/sober-living-near-me";
+import { WhatIsSoberLiving } from "@/pages/what-is-sober-living";
+import { ApplyForSoberLiving } from "@/pages/apply-for-sober-living";
+import { SoberLivingCalifornia } from "@/pages/sober-living-california";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
 
@@ -118,6 +122,10 @@ function Router() {
         <Route path="/analytics" component={Analytics} />
         <Route path="/seo-tools" component={SEOTools} />
         <Route path="/provider-support" component={ProviderSupport} />
+        <Route path="/sober-living-near-me" component={SoberLivingNearMe} />
+        <Route path="/what-is-sober-living" component={WhatIsSoberLiving} />
+        <Route path="/apply-for-sober-living" component={ApplyForSoberLiving} />
+        <Route path="/sober-living-california" component={SoberLivingCalifornia} />
         <Route component={NotFound} />
       </Switch>
     </>
