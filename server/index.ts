@@ -153,6 +153,29 @@ app.use((req, res, next) => {
     }
   });
 
+  // Sitemap.xml route - must be before Vite/static middleware
+  app.get("/sitemap.xml", (_req, res) => {
+    res.setHeader("Content-Type", "application/xml");
+    res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/browse</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/sober-living-near-me</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/what-is-sober-living</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/apply-for-sober-living</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/sober-living-california</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/mission</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/resources</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/how-to-choose</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/insurance-info</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/crisis-resources</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/blog</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/contact</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/for-tenants</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/for-providers</loc></url>
+</urlset>`);
+  });
+
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
