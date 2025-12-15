@@ -185,6 +185,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
+**Provider Profile Feature (Implemented)**
+- Provider company profile page at `/provider-profile`
+- Logo upload with 2MB size limit and image validation
+- Company information fields: name, website, phone, description
+- Address fields: street, city, state, ZIP
+- Business details: year founded, total beds across all properties
+- Database table: `provider_profiles` with provider-specific data
+- Endpoints:
+  - `GET /api/provider/profile` - Retrieve provider's company profile
+  - `POST /api/provider/profile` - Update company information
+  - `POST /api/provider/upload-logo` - Upload company logo (validates image format and size)
+
 **Stripe Payment Integration (Implemented)**
 - Real credit card payment processing for provider subscriptions
 - Uses `stripe-replit-sync` for automatic data synchronization
