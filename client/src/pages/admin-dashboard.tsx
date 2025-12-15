@@ -2445,68 +2445,54 @@ the actual document file stored on the server.
               </CardContent>
             </Card>
 
-            {/* Automated Email Workflows */}
+            {/* Automated Email Workflows - uses emailSequences from Workflow tab */}
             <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <Activity className="w-5 h-5" /> Automated Email Sequences
                 </CardTitle>
-                <p className="text-xs text-muted-foreground mt-1">Multi-email sequences sent automatically based on triggers (e.g., new signup, application submitted).</p>
+                <p className="text-xs text-muted-foreground mt-1">Multi-email sequences sent automatically. Manage these in the Workflows tab.</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                   <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                    <p className="text-xs text-muted-foreground">Active Workflows</p>
-                    <p className="text-2xl font-bold text-white">{automatedCampaigns.filter(c => c.active).length}</p>
+                    <p className="text-xs text-muted-foreground">Active Sequences</p>
+                    <p className="text-2xl font-bold text-white">{emailSequences.filter(s => s.active).length}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                    <p className="text-xs text-muted-foreground">Total Enrolled</p>
-                    <p className="text-2xl font-bold text-primary">{automatedCampaigns.reduce((sum, c) => sum + c.enrolled, 0)}</p>
+                    <p className="text-xs text-muted-foreground">Total Sequences</p>
+                    <p className="text-2xl font-bold text-primary">{emailSequences.length}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                    <p className="text-xs text-muted-foreground">Emails Sent</p>
-                    <p className="text-2xl font-bold text-green-400">2,847</p>
+                    <p className="text-xs text-muted-foreground">Total Emails</p>
+                    <p className="text-2xl font-bold text-green-400">{emailSequences.reduce((sum, s) => sum + s.emails.length, 0)}</p>
                   </div>
                 </div>
 
                 <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                  {automatedCampaigns.map((campaign) => (
-                    <div key={campaign.id} className="p-4 rounded-lg bg-white/5 border border-white/10">
-                      <div className="flex items-center justify-between mb-3">
+                  {emailSequences.map((seq) => (
+                    <div key={seq.id} className="p-4 rounded-lg bg-white/5 border border-white/10">
+                      <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <p className="text-white font-medium">{campaign.name}</p>
-                            <Badge className={campaign.active ? "bg-green-500/80" : "bg-gray-600"}>{campaign.active ? "Active" : "Inactive"}</Badge>
+                            <p className="text-white font-medium">{seq.name}</p>
+                            <Badge className={seq.active ? "bg-green-500/80" : "bg-gray-600"}>{seq.active ? "Active" : "Inactive"}</Badge>
                           </div>
-                          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                            <div>
-                              <p className="text-muted-foreground">Trigger: {campaign.trigger}</p>
-                              <p className="text-muted-foreground">Audience: {campaign.audience}</p>
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground">Emails: {campaign.emails}</p>
-                              <p className="text-muted-foreground">Enrolled: {campaign.enrolled}</p>
-                            </div>
-                          </div>
+                          <p className="text-xs text-muted-foreground">{seq.emails.length} emails in sequence</p>
                         </div>
                         <div className="flex gap-2">
                           <Button 
-                            onClick={() => handleToggleAutoCampaign(campaign.id)}
+                            onClick={() => {
+                              setEmailSequences(emailSequences.map(s => 
+                                s.id === seq.id ? { ...s, active: !s.active } : s
+                              ));
+                            }}
                             size="sm" 
                             variant="ghost" 
                             className="text-xs h-7"
-                            data-testid={`button-toggle-campaign-${campaign.id}`}
+                            data-testid={`button-toggle-sequence-${seq.id}`}
                           >
-                            {campaign.active ? "Pause" : "Resume"}
-                          </Button>
-                          <Button 
-                            onClick={() => handleDeleteAutoCampaign(campaign.id)}
-                            size="sm" 
-                            variant="ghost" 
-                            className="text-xs h-7 text-red-500"
-                            data-testid={`button-delete-campaign-${campaign.id}`}
-                          >
-                            Delete
+                            {seq.active ? "Pause" : "Resume"}
                           </Button>
                         </div>
                       </div>
@@ -2514,13 +2500,7 @@ the actual document file stored on the server.
                   ))}
                 </div>
 
-                <Button 
-                  onClick={() => setShowNewAutoCampaignModal(true)} 
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 mt-4"
-                  data-testid="button-create-automated-sequence"
-                >
-                  <Plus className="w-4 h-4" /> Create New Sequence
-                </Button>
+                <p className="text-xs text-muted-foreground text-center pt-2">To create or edit sequences, go to the Workflows tab.</p>
               </CardContent>
             </Card>
 
