@@ -960,5 +960,99 @@ Disallow: /auth/
     }
   });
 
+  // Admin Promo Code Management
+  app.get("/api/admin/promos", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const promos = await storage.getAllPromoCodes();
+      res.json(promos);
+    } catch (error) {
+      console.error("Error fetching promos:", error);
+      res.status(500).json({ error: "Failed to fetch promo codes" });
+    }
+  });
+
+  app.post("/api/admin/promos", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { code, discountType, discountValue, target, usageLimit, isActive, expiresAt } = req.body;
+      
+      if (!code || !discountType || discountValue === undefined || !target) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      
+      const promo = await storage.createPromoCode({
+        code,
+        discountType,
+        discountValue,
+        target,
+        usageLimit: usageLimit || 0,
+        isActive: isActive !== false,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+      });
+      
+      res.status(201).json(promo);
+    } catch (error: any) {
+      console.error("Error creating promo:", error);
+      if (error.code === '23505') {
+        return res.status(400).json({ error: "Promo code already exists" });
+      }
+      res.status(500).json({ error: "Failed to create promo code" });
+    }
+  });
+
+  app.put("/api/admin/promos/:id", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      const { code, discountType, discountValue, target, usageLimit, isActive, expiresAt } = req.body;
+      
+      const updateData: any = {};
+      if (code !== undefined) updateData.code = code;
+      if (discountType !== undefined) updateData.discountType = discountType;
+      if (discountValue !== undefined) updateData.discountValue = discountValue;
+      if (target !== undefined) updateData.target = target;
+      if (usageLimit !== undefined) updateData.usageLimit = usageLimit;
+      if (isActive !== undefined) updateData.isActive = isActive;
+      if (expiresAt !== undefined) updateData.expiresAt = expiresAt ? new Date(expiresAt) : null;
+      
+      const promo = await storage.updatePromoCode(id, updateData);
+      if (!promo) {
+        return res.status(404).json({ error: "Promo code not found" });
+      }
+      res.json(promo);
+    } catch (error: any) {
+      console.error("Error updating promo:", error);
+      if (error.code === '23505') {
+        return res.status(400).json({ error: "Promo code already exists" });
+      }
+      res.status(500).json({ error: "Failed to update promo code" });
+    }
+  });
+
+  app.delete("/api/admin/promos/:id", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deletePromoCode(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting promo:", error);
+      res.status(500).json({ error: "Failed to delete promo code" });
+    }
+  });
+
   return httpServer;
 }
