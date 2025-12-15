@@ -6,6 +6,7 @@ import { MapPin, Search, Shield, Users, Heart, CheckCircle, ChevronDown, Chevron
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Listing } from "@shared/schema";
+import { useDocumentMeta } from "@/lib/use-document-meta";
 
 interface LocationData {
   slug: string;
@@ -19,6 +20,25 @@ interface LocationData {
 }
 
 const locationData: Record<string, LocationData> = {
+  "california": {
+    slug: "california",
+    name: "California",
+    type: "state",
+    stateCode: "CA",
+    description: "California leads the nation in recovery housing options, from beachside communities in Southern California to urban centers in the Bay Area. The Golden State offers year-round sunshine, diverse recovery communities, and world-class treatment resources.",
+    highlights: [
+      "Largest number of sober living homes in the United States",
+      "Year-round mild climate supports outdoor recovery activities",
+      "Diverse recovery communities serving all backgrounds and preferences",
+      "Strong employment markets in tech, entertainment, and healthcare",
+      "Beach, mountain, and desert environments all within reach"
+    ],
+    faqs: [
+      { question: "Which cities in California have the most sober living homes?", answer: "Los Angeles and San Diego have the highest concentrations of sober living homes in California. Orange County, the Bay Area (San Francisco, Oakland), and Sacramento also have substantial options." },
+      { question: "How much does sober living cost in California?", answer: "California sober living ranges from $700 to $3,500+ per month depending on location. Beach communities tend to be more expensive, while inland areas like the Inland Empire or Central Valley offer more affordable options." },
+      { question: "Is California a good place for sober living?", answer: "California is one of the best states for recovery, with extensive meeting networks, diverse treatment options, strong alumni communities, and a culture that embraces wellness and healthy living." }
+    ]
+  },
   "los-angeles": {
     slug: "los-angeles",
     name: "Los Angeles",
@@ -134,6 +154,166 @@ const locationData: Record<string, LocationData> = {
       { question: "Where else in New York can I find sober living?", answer: "Outside NYC, popular areas for sober living include Long Island, Westchester County, and upstate regions like Albany and Buffalo. These areas often offer more space and affordability." },
       { question: "How much does sober living cost in New York?", answer: "Costs vary significantly by location. NYC sober living ranges from $1,200 to $3,000+ per month, while upstate options can be as affordable as $600 to $1,500 per month." }
     ]
+  },
+  "denver": {
+    slug: "denver",
+    name: "Denver",
+    type: "city",
+    state: "Colorado",
+    stateCode: "CO",
+    description: "Denver has emerged as a major hub for recovery, offering a unique combination of outdoor lifestyle, growing job market, and supportive recovery community. The Mile High City provides an ideal setting for those seeking a fresh start in sobriety.",
+    highlights: [
+      "Access to world-class outdoor recreation including hiking, skiing, and biking",
+      "Growing tech and healthcare job markets with recovery-friendly employers",
+      "Strong AA and NA meeting presence throughout the metro area",
+      "Active young adult recovery community with sober social events",
+      "Clean air and healthy lifestyle culture supports wellness in recovery"
+    ],
+    faqs: [
+      { question: "What makes Denver good for sober living?", answer: "Denver offers a unique blend of outdoor adventure, career opportunities, and a thriving recovery community. The city's active lifestyle culture naturally supports sobriety, with numerous sober hiking groups, fitness communities, and social events." },
+      { question: "What neighborhoods in Denver have sober living homes?", answer: "Popular areas for sober living in Denver include Capitol Hill, Baker, Highland, and Aurora. Each neighborhood offers different price points and community vibes, from urban to suburban settings." },
+      { question: "How much does sober living cost in Denver?", answer: "Denver sober living typically ranges from $700 to $2,200 per month. Prices have increased with the city's growth, but options remain more affordable than coastal cities while offering excellent quality." }
+    ]
+  },
+  "chicago": {
+    slug: "chicago",
+    name: "Chicago",
+    type: "city",
+    state: "Illinois",
+    stateCode: "IL",
+    description: "Chicago offers one of the strongest recovery communities in the Midwest, with deep roots in 12-step traditions and a diverse range of sober living options across its many neighborhoods.",
+    highlights: [
+      "Rich 12-step history with meetings available around the clock",
+      "Affordable cost of living compared to coastal cities",
+      "Excellent public transportation makes getting to meetings easy",
+      "Diverse neighborhoods each with unique recovery communities",
+      "Strong alumni networks from major treatment centers"
+    ],
+    faqs: [
+      { question: "Where can I find sober living in Chicago?", answer: "Chicago has sober living options throughout the city, with concentrations in neighborhoods like Lincoln Park, Lakeview, Wicker Park, and the western suburbs. Each area offers different price points and community atmospheres." },
+      { question: "Is Chicago affordable for sober living?", answer: "Yes, Chicago offers more affordable sober living than coastal cities. Monthly costs typically range from $600 to $1,800, with excellent public transportation reducing the need for a car." },
+      { question: "What support is available in Chicago for recovery?", answer: "Chicago has thousands of AA and NA meetings weekly, multiple recovery community organizations, sober social clubs, and strong alumni networks. The city also hosts major recovery events and conventions throughout the year." }
+    ]
+  },
+  "miami": {
+    slug: "miami",
+    name: "Miami",
+    type: "city",
+    state: "Florida",
+    stateCode: "FL",
+    description: "Miami and South Florida are home to one of the largest recovery communities in the world. The tropical climate, diverse population, and extensive treatment infrastructure make it a premier destination for recovery.",
+    highlights: [
+      "Year-round tropical weather perfect for outdoor recovery activities",
+      "Massive recovery community with meetings in multiple languages",
+      "Close proximity to world-renowned treatment centers",
+      "Beautiful beaches and nature for wellness activities",
+      "Vibrant Latin American recovery community"
+    ],
+    faqs: [
+      { question: "Why is Miami popular for sober living?", answer: "Miami offers warm weather year-round, a massive recovery community, and proximity to some of the best treatment centers in the country. The diverse population means recovery support is available in Spanish, Portuguese, and other languages." },
+      { question: "What areas in Miami have sober living?", answer: "Popular areas for sober living in South Florida include Miami Beach, Coconut Grove, Coral Gables, and the broader Broward County area including Fort Lauderdale. Prices and vibes vary significantly by neighborhood." },
+      { question: "How much does sober living cost in Miami?", answer: "Miami sober living ranges from $800 to $3,000+ per month. Beach areas tend to be more expensive, while inland and Broward County options offer more affordable alternatives with similar recovery support." }
+    ]
+  },
+  "seattle": {
+    slug: "seattle",
+    name: "Seattle",
+    type: "city",
+    state: "Washington",
+    stateCode: "WA",
+    description: "Seattle offers a progressive recovery community with diverse approaches to sobriety. The Pacific Northwest lifestyle emphasizes wellness, nature, and alternative recovery methods alongside traditional 12-step programs.",
+    highlights: [
+      "Strong emphasis on holistic and alternative recovery approaches",
+      "Beautiful natural surroundings with easy access to mountains and water",
+      "Progressive healthcare system with good recovery support",
+      "Tech industry offers excellent employment opportunities",
+      "Active outdoor recovery community with hiking and sailing groups"
+    ],
+    faqs: [
+      { question: "What makes Seattle unique for sober living?", answer: "Seattle offers a progressive approach to recovery with options beyond traditional 12-step programs, including SMART Recovery, Refuge Recovery, and secular alternatives. The outdoor lifestyle and access to nature support holistic wellness." },
+      { question: "Where can I find sober living in Seattle?", answer: "Sober living options in Seattle are found in neighborhoods like Capitol Hill, Ballard, Fremont, and the Eastside (Bellevue, Kirkland). Each area offers different community vibes and access to recovery resources." },
+      { question: "Is sober living expensive in Seattle?", answer: "Seattle sober living ranges from $800 to $2,500 per month. While costs are higher than national averages due to the tech economy, options exist across various price points throughout the metro area." }
+    ]
+  },
+  "portland": {
+    slug: "portland",
+    name: "Portland",
+    type: "city",
+    state: "Oregon",
+    stateCode: "OR",
+    description: "Portland's recovery community reflects the city's unique culture - progressive, welcoming, and diverse. The city offers both traditional and alternative recovery pathways in an affordable Pacific Northwest setting.",
+    highlights: [
+      "Welcoming and non-judgmental recovery community",
+      "More affordable than Seattle while offering similar lifestyle",
+      "Strong emphasis on wellness, fitness, and outdoor activities",
+      "Active young adult recovery scene with sober social events",
+      "Easy access to nature including mountains, beaches, and forests"
+    ],
+    faqs: [
+      { question: "What is the recovery community like in Portland?", answer: "Portland's recovery community is known for being welcoming and diverse, with both traditional 12-step programs and alternative approaches like SMART Recovery and dharma-based recovery. The community is particularly strong for young adults in recovery." },
+      { question: "Where are sober living homes located in Portland?", answer: "Sober living options are found throughout Portland, with concentrations in Southeast Portland, Northeast Portland, and the suburbs like Beaverton and Gresham. Each area offers different price points and neighborhood vibes." },
+      { question: "How affordable is sober living in Portland?", answer: "Portland offers relatively affordable sober living for the West Coast, ranging from $600 to $1,800 per month. The city provides good value with lower costs than Seattle or California while maintaining quality recovery support." }
+    ]
+  },
+  "austin": {
+    slug: "austin",
+    name: "Austin",
+    type: "city",
+    state: "Texas",
+    stateCode: "TX",
+    description: "Austin combines Texas hospitality with a progressive, health-conscious culture that supports recovery. The city's live music scene has spawned a unique sober entertainment community, and the outdoor lifestyle promotes wellness.",
+    highlights: [
+      "Thriving sober music and entertainment scene",
+      "Year-round outdoor activities including hiking, swimming, and biking",
+      "Growing tech industry offers excellent employment opportunities",
+      "Strong young adult recovery community",
+      "Lower cost of living than coastal cities"
+    ],
+    faqs: [
+      { question: "What makes Austin good for sober living?", answer: "Austin offers a unique combination of Texas affordability, a health-conscious culture, and a vibrant sober social scene. The city has sober concert events, fitness communities, and outdoor activities that make early recovery enjoyable." },
+      { question: "Where can I find sober living in Austin?", answer: "Popular areas for sober living in Austin include South Austin, East Austin, and the northern suburbs like Round Rock and Cedar Park. Options range from urban settings near downtown to quieter suburban environments." },
+      { question: "How much does sober living cost in Austin?", answer: "Austin sober living typically ranges from $600 to $1,600 per month. While prices have increased with the city's growth, it remains more affordable than California or Florida while offering an excellent quality of life." }
+    ]
+  },
+  "nashville": {
+    slug: "nashville",
+    name: "Nashville",
+    type: "city",
+    state: "Tennessee",
+    stateCode: "TN",
+    description: "Nashville's recovery community has grown alongside the city's entertainment industry. With a strong faith-based recovery tradition and an increasingly diverse set of options, Music City offers solid support for those seeking sobriety.",
+    highlights: [
+      "Strong faith-based and traditional recovery programs",
+      "Growing sober music and entertainment scene",
+      "Affordable cost of living with good employment opportunities",
+      "Welcoming Southern hospitality in recovery community",
+      "Healthcare industry provides stable employment"
+    ],
+    faqs: [
+      { question: "What is sober living like in Nashville?", answer: "Nashville offers a warm, welcoming recovery community with strong roots in faith-based programs alongside secular options. The music industry has spawned a unique sober entertainment scene, and the Southern hospitality extends to recovery support." },
+      { question: "Where are sober living homes in Nashville?", answer: "Sober living options in Nashville are found throughout the metro area, including East Nashville, Bellevue, and Franklin. The suburbs often offer more affordable options while downtown areas provide walkable urban living." },
+      { question: "How affordable is sober living in Nashville?", answer: "Nashville remains one of the more affordable major cities for sober living, with costs ranging from $500 to $1,500 per month. This makes it an attractive option for those seeking quality recovery support without coastal prices." }
+    ]
+  },
+  "atlanta": {
+    slug: "atlanta",
+    name: "Atlanta",
+    type: "city",
+    state: "Georgia",
+    stateCode: "GA",
+    description: "Atlanta serves as the recovery hub of the Southeast, with a diverse and growing sober living community. The city offers strong employment opportunities, affordable living, and a welcoming atmosphere for those in recovery.",
+    highlights: [
+      "Major Southeast hub with extensive recovery resources",
+      "Diverse recovery community serving many cultures and backgrounds",
+      "Strong job market in multiple industries",
+      "Affordable cost of living for a major metropolitan area",
+      "Year-round mild weather supports outdoor activities"
+    ],
+    faqs: [
+      { question: "What makes Atlanta good for sober living?", answer: "Atlanta offers a diverse, welcoming recovery community with options for all backgrounds. The city serves as a regional hub with numerous treatment centers, strong AA/NA presence, and growing alternative recovery options." },
+      { question: "Where can I find sober living in Atlanta?", answer: "Popular areas for sober living in Atlanta include Midtown, Buckhead, East Atlanta, and the northern suburbs like Marietta and Alpharetta. MARTA public transit makes it easy to get to meetings throughout the metro area." },
+      { question: "How much does sober living cost in Atlanta?", answer: "Atlanta sober living ranges from $500 to $1,800 per month, making it one of the more affordable major cities. The combination of reasonable costs and excellent recovery resources makes it attractive for long-term recovery." }
+    ]
   }
 };
 
@@ -171,6 +351,15 @@ export function LocationLanding() {
       location?.type === "state" ? location.name : undefined
     ),
     enabled: !!location
+  });
+
+  useDocumentMeta({
+    title: location 
+      ? `Sober Living in ${location.name} | Recovery Housing | Sober Stay`
+      : "Find Sober Living by Location | Sober Stay",
+    description: location 
+      ? `Find verified sober living homes in ${location.name}. ${location.description.slice(0, 100)}...`
+      : "Browse sober living homes by state and city. Find recovery housing in California, Florida, Texas, Arizona, and more."
   });
 
   if (!location) {

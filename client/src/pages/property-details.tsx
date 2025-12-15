@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import type { Listing } from "@shared/schema";
+import { useDocumentMeta } from "@/lib/use-document-meta";
 import placeholderHome from "@assets/stock_images/modern_comfortable_l_a00ffa5e.jpg";
 
 async function fetchListing(id: string): Promise<Listing> {
@@ -46,6 +47,11 @@ export default function PropertyDetails() {
     queryKey: ["listing", params?.id],
     queryFn: () => fetchListing(params?.id || ""),
     enabled: !!params?.id,
+  });
+
+  useDocumentMeta({
+    title: listing ? `${listing.propertyName} | Sober Living in ${listing.city}, ${listing.state}` : "Sober Living Home | Sober Stay",
+    description: listing ? `${listing.propertyName} - ${listing.gender === "mens" ? "Men's" : listing.gender === "womens" ? "Women's" : "Co-ed"} sober living home in ${listing.city}, ${listing.state}. $${listing.monthlyPrice}/month. ${listing.description?.slice(0, 120) || "Safe, supportive recovery housing."}` : "View sober living home details on Sober Stay."
   });
 
   useEffect(() => {

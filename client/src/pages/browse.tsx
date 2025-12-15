@@ -16,6 +16,7 @@ import { Link, useLocation } from "wouter";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
 import type { Listing } from "@shared/schema";
+import { useDocumentMeta } from "@/lib/use-document-meta";
 
 import placeholderHome from "@assets/stock_images/modern_comfortable_l_a00ffa5e.jpg";
 
@@ -36,6 +37,11 @@ export default function Browse() {
   const { data: listings = [], isLoading, error } = useQuery({
     queryKey: ["listings"],
     queryFn: fetchListings,
+  });
+
+  useDocumentMeta({
+    title: "Browse Sober Living Homes | Sober Stay",
+    description: "Search verified sober living homes across the US. Filter by location, price, amenities, and more. Find your recovery housing today."
   });
 
   useEffect(() => {
