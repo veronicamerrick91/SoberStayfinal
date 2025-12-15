@@ -915,6 +915,79 @@ Disallow: /auth/
     }
   });
 
+  // Provider Profile Routes
+  app.get("/api/provider/profile", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const profile = await storage.getProviderProfile(user.id);
+      if (!profile) {
+        return res.json({ id: 0, providerId: user.id });
+      }
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching provider profile:", error);
+      res.status(500).json({ error: "Failed to fetch profile" });
+    }
+  });
+
+  app.post("/api/provider/profile", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { companyName, website, phone, description, address, city, state, zip, foundedYear, totalBeds } = req.body;
+      const profile = await storage.createOrUpdateProviderProfile(user.id, {
+        companyName,
+        website,
+        phone,
+        description,
+        address,
+        city,
+        state,
+        zip,
+        foundedYear: foundedYear ? parseInt(foundedYear) : null,
+        totalBeds: totalBeds ? parseInt(totalBeds) : null,
+      });
+      res.json(profile);
+    } catch (error) {
+      console.error("Error saving provider profile:", error);
+      res.status(500).json({ error: "Failed to save profile" });
+    }
+  });
+
+  app.post("/api/provider/upload-logo", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { logoUrl } = req.body;
+      
+      if (!logoUrl || typeof logoUrl !== "string") {
+        return res.status(400).json({ error: "Logo URL is required" });
+      }
+      
+      const maxSizeBytes = 2 * 1024 * 1024;
+      if (logoUrl.length > maxSizeBytes) {
+        return res.status(400).json({ error: "Logo file is too large. Maximum size is 2MB." });
+      }
+      
+      if (!logoUrl.startsWith("data:image/")) {
+        return res.status(400).json({ error: "Invalid image format. Please upload a valid image file." });
+      }
+      
+      await storage.createOrUpdateProviderProfile(user.id, { logoUrl });
+      res.json({ success: true, url: logoUrl });
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      res.status(500).json({ error: "Failed to upload logo" });
+    }
+  });
+
   // Submit application to a property
   app.post("/api/applications", async (req, res) => {
     const user = req.user as any;

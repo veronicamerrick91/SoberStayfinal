@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, users, listings, subscriptions, passwordResetTokens, tenantProfiles, applications, promoCodes } from "@shared/schema";
+import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, lt, isNull, or, desc, count } from "drizzle-orm";
 import session from "express-session";
@@ -35,6 +35,9 @@ export interface IStorage {
   
   getTenantProfile(tenantId: number): Promise<TenantProfile | undefined>;
   createOrUpdateTenantProfile(tenantId: number, profile: Partial<InsertTenantProfile>): Promise<TenantProfile>;
+  
+  getProviderProfile(providerId: number): Promise<ProviderProfile | undefined>;
+  createOrUpdateProviderProfile(providerId: number, profile: Partial<InsertProviderProfile>): Promise<ProviderProfile>;
   
   // Subscription lifecycle methods
   updateSubscription(providerId: number, data: Partial<Subscription>): Promise<Subscription | undefined>;
@@ -259,6 +262,33 @@ export class DatabaseStorage implements IStorage {
       const [created] = await db
         .insert(tenantProfiles)
         .values({ ...profile, tenantId })
+        .returning();
+      return created;
+    }
+  }
+
+  async getProviderProfile(providerId: number): Promise<ProviderProfile | undefined> {
+    const [profile] = await db
+      .select()
+      .from(providerProfiles)
+      .where(eq(providerProfiles.providerId, providerId));
+    return profile;
+  }
+
+  async createOrUpdateProviderProfile(providerId: number, profile: Partial<InsertProviderProfile>): Promise<ProviderProfile> {
+    const existingProfile = await this.getProviderProfile(providerId);
+    
+    if (existingProfile) {
+      const [updated] = await db
+        .update(providerProfiles)
+        .set({ ...profile, updatedAt: new Date() })
+        .where(eq(providerProfiles.providerId, providerId))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(providerProfiles)
+        .values({ ...profile, providerId })
         .returning();
       return created;
     }

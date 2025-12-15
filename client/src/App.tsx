@@ -36,6 +36,7 @@ import Quiz from "@/pages/quiz";
 import { Analytics } from "@/pages/analytics";
 import { SEOTools } from "@/pages/seo-tools";
 import { TenantProfile } from "@/pages/tenant-profile";
+import { ProviderProfilePage } from "@/pages/provider-profile";
 import { SoberLivingNearMe } from "@/pages/sober-living-near-me";
 import { WhatIsSoberLiving } from "@/pages/what-is-sober-living";
 import { ApplyForSoberLiving } from "@/pages/apply-for-sober-living";
@@ -89,6 +90,7 @@ function Router() {
         <Route path="/chat/:propertyId" component={Chat} />
         <Route path="/tenant-dashboard" component={TenantDashboard} />
         <Route path="/tenant-profile" component={TenantProfile} />
+        <Route path="/provider-profile" component={ProviderProfilePage} />
         <Route path="/provider-dashboard" component={ProviderDashboard} />
         <Route path="/admin-dashboard" component={AdminDashboard} />
         <Route path="/admin" component={AdminDashboard} />
