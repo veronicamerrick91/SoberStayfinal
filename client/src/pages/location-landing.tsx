@@ -373,7 +373,7 @@ export function LocationLanding() {
               <h2 className="text-2xl font-bold text-white mb-6">Popular States</h2>
               <div className="grid md:grid-cols-3 gap-4 mb-12">
                 {states.map((state) => (
-                  <Link key={state.slug} href={`/sober-living-${state.slug}`}>
+                  <Link key={state.slug} href={`/${state.slug}-sober-living`}>
                     <Card className="bg-card border-border hover:border-primary/50 transition-all cursor-pointer">
                       <CardContent className="p-6">
                         <div className="flex items-center gap-3">
@@ -389,7 +389,7 @@ export function LocationLanding() {
               <h2 className="text-2xl font-bold text-white mb-6">Popular Cities</h2>
               <div className="grid md:grid-cols-3 gap-4">
                 {cities.map((city) => (
-                  <Link key={city.slug} href={`/sober-living-${city.slug}`}>
+                  <Link key={city.slug} href={`/${city.slug}-sober-living`}>
                     <Card className="bg-card border-border hover:border-primary/50 transition-all cursor-pointer">
                       <CardContent className="p-6">
                         <div className="flex items-center gap-3">
@@ -608,7 +608,7 @@ export function LocationLanding() {
               "@type": "WebPage",
               "name": `Sober Living in ${location.name}`,
               "description": `Find sober living homes in ${location.name}. Browse verified recovery housing with Sober Stay.`,
-              "url": `https://soberstay.com/sober-living-${location.slug}`,
+              "url": `https://soberstay.com/${location.slug}-sober-living`,
               "mainEntity": {
                 "@type": "ItemList",
                 "name": `Sober Living Homes in ${location.name}`,

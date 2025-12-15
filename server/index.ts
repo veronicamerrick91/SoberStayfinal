@@ -6,6 +6,19 @@ import { runMigrations } from 'stripe-replit-sync';
 import { getStripeSync } from './stripeClient';
 import { WebhookHandlers } from './webhookHandlers';
 import { startSubscriptionScheduler } from './subscriptionScheduler';
+import { generateBrowsePageHtml, generatePropertyPageHtml } from './seo-templates';
+import { storage } from './storage';
+
+// Bot detection for SSR
+function isBot(userAgent: string): boolean {
+  const botPatterns = [
+    'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
+    'yandexbot', 'facebookexternalhit', 'twitterbot', 'linkedinbot',
+    'pinterest', 'whatsapp', 'applebot', 'semrushbot', 'ahrefsbot'
+  ];
+  const ua = userAgent.toLowerCase();
+  return botPatterns.some(bot => ua.includes(bot));
+}
 
 const app = express();
 const httpServer = createServer(app);
@@ -20,7 +33,7 @@ app.get("/api/sitemap.xml", (_req, res) => {
   <url><loc>https://sober-stay--y2sqw27xjv.replit.app/sober-living-near-me</loc></url>
   <url><loc>https://sober-stay--y2sqw27xjv.replit.app/what-is-sober-living</loc></url>
   <url><loc>https://sober-stay--y2sqw27xjv.replit.app/apply-for-sober-living</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/sober-living-california</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/california-sober-living</loc></url>
   <url><loc>https://sober-stay--y2sqw27xjv.replit.app/mission</loc></url>
   <url><loc>https://sober-stay--y2sqw27xjv.replit.app/resources</loc></url>
   <url><loc>https://sober-stay--y2sqw27xjv.replit.app/how-to-choose</loc></url>
@@ -42,7 +55,7 @@ app.get("/sitemap.xml", (_req, res) => {
   <url><loc>https://sober-stay--y2sqw27xjv.replit.app/sober-living-near-me</loc></url>
   <url><loc>https://sober-stay--y2sqw27xjv.replit.app/what-is-sober-living</loc></url>
   <url><loc>https://sober-stay--y2sqw27xjv.replit.app/apply-for-sober-living</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/sober-living-california</loc></url>
+  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/california-sober-living</loc></url>
   <url><loc>https://sober-stay--y2sqw27xjv.replit.app/mission</loc></url>
   <url><loc>https://sober-stay--y2sqw27xjv.replit.app/resources</loc></url>
   <url><loc>https://sober-stay--y2sqw27xjv.replit.app/how-to-choose</loc></url>
@@ -185,6 +198,42 @@ app.use((req, res, next) => {
   await registerRoutes(httpServer, app);
   
   startSubscriptionScheduler();
+
+  // SSR routes for search engine bots
+  app.get('/browse', async (req, res, next) => {
+    const userAgent = req.headers['user-agent'] || '';
+    if (isBot(userAgent)) {
+      try {
+        const listings = await storage.getVisibleApprovedListings();
+        const html = generateBrowsePageHtml(listings);
+        res.setHeader('Content-Type', 'text/html');
+        return res.send(html);
+      } catch (error) {
+        console.error('SSR browse error:', error);
+      }
+    }
+    next();
+  });
+
+  app.get('/property/:id', async (req, res, next) => {
+    const userAgent = req.headers['user-agent'] || '';
+    if (isBot(userAgent)) {
+      try {
+        const listingId = parseInt(req.params.id, 10);
+        if (!isNaN(listingId)) {
+          const listing = await storage.getListing(listingId);
+          if (listing && listing.status === 'approved' && listing.isVisible) {
+            const html = generatePropertyPageHtml(listing);
+            res.setHeader('Content-Type', 'text/html');
+            return res.send(html);
+          }
+        }
+      } catch (error) {
+        console.error('SSR property error:', error);
+      }
+    }
+    next();
+  });
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

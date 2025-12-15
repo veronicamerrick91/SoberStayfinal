@@ -41,6 +41,7 @@ import { WhatIsSoberLiving } from "@/pages/what-is-sober-living";
 import { ApplyForSoberLiving } from "@/pages/apply-for-sober-living";
 import { SoberLivingCalifornia } from "@/pages/sober-living-california";
 import { LocationLanding } from "@/pages/location-landing";
+import { ForProviders } from "@/pages/for-providers";
 import { ResourceCenter } from "@/pages/resource-center";
 import { BlogHub } from "@/pages/blog-hub";
 import { useEffect, useState } from "react";
@@ -100,9 +101,7 @@ function Router() {
         <Route path="/for-tenants">
           <AuthPage type="signup" defaultRole="tenant" />
         </Route>
-        <Route path="/for-providers">
-          <AuthPage type="signup" defaultRole="provider" />
-        </Route>
+        <Route path="/for-providers" component={ForProviders} />
         <Route path="/auth/callback" component={AuthCallback} />
         <Route path="/forgot-password" component={ForgotPasswordPage} />
         <Route path="/reset-password" component={ResetPasswordPage} />
@@ -128,8 +127,8 @@ function Router() {
         <Route path="/sober-living-near-me" component={SoberLivingNearMe} />
         <Route path="/what-is-sober-living" component={WhatIsSoberLiving} />
         <Route path="/apply-for-sober-living" component={ApplyForSoberLiving} />
-        <Route path="/sober-living-california" component={SoberLivingCalifornia} />
-        <Route path="/sober-living-:slug" component={LocationLanding} />
+        <Route path="/california-sober-living" component={SoberLivingCalifornia} />
+        <Route path="/:slug-sober-living" component={LocationLanding} />
         <Route path="/locations" component={LocationLanding} />
         <Route path="/resource-center" component={ResourceCenter} />
         <Route path="/blog/:slug" component={BlogHub} />
