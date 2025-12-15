@@ -59,6 +59,15 @@ export function AdminDashboard() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
   const [adCampaigns, setAdCampaigns] = useState<any[]>([]);
+  const [showPromoModal, setShowPromoModal] = useState(false);
+  const [editingPromo, setEditingPromo] = useState<any | null>(null);
+  const [newPromoCode, setNewPromoCode] = useState("");
+  const [newPromoDiscountType, setNewPromoDiscountType] = useState("percent");
+  const [newPromoDiscountValue, setNewPromoDiscountValue] = useState("");
+  const [newPromoTarget, setNewPromoTarget] = useState("all");
+  const [newPromoLimit, setNewPromoLimit] = useState("");
+  const [newPromoActive, setNewPromoActive] = useState(true);
+  const [newPromoExpiry, setNewPromoExpiry] = useState("");
   const [showBlogModal, setShowBlogModal] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<any | null>(null);
   const [editingListing, setEditingListing] = useState<any | null>(null);
@@ -312,9 +321,10 @@ export function AdminDashboard() {
     // Fetch real data from database
     const fetchAdminData = async () => {
       try {
-        const [usersRes, listingsRes] = await Promise.all([
+        const [usersRes, listingsRes, promosRes] = await Promise.all([
           fetch('/api/admin/users', { credentials: 'include' }),
-          fetch('/api/admin/listings', { credentials: 'include' })
+          fetch('/api/admin/listings', { credentials: 'include' }),
+          fetch('/api/admin/promos', { credentials: 'include' })
         ]);
         
         if (usersRes.ok) {
@@ -353,6 +363,11 @@ export function AdminDashboard() {
             image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop'
           }));
           setListings(formattedListings);
+        }
+        
+        if (promosRes.ok) {
+          const promosData = await promosRes.json();
+          setPromoCodes(promosData);
         }
         
         // Sample applications data
@@ -955,8 +970,117 @@ the actual document file stored on the server.
     setShowBlogEditor(false);
   };
 
-  const handleCreatePromo = () => {
-    setPromoCodes([...promoCodes, { code: "NEWCODE", discount: "20% off", target: "General", used: 0 }]);
+  const handleCreatePromo = async () => {
+    if (!newPromoCode.trim() || !newPromoDiscountValue) {
+      toast({ title: "Missing fields", description: "Please fill in code and discount value", variant: "destructive" });
+      return;
+    }
+    try {
+      const res = await fetch('/api/admin/promos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          code: newPromoCode.toUpperCase(),
+          discountType: newPromoDiscountType,
+          discountValue: parseInt(newPromoDiscountValue),
+          target: newPromoTarget,
+          usageLimit: newPromoLimit ? parseInt(newPromoLimit) : 0,
+          isActive: newPromoActive,
+          expiresAt: newPromoExpiry || null
+        })
+      });
+      if (res.ok) {
+        const promo = await res.json();
+        setPromoCodes([promo, ...promoCodes]);
+        setNewPromoCode("");
+        setNewPromoDiscountValue("");
+        setNewPromoLimit("");
+        setNewPromoExpiry("");
+        toast({ title: "Promo created", description: `Code ${promo.code} created successfully` });
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to create promo", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to create promo code", variant: "destructive" });
+    }
+  };
+
+  const handleEditPromo = (promo: any) => {
+    setEditingPromo(promo);
+    setNewPromoCode(promo.code);
+    setNewPromoDiscountType(promo.discountType);
+    setNewPromoDiscountValue(String(promo.discountValue));
+    setNewPromoTarget(promo.target);
+    setNewPromoLimit(promo.usageLimit ? String(promo.usageLimit) : "");
+    setNewPromoActive(promo.isActive);
+    setNewPromoExpiry(promo.expiresAt ? new Date(promo.expiresAt).toISOString().split('T')[0] : "");
+    setShowPromoModal(true);
+  };
+
+  const handleSavePromo = async () => {
+    if (!editingPromo) return;
+    try {
+      const res = await fetch(`/api/admin/promos/${editingPromo.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          code: newPromoCode.toUpperCase(),
+          discountType: newPromoDiscountType,
+          discountValue: parseInt(newPromoDiscountValue),
+          target: newPromoTarget,
+          usageLimit: newPromoLimit ? parseInt(newPromoLimit) : 0,
+          isActive: newPromoActive,
+          expiresAt: newPromoExpiry || null
+        })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setPromoCodes(promoCodes.map(p => p.id === updated.id ? updated : p));
+        setShowPromoModal(false);
+        setEditingPromo(null);
+        toast({ title: "Promo updated", description: `Code ${updated.code} updated successfully` });
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to update promo", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update promo code", variant: "destructive" });
+    }
+  };
+
+  const handleDeletePromo = async (id: number) => {
+    try {
+      const res = await fetch(`/api/admin/promos/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        setPromoCodes(promoCodes.filter(p => p.id !== id));
+        toast({ title: "Promo deleted", description: "Promo code deleted successfully" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to delete promo code", variant: "destructive" });
+    }
+  };
+
+  const handleTogglePromoActive = async (promo: any) => {
+    try {
+      const res = await fetch(`/api/admin/promos/${promo.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ isActive: !promo.isActive })
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setPromoCodes(promoCodes.map(p => p.id === updated.id ? updated : p));
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to toggle promo status", variant: "destructive" });
+    }
   };
 
   const handleLaunchAd = () => {
@@ -2547,33 +2671,128 @@ the actual document file stored on the server.
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                    <p className="text-white font-semibold mb-3">Active Promo Codes</p>
-                    {[
-                      { code: "WELCOME25", discount: "25% off", target: "New Providers", used: "34/100" },
-                      { code: "RECOVERY20", discount: "20% off", target: "Tenants", used: "128/500" },
-                    ].map((promo, i) => (
-                      <div key={i} className="mb-2 p-2 bg-background/50 rounded text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-primary">{promo.code}</span>
-                          <span className="text-gray-300">{promo.used}</span>
-                        </div>
-                        <div className="text-gray-400 text-xs mt-1">{promo.discount} • {promo.target}</div>
+                    <p className="text-white font-semibold mb-3">Active Promo Codes ({promoCodes.filter(p => p.isActive).length})</p>
+                    {promoCodes.length === 0 ? (
+                      <p className="text-gray-400 text-sm">No promo codes yet. Create one to get started.</p>
+                    ) : (
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {promoCodes.map((promo) => (
+                          <div key={promo.id} className="p-3 bg-background/50 rounded-lg text-xs border border-white/10">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-mono text-primary font-semibold">{promo.code}</span>
+                              <div className="flex items-center gap-2">
+                                <Badge className={promo.isActive ? "bg-green-500/80" : "bg-gray-600"} data-testid={`badge-promo-status-${promo.id}`}>
+                                  {promo.isActive ? "Active" : "Inactive"}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="text-gray-300 mb-1">
+                              {promo.discountType === "percent" ? `${promo.discountValue}% off` : `$${promo.discountValue / 100} off`}
+                              {" • "}
+                              {promo.target === "all" ? "Everyone" : promo.target === "providers" ? "Providers" : "Tenants"}
+                            </div>
+                            <div className="text-gray-400 text-xs mb-2">
+                              Used: {promo.usedCount}{promo.usageLimit > 0 ? `/${promo.usageLimit}` : " (unlimited)"}
+                              {promo.expiresAt && ` • Expires: ${new Date(promo.expiresAt).toLocaleDateString()}`}
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                onClick={() => handleEditPromo(promo)} 
+                                size="sm" 
+                                variant="ghost" 
+                                className="text-xs h-7"
+                                data-testid={`button-edit-promo-${promo.id}`}
+                              >
+                                Edit
+                              </Button>
+                              <Button 
+                                onClick={() => handleTogglePromoActive(promo)} 
+                                size="sm" 
+                                variant="ghost" 
+                                className="text-xs h-7"
+                                data-testid={`button-toggle-promo-${promo.id}`}
+                              >
+                                {promo.isActive ? "Deactivate" : "Activate"}
+                              </Button>
+                              <Button 
+                                onClick={() => handleDeletePromo(promo.id)} 
+                                size="sm" 
+                                variant="ghost" 
+                                className="text-xs h-7 text-red-400 hover:text-red-300"
+                                data-testid={`button-delete-promo-${promo.id}`}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
 
                   <div className="p-4 rounded-lg bg-white/5 border border-white/10">
                     <p className="text-white font-semibold mb-3">Create Promo Code</p>
                     <div className="space-y-2">
-                      <input type="text" placeholder="Code (e.g., SUMMER30)" className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm" />
-                      <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm">
-                        <option>10% off subscription</option>
-                        <option>25% off subscription</option>
-                        <option>Free featured listing</option>
-                        <option>Free 3x visibility boost</option>
+                      <input 
+                        type="text" 
+                        placeholder="Code (e.g., SUMMER30)" 
+                        value={newPromoCode}
+                        onChange={(e) => setNewPromoCode(e.target.value.toUpperCase())}
+                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm"
+                        data-testid="input-promo-code"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <select 
+                          value={newPromoDiscountType}
+                          onChange={(e) => setNewPromoDiscountType(e.target.value)}
+                          className="px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm"
+                          data-testid="select-promo-discount-type"
+                        >
+                          <option value="percent">Percent Off</option>
+                          <option value="fixed">Fixed Amount</option>
+                        </select>
+                        <input 
+                          type="number" 
+                          placeholder={newPromoDiscountType === "percent" ? "% (e.g., 25)" : "Amount in cents"}
+                          value={newPromoDiscountValue}
+                          onChange={(e) => setNewPromoDiscountValue(e.target.value)}
+                          className="px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm"
+                          data-testid="input-promo-discount-value"
+                        />
+                      </div>
+                      <select 
+                        value={newPromoTarget}
+                        onChange={(e) => setNewPromoTarget(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm"
+                        data-testid="select-promo-target"
+                      >
+                        <option value="all">All Users</option>
+                        <option value="providers">Providers Only</option>
+                        <option value="tenants">Tenants Only</option>
                       </select>
-                      <input type="number" placeholder="Limit (0 = unlimited)" className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm" />
-                      <Button onClick={handleCreatePromo} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">Create Code</Button>
+                      <input 
+                        type="number" 
+                        placeholder="Usage Limit (0 = unlimited)" 
+                        value={newPromoLimit}
+                        onChange={(e) => setNewPromoLimit(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm"
+                        data-testid="input-promo-limit"
+                      />
+                      <input 
+                        type="date" 
+                        placeholder="Expiration Date (optional)"
+                        value={newPromoExpiry}
+                        onChange={(e) => setNewPromoExpiry(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm"
+                        data-testid="input-promo-expiry"
+                      />
+                      <Button 
+                        onClick={handleCreatePromo} 
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                        data-testid="button-create-promo"
+                      >
+                        Create Code
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -4206,6 +4425,101 @@ Use the toolbar above for formatting, or write in Markdown:
               <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
                 <Button onClick={handleConfirmWaiver} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">Confirm Waiver</Button>
                 <Button onClick={() => setShowSubscriptionWaiverModal(false)} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showPromoModal && editingPromo && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" data-testid="promo-edit-modal">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Edit Promo Code</h2>
+                <p className="text-xs text-muted-foreground mt-1">Modify promo code settings</p>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Code</label>
+                  <input 
+                    type="text" 
+                    value={newPromoCode}
+                    onChange={(e) => setNewPromoCode(e.target.value.toUpperCase())}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
+                    data-testid="input-edit-promo-code"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Discount Type</label>
+                    <select 
+                      value={newPromoDiscountType}
+                      onChange={(e) => setNewPromoDiscountType(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
+                      data-testid="select-edit-promo-discount-type"
+                    >
+                      <option value="percent">Percent Off</option>
+                      <option value="fixed">Fixed Amount</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Value</label>
+                    <input 
+                      type="number" 
+                      value={newPromoDiscountValue}
+                      onChange={(e) => setNewPromoDiscountValue(e.target.value)}
+                      placeholder={newPromoDiscountType === "percent" ? "%" : "cents"}
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
+                      data-testid="input-edit-promo-discount-value"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Target Audience</label>
+                  <select 
+                    value={newPromoTarget}
+                    onChange={(e) => setNewPromoTarget(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
+                    data-testid="select-edit-promo-target"
+                  >
+                    <option value="all">All Users</option>
+                    <option value="providers">Providers Only</option>
+                    <option value="tenants">Tenants Only</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Usage Limit (0 = unlimited)</label>
+                  <input 
+                    type="number" 
+                    value={newPromoLimit}
+                    onChange={(e) => setNewPromoLimit(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
+                    data-testid="input-edit-promo-limit"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Expiration Date</label>
+                  <input 
+                    type="date" 
+                    value={newPromoExpiry}
+                    onChange={(e) => setNewPromoExpiry(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
+                    data-testid="input-edit-promo-expiry"
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="checkbox" 
+                    checked={newPromoActive}
+                    onChange={(e) => setNewPromoActive(e.target.checked)}
+                    className="w-4 h-4 rounded"
+                    data-testid="checkbox-edit-promo-active"
+                  />
+                  <label className="text-sm text-white">Active</label>
+                </div>
+              </div>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+                <Button onClick={handleSavePromo} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90" data-testid="button-save-promo">Save Changes</Button>
+                <Button onClick={() => { setShowPromoModal(false); setEditingPromo(null); }} variant="outline" data-testid="button-cancel-promo">Cancel</Button>
               </div>
             </div>
           </div>
