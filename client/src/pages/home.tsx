@@ -164,7 +164,7 @@ export default function Home() {
       </section>
 
       {/* How It Works - Redesigned */}
-      <section className="relative py-32 bg-background overflow-hidden">
+      <section className="relative py-16 bg-background overflow-hidden">
         {/* Background Path Visual */}
         <div className="absolute inset-0 opacity-20 pointer-events-none">
            <img src={pathBg} loading="lazy" className="w-full h-full object-cover" alt="" />
