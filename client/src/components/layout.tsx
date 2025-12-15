@@ -34,6 +34,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const isActive = (path: string) => location === path;
 
   const resourceLinks = [
+    { href: "/what-is-sober-living", label: "What Is Sober Living?" },
     { href: "/resources", label: "Recovery Resources" },
     { href: "/how-to-choose", label: "How to Choose a Sober Living" },
     { href: "/insurance-info", label: "Insurance Info" },
