@@ -136,15 +136,22 @@ export function AdminDashboard() {
   const [newAutoCampaignAudience, setNewAutoCampaignAudience] = useState("tenants");
   const [newAutoCampaignEmails, setNewAutoCampaignEmails] = useState(1);
   const [showNewAutoCampaignModal, setShowNewAutoCampaignModal] = useState(false);
+  const [showNewTemplateModal, setShowNewTemplateModal] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState("");
+  const [newTemplateType, setNewTemplateType] = useState("Email");
+  const [newTemplateTrigger, setNewTemplateTrigger] = useState("none");
+  const [newTemplateAudience, setNewTemplateAudience] = useState("all");
+  const [newTemplateSubject, setNewTemplateSubject] = useState("");
+  const [newTemplateBody, setNewTemplateBody] = useState("");
   const [marketingTemplates, setMarketingTemplates] = useState([
-    { id: 1, name: "Welcome New Providers", type: "Email", uses: 24, trigger: "none", audience: "providers" },
-    { id: 2, name: "Recovery Success Stories", type: "Social Post", uses: 12, trigger: "none", audience: "all" },
-    { id: 3, name: "Available Listings Alert", type: "SMS", uses: 156, trigger: "none", audience: "tenants" },
-    { id: 4, name: "Testimonial Campaign", type: "Email", uses: 8, trigger: "none", audience: "all" },
-    { id: 5, name: "Property Compliance Reminder", type: "Email", uses: 42, trigger: "monthly", audience: "providers" },
-    { id: 6, name: "Tenant Application Approved", type: "Email", uses: 67, trigger: "on-application-approved", audience: "tenants" },
-    { id: 7, name: "Provider Subscription Renewal", type: "Email", uses: 89, trigger: "7-days-before-renewal", audience: "providers" },
-    { id: 8, name: "Resource Updates Newsletter", type: "Email", uses: 34, trigger: "weekly", audience: "all" },
+    { id: 1, name: "Welcome New Providers", type: "Email", uses: 24, trigger: "none", audience: "providers", subject: "Welcome to Sober Stay!", body: "Hi [name],\n\nWelcome to Sober Stay! We're excited to have you as a provider on our platform." },
+    { id: 2, name: "Recovery Success Stories", type: "Email", uses: 12, trigger: "none", audience: "all", subject: "Inspiring Recovery Stories This Month", body: "This month, we're sharing inspiring stories from our community..." },
+    { id: 3, name: "Available Listings Alert", type: "Email", uses: 156, trigger: "none", audience: "tenants", subject: "New Listings Available Near You", body: "Hi [name],\n\nWe found new sober living homes that match your preferences." },
+    { id: 4, name: "Testimonial Campaign", type: "Email", uses: 8, trigger: "none", audience: "all", subject: "Share Your Recovery Journey", body: "Hi [name],\n\nYour story could inspire others. Would you share your experience?" },
+    { id: 5, name: "Property Compliance Reminder", type: "Email", uses: 42, trigger: "monthly", audience: "providers", subject: "Monthly Compliance Check", body: "Hi [name],\n\nThis is your monthly reminder to review your property compliance documentation." },
+    { id: 6, name: "Tenant Application Approved", type: "Email", uses: 67, trigger: "on-application-approved", audience: "tenants", subject: "Great News - Your Application Was Approved!", body: "Hi [name],\n\nCongratulations! Your application for [property] has been approved." },
+    { id: 7, name: "Provider Subscription Renewal", type: "Email", uses: 89, trigger: "7-days-before-renewal", audience: "providers", subject: "Your Subscription Renews Soon", body: "Hi [name],\n\nYour subscription renews in 7 days. Review your plan details." },
+    { id: 8, name: "Resource Updates Newsletter", type: "Email", uses: 34, trigger: "weekly", audience: "all", subject: "Weekly Recovery Resources", body: "Hi [name],\n\nHere are this week's helpful resources for your recovery journey." },
   ]);
   const [emailSubscribers, setEmailSubscribers] = useState<any[]>([
     { id: 1, email: "john.doe@example.com", subscribeDate: "Dec 1, 2024", status: "Active" },
@@ -2225,9 +2232,10 @@ the actual document file stored on the server.
                     <Mail className="w-5 h-5" /> Email Campaigns
                   </CardTitle>
                   <Button onClick={() => { setEmailSubject(""); setEmailBodyText(""); setShowEmailComposer(true); }} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
-                    <Plus className="w-4 h-4" /> Create Campaign
+                    <Plus className="w-4 h-4" /> Compose Email
                   </Button>
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">One-time emails sent to specific user groups.</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 {campaigns.length === 0 ? (
@@ -2235,7 +2243,7 @@ the actual document file stored on the server.
                     <Mail className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
                     <p className="text-white font-medium mb-1">No campaigns yet</p>
                     <p className="text-xs text-muted-foreground mb-4">Create your first email campaign to engage users</p>
-                    <Button onClick={() => { setEmailSubject(""); setEmailBodyText(""); setShowEmailComposer(true); }} size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">Create Campaign</Button>
+                    <Button onClick={() => { setEmailSubject(""); setEmailBodyText(""); setShowEmailComposer(true); }} size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">Compose Email</Button>
                   </div>
                 ) : (
                   campaigns.map((campaign, i) => (
@@ -2291,9 +2299,27 @@ the actual document file stored on the server.
 
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Settings className="w-5 h-5" /> Marketing Templates
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Settings className="w-5 h-5" /> Email Templates
+                  </CardTitle>
+                  <Button 
+                    onClick={() => {
+                      setNewTemplateName("");
+                      setNewTemplateType("Email");
+                      setNewTemplateTrigger("none");
+                      setNewTemplateAudience("all");
+                      setNewTemplateSubject("");
+                      setNewTemplateBody("");
+                      setShowNewTemplateModal(true);
+                    }}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                    data-testid="button-add-template"
+                  >
+                    <Plus className="w-4 h-4" /> Add Template
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Create reusable email templates. Set triggers to send them automatically.</p>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-2">
@@ -2346,7 +2372,11 @@ the actual document file stored on the server.
                       
                       <div className="flex gap-2 mt-2">
                         <Button 
-                          onClick={() => { setEmailSubject(template.name); setEmailBodyText(""); setShowEmailComposer(true); }} 
+                          onClick={() => { 
+                            setEmailSubject(template.subject || template.name); 
+                            setEmailBodyText(template.body || ""); 
+                            setShowEmailComposer(true); 
+                          }} 
                           size="sm" 
                           variant="ghost" 
                           className="text-xs flex-1"
@@ -2355,7 +2385,11 @@ the actual document file stored on the server.
                           Use Template
                         </Button>
                         <Button 
-                          onClick={() => { setEmailSubject(template.name); setEmailBodyText(""); setShowEmailComposer(true); }} 
+                          onClick={() => { 
+                            setEmailSubject(template.subject || template.name); 
+                            setEmailBodyText(template.body || ""); 
+                            setShowEmailComposer(true); 
+                          }} 
                           size="sm" 
                           variant="outline" 
                           className="text-xs"
@@ -2370,103 +2404,54 @@ the actual document file stored on the server.
               </CardContent>
             </Card>
 
-            {/* Email & SMS Marketing */}
+            {/* SMS Marketing */}
             <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Mail className="w-5 h-5" /> Email & SMS Marketing
+                  <MessageSquare className="w-5 h-5" /> SMS Marketing
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                    <p className="text-white font-semibold mb-3">Mass Email Campaign</p>
-                    <div className="space-y-2">
-                      <div>
-                        <label className="text-xs text-muted-foreground">Recipient Group</label>
-                        <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm mt-1">
-                          <option>All Tenants</option>
-                          <option>All Providers</option>
-                          <option>Active Subscribers</option>
-                          <option>Inactive Users</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-xs text-muted-foreground">Subject</label>
-                        <input type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} placeholder="Email subject" className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm mt-1" />
-                      </div>
-                      <Button onClick={() => setShowEmailComposer(true)} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-2">Compose Email</Button>
-                    </div>
+              <CardContent>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground">Select Audience</label>
+                    <select value={smsAudience} onChange={(e) => setSmsAudience(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm mt-1">
+                      <option>All Users</option>
+                      <option>All Tenants</option>
+                      <option>All Providers</option>
+                      <option>Active Users</option>
+                      <option>Inactive Users</option>
+                    </select>
                   </div>
-                  
-                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-                    <p className="text-white font-semibold mb-3">Automated Sequences</p>
-                    <div className="space-y-2">
-                      {emailSequences.map((seq) => (
-                        <div key={seq.id} className="flex items-center justify-between p-2 bg-white/5 rounded">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-300">{seq.name}</span>
-                            <Badge variant="outline" className="text-xs">{seq.emails.length} emails</Badge>
-                          </div>
-                          <input 
-                            type="checkbox" 
-                            checked={seq.active}
-                            onChange={() => {
-                              setEmailSequences(emailSequences.map(s => 
-                                s.id === seq.id ? { ...s, active: !s.active } : s
-                              ));
-                            }}
-                            className="w-4 h-4" 
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-3">Edit sequences in the Workflows tab</p>
+                  <textarea 
+                    placeholder="SMS message (160 characters max)" 
+                    maxLength={160} 
+                    value={smsContent}
+                    onChange={(e) => setSmsContent(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm" 
+                    rows={3} 
+                  />
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">{smsContent.length}/160 characters</span>
+                    <Button onClick={handleSendSMS} className="bg-primary text-primary-foreground hover:bg-primary/90">Send SMS</Button>
                   </div>
-                </div>
-
-                <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-                  <p className="text-white font-semibold mb-2">SMS Marketing</p>
-                  <div className="space-y-2">
-                    <div>
-                      <label className="text-xs text-muted-foreground">Select Audience</label>
-                      <select value={smsAudience} onChange={(e) => setSmsAudience(e.target.value)} className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm mt-1">
-                        <option>All Users</option>
-                        <option>All Tenants</option>
-                        <option>All Providers</option>
-                        <option>Active Users</option>
-                        <option>Inactive Users</option>
-                      </select>
+                  {smsSentSuccess && (
+                    <div className="mt-2 bg-green-500/20 border border-green-500/50 text-green-400 px-3 py-2 rounded-lg flex items-center gap-2 text-sm">
+                      <CheckCircle className="w-4 h-4" />
+                      SMS sent successfully to {smsAudience}!
                     </div>
-                    <textarea 
-                      placeholder="SMS message (160 characters max)" 
-                      maxLength={160} 
-                      value={smsContent}
-                      onChange={(e) => setSmsContent(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm" 
-                      rows={3} 
-                    />
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">{smsContent.length}/160 characters</span>
-                      <Button onClick={handleSendSMS} className="bg-primary text-primary-foreground hover:bg-primary/90">Send SMS</Button>
-                    </div>
-                    {smsSentSuccess && (
-                      <div className="mt-2 bg-green-500/20 border border-green-500/50 text-green-400 px-3 py-2 rounded-lg flex items-center gap-2 text-sm">
-                        <CheckCircle className="w-4 h-4" />
-                        SMS sent successfully to {smsAudience}!
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Automated Email Marketing */}
+            {/* Automated Email Workflows */}
             <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Activity className="w-5 h-5" /> Automated Email Campaigns
+                  <Activity className="w-5 h-5" /> Automated Email Sequences
                 </CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">Multi-email sequences sent automatically based on triggers (e.g., new signup, application submitted).</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
@@ -2532,9 +2517,9 @@ the actual document file stored on the server.
                 <Button 
                   onClick={() => setShowNewAutoCampaignModal(true)} 
                   className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2 mt-4"
-                  data-testid="button-create-automated-campaign"
+                  data-testid="button-create-automated-sequence"
                 >
-                  <Plus className="w-4 h-4" /> Create Automated Campaign
+                  <Plus className="w-4 h-4" /> Create New Sequence
                 </Button>
               </CardContent>
             </Card>
@@ -2615,6 +2600,115 @@ the actual document file stored on the server.
                       data-testid="button-save-automated-campaign"
                     >
                       Create Campaign
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Template Creation Modal */}
+            {showNewTemplateModal && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+                  <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                    <h2 className="text-xl font-bold text-white">Create Email Template</h2>
+                    <p className="text-xs text-muted-foreground mt-1">Create a reusable template for campaigns</p>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-6 space-y-5">
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Template Name *</label>
+                      <input 
+                        type="text" 
+                        value={newTemplateName} 
+                        onChange={(e) => setNewTemplateName(e.target.value)}
+                        placeholder="e.g., Welcome Email" 
+                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                        data-testid="input-template-name"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Target Audience</label>
+                      <select 
+                        value={newTemplateAudience} 
+                        onChange={(e) => setNewTemplateAudience(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                        data-testid="select-template-audience"
+                      >
+                        <option value="all">Everyone</option>
+                        <option value="tenants">Tenants Only</option>
+                        <option value="providers">Providers Only</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Auto-send Trigger (Optional)</label>
+                      <select 
+                        value={newTemplateTrigger} 
+                        onChange={(e) => setNewTemplateTrigger(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                        data-testid="select-template-trigger"
+                      >
+                        <option value="none">Manual Only (No Trigger)</option>
+                        <option value="on-provider-signup">On Provider Signup</option>
+                        <option value="on-tenant-signup">On Tenant Signup</option>
+                        <option value="on-application-submitted">On Application Submitted</option>
+                        <option value="on-application-approved">On Application Approved</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                      </select>
+                      <p className="text-xs text-muted-foreground mt-2">Leave as "Manual Only" to use this template for one-time campaigns.</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Email Subject *</label>
+                      <input 
+                        type="text" 
+                        value={newTemplateSubject} 
+                        onChange={(e) => setNewTemplateSubject(e.target.value)}
+                        placeholder="e.g., Welcome to Sober Stay!" 
+                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                        data-testid="input-template-subject"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground mb-3 block uppercase tracking-wider">Email Body *</label>
+                      <textarea 
+                        value={newTemplateBody} 
+                        onChange={(e) => setNewTemplateBody(e.target.value)}
+                        placeholder="Hi [name],&#10;&#10;Write your email content here. Use [name] for personalization." 
+                        rows={5}
+                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors resize-none"
+                        data-testid="textarea-template-body"
+                      />
+                    </div>
+                  </div>
+                  <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2 justify-end">
+                    <Button 
+                      onClick={() => setShowNewTemplateModal(false)} 
+                      variant="outline"
+                      data-testid="button-cancel-template-modal"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        if (!newTemplateName.trim() || !newTemplateSubject.trim()) return;
+                        const newId = marketingTemplates.length + 1;
+                        setMarketingTemplates([...marketingTemplates, {
+                          id: newId,
+                          name: newTemplateName,
+                          type: newTemplateType,
+                          uses: 0,
+                          trigger: newTemplateTrigger,
+                          audience: newTemplateAudience,
+                          subject: newTemplateSubject,
+                          body: newTemplateBody
+                        }]);
+                        setShowNewTemplateModal(false);
+                      }} 
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      disabled={!newTemplateName.trim() || !newTemplateSubject.trim()}
+                      data-testid="button-create-template"
+                    >
+                      Save Template
                     </Button>
                   </div>
                 </div>
