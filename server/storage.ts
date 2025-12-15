@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type Application, type InsertApplication, users, listings, subscriptions, passwordResetTokens, tenantProfiles, applications } from "@shared/schema";
+import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, users, listings, subscriptions, passwordResetTokens, tenantProfiles, applications, promoCodes } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, lt, isNull, or, desc, count } from "drizzle-orm";
 import session from "express-session";
@@ -56,6 +56,16 @@ export interface IStorage {
   createApplication(application: InsertApplication): Promise<Application>;
   getApplicationsByTenant(tenantId: number): Promise<Application[]>;
   getApplicationsByListing(listingId: number): Promise<Application[]>;
+  
+  // Promo Codes
+  getAllPromoCodes(): Promise<PromoCode[]>;
+  getActivePromoCodes(): Promise<PromoCode[]>;
+  getPromoCode(id: number): Promise<PromoCode | undefined>;
+  getPromoCodeByCode(code: string): Promise<PromoCode | undefined>;
+  createPromoCode(promo: InsertPromoCode): Promise<PromoCode>;
+  updatePromoCode(id: number, data: Partial<InsertPromoCode>): Promise<PromoCode | undefined>;
+  deletePromoCode(id: number): Promise<void>;
+  incrementPromoCodeUsage(id: number): Promise<PromoCode | undefined>;
   
   sessionStore: session.Store;
 }
@@ -393,6 +403,72 @@ export class DatabaseStorage implements IStorage {
       .from(applications)
       .where(eq(applications.listingId, listingId))
       .orderBy(desc(applications.createdAt));
+  }
+
+  // Promo Code methods
+  async getAllPromoCodes(): Promise<PromoCode[]> {
+    return await db.select().from(promoCodes).orderBy(desc(promoCodes.createdAt));
+  }
+
+  async getActivePromoCodes(): Promise<PromoCode[]> {
+    const now = new Date();
+    return await db
+      .select()
+      .from(promoCodes)
+      .where(
+        and(
+          eq(promoCodes.isActive, true),
+          or(
+            isNull(promoCodes.expiresAt),
+            gt(promoCodes.expiresAt, now)
+          )
+        )
+      )
+      .orderBy(desc(promoCodes.createdAt));
+  }
+
+  async getPromoCode(id: number): Promise<PromoCode | undefined> {
+    const [promo] = await db.select().from(promoCodes).where(eq(promoCodes.id, id));
+    return promo;
+  }
+
+  async getPromoCodeByCode(code: string): Promise<PromoCode | undefined> {
+    const [promo] = await db.select().from(promoCodes).where(eq(promoCodes.code, code.toUpperCase()));
+    return promo;
+  }
+
+  async createPromoCode(promo: InsertPromoCode): Promise<PromoCode> {
+    const [newPromo] = await db
+      .insert(promoCodes)
+      .values({ ...promo, code: promo.code.toUpperCase() })
+      .returning();
+    return newPromo;
+  }
+
+  async updatePromoCode(id: number, data: Partial<InsertPromoCode>): Promise<PromoCode | undefined> {
+    const updateData = data.code ? { ...data, code: data.code.toUpperCase() } : data;
+    const [promo] = await db
+      .update(promoCodes)
+      .set(updateData)
+      .where(eq(promoCodes.id, id))
+      .returning();
+    return promo;
+  }
+
+  async deletePromoCode(id: number): Promise<void> {
+    await db.delete(promoCodes).where(eq(promoCodes.id, id));
+  }
+
+  async incrementPromoCodeUsage(id: number): Promise<PromoCode | undefined> {
+    const promo = await this.getPromoCode(id);
+    if (!promo) return undefined;
+    
+    const [updated] = await db
+      .update(promoCodes)
+      .set({ usedCount: promo.usedCount + 1 })
+      .where(eq(promoCodes.id, id))
+      .returning();
+    return updated;
   }
 }
 
