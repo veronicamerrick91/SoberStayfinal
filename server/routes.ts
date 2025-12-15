@@ -28,26 +28,80 @@ export async function registerRoutes(
   setupAuth(app);
 
   // Sitemap.xml for SEO
-  app.get("/sitemap.xml", (req, res) => {
-    res.setHeader("Content-Type", "application/xml");
-    res.send(`<?xml version="1.0" encoding="UTF-8"?>
+  app.get("/sitemap.xml", async (req, res) => {
+    const baseUrl = "https://soberstay.com";
+    
+    // Get all approved listings for dynamic sitemap entries
+    const listings = await storage.getListings();
+    const approvedListings = listings.filter(l => l.status === "approved");
+    
+    const staticPages = [
+      "", "/browse", "/quiz", "/mission", "/resources", "/how-to-choose",
+      "/insurance-info", "/crisis-resources", "/blog", "/contact",
+      "/for-tenants", "/for-providers", "/resource-center", "/locations",
+      "/sober-living-near-me", "/what-is-sober-living", "/apply-for-sober-living",
+      "/sober-living-california", "/sober-living-los-angeles", "/sober-living-san-diego",
+      "/sober-living-florida", "/sober-living-texas", "/sober-living-arizona",
+      "/sober-living-new-york", "/sober-living-denver", "/sober-living-chicago",
+      "/sober-living-miami", "/sober-living-seattle", "/sober-living-portland",
+      "/sober-living-austin", "/sober-living-nashville", "/sober-living-atlanta",
+      "/privacy-policy", "/terms-of-use", "/disclaimer", "/help-center"
+    ];
+    
+    const blogPosts = [
+      "/blog/what-to-expect-first-month-sober-living",
+      "/blog/how-to-choose-right-sober-living-home",
+      "/blog/building-healthy-relationships-recovery",
+      "/blog/sober-living-vs-halfway-house-differences",
+      "/blog/employment-tips-sober-living"
+    ];
+    
+    let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/browse</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/sober-living-near-me</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/what-is-sober-living</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/apply-for-sober-living</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/sober-living-california</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/mission</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/resources</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/how-to-choose</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/insurance-info</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/crisis-resources</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/blog</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/contact</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/for-tenants</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/for-providers</loc></url>
-</urlset>`);
+`;
+    
+    // Add static pages
+    for (const page of staticPages) {
+      sitemap += `  <url><loc>${baseUrl}${page}</loc><changefreq>weekly</changefreq></url>\n`;
+    }
+    
+    // Add blog posts
+    for (const post of blogPosts) {
+      sitemap += `  <url><loc>${baseUrl}${post}</loc><changefreq>monthly</changefreq></url>\n`;
+    }
+    
+    // Add dynamic property pages
+    for (const listing of approvedListings) {
+      sitemap += `  <url><loc>${baseUrl}/property/${listing.id}</loc><changefreq>daily</changefreq></url>\n`;
+    }
+    
+    sitemap += `</urlset>`;
+    
+    res.setHeader("Content-Type", "application/xml");
+    res.send(sitemap);
+  });
+
+  // Robots.txt for SEO
+  app.get("/robots.txt", (req, res) => {
+    res.setHeader("Content-Type", "text/plain");
+    res.send(`User-agent: *
+Allow: /
+
+Sitemap: https://soberstay.com/sitemap.xml
+
+# Block admin and user-specific pages
+Disallow: /admin-dashboard
+Disallow: /provider-dashboard
+Disallow: /tenant-dashboard
+Disallow: /tenant-profile
+Disallow: /create-listing
+Disallow: /edit-listing
+Disallow: /analytics
+Disallow: /seo-tools
+Disallow: /chat/
+Disallow: /apply/
+Disallow: /auth/
+`);
   });
 
   // User Registration
