@@ -86,6 +86,19 @@ export const applications = pgTable("applications", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const promoCodes = pgTable("promo_codes", {
+  id: serial("id").primaryKey(),
+  code: text("code").notNull().unique(),
+  discountType: text("discount_type").notNull(), // "percent" or "fixed"
+  discountValue: integer("discount_value").notNull(), // percent (10 = 10%) or cents (1000 = $10)
+  target: text("target").notNull(), // "providers", "tenants", "all"
+  usageLimit: integer("usage_limit").default(0).notNull(), // 0 = unlimited
+  usedCount: integer("used_count").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   email: true,
@@ -117,6 +130,12 @@ export const insertApplicationSchema = createInsertSchema(applications).omit({
   createdAt: true,
 });
 
+export const insertPromoCodeSchema = createInsertSchema(promoCodes).omit({
+  id: true,
+  usedCount: true,
+  createdAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Listing = typeof listings.$inferSelect;
@@ -128,3 +147,5 @@ export type TenantProfile = typeof tenantProfiles.$inferSelect;
 export type InsertTenantProfile = z.infer<typeof insertTenantProfileSchema>;
 export type Application = typeof applications.$inferSelect;
 export type InsertApplication = z.infer<typeof insertApplicationSchema>;
+export type PromoCode = typeof promoCodes.$inferSelect;
+export type InsertPromoCode = z.infer<typeof insertPromoCodeSchema>;
