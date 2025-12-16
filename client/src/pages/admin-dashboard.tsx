@@ -59,6 +59,7 @@ export function AdminDashboard() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [promoCodes, setPromoCodes] = useState<any[]>([]);
   const [adCampaigns, setAdCampaigns] = useState<any[]>([]);
+  const [adminFeaturedListings, setAdminFeaturedListings] = useState<any[]>([]);
   const [showPromoModal, setShowPromoModal] = useState(false);
   const [editingPromo, setEditingPromo] = useState<any | null>(null);
   const [newPromoCode, setNewPromoCode] = useState("");
@@ -328,10 +329,11 @@ export function AdminDashboard() {
     // Fetch real data from database
     const fetchAdminData = async () => {
       try {
-        const [usersRes, listingsRes, promosRes] = await Promise.all([
+        const [usersRes, listingsRes, promosRes, featuredRes] = await Promise.all([
           fetch('/api/admin/users', { credentials: 'include' }),
           fetch('/api/admin/listings', { credentials: 'include' }),
-          fetch('/api/admin/promos', { credentials: 'include' })
+          fetch('/api/admin/promos', { credentials: 'include' }),
+          fetch('/api/admin/featured-listings', { credentials: 'include' })
         ]);
         
         if (usersRes.ok) {
@@ -375,6 +377,11 @@ export function AdminDashboard() {
         if (promosRes.ok) {
           const promosData = await promosRes.json();
           setPromoCodes(promosData);
+        }
+        
+        if (featuredRes.ok) {
+          const featuredData = await featuredRes.json();
+          setAdminFeaturedListings(featuredData);
         }
         
         // Sample applications data
@@ -2491,30 +2498,93 @@ the actual document file stored on the server.
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/30">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Building className="w-5 h-5" /> Featured Listings
+                  <Building className="w-5 h-5 text-purple-400" /> Featured Listings
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-gray-300">Promote provider listings to increase visibility and tenant applications.</p>
-                {[
-                  { provider: "Recovery First LLC", listing: "Downtown Recovery Center", boost: "2x Visibility", spent: "$98" },
-                  { provider: "Hope House", listing: "Supportive Living Home", boost: "3x Visibility", spent: "$147" },
-                ].map((item, i) => (
-                  <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
-                    <div>
-                      <p className="text-white font-medium">{item.provider}</p>
-                      <p className="text-xs text-muted-foreground">{item.listing}</p>
-                      <p className="text-xs text-primary mt-1">{item.boost}</p>
+                <p className="text-sm text-gray-300">Manage provider listing boosts and featured placement purchases.</p>
+                
+                {adminFeaturedListings.length === 0 ? (
+                  <div className="text-center py-8 rounded-lg bg-white/5 border border-white/10 border-dashed">
+                    <Building className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-white font-medium mb-1">No featured listings yet</p>
+                    <p className="text-xs text-muted-foreground">Providers can purchase boosts from their dashboard</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                    {adminFeaturedListings.map((featured) => {
+                      const daysLeft = Math.ceil((new Date(featured.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                      const isExpired = daysLeft <= 0;
+                      return (
+                        <div key={featured.id} className={`p-4 rounded-lg border flex items-center justify-between ${isExpired ? 'bg-red-500/5 border-red-500/20' : 'bg-white/5 border-purple-500/20'}`}>
+                          <div>
+                            <p className="text-white font-medium">{featured.listingName || `Listing #${featured.listingId}`}</p>
+                            <p className="text-xs text-muted-foreground">Provider: {featured.providerName || `ID ${featured.providerId}`}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge className="bg-purple-500/80 text-xs">{featured.boostLevel}x Boost</Badge>
+                              {isExpired ? (
+                                <Badge className="bg-red-500/80 text-xs">Expired</Badge>
+                              ) : (
+                                <Badge variant="outline" className="border-purple-500/30 text-purple-300 text-xs">{daysLeft} days left</Badge>
+                              )}
+                              {featured.isActive && !isExpired && (
+                                <Badge className="bg-green-500/80 text-xs">Active</Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-white font-bold">${featured.totalPrice}</p>
+                            <p className="text-xs text-muted-foreground">{featured.durationDays} days</p>
+                            <Button 
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch(`/api/admin/featured-listings/${featured.id}/toggle`, {
+                                    method: 'PATCH',
+                                    credentials: 'include'
+                                  });
+                                  if (res.ok) {
+                                    const updated = await res.json();
+                                    setAdminFeaturedListings(prev => prev.map(f => f.id === featured.id ? updated : f));
+                                    toast({ title: "Updated", description: `Featured listing ${updated.isActive ? 'activated' : 'deactivated'}` });
+                                  }
+                                } catch (err) {
+                                  toast({ title: "Error", description: "Failed to update", variant: "destructive" });
+                                }
+                              }}
+                              size="sm" 
+                              variant="outline" 
+                              className="mt-2"
+                              data-testid={`button-toggle-featured-${featured.id}`}
+                            >
+                              {featured.isActive ? 'Deactivate' : 'Activate'}
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                
+                {/* Summary Stats */}
+                {adminFeaturedListings.length > 0 && (
+                  <div className="grid grid-cols-3 gap-3 pt-3 border-t border-purple-500/20">
+                    <div className="text-center">
+                      <p className="text-xl font-bold text-purple-400">{adminFeaturedListings.filter(f => f.isActive && new Date(f.endDate) > new Date()).length}</p>
+                      <p className="text-xs text-muted-foreground">Active Boosts</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-white font-bold">{item.spent}</p>
-                      <Button onClick={handleManageListing} size="sm" variant="outline" className="mt-2">Manage</Button>
+                    <div className="text-center">
+                      <p className="text-xl font-bold text-white">${adminFeaturedListings.reduce((sum, f) => sum + (f.totalPrice || 0), 0)}</p>
+                      <p className="text-xs text-muted-foreground">Total Revenue</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xl font-bold text-emerald-400">{adminFeaturedListings.length}</p>
+                      <p className="text-xs text-muted-foreground">All Time Boosts</p>
                     </div>
                   </div>
-                ))}
+                )}
               </CardContent>
             </Card>
 

@@ -1320,5 +1320,27 @@ Disallow: /auth/
     }
   });
 
+  // Toggle featured listing active status (admin only)
+  app.patch("/api/admin/featured-listings/:id/toggle", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      const featured = await storage.getFeaturedListing(id);
+      
+      if (!featured) {
+        return res.status(404).json({ error: "Featured listing not found" });
+      }
+      
+      const updated = await storage.updateFeaturedListing(id, { isActive: !featured.isActive });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error toggling featured listing:", error);
+      res.status(500).json({ error: "Failed to toggle featured listing" });
+    }
+  });
+
   return httpServer;
 }
