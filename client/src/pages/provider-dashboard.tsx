@@ -86,6 +86,14 @@ function ProviderDashboardContent() {
   const [activeTab, setActiveTab] = useState("overview");
   const [marketingSection, setMarketingSection] = useState<"overview" | "seo" | "campaign">("overview");
   
+  // Featured Listings state
+  const [featuredListings, setFeaturedListings] = useState<any[]>([]);
+  const [showBoostModal, setShowBoostModal] = useState(false);
+  const [selectedListingToBoost, setSelectedListingToBoost] = useState<Listing | null>(null);
+  const [boostLevel, setBoostLevel] = useState(2);
+  const [boostDuration, setBoostDuration] = useState(7);
+  const [isBoostLoading, setIsBoostLoading] = useState(false);
+  
   // Provider marketing templates with triggers
   const [providerTemplates, setProviderTemplates] = useState([
     { id: 1, name: "New Listing Announcement", type: "Email", uses: 12, trigger: "none", audience: "interested-tenants" },
@@ -119,6 +127,46 @@ function ProviderDashboardContent() {
     ));
     // In a real app, this would log the reason
     console.log(`Application ${id} denied because: ${reason}`);
+  };
+
+  const handleBoostListing = async () => {
+    if (!selectedListingToBoost) return;
+    setIsBoostLoading(true);
+    try {
+      const res = await fetch('/api/provider/featured-listings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          listingId: selectedListingToBoost.id,
+          boostLevel,
+          durationDays: boostDuration
+        })
+      });
+      if (res.ok) {
+        const newFeatured = await res.json();
+        setFeaturedListings(prev => [...prev, newFeatured]);
+        setShowBoostModal(false);
+        setSelectedListingToBoost(null);
+      } else {
+        const error = await res.json();
+        alert(error.error || 'Failed to boost listing');
+      }
+    } catch (err) {
+      console.error("Error boosting listing:", err);
+      alert('Failed to boost listing');
+    } finally {
+      setIsBoostLoading(false);
+    }
+  };
+
+  const isListingFeatured = (listingId: number) => {
+    return featuredListings.some(f => f.listingId === listingId && f.isActive && new Date(f.endDate) > new Date());
+  };
+
+  const getBoostPrice = () => {
+    const pricePerDay = boostLevel === 5 ? 15 : boostLevel === 3 ? 10 : 7;
+    return pricePerDay * boostDuration;
   };
 
   useEffect(() => {
@@ -199,6 +247,20 @@ function ProviderDashboardContent() {
       }
     };
     fetchSubscription();
+    
+    // Fetch featured listings
+    const fetchFeaturedListings = async () => {
+      try {
+        const res = await fetch('/api/provider/featured-listings', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setFeaturedListings(data);
+        }
+      } catch (err) {
+        console.error("Error fetching featured listings:", err);
+      }
+    };
+    fetchFeaturedListings();
   }, [user?.id]);
 
   // Handle return from Stripe checkout - refetch subscription status
@@ -942,6 +1004,95 @@ function ProviderDashboardContent() {
               </CardContent>
             </Card>
 
+            {/* Featured Listings - Boost Your Properties */}
+            <Card className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/30">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-purple-400" /> Featured Listings - Boost Your Visibility
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Get your listings seen by more potential tenants. Featured listings appear at the top of search results with a special badge.
+                </p>
+                
+                {/* Active Featured Listings */}
+                {featuredListings.filter(f => f.isActive && new Date(f.endDate) > new Date()).length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-white">Active Boosts</h4>
+                    {featuredListings.filter(f => f.isActive && new Date(f.endDate) > new Date()).map((featured) => {
+                      const listing = listings.find(l => l.id === featured.listingId);
+                      const daysLeft = Math.ceil((new Date(featured.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                      return (
+                        <div key={featured.id} className="p-3 rounded-lg bg-white/5 border border-purple-500/20 flex items-center justify-between">
+                          <div>
+                            <p className="text-white font-medium text-sm">{listing?.propertyName || 'Unknown Listing'}</p>
+                            <p className="text-xs text-muted-foreground">{featured.boostLevel}x visibility • {daysLeft} days remaining</p>
+                          </div>
+                          <Badge className="bg-purple-500/80">{featured.boostLevel}x Boost</Badge>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                
+                {/* Listings Available to Boost */}
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-white">Boost a Listing</h4>
+                  {listings.filter(l => l.status === 'approved' && !isListingFeatured(l.id)).length === 0 ? (
+                    <p className="text-xs text-muted-foreground">
+                      {listings.filter(l => l.status === 'approved').length === 0 
+                        ? "No approved listings available to boost. Get your listings approved first."
+                        : "All your listings are already boosted!"}
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {listings.filter(l => l.status === 'approved' && !isListingFeatured(l.id)).map((listing) => (
+                        <div key={listing.id} className="p-3 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
+                          <div>
+                            <p className="text-white text-sm font-medium">{listing.propertyName}</p>
+                            <p className="text-xs text-muted-foreground">{listing.city}, {listing.state}</p>
+                          </div>
+                          <Button 
+                            size="sm" 
+                            className="bg-purple-500 hover:bg-purple-600 text-white gap-1"
+                            onClick={() => {
+                              setSelectedListingToBoost(listing);
+                              setBoostLevel(2);
+                              setBoostDuration(7);
+                              setShowBoostModal(true);
+                            }}
+                            data-testid={`button-boost-listing-${listing.id}`}
+                          >
+                            <Zap className="w-3 h-3" /> Boost
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Pricing Info */}
+                <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                  <h4 className="text-sm font-medium text-purple-300 mb-2">Boost Pricing</h4>
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div>
+                      <p className="text-white font-bold">2x Visibility</p>
+                      <p className="text-muted-foreground">$7/day</p>
+                    </div>
+                    <div>
+                      <p className="text-white font-bold">3x Visibility</p>
+                      <p className="text-muted-foreground">$10/day</p>
+                    </div>
+                    <div>
+                      <p className="text-white font-bold">5x Visibility</p>
+                      <p className="text-muted-foreground">$15/day</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Email Templates with Triggers */}
             <Card className="bg-card border-border">
               <CardHeader>
@@ -1476,6 +1627,99 @@ function ProviderDashboardContent() {
           onApprove={handleApproveApplication}
           onDeny={handleDenyApplication}
         />
+
+        {/* Boost Listing Modal */}
+        {showBoostModal && selectedListingToBoost && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-purple-500/30 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/5 border-b border-purple-500/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-purple-400" /> Boost Your Listing
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">{selectedListingToBoost.propertyName}</p>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="text-sm text-white mb-2 block">Visibility Boost Level</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[2, 3, 5].map((level) => (
+                      <button
+                        key={level}
+                        onClick={() => setBoostLevel(level)}
+                        className={`p-3 rounded-lg border text-center transition-all ${
+                          boostLevel === level 
+                            ? 'bg-purple-500/20 border-purple-500 text-white' 
+                            : 'bg-white/5 border-white/10 text-muted-foreground hover:border-purple-500/50'
+                        }`}
+                        data-testid={`button-boost-level-${level}`}
+                      >
+                        <p className="text-lg font-bold">{level}x</p>
+                        <p className="text-xs">${level === 5 ? 15 : level === 3 ? 10 : 7}/day</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm text-white mb-2 block">Duration</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[7, 14, 30].map((days) => (
+                      <button
+                        key={days}
+                        onClick={() => setBoostDuration(days)}
+                        className={`p-3 rounded-lg border text-center transition-all ${
+                          boostDuration === days 
+                            ? 'bg-purple-500/20 border-purple-500 text-white' 
+                            : 'bg-white/5 border-white/10 text-muted-foreground hover:border-purple-500/50'
+                        }`}
+                        data-testid={`button-boost-duration-${days}`}
+                      >
+                        <p className="text-lg font-bold">{days}</p>
+                        <p className="text-xs">days</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white">Total Cost</span>
+                    <span className="text-2xl font-bold text-purple-400">${getBoostPrice()}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {boostLevel}x visibility for {boostDuration} days
+                  </p>
+                </div>
+              </div>
+              <div className="bg-background border-t border-purple-500/20 px-6 py-4 flex gap-2">
+                <Button 
+                  onClick={handleBoostListing}
+                  disabled={isBoostLoading}
+                  className="flex-1 bg-purple-500 hover:bg-purple-600 text-white gap-2"
+                  data-testid="button-confirm-boost"
+                >
+                  {isBoostLoading ? (
+                    <span className="animate-pulse">Processing...</span>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4" /> Boost Now - ${getBoostPrice()}
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setShowBoostModal(false);
+                    setSelectedListingToBoost(null);
+                  }} 
+                  variant="outline"
+                  data-testid="button-cancel-boost"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <PaymentModal 
           open={showPaymentModal}
