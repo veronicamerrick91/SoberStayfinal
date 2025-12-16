@@ -369,6 +369,43 @@ Disallow: /auth/
     res.json(listings);
   });
 
+  // Contact form endpoint
+  app.post("/api/contact", async (req, res) => {
+    try {
+      const { name, email, subject, message } = req.body;
+      
+      if (!name || !email || !subject || !message) {
+        return res.status(400).json({ error: "All fields are required" });
+      }
+      
+      // Store the contact message or send via email
+      console.log("Contact form submission:", { name, email, subject, message });
+      
+      // Try to send email notification to admin
+      try {
+        const { sendEmail } = await import('./email');
+        await sendEmail({
+          to: 'support@soberstayhomes.com',
+          subject: `Contact Form: ${subject}`,
+          html: `
+            <h2>New Contact Form Submission</h2>
+            <p><strong>From:</strong> ${name} (${email})</p>
+            <p><strong>Subject:</strong> ${subject}</p>
+            <p><strong>Message:</strong></p>
+            <p>${message.replace(/\n/g, '<br>')}</p>
+          `,
+        });
+      } catch (emailError) {
+        console.log("Email notification skipped:", emailError);
+      }
+      
+      res.json({ success: true, message: "Your message has been received" });
+    } catch (error) {
+      console.error("Contact form error:", error);
+      res.status(500).json({ error: "Failed to submit contact form" });
+    }
+  });
+
   // Public listings endpoint - returns approved and visible listings only
   app.get("/api/listings", async (req, res) => {
     try {

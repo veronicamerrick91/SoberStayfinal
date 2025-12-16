@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useLocation, useRoute } from "wouter";
 import { ArrowLeft, CheckCircle2, Upload, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { isAuthenticated } from "@/lib/auth";
+import { isAuthenticated, getAuth } from "@/lib/auth";
 import { incrementStat } from "@/lib/tenant-engagement";
 import { useQuery } from "@tanstack/react-query";
 import type { Listing } from "@shared/schema";
@@ -48,6 +48,12 @@ export default function ApplicationForm() {
     // Redirect to login if not authenticated (skip for preview)
     if (!isAuthenticated() && !isPreview) {
       setLocation(`/login?returnPath=/apply/${params?.id}`);
+      return;
+    }
+    // Only tenants can submit applications
+    const user = getAuth();
+    if (user && user.role !== "tenant" && !isPreview) {
+      setLocation("/");
     }
   }, [params?.id, setLocation, isPreview]);
 
