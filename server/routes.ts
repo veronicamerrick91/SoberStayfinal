@@ -157,7 +157,7 @@ Disallow: /auth/
   // User Login (email/password)
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { email, password, rememberMe } = req.body;
+      const { email, password, rememberMe, twoFactorToken } = req.body;
 
       if (!email || !password) {
         return res.status(400).json({ error: "Email and password are required" });
@@ -172,6 +172,30 @@ Disallow: /auth/
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
         return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      // Check if provider has 2FA enabled
+      if (user.role === "provider") {
+        const providerProfile = await storage.getProviderProfile(user.id);
+        if (providerProfile?.twoFactorEnabled && providerProfile?.twoFactorSecret) {
+          // 2FA is enabled - verify the token
+          if (!twoFactorToken) {
+            return res.status(200).json({ 
+              requires2FA: true, 
+              message: "Two-factor authentication required" 
+            });
+          }
+          
+          const { authenticator } = await import('otplib');
+          const isValid = authenticator.verify({ 
+            token: twoFactorToken, 
+            secret: providerProfile.twoFactorSecret 
+          });
+          
+          if (!isValid) {
+            return res.status(401).json({ error: "Invalid 2FA code" });
+          }
+        }
       }
 
       // Set session maxAge based on rememberMe
@@ -547,6 +571,24 @@ Disallow: /auth/
     const listing = await storage.getListing(id);
     if (!listing) {
       return res.status(404).json({ error: "Listing not found" });
+    }
+    
+    // Validate required fields before approving
+    if (status === "approved") {
+      const requiredFields = [];
+      if (!listing.propertyName || listing.propertyName.trim() === "") requiredFields.push("Property Name");
+      if (!listing.address || listing.address.trim() === "") requiredFields.push("Address");
+      if (!listing.city || listing.city.trim() === "") requiredFields.push("City");
+      if (!listing.state || listing.state.trim() === "") requiredFields.push("State");
+      if (!listing.monthlyPrice || listing.monthlyPrice <= 0) requiredFields.push("Monthly Price");
+      if (!listing.totalBeds || listing.totalBeds <= 0) requiredFields.push("Number of Beds");
+      if (!listing.description || listing.description.trim() === "") requiredFields.push("Description");
+      
+      if (requiredFields.length > 0) {
+        return res.status(400).json({ 
+          error: `Cannot approve listing with missing required fields: ${requiredFields.join(", ")}` 
+        });
+      }
     }
     
     const updateData: any = {};

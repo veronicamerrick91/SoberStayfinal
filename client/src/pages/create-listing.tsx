@@ -177,18 +177,62 @@ export function CreateListing() {
     setListingDraft(prev => ({ ...prev, [key]: checked }));
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const newPhotos = Array.from(files).map(file => URL.createObjectURL(file));
-      const totalPhotos = listingDraft.photos.length + newPhotos.length;
-      if (totalPhotos <= 15) {
+      const totalPhotos = listingDraft.photos.length + files.length;
+      if (totalPhotos > 15) {
+        alert(`You can upload a maximum of 15 photos. You currently have ${listingDraft.photos.length} photo(s).`);
+        return;
+      }
+      
+      // Convert files to base64 data URLs for persistent storage
+      const convertToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            // Compress image if needed (resize to max 1200px width)
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const maxWidth = 1200;
+              let width = img.width;
+              let height = img.height;
+              
+              if (width > maxWidth) {
+                height = (height * maxWidth) / width;
+                width = maxWidth;
+              }
+              
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx?.drawImage(img, 0, 0, width, height);
+              
+              // Convert to base64 with JPEG compression (quality 0.8)
+              const base64 = canvas.toDataURL('image/jpeg', 0.8);
+              resolve(base64);
+            };
+            img.onerror = reject;
+            img.src = reader.result as string;
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      };
+      
+      try {
+        const newPhotos = await Promise.all(
+          Array.from(files).map(file => convertToBase64(file))
+        );
+        
         setListingDraft(prev => ({
           ...prev,
           photos: [...prev.photos, ...newPhotos]
         }));
-      } else {
-        alert(`You can upload a maximum of 15 photos. You currently have ${listingDraft.photos.length} photo(s).`);
+      } catch (error) {
+        console.error("Error converting photos:", error);
+        alert("Failed to process some photos. Please try again.");
       }
     }
   };

@@ -28,6 +28,8 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [requires2FA, setRequires2FA] = useState(false);
+  const [twoFactorToken, setTwoFactorToken] = useState("");
 
   useEffect(() => {
     setRole(defaultRole as any);
@@ -107,17 +109,36 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
           return;
         }
 
+        // If 2FA is required and we don't have a token yet, validate token
+        if (requires2FA && !twoFactorToken.trim()) {
+          setLoginError("Please enter your 2FA code");
+          setIsSubmitting(false);
+          return;
+        }
+
         const response = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ email, password, rememberMe }),
+          body: JSON.stringify({ 
+            email, 
+            password, 
+            rememberMe,
+            ...(requires2FA && twoFactorToken ? { twoFactorToken } : {})
+          }),
         });
 
         const data = await response.json();
         
         if (!response.ok) {
           setLoginError(data.error || "Login failed");
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Check if 2FA is required
+        if (data.requires2FA) {
+          setRequires2FA(true);
           setIsSubmitting(false);
           return;
         }
@@ -299,7 +320,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                 </div>
               </div>
 
-              {type === "login" && (
+              {type === "login" && !requires2FA && (
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -312,6 +333,32 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                   <Label htmlFor="remember-me" className="text-sm text-muted-foreground cursor-pointer">
                     Remember me for 30 days
                   </Label>
+                </div>
+              )}
+
+              {requires2FA && (
+                <div className="space-y-2 p-4 rounded-lg bg-primary/10 border border-primary/20">
+                  <div className="flex items-center gap-2 text-primary mb-3">
+                    <ShieldCheck className="w-5 h-5" />
+                    <span className="font-medium">Two-Factor Authentication Required</span>
+                  </div>
+                  <Label htmlFor="2fa-code" className="text-sm">
+                    Enter the 6-digit code from your authenticator app
+                  </Label>
+                  <Input 
+                    id="2fa-code" 
+                    name="2fa-code"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    placeholder="000000"
+                    className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary text-center text-lg tracking-widest" 
+                    value={twoFactorToken} 
+                    onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, ''))}
+                    data-testid="input-2fa-code"
+                    autoFocus
+                  />
                 </div>
               )}
 
