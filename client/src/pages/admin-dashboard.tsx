@@ -697,6 +697,22 @@ the actual document file stored on the server.
     setMessages(messages.filter(m => m.id !== msgId));
   };
 
+  const [viewingThread, setViewingThread] = useState<any>(null);
+  const [showThreadModal, setShowThreadModal] = useState(false);
+
+  const handleViewThread = (msg: any) => {
+    setViewingThread({
+      ...msg,
+      messages: [
+        { id: 1, sender: msg.tenant, content: msg.preview, timestamp: new Date().toISOString(), isProvider: false },
+        { id: 2, sender: msg.provider, content: "Thank you for reaching out! I'd be happy to schedule a tour. What day works best for you?", timestamp: new Date().toISOString(), isProvider: true },
+        { id: 3, sender: msg.tenant, content: "How about this Saturday around 2pm?", timestamp: new Date().toISOString(), isProvider: false },
+        { id: 4, sender: msg.provider, content: "Saturday at 2pm works perfectly. I'll see you then!", timestamp: new Date().toISOString(), isProvider: true },
+      ]
+    });
+    setShowThreadModal(true);
+  };
+
   const handleApproveDocument = (docId: string) => {
     setDocuments(documents.map(d => d.id === docId ? { ...d, status: "Approved", reviewedAt: new Date().toISOString() } : d));
     setShowDocumentPreviewModal(false);
@@ -708,6 +724,11 @@ the actual document file stored on the server.
     setShowDenyDocumentModal(false);
     setDenyDocumentReason("");
     setViewingDocument(null);
+  };
+
+  const handleResetDocumentStatus = (docId: string) => {
+    setDocuments(documents.map(d => d.id === docId ? { ...d, status: "Pending Review", denialReason: null, infoRequest: null, reviewedAt: null } : d));
+    toast({ title: "Document Reset", description: "Document status has been reset to pending review." });
   };
 
   const handleRequestDocumentInfo = (docId: string) => {
@@ -1670,6 +1691,11 @@ the actual document file stored on the server.
                               </Button>
                             </>
                           )}
+                          {(doc.status === "Approved" || doc.status === "Rejected") && (
+                            <Button size="sm" onClick={() => handleResetDocumentStatus(doc.id)} className="h-8 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 gap-1 text-xs" data-testid={`button-reset-document-${doc.id}`}>
+                              <RotateCcw className="w-3 h-3" /> Reset to Pending
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -1706,7 +1732,7 @@ the actual document file stored on the server.
                           {msg.flagged && <Badge className="bg-red-500/80 text-xs">{msg.reason}</Badge>}
                         </div>
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="h-7 text-xs">View Thread</Button>
+                          <Button size="sm" variant="outline" onClick={() => handleViewThread(msg)} className="h-7 text-xs" data-testid={`button-view-thread-${msg.id}`}>View Thread</Button>
                           {msg.flagged && (
                             <>
                               <Button size="sm" onClick={() => handleClearFlag(msg.id)} variant="ghost" className="h-7 text-xs text-green-500 hover:bg-green-500/10">Clear</Button>
@@ -3816,6 +3842,84 @@ the actual document file stored on the server.
                   setShowDeleteListingModal(false);
                   setDeletingListing(null);
                 }} variant="outline" data-testid="button-cancel-delete-listing">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Message Thread Modal */}
+        {showThreadModal && viewingThread && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5" /> Message Thread
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1">{viewingThread.tenant} ↔ {viewingThread.provider}</p>
+                </div>
+                <Button size="sm" variant="ghost" onClick={() => {
+                  setShowThreadModal(false);
+                  setViewingThread(null);
+                }}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="p-6 space-y-4 max-h-96 overflow-y-auto">
+                {viewingThread.messages?.map((message: any) => (
+                  <div key={message.id} className={`flex ${message.isProvider ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] rounded-lg p-3 ${
+                      message.isProvider 
+                        ? 'bg-primary/20 text-white' 
+                        : 'bg-white/10 text-white'
+                    }`}>
+                      <p className="text-xs text-muted-foreground mb-1">{message.sender}</p>
+                      <p className="text-sm">{message.content}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(message.timestamp).toLocaleTimeString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {viewingThread.flagged && (
+                <div className="px-6 py-3 bg-red-500/10 border-t border-red-500/20">
+                  <p className="text-xs text-red-400">
+                    <AlertTriangle className="w-3 h-3 inline mr-1" />
+                    Flagged: {viewingThread.reason}
+                  </p>
+                </div>
+              )}
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+                {viewingThread.flagged && (
+                  <>
+                    <Button 
+                      onClick={() => {
+                        handleClearFlag(viewingThread.id);
+                        setShowThreadModal(false);
+                        setViewingThread(null);
+                      }} 
+                      className="flex-1 bg-green-600 hover:bg-green-700 gap-2"
+                    >
+                      <Check className="w-4 h-4" /> Clear Flag
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        handleBanUser(viewingThread.id);
+                        setShowThreadModal(false);
+                        setViewingThread(null);
+                      }} 
+                      variant="outline" 
+                      className="flex-1 border-red-500/30 text-red-500 hover:bg-red-500/10"
+                    >
+                      <X className="w-4 h-4" /> Ban User
+                    </Button>
+                  </>
+                )}
+                <Button onClick={() => {
+                  setShowThreadModal(false);
+                  setViewingThread(null);
+                }} variant="outline" className={viewingThread.flagged ? "" : "w-full"}>Close</Button>
               </div>
             </div>
           </div>
