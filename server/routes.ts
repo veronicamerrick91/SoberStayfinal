@@ -6,6 +6,8 @@ import { insertListingSchema, insertSubscriptionSchema, insertUserSchema } from 
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import { authenticator } from "otplib";
+import QRCode from "qrcode";
 import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml, sendApplicationReceivedEmail, sendNewApplicationNotification, sendApplicationApprovedEmail, sendApplicationDeniedEmail, sendPaymentReminderEmail, sendAdminContactEmail } from "./email";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
@@ -1416,6 +1418,133 @@ Disallow: /auth/
     } catch (error) {
       console.error("Error updating application status:", error);
       res.status(500).json({ error: "Failed to update application status" });
+    }
+  });
+
+  // Two-Factor Authentication endpoints for providers
+  app.get("/api/provider/2fa/status", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const profile = await storage.getProviderProfile(user.id);
+      res.json({ 
+        enabled: profile?.twoFactorEnabled || false 
+      });
+    } catch (error) {
+      console.error("Error fetching 2FA status:", error);
+      res.status(500).json({ error: "Failed to fetch 2FA status" });
+    }
+  });
+
+  app.post("/api/provider/2fa/setup", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      // Generate a new secret
+      const secret = authenticator.generateSecret();
+      
+      // Generate the OTP Auth URL for the QR code
+      const userEmail = user.email || user.username;
+      const otpAuthUrl = authenticator.keyuri(userEmail, "Sober Stay", secret);
+      
+      // Generate QR code as data URL
+      const qrCodeDataUrl = await QRCode.toDataURL(otpAuthUrl);
+      
+      // Store the secret temporarily (not enabled yet until verified)
+      await storage.createOrUpdateProviderProfile(user.id, {
+        twoFactorSecret: secret,
+        twoFactorEnabled: false
+      });
+      
+      res.json({ 
+        secret, 
+        qrCode: qrCodeDataUrl,
+        otpAuthUrl 
+      });
+    } catch (error) {
+      console.error("Error setting up 2FA:", error);
+      res.status(500).json({ error: "Failed to setup 2FA" });
+    }
+  });
+
+  app.post("/api/provider/2fa/verify", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { token } = req.body;
+      if (!token) {
+        return res.status(400).json({ error: "Token is required" });
+      }
+      
+      const profile = await storage.getProviderProfile(user.id);
+      if (!profile?.twoFactorSecret) {
+        return res.status(400).json({ error: "2FA not setup. Please setup first." });
+      }
+      
+      // Verify the token
+      const isValid = authenticator.verify({ 
+        token, 
+        secret: profile.twoFactorSecret 
+      });
+      
+      if (!isValid) {
+        return res.status(400).json({ error: "Invalid verification code" });
+      }
+      
+      // Enable 2FA
+      await storage.createOrUpdateProviderProfile(user.id, {
+        twoFactorEnabled: true
+      });
+      
+      res.json({ success: true, message: "Two-factor authentication enabled" });
+    } catch (error) {
+      console.error("Error verifying 2FA:", error);
+      res.status(500).json({ error: "Failed to verify 2FA" });
+    }
+  });
+
+  app.post("/api/provider/2fa/disable", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { token } = req.body;
+      if (!token) {
+        return res.status(400).json({ error: "Token is required to disable 2FA" });
+      }
+      
+      const profile = await storage.getProviderProfile(user.id);
+      if (!profile?.twoFactorSecret || !profile?.twoFactorEnabled) {
+        return res.status(400).json({ error: "2FA is not enabled" });
+      }
+      
+      // Verify the token before disabling
+      const isValid = authenticator.verify({ 
+        token, 
+        secret: profile.twoFactorSecret 
+      });
+      
+      if (!isValid) {
+        return res.status(400).json({ error: "Invalid verification code" });
+      }
+      
+      // Disable 2FA and clear secret
+      await storage.createOrUpdateProviderProfile(user.id, {
+        twoFactorSecret: null,
+        twoFactorEnabled: false
+      });
+      
+      res.json({ success: true, message: "Two-factor authentication disabled" });
+    } catch (error) {
+      console.error("Error disabling 2FA:", error);
+      res.status(500).json({ error: "Failed to disable 2FA" });
     }
   });
 

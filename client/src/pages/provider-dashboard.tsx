@@ -98,6 +98,15 @@ function ProviderDashboardContent() {
   // Provider verification state
   const [isDocumentsVerified, setIsDocumentsVerified] = useState(false);
   
+  // Two-Factor Authentication state
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [show2FASetupModal, setShow2FASetupModal] = useState(false);
+  const [twoFactorQRCode, setTwoFactorQRCode] = useState<string>("");
+  const [twoFactorSecret, setTwoFactorSecret] = useState<string>("");
+  const [twoFactorToken, setTwoFactorToken] = useState("");
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+  const [twoFactorError, setTwoFactorError] = useState("");
+  
   // Provider marketing templates with triggers
   const [providerTemplates, setProviderTemplates] = useState([
     { id: 1, name: "New Listing Announcement", type: "Email", uses: 12, trigger: "none", audience: "interested-tenants" },
@@ -131,6 +140,92 @@ function ProviderDashboardContent() {
     ));
     // In a real app, this would log the reason
     console.log(`Application ${id} denied because: ${reason}`);
+  };
+
+  // Two-Factor Authentication handlers
+  const handleSetup2FA = async () => {
+    setTwoFactorLoading(true);
+    setTwoFactorError("");
+    try {
+      const res = await fetch('/api/provider/2fa/setup', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTwoFactorQRCode(data.qrCode);
+        setTwoFactorSecret(data.secret);
+        setShow2FASetupModal(true);
+      } else {
+        const error = await res.json();
+        setTwoFactorError(error.error || "Failed to setup 2FA");
+      }
+    } catch (err) {
+      console.error("Error setting up 2FA:", err);
+      setTwoFactorError("Failed to setup 2FA");
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
+
+  const handleVerify2FA = async () => {
+    if (!twoFactorToken || twoFactorToken.length !== 6) {
+      setTwoFactorError("Please enter a 6-digit code");
+      return;
+    }
+    setTwoFactorLoading(true);
+    setTwoFactorError("");
+    try {
+      const res = await fetch('/api/provider/2fa/verify', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: twoFactorToken })
+      });
+      if (res.ok) {
+        setTwoFactorEnabled(true);
+        setShow2FASetupModal(false);
+        setTwoFactorToken("");
+        setTwoFactorQRCode("");
+        setTwoFactorSecret("");
+      } else {
+        const error = await res.json();
+        setTwoFactorError(error.error || "Invalid verification code");
+      }
+    } catch (err) {
+      console.error("Error verifying 2FA:", err);
+      setTwoFactorError("Failed to verify code");
+    } finally {
+      setTwoFactorLoading(false);
+    }
+  };
+
+  const handleDisable2FA = async () => {
+    const token = prompt("Enter your current 6-digit authenticator code to disable 2FA:");
+    if (!token || token.length !== 6) {
+      return;
+    }
+    setTwoFactorLoading(true);
+    try {
+      const res = await fetch('/api/provider/2fa/disable', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      if (res.ok) {
+        setTwoFactorEnabled(false);
+      } else {
+        const error = await res.json();
+        alert(error.error || "Failed to disable 2FA");
+      }
+    } catch (err) {
+      console.error("Error disabling 2FA:", err);
+      alert("Failed to disable 2FA");
+    } finally {
+      setTwoFactorLoading(false);
+    }
   };
 
   const handleBoostListing = async () => {
@@ -274,12 +369,27 @@ function ProviderDashboardContent() {
         if (res.ok) {
           const profile = await res.json();
           setIsDocumentsVerified(profile.documentsVerified === true);
+          setTwoFactorEnabled(profile.twoFactorEnabled === true);
         }
       } catch (err) {
         console.error("Error fetching verification status:", err);
       }
     };
     fetchVerificationStatus();
+    
+    // Also fetch 2FA status from dedicated endpoint
+    const fetch2FAStatus = async () => {
+      try {
+        const res = await fetch('/api/provider/2fa/status', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setTwoFactorEnabled(data.enabled === true);
+        }
+      } catch (err) {
+        console.error("Error fetching 2FA status:", err);
+      }
+    };
+    fetch2FAStatus();
     
     // Fetch real applications from API
     const fetchApplications = async () => {
@@ -1451,7 +1561,31 @@ function ProviderDashboardContent() {
                         <p className="text-xs text-muted-foreground">Add extra security to your account</p>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-xs text-muted-foreground border-muted-foreground/50">Coming Soon</Badge>
+                    {twoFactorEnabled ? (
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-green-500/80 text-white">Enabled</Badge>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-xs text-red-400 border-red-400/50 hover:bg-red-500/10"
+                          onClick={handleDisable2FA}
+                          disabled={twoFactorLoading}
+                          data-testid="button-disable-2fa"
+                        >
+                          Disable
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button 
+                        size="sm" 
+                        className="bg-primary hover:bg-primary/80"
+                        onClick={handleSetup2FA}
+                        disabled={twoFactorLoading}
+                        data-testid="button-enable-2fa"
+                      >
+                        {twoFactorLoading ? "Loading..." : "Enable"}
+                      </Button>
+                    )}
                   </div>
                   
                   <div className="space-y-2">
@@ -1829,6 +1963,74 @@ function ProviderDashboardContent() {
                   data-testid="button-cancel-boost"
                 >
                   Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Two-Factor Authentication Setup Modal */}
+        {show2FASetupModal && (
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+            <div className="bg-card border border-border rounded-xl max-w-md w-full p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-white">Set Up Two-Factor Authentication</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setShow2FASetupModal(false);
+                    setTwoFactorToken("");
+                    setTwoFactorError("");
+                  }}
+                  data-testid="button-close-2fa-modal"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.):
+                </p>
+                
+                {twoFactorQRCode && (
+                  <div className="flex justify-center p-4 bg-white rounded-lg">
+                    <img src={twoFactorQRCode} alt="2FA QR Code" className="w-48 h-48" data-testid="img-2fa-qrcode" />
+                  </div>
+                )}
+                
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Or enter this code manually:</p>
+                  <code className="text-sm bg-background px-2 py-1 rounded font-mono text-primary" data-testid="text-2fa-secret">
+                    {twoFactorSecret}
+                  </code>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-white text-sm">Enter the 6-digit code from your app:</Label>
+                  <Input
+                    type="text"
+                    maxLength={6}
+                    placeholder="000000"
+                    value={twoFactorToken}
+                    onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, ''))}
+                    className="bg-background/60 border-2 border-primary/40 text-center text-xl tracking-widest font-mono"
+                    data-testid="input-2fa-token"
+                  />
+                </div>
+                
+                {twoFactorError && (
+                  <p className="text-sm text-red-400 text-center" data-testid="text-2fa-error">{twoFactorError}</p>
+                )}
+                
+                <Button 
+                  className="w-full bg-primary hover:bg-primary/80"
+                  onClick={handleVerify2FA}
+                  disabled={twoFactorLoading || twoFactorToken.length !== 6}
+                  data-testid="button-verify-2fa"
+                >
+                  {twoFactorLoading ? "Verifying..." : "Verify and Enable 2FA"}
                 </Button>
               </div>
             </div>
