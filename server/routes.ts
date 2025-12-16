@@ -6,7 +6,7 @@ import { insertListingSchema, insertSubscriptionSchema, insertUserSchema } from 
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml } from "./email";
+import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml, sendApplicationReceivedEmail, sendNewApplicationNotification, sendApplicationApprovedEmail, sendApplicationDeniedEmail } from "./email";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import { sql } from "drizzle-orm";
@@ -1066,6 +1066,40 @@ Disallow: /auth/
         status: "pending",
       });
       
+      // Send email notifications (non-blocking)
+      try {
+        const listing = await storage.getListing(listingId);
+        const tenant = await storage.getUser(user.id);
+        
+        if (listing && tenant) {
+          const provider = await storage.getUser(listing.providerId);
+          const providerProfile = await storage.getProviderProfile(listing.providerId);
+          const providerName = providerProfile?.companyName || provider?.name || 'The Provider';
+          const tenantName = tenant.name || 'Tenant';
+          
+          // Send confirmation to tenant
+          sendApplicationReceivedEmail(
+            tenant.email,
+            tenantName,
+            listing.propertyName,
+            providerName
+          ).catch(err => console.error('Failed to send tenant confirmation email:', err));
+          
+          // Send notification to provider
+          if (provider) {
+            sendNewApplicationNotification(
+              provider.email,
+              providerName,
+              tenantName,
+              listing.propertyName
+            ).catch(err => console.error('Failed to send provider notification email:', err));
+          }
+        }
+      } catch (emailError) {
+        console.error("Error sending application emails:", emailError);
+        // Don't fail the request if emails fail
+      }
+      
       res.status(201).json(application);
     } catch (error) {
       console.error("Error creating application:", error);
@@ -1085,6 +1119,104 @@ Disallow: /auth/
     } catch (error) {
       console.error("Error fetching applications:", error);
       res.status(500).json({ error: "Failed to fetch applications" });
+    }
+  });
+
+  // Get applications for a provider (all applications for their listings)
+  app.get("/api/provider/applications", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const applications = await storage.getApplicationsByProvider(user.id);
+      
+      // Enrich with tenant and listing info
+      const enrichedApplications = await Promise.all(applications.map(async (app) => {
+        const tenant = await storage.getUser(app.tenantId);
+        const listing = await storage.getListing(app.listingId);
+        return {
+          ...app,
+          tenantName: tenant?.name || 'Unknown',
+          tenantEmail: tenant?.email || '',
+          propertyName: listing?.propertyName || 'Unknown Property',
+        };
+      }));
+      
+      res.json(enrichedApplications);
+    } catch (error) {
+      console.error("Error fetching provider applications:", error);
+      res.status(500).json({ error: "Failed to fetch applications" });
+    }
+  });
+
+  // Update application status (for providers)
+  app.patch("/api/provider/applications/:id/status", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    try {
+      const appId = parseInt(req.params.id);
+      if (isNaN(appId)) {
+        return res.status(400).json({ error: "Invalid application ID" });
+      }
+      
+      const { status, reason } = req.body;
+      if (!status || !['approved', 'rejected', 'pending'].includes(status)) {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+      
+      // Verify the application belongs to one of the provider's listings
+      const application = await storage.getApplication(appId);
+      if (!application) {
+        return res.status(404).json({ error: "Application not found" });
+      }
+      
+      const listing = await storage.getListing(application.listingId);
+      if (!listing || listing.providerId !== user.id) {
+        return res.status(403).json({ error: "Not authorized to update this application" });
+      }
+      
+      // Update the status
+      const updated = await storage.updateApplicationStatus(appId, status);
+      
+      // Send email notification to tenant
+      try {
+        const tenant = await storage.getUser(application.tenantId);
+        const providerProfile = await storage.getProviderProfile(user.id);
+        const provider = await storage.getUser(user.id);
+        
+        if (tenant) {
+          const tenantName = tenant.name || 'Tenant';
+          const providerName = providerProfile?.companyName || provider?.name || 'The Provider';
+          
+          if (status === 'approved') {
+            sendApplicationApprovedEmail(
+              tenant.email,
+              tenantName,
+              listing.propertyName,
+              providerName
+            ).catch(err => console.error('Failed to send approval email:', err));
+          } else if (status === 'rejected') {
+            sendApplicationDeniedEmail(
+              tenant.email,
+              tenantName,
+              listing.propertyName,
+              providerName,
+              reason
+            ).catch(err => console.error('Failed to send rejection email:', err));
+          }
+        }
+      } catch (emailError) {
+        console.error("Error sending status update email:", emailError);
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating application status:", error);
+      res.status(500).json({ error: "Failed to update application status" });
     }
   });
 

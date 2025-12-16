@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gt, lt, isNull, or, desc, count } from "drizzle-orm";
+import { eq, and, gt, lt, isNull, or, desc, count, inArray } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -62,8 +62,11 @@ export interface IStorage {
   
   // Applications
   createApplication(application: InsertApplication): Promise<Application>;
+  getApplication(id: number): Promise<Application | undefined>;
   getApplicationsByTenant(tenantId: number): Promise<Application[]>;
   getApplicationsByListing(listingId: number): Promise<Application[]>;
+  getApplicationsByProvider(providerId: number): Promise<Application[]>;
+  updateApplicationStatus(id: number, status: string): Promise<Application | undefined>;
   
   // Promo Codes
   getAllPromoCodes(): Promise<PromoCode[]>;
@@ -497,6 +500,39 @@ export class DatabaseStorage implements IStorage {
       .from(applications)
       .where(eq(applications.listingId, listingId))
       .orderBy(desc(applications.createdAt));
+  }
+
+  async getApplication(id: number): Promise<Application | undefined> {
+    const [application] = await db
+      .select()
+      .from(applications)
+      .where(eq(applications.id, id));
+    return application;
+  }
+
+  async getApplicationsByProvider(providerId: number): Promise<Application[]> {
+    const providerListings = await db
+      .select({ id: listings.id })
+      .from(listings)
+      .where(eq(listings.providerId, providerId));
+    
+    const listingIds = providerListings.map(l => l.id);
+    if (listingIds.length === 0) return [];
+    
+    return await db
+      .select()
+      .from(applications)
+      .where(inArray(applications.listingId, listingIds))
+      .orderBy(desc(applications.createdAt));
+  }
+
+  async updateApplicationStatus(id: number, status: string): Promise<Application | undefined> {
+    const [updated] = await db
+      .update(applications)
+      .set({ status })
+      .where(eq(applications.id, id))
+      .returning();
+    return updated;
   }
 
   // Promo Code methods

@@ -386,3 +386,301 @@ export async function sendListingsHiddenEmail(email: string, providerName: strin
     return false;
   }
 }
+
+// Application Notification Emails
+
+export async function sendApplicationReceivedEmail(
+  tenantEmail: string, 
+  tenantName: string, 
+  propertyName: string,
+  providerName: string
+): Promise<boolean> {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      to: tenantEmail,
+      subject: 'Application Received - Sober Stay Homes',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f172a; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+                  <tr>
+                    <td style="padding: 40px 30px; text-align: center;">
+                      <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 60px; height: 60px; border-radius: 12px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 28px;">✓</span>
+                      </div>
+                      <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 16px;">Application Received!</h1>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Hi ${tenantName},
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Your application for <strong style="color: #10b981;">${propertyName}</strong> has been successfully submitted to ${providerName}.
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 32px;">
+                        The provider will review your application and get back to you soon. You can track your application status in your tenant dashboard.
+                      </p>
+                      <p style="color: #64748b; font-size: 14px; margin: 0;">
+                        Thank you for using Sober Stay Homes!
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 24px 30px; border-top: 1px solid #334155; text-align: center;">
+                      <p style="color: #475569; font-size: 12px; margin: 0;">
+                        © ${new Date().getFullYear()} Sober Stay Homes. All rights reserved.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error('Failed to send application received email:', error);
+      return false;
+    }
+
+    console.log('Application received email sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Error sending application received email:', error);
+    return false;
+  }
+}
+
+export async function sendNewApplicationNotification(
+  providerEmail: string,
+  providerName: string,
+  tenantName: string,
+  propertyName: string
+): Promise<boolean> {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      to: providerEmail,
+      subject: 'New Application Received - Sober Stay Homes',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f172a; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+                  <tr>
+                    <td style="padding: 40px 30px; text-align: center;">
+                      <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); width: 60px; height: 60px; border-radius: 12px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 28px;">📋</span>
+                      </div>
+                      <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 16px;">New Application!</h1>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Hi ${providerName},
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        You've received a new application from <strong style="color: #3b82f6;">${tenantName}</strong> for your property <strong style="color: #10b981;">${propertyName}</strong>.
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 32px;">
+                        Log in to your Provider Dashboard to review the application and respond to the applicant.
+                      </p>
+                      <p style="color: #64748b; font-size: 14px; margin: 0;">
+                        Quick responses help build trust with potential tenants!
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 24px 30px; border-top: 1px solid #334155; text-align: center;">
+                      <p style="color: #475569; font-size: 12px; margin: 0;">
+                        © ${new Date().getFullYear()} Sober Stay Homes. All rights reserved.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error('Failed to send new application notification:', error);
+      return false;
+    }
+
+    console.log('New application notification sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Error sending new application notification:', error);
+    return false;
+  }
+}
+
+export async function sendApplicationApprovedEmail(
+  tenantEmail: string,
+  tenantName: string,
+  propertyName: string,
+  providerName: string
+): Promise<boolean> {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      to: tenantEmail,
+      subject: 'Application Approved! - Sober Stay Homes',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f172a; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+                  <tr>
+                    <td style="padding: 40px 30px; text-align: center;">
+                      <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 60px; height: 60px; border-radius: 12px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 28px;">🎉</span>
+                      </div>
+                      <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 16px;">Congratulations!</h1>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Hi ${tenantName},
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Great news! Your application for <strong style="color: #10b981;">${propertyName}</strong> has been <strong style="color: #10b981;">approved</strong> by ${providerName}.
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 32px;">
+                        The provider will be reaching out to you soon with next steps. You can also message them directly through your tenant dashboard.
+                      </p>
+                      <p style="color: #64748b; font-size: 14px; margin: 0;">
+                        We're excited to help you on your recovery journey!
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 24px 30px; border-top: 1px solid #334155; text-align: center;">
+                      <p style="color: #475569; font-size: 12px; margin: 0;">
+                        © ${new Date().getFullYear()} Sober Stay Homes. All rights reserved.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error('Failed to send application approved email:', error);
+      return false;
+    }
+
+    console.log('Application approved email sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Error sending application approved email:', error);
+    return false;
+  }
+}
+
+export async function sendApplicationDeniedEmail(
+  tenantEmail: string,
+  tenantName: string,
+  propertyName: string,
+  providerName: string,
+  reason?: string
+): Promise<boolean> {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: `${APP_NAME} <${FROM_EMAIL}>`,
+      to: tenantEmail,
+      subject: 'Application Update - Sober Stay Homes',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f172a; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+                  <tr>
+                    <td style="padding: 40px 30px; text-align: center;">
+                      <div style="background: linear-gradient(135deg, #64748b 0%, #475569 100%); width: 60px; height: 60px; border-radius: 12px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 28px;">📝</span>
+                      </div>
+                      <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 16px;">Application Update</h1>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Hi ${tenantName},
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        We wanted to let you know that your application for <strong style="color: #94a3b8;">${propertyName}</strong> was not selected by ${providerName} at this time.
+                      </p>
+                      ${reason ? `
+                      <div style="background-color: #334155; border-radius: 8px; padding: 16px; margin: 0 0 24px;">
+                        <p style="color: #94a3b8; font-size: 14px; line-height: 1.5; margin: 0;">
+                          <strong style="color: #cbd5e1;">Provider's note:</strong> ${reason}
+                        </p>
+                      </div>
+                      ` : ''}
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 32px;">
+                        Don't be discouraged! There are many other great sober living homes on our platform. Keep searching and you'll find the right fit for your recovery journey.
+                      </p>
+                      <p style="color: #64748b; font-size: 14px; margin: 0;">
+                        We're here to support you every step of the way.
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 24px 30px; border-top: 1px solid #334155; text-align: center;">
+                      <p style="color: #475569; font-size: 12px; margin: 0;">
+                        © ${new Date().getFullYear()} Sober Stay Homes. All rights reserved.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error('Failed to send application denied email:', error);
+      return false;
+    }
+
+    console.log('Application denied email sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Error sending application denied email:', error);
+    return false;
+  }
+}

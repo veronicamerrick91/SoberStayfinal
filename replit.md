@@ -36,6 +36,12 @@ The platform uses a monorepo structure for code organization. Session-based auth
 
 ### Email Service
 - **Resend API**: Transactional email service for password resets, admin campaigns, and notifications.
+- **Application Notification Emails** (Implemented):
+  - Tenant receives confirmation when application is submitted
+  - Provider receives notification when new application arrives
+  - Tenant receives email when application is approved
+  - Tenant receives email when application is denied (with optional reason)
+  - Endpoints: Application emails triggered automatically via POST /api/applications and PATCH /api/provider/applications/:id/status
 
 ### Payment Processing
 - **Stripe**: For provider subscriptions, integrated via `stripe-replit-sync` for real credit card payments, checkout flows, and customer portal management.
