@@ -1852,5 +1852,147 @@ Disallow: /auth/
     }
   });
 
+  // Blog Post Management endpoints
+
+  // Get all blog posts (admin only)
+  app.get("/api/admin/blog-posts", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const posts = await storage.getAllBlogPosts();
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+      res.status(500).json({ error: "Failed to fetch blog posts" });
+    }
+  });
+
+  // Get published blog posts (public)
+  app.get("/api/blog-posts", async (req, res) => {
+    try {
+      const posts = await storage.getPublishedBlogPosts();
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching published blog posts:", error);
+      res.status(500).json({ error: "Failed to fetch blog posts" });
+    }
+  });
+
+  // Get single blog post by slug (public)
+  app.get("/api/blog-posts/:slug", async (req, res) => {
+    try {
+      const post = await storage.getBlogPostBySlug(req.params.slug);
+      if (!post) {
+        return res.status(404).json({ error: "Blog post not found" });
+      }
+      res.json(post);
+    } catch (error) {
+      console.error("Error fetching blog post:", error);
+      res.status(500).json({ error: "Failed to fetch blog post" });
+    }
+  });
+
+  // Create blog post (admin only)
+  app.post("/api/admin/blog-posts", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { title, slug, excerpt, content, author, category, tags, status, scheduledAt } = req.body;
+      
+      if (!title || !slug || !content || !author || !category) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      
+      // Check if slug already exists
+      const existing = await storage.getBlogPostBySlug(slug);
+      if (existing) {
+        return res.status(400).json({ error: "A blog post with this slug already exists" });
+      }
+      
+      const post = await storage.createBlogPost({
+        title,
+        slug,
+        excerpt: excerpt || null,
+        content,
+        author,
+        category,
+        tags: tags || [],
+        status: status || "draft",
+        publishedAt: status === "published" ? new Date() : null,
+        scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
+      });
+      
+      res.status(201).json(post);
+    } catch (error) {
+      console.error("Error creating blog post:", error);
+      res.status(500).json({ error: "Failed to create blog post" });
+    }
+  });
+
+  // Update blog post (admin only)
+  app.patch("/api/admin/blog-posts/:id", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      const { title, slug, excerpt, content, author, category, tags, status, scheduledAt } = req.body;
+      
+      // If changing slug, check it doesn't conflict
+      if (slug) {
+        const existing = await storage.getBlogPostBySlug(slug);
+        if (existing && existing.id !== id) {
+          return res.status(400).json({ error: "A blog post with this slug already exists" });
+        }
+      }
+      
+      const updateData: any = {};
+      if (title !== undefined) updateData.title = title;
+      if (slug !== undefined) updateData.slug = slug;
+      if (excerpt !== undefined) updateData.excerpt = excerpt;
+      if (content !== undefined) updateData.content = content;
+      if (author !== undefined) updateData.author = author;
+      if (category !== undefined) updateData.category = category;
+      if (tags !== undefined) updateData.tags = tags;
+      if (status !== undefined) {
+        updateData.status = status;
+        if (status === "published") {
+          updateData.publishedAt = new Date();
+        }
+      }
+      if (scheduledAt !== undefined) updateData.scheduledAt = scheduledAt ? new Date(scheduledAt) : null;
+      
+      const post = await storage.updateBlogPost(id, updateData);
+      if (!post) {
+        return res.status(404).json({ error: "Blog post not found" });
+      }
+      res.json(post);
+    } catch (error) {
+      console.error("Error updating blog post:", error);
+      res.status(500).json({ error: "Failed to update blog post" });
+    }
+  });
+
+  // Delete blog post (admin only)
+  app.delete("/api/admin/blog-posts/:id", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteBlogPost(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting blog post:", error);
+      res.status(500).json({ error: "Failed to delete blog post" });
+    }
+  });
+
   return httpServer;
 }

@@ -170,6 +170,8 @@ export function AdminDashboard() {
   const [blogFontSize, setBlogFontSize] = useState(16);
   const [blogFontColor, setBlogFontColor] = useState("#ffffff");
   const [publishedBlogPosts, setPublishedBlogPosts] = useState<any[]>([]);
+  const [databaseBlogPosts, setDatabaseBlogPosts] = useState<any[]>([]);
+  const [editingBlogPostId, setEditingBlogPostId] = useState<number | null>(null);
   const [blogPublishSuccess, setBlogPublishSuccess] = useState(false);
   const [blogAuthor, setBlogAuthor] = useState("Admin");
   const [blogTags, setBlogTags] = useState("");
@@ -331,11 +333,12 @@ export function AdminDashboard() {
     // Fetch real data from database
     const fetchAdminData = async () => {
       try {
-        const [usersRes, listingsRes, promosRes, featuredRes] = await Promise.all([
+        const [usersRes, listingsRes, promosRes, featuredRes, blogPostsRes] = await Promise.all([
           fetch('/api/admin/users', { credentials: 'include' }),
           fetch('/api/admin/listings', { credentials: 'include' }),
           fetch('/api/admin/promos', { credentials: 'include' }),
-          fetch('/api/admin/featured-listings', { credentials: 'include' })
+          fetch('/api/admin/featured-listings', { credentials: 'include' }),
+          fetch('/api/admin/blog-posts', { credentials: 'include' })
         ]);
         
         if (usersRes.ok) {
@@ -399,6 +402,11 @@ export function AdminDashboard() {
         if (featuredRes.ok) {
           const featuredData = await featuredRes.json();
           setAdminFeaturedListings(featuredData);
+        }
+        
+        if (blogPostsRes.ok) {
+          const blogPostsData = await blogPostsRes.json();
+          setDatabaseBlogPosts(blogPostsData);
         }
         
         // Sample applications data
@@ -1209,6 +1217,7 @@ the actual document file stored on the server.
     setBlogSlug("");
     setBlogScheduleDate("");
     setBlogAutoSaved(false);
+    setEditingBlogPostId(null);
     setShowBlogModal(true);
   };
 
@@ -1286,29 +1295,95 @@ the actual document file stored on the server.
     setShowBlogModal(false);
   };
 
-  const handlePublishBlog = () => {
+  const handlePublishBlog = async () => {
     if (blogTitle.trim() && blogContent.trim()) {
-      const newPost = {
-        id: `admin-${Date.now()}`,
-        title: blogTitle,
-        excerpt: blogExcerpt || blogContent.substring(0, 150) + "...",
-        content: blogContent,
-        author: blogAuthor || "Admin",
-        date: blogScheduleDate ? new Date(blogScheduleDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-        category: blogCategory,
-        tags: blogTags.split(",").map(t => t.trim()).filter(t => t),
-        slug: blogSlug || generateSlug(blogTitle)
-      };
-      setPublishedBlogPosts([newPost, ...publishedBlogPosts]);
-      
-      const existingPosts = JSON.parse(localStorage.getItem("sober-stay-admin-posts") || "[]");
-      localStorage.setItem("sober-stay-admin-posts", JSON.stringify([newPost, ...existingPosts]));
-      
-      setBlogPublishSuccess(true);
-      setTimeout(() => setBlogPublishSuccess(false), 3000);
+      try {
+        const postData = {
+          title: blogTitle,
+          slug: blogSlug || generateSlug(blogTitle),
+          excerpt: blogExcerpt || blogContent.substring(0, 150) + "...",
+          content: blogContent,
+          author: blogAuthor || "Admin",
+          category: blogCategory,
+          tags: blogTags.split(",").map(t => t.trim()).filter(t => t),
+          status: "published",
+          scheduledAt: blogScheduleDate || null
+        };
+        
+        let res;
+        if (editingBlogPostId) {
+          // Update existing post
+          res = await fetch(`/api/admin/blog-posts/${editingBlogPostId}`, {
+            method: 'PATCH',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData)
+          });
+        } else {
+          // Create new post
+          res = await fetch('/api/admin/blog-posts', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData)
+          });
+        }
+        
+        if (res.ok) {
+          const savedPost = await res.json();
+          if (editingBlogPostId) {
+            setDatabaseBlogPosts(prev => prev.map(p => p.id === editingBlogPostId ? savedPost : p));
+          } else {
+            setDatabaseBlogPosts(prev => [savedPost, ...prev]);
+          }
+          setBlogPublishSuccess(true);
+          setTimeout(() => setBlogPublishSuccess(false), 3000);
+          setEditingBlogPostId(null);
+        } else {
+          const error = await res.json();
+          toast({ title: "Error", description: error.error || "Failed to save blog post", variant: "destructive" });
+        }
+      } catch (error) {
+        console.error("Error saving blog post:", error);
+        toast({ title: "Error", description: "Failed to save blog post", variant: "destructive" });
+      }
     }
     setShowBlogModal(false);
     setShowBlogEditor(false);
+  };
+
+  const handleEditBlogPost = (post: any) => {
+    setBlogTitle(post.title);
+    setBlogContent(post.content);
+    setBlogExcerpt(post.excerpt || "");
+    setBlogCategory(post.category);
+    setBlogAuthor(post.author);
+    setBlogTags(Array.isArray(post.tags) ? post.tags.join(", ") : "");
+    setBlogSlug(post.slug);
+    setBlogScheduleDate(post.scheduledAt ? new Date(post.scheduledAt).toISOString().split('T')[0] : "");
+    setEditingBlogPostId(post.id);
+    setShowBlogModal(true);
+  };
+
+  const handleDeleteBlogPost = async (postId: number) => {
+    if (!confirm("Are you sure you want to delete this blog post?")) return;
+    
+    try {
+      const res = await fetch(`/api/admin/blog-posts/${postId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      if (res.ok) {
+        setDatabaseBlogPosts(prev => prev.filter(p => p.id !== postId));
+        toast({ title: "Success", description: "Blog post deleted" });
+      } else {
+        toast({ title: "Error", description: "Failed to delete blog post", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("Error deleting blog post:", error);
+      toast({ title: "Error", description: "Failed to delete blog post", variant: "destructive" });
+    }
   };
 
   const handleCreatePromo = async () => {
@@ -3253,30 +3328,58 @@ the actual document file stored on the server.
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {[
-                    { title: "Recovery Tips for New Residents", views: 2400, posts: 12, status: "Published" },
-                    { title: "Understanding Sober Living", views: 1890, posts: 8, status: "Published" },
-                    { title: "Finding the Right Recovery Home", views: 0, posts: 0, status: "Draft" },
-                  ].map((blog, i) => (
-                    <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1">
-                          <p className="text-white font-semibold text-sm">{blog.title}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{blog.posts} articles</p>
-                        </div>
-                        <Badge className={blog.status === "Published" ? "bg-green-500/80" : "bg-gray-600"}>{blog.status}</Badge>
-                      </div>
-                      <div className="text-xs text-gray-300 mb-3">{blog.views.toLocaleString()} views</div>
-                      <div className="space-y-1">
-                        <input type="text" placeholder="Meta description" className="w-full px-3 py-2 rounded-lg text-xs bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white" />
-                        <input type="text" placeholder="SEO keywords" className="w-full px-3 py-2 rounded-lg text-xs bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white" />
-                      </div>
-                      <div className="flex gap-2 mt-2">
-                        <Button onClick={() => { setBlogTitle(blog.title); setBlogContent(""); setShowBlogEditor(true); }} size="sm" variant="ghost" className="text-xs h-7">Edit</Button>
-                        <Button onClick={handlePublishBlog} size="sm" variant="ghost" className="text-xs h-7">Publish</Button>
-                      </div>
+                  {databaseBlogPosts.length === 0 ? (
+                    <div className="col-span-2 text-center py-8 text-muted-foreground">
+                      <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p className="text-sm">No blog posts yet. Create your first post to get started.</p>
                     </div>
-                  ))}
+                  ) : (
+                    databaseBlogPosts.map((post) => (
+                      <div key={post.id} className="p-4 rounded-lg bg-white/5 border border-white/10" data-testid={`blog-post-${post.id}`}>
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <p className="text-white font-semibold text-sm">{post.title}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{post.category} • {post.author}</p>
+                          </div>
+                          <Badge className={post.status === "published" ? "bg-green-500/80" : post.status === "scheduled" ? "bg-blue-500/80" : "bg-gray-600"}>
+                            {post.status === "published" ? "Published" : post.status === "scheduled" ? "Scheduled" : "Draft"}
+                          </Badge>
+                        </div>
+                        <div className="text-xs text-gray-300 mb-2 line-clamp-2">{post.excerpt}</div>
+                        <div className="text-xs text-gray-400 mb-3">
+                          {post.publishedAt ? `Published: ${new Date(post.publishedAt).toLocaleDateString()}` : `Created: ${new Date(post.createdAt).toLocaleDateString()}`}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={() => handleEditBlogPost(post)} 
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-xs h-7"
+                            data-testid={`button-edit-blog-${post.id}`}
+                          >
+                            Edit
+                          </Button>
+                          <Button 
+                            onClick={() => handleDeleteBlogPost(post.id)} 
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-xs h-7 text-red-400 hover:text-red-300"
+                            data-testid={`button-delete-blog-${post.id}`}
+                          >
+                            Delete
+                          </Button>
+                          <a 
+                            href={`/blog/${post.slug}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="ml-auto"
+                          >
+                            <Button size="sm" variant="ghost" className="text-xs h-7 text-primary">View</Button>
+                          </a>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
                 <Button onClick={handleCreateBlog} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
                   <Plus className="w-4 h-4" /> Create Blog Post
@@ -4259,8 +4362,8 @@ the actual document file stored on the server.
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-bold text-white">Content Editor</h2>
-                    <p className="text-xs text-muted-foreground mt-1">Create and publish blog content</p>
+                    <h2 className="text-xl font-bold text-white">{editingBlogPostId ? "Edit Blog Post" : "Create Blog Post"}</h2>
+                    <p className="text-xs text-muted-foreground mt-1">{editingBlogPostId ? "Update your blog content" : "Create and publish blog content"}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     {blogAutoSaved && (
@@ -4497,9 +4600,9 @@ Use the toolbar above for formatting, or write in Markdown:
                   <Save className="w-4 h-4" /> Save Draft
                 </Button>
                 <Button onClick={handlePublishBlog} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
-                  <CheckCircle className="w-4 h-4" /> {blogScheduleDate ? "Schedule" : "Publish Now"}
+                  <CheckCircle className="w-4 h-4" /> {editingBlogPostId ? "Update Post" : (blogScheduleDate ? "Schedule" : "Publish Now")}
                 </Button>
-                <Button onClick={() => setShowBlogModal(false)} variant="outline">Cancel</Button>
+                <Button onClick={() => { setShowBlogModal(false); setEditingBlogPostId(null); }} variant="outline">Cancel</Button>
               </div>
             </div>
           </div>
