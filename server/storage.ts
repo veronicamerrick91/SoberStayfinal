@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes } from "@shared/schema";
+import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, lt, isNull, or, desc, count } from "drizzle-orm";
 import session from "express-session";
@@ -71,6 +71,17 @@ export interface IStorage {
   updatePromoCode(id: number, data: Partial<InsertPromoCode>): Promise<PromoCode | undefined>;
   deletePromoCode(id: number): Promise<void>;
   incrementPromoCodeUsage(id: number): Promise<PromoCode | undefined>;
+  
+  // Featured Listings
+  getAllFeaturedListings(): Promise<FeaturedListing[]>;
+  getActiveFeaturedListings(): Promise<FeaturedListing[]>;
+  getFeaturedListing(id: number): Promise<FeaturedListing | undefined>;
+  getFeaturedListingByListingId(listingId: number): Promise<FeaturedListing | undefined>;
+  getFeaturedListingsByProvider(providerId: number): Promise<FeaturedListing[]>;
+  createFeaturedListing(featured: InsertFeaturedListing): Promise<FeaturedListing>;
+  updateFeaturedListing(id: number, data: Partial<InsertFeaturedListing>): Promise<FeaturedListing | undefined>;
+  deactivateFeaturedListing(id: number): Promise<void>;
+  deactivateExpiredFeaturedListings(): Promise<void>;
   
   sessionStore: session.Store;
 }
@@ -514,6 +525,90 @@ export class DatabaseStorage implements IStorage {
       .where(eq(promoCodes.id, id))
       .returning();
     return updated;
+  }
+
+  // Featured Listings methods
+  async getAllFeaturedListings(): Promise<FeaturedListing[]> {
+    return await db.select().from(featuredListings).orderBy(desc(featuredListings.createdAt));
+  }
+
+  async getActiveFeaturedListings(): Promise<FeaturedListing[]> {
+    const now = new Date();
+    return await db
+      .select()
+      .from(featuredListings)
+      .where(
+        and(
+          eq(featuredListings.isActive, true),
+          gt(featuredListings.endDate, now)
+        )
+      )
+      .orderBy(desc(featuredListings.boostLevel));
+  }
+
+  async getFeaturedListing(id: number): Promise<FeaturedListing | undefined> {
+    const [featured] = await db.select().from(featuredListings).where(eq(featuredListings.id, id));
+    return featured;
+  }
+
+  async getFeaturedListingByListingId(listingId: number): Promise<FeaturedListing | undefined> {
+    const now = new Date();
+    const [featured] = await db
+      .select()
+      .from(featuredListings)
+      .where(
+        and(
+          eq(featuredListings.listingId, listingId),
+          eq(featuredListings.isActive, true),
+          gt(featuredListings.endDate, now)
+        )
+      );
+    return featured;
+  }
+
+  async getFeaturedListingsByProvider(providerId: number): Promise<FeaturedListing[]> {
+    return await db
+      .select()
+      .from(featuredListings)
+      .where(eq(featuredListings.providerId, providerId))
+      .orderBy(desc(featuredListings.createdAt));
+  }
+
+  async createFeaturedListing(featured: InsertFeaturedListing): Promise<FeaturedListing> {
+    const [newFeatured] = await db
+      .insert(featuredListings)
+      .values(featured)
+      .returning();
+    return newFeatured;
+  }
+
+  async updateFeaturedListing(id: number, data: Partial<InsertFeaturedListing>): Promise<FeaturedListing | undefined> {
+    const [featured] = await db
+      .update(featuredListings)
+      .set(data)
+      .where(eq(featuredListings.id, id))
+      .returning();
+    return featured;
+  }
+
+  async deactivateFeaturedListing(id: number): Promise<void> {
+    await db
+      .update(featuredListings)
+      .set({ isActive: false })
+      .where(eq(featuredListings.id, id));
+  }
+
+  async deactivateExpiredFeaturedListings(): Promise<void> {
+    const now = new Date();
+    await db
+      .update(featuredListings)
+      .set({ isActive: false })
+      .where(
+        and(
+          eq(featuredListings.isActive, true),
+          lt(featuredListings.endDate, now)
+        )
+      );
   }
 }
 
