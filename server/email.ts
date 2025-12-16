@@ -1,8 +1,39 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Resend integration via Replit connector
+// WARNING: Never cache this client. Access tokens expire, so a new client must be created each time.
+async function getResendClient(): Promise<{ client: Resend; fromEmail: string }> {
+  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
+  const xReplitToken = process.env.REPL_IDENTITY 
+    ? 'repl ' + process.env.REPL_IDENTITY 
+    : process.env.WEB_REPL_RENEWAL 
+    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
+    : null;
 
-const FROM_EMAIL = 'onboarding@resend.dev'; // Using Resend's default verified domain for testing
+  if (!xReplitToken) {
+    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
+  }
+
+  const connectionSettings = await fetch(
+    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=resend',
+    {
+      headers: {
+        'Accept': 'application/json',
+        'X_REPLIT_TOKEN': xReplitToken
+      }
+    }
+  ).then(res => res.json()).then(data => data.items?.[0]);
+
+  if (!connectionSettings || !connectionSettings.settings?.api_key) {
+    throw new Error('Resend not connected');
+  }
+
+  return {
+    client: new Resend(connectionSettings.settings.api_key),
+    fromEmail: connectionSettings.settings.from_email || 'onboarding@resend.dev'
+  };
+}
+
 const SUPPORT_EMAIL = 'support@soberstayhomes.com';
 const APP_NAME = 'Sober Stay Homes';
 
@@ -15,8 +46,9 @@ export interface EmailOptions {
 
 export async function sendEmail(options: EmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    const { data, error } = await resend.emails.send({
-      from: options.from || `${APP_NAME} <${FROM_EMAIL}>`,
+    const { client, fromEmail } = await getResendClient();
+    const { data, error } = await client.emails.send({
+      from: options.from || `${APP_NAME} <${fromEmail}>`,
       to: Array.isArray(options.to) ? options.to : [options.to],
       subject: options.subject,
       html: options.html,
@@ -109,8 +141,9 @@ export function createMarketingEmailHtml(subject: string, body: string, previewT
 
 export async function sendPasswordResetEmail(email: string, resetToken: string, resetUrl: string): Promise<boolean> {
   try {
-    const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${FROM_EMAIL}>`,
+    const { client, fromEmail } = await getResendClient();
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
       to: email,
       subject: 'Reset Your Password - Sober Stay Homes',
       html: `
@@ -182,8 +215,9 @@ export async function sendRenewalReminderEmail(email: string, providerName: stri
       year: 'numeric' 
     });
     
-    const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${FROM_EMAIL}>`,
+    const { client, fromEmail } = await getResendClient();
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
       to: email,
       subject: 'Your Subscription Renews Soon - Sober Stay Homes',
       html: `
@@ -255,8 +289,9 @@ export async function sendSubscriptionCanceledEmail(email: string, providerName:
       year: 'numeric' 
     });
     
-    const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${FROM_EMAIL}>`,
+    const { client, fromEmail } = await getResendClient();
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
       to: email,
       subject: 'Your Subscription Has Been Canceled - Sober Stay Homes',
       html: `
@@ -322,8 +357,9 @@ export async function sendSubscriptionCanceledEmail(email: string, providerName:
 
 export async function sendListingsHiddenEmail(email: string, providerName: string): Promise<boolean> {
   try {
-    const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${FROM_EMAIL}>`,
+    const { client, fromEmail } = await getResendClient();
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
       to: email,
       subject: 'Your Listings Are Now Hidden - Sober Stay Homes',
       html: `
@@ -396,8 +432,9 @@ export async function sendApplicationReceivedEmail(
   providerName: string
 ): Promise<boolean> {
   try {
-    const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${FROM_EMAIL}>`,
+    const { client, fromEmail } = await getResendClient();
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
       to: tenantEmail,
       subject: 'Application Received - Sober Stay Homes',
       html: `
@@ -468,8 +505,9 @@ export async function sendNewApplicationNotification(
   propertyName: string
 ): Promise<boolean> {
   try {
-    const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${FROM_EMAIL}>`,
+    const { client, fromEmail } = await getResendClient();
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
       to: providerEmail,
       subject: 'New Application Received - Sober Stay Homes',
       html: `
@@ -540,8 +578,9 @@ export async function sendApplicationApprovedEmail(
   providerName: string
 ): Promise<boolean> {
   try {
-    const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${FROM_EMAIL}>`,
+    const { client, fromEmail } = await getResendClient();
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
       to: tenantEmail,
       subject: 'Application Approved! - Sober Stay Homes',
       html: `
@@ -613,8 +652,9 @@ export async function sendApplicationDeniedEmail(
   reason?: string
 ): Promise<boolean> {
   try {
-    const { data, error } = await resend.emails.send({
-      from: `${APP_NAME} <${FROM_EMAIL}>`,
+    const { client, fromEmail } = await getResendClient();
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
       to: tenantEmail,
       subject: 'Application Update - Sober Stay Homes',
       html: `
