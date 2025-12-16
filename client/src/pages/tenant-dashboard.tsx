@@ -52,7 +52,26 @@ interface TenantProfile {
 }
 
 
+// Wrapper component for authentication check
 export function TenantDashboard() {
+  const [location, setLocation] = useLocation();
+  
+  useEffect(() => {
+    const user = getAuth();
+    if (!user || user.role !== "tenant") {
+      setLocation("/login");
+    }
+  }, [setLocation]);
+  
+  const user = getAuth();
+  if (!user || user.role !== "tenant") {
+    return null;
+  }
+  
+  return <TenantDashboardContent />;
+}
+
+function TenantDashboardContent() {
   const [location, setLocation] = useLocation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [savedHomes, setSavedHomes] = useState<Listing[]>([]);

@@ -195,6 +195,24 @@ Disallow: /auth/
     }
   });
 
+  // Logout endpoint
+  app.post("/api/auth/logout", (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destroy error:", err);
+          return res.status(500).json({ error: "Failed to destroy session" });
+        }
+        res.clearCookie("connect.sid");
+        res.json({ success: true });
+      });
+    });
+  });
+
   // Forgot Password - Request password reset email
   app.post("/api/auth/forgot-password", async (req, res) => {
     try {

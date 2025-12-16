@@ -4,18 +4,55 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, Send } from "lucide-react";
+import { Mail, Send, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 export function Contact() {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Message Sent",
-      description: "We've received your message and will get back to you shortly.",
-    });
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, subject, message }),
+      });
+      
+      if (response.ok) {
+        toast({
+          title: "Message Sent",
+          description: "We've received your message and will get back to you shortly.",
+        });
+        setName("");
+        setEmail("");
+        setSubject("");
+        setMessage("");
+      } else {
+        const data = await response.json();
+        toast({
+          title: "Error",
+          description: data.error || "Failed to send message. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -65,17 +102,39 @@ export function Contact() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="name">Name</Label>
-                        <Input id="name" placeholder="Your name" required />
+                        <Input 
+                          id="name" 
+                          placeholder="Your name" 
+                          required 
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          data-testid="input-contact-name"
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" placeholder="your@email.com" required />
+                        <Input 
+                          id="email" 
+                          type="email" 
+                          placeholder="your@email.com" 
+                          required 
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          data-testid="input-contact-email"
+                        />
                       </div>
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="subject">Subject</Label>
-                      <Input id="subject" placeholder="How can we help?" required />
+                      <Input 
+                        id="subject" 
+                        placeholder="How can we help?" 
+                        required 
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
+                        data-testid="input-contact-subject"
+                      />
                     </div>
 
                     <div className="space-y-2">
@@ -85,11 +144,27 @@ export function Contact() {
                         placeholder="Tell us more about your inquiry..." 
                         className="min-h-[150px]"
                         required 
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        data-testid="input-contact-message"
                       />
                     </div>
 
-                    <Button type="submit" className="w-full md:w-auto gap-2">
-                      <Send className="w-4 h-4" /> Send Message
+                    <Button 
+                      type="submit" 
+                      className="w-full md:w-auto gap-2"
+                      disabled={isSubmitting}
+                      data-testid="button-contact-submit"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" /> Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" /> Send Message
+                        </>
+                      )}
                     </Button>
                   </form>
                 </CardContent>
