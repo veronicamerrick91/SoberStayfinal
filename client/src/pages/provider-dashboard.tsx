@@ -227,7 +227,7 @@ function ProviderDashboardContent() {
       }
     }
 
-    // Check subscription status from real Stripe data via API
+    // Check subscription status from real Stripe data via API (includes fee waivers)
     const fetchSubscription = async () => {
       try {
         const res = await fetch('/api/stripe/subscription', { credentials: 'include' });
@@ -237,8 +237,9 @@ function ProviderDashboardContent() {
             setHasActiveSubscription(true);
             setSubscriptionStatus({
               subscriptionStatus: 'active',
-              monthlyFee: 49,
-              stripeSubscriptionId: data.subscription.id
+              monthlyFee: data.subscription.hasFeeWaiver ? 0 : 49,
+              stripeSubscriptionId: data.subscription.id,
+              hasFeeWaiver: data.subscription.hasFeeWaiver || false
             });
           } else {
             setHasActiveSubscription(false);
@@ -295,8 +296,9 @@ function ProviderDashboardContent() {
               setHasActiveSubscription(true);
               setSubscriptionStatus({
                 subscriptionStatus: 'active',
-                monthlyFee: 49,
-                stripeSubscriptionId: data.subscription.id
+                monthlyFee: data.subscription.hasFeeWaiver ? 0 : 49,
+                stripeSubscriptionId: data.subscription.id,
+                hasFeeWaiver: data.subscription.hasFeeWaiver || false
               });
               // Clear the query param
               window.history.replaceState({}, '', '/provider-dashboard');
@@ -387,7 +389,11 @@ function ProviderDashboardContent() {
             {subscriptionStatus && (
               <div className="mt-2 text-sm">
                 <Badge className={subscriptionStatus.subscriptionStatus === "active" ? "bg-green-500/80" : "bg-amber-500/80"}>
-                  {subscriptionStatus.subscriptionStatus === "active" ? `✓ Subscription Active · $${subscriptionStatus.monthlyFee}/month per listing` : "No Active Subscription"}
+                  {subscriptionStatus.subscriptionStatus === "active" 
+                    ? (subscriptionStatus.hasFeeWaiver 
+                        ? "✓ Fee Waiver Active · Unlimited Listings" 
+                        : `✓ Subscription Active · $${subscriptionStatus.monthlyFee}/month per listing`)
+                    : "No Active Subscription"}
                 </Badge>
               </div>
             )}
@@ -1550,98 +1556,112 @@ function ProviderDashboardContent() {
                           <Check className="w-5 h-5 text-green-400" />
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-white">Active Subscription</h3>
-                          <p className="text-sm text-green-300">${subscriptionStatus.monthlyFee}/month per listing</p>
+                          <h3 className="text-lg font-semibold text-white">
+                            {subscriptionStatus.hasFeeWaiver ? "Fee Waiver Active" : "Active Subscription"}
+                          </h3>
+                          <p className="text-sm text-green-300">
+                            {subscriptionStatus.hasFeeWaiver 
+                              ? "Unlimited listings at no charge" 
+                              : `$${subscriptionStatus.monthlyFee}/month per listing`}
+                          </p>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-400">Your subscription is active. Each property listing is billed at $49/month.</p>
+                      <p className="text-sm text-gray-400">
+                        {subscriptionStatus.hasFeeWaiver 
+                          ? "Your account has been granted a fee waiver by an administrator. You can create unlimited listings at no charge."
+                          : "Your subscription is active. Each property listing is billed at $49/month."}
+                      </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <Card className="bg-background/50 border-border">
-                        <CardContent className="pt-6">
-                          <h4 className="font-semibold text-white mb-2">Payment Method</h4>
-                          <p className="text-sm text-muted-foreground mb-4">Update your credit card or payment method</p>
-                          <Button
-                            onClick={async () => {
-                              try {
-                                const res = await fetch('/api/stripe/portal', {
-                                  method: 'POST',
-                                  credentials: 'include'
-                                });
-                                const data = await res.json();
-                                if (data.url) {
-                                  window.location.href = data.url;
-                                }
-                              } catch (err) {
-                                console.error("Error opening billing portal:", err);
-                              }
-                            }}
-                            className="w-full bg-primary hover:bg-primary/90"
-                            data-testid="button-update-payment"
-                          >
-                            Update Payment Method
-                          </Button>
-                        </CardContent>
-                      </Card>
+                    {!subscriptionStatus.hasFeeWaiver && (
+                      <>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <Card className="bg-background/50 border-border">
+                            <CardContent className="pt-6">
+                              <h4 className="font-semibold text-white mb-2">Payment Method</h4>
+                              <p className="text-sm text-muted-foreground mb-4">Update your credit card or payment method</p>
+                              <Button
+                                onClick={async () => {
+                                  try {
+                                    const res = await fetch('/api/stripe/portal', {
+                                      method: 'POST',
+                                      credentials: 'include'
+                                    });
+                                    const data = await res.json();
+                                    if (data.url) {
+                                      window.location.href = data.url;
+                                    }
+                                  } catch (err) {
+                                    console.error("Error opening billing portal:", err);
+                                  }
+                                }}
+                                className="w-full bg-primary hover:bg-primary/90"
+                                data-testid="button-update-payment"
+                              >
+                                Update Payment Method
+                              </Button>
+                            </CardContent>
+                          </Card>
 
-                      <Card className="bg-background/50 border-border">
-                        <CardContent className="pt-6">
-                          <h4 className="font-semibold text-white mb-2">Billing History</h4>
-                          <p className="text-sm text-muted-foreground mb-4">View invoices and past payments</p>
-                          <Button
-                            onClick={async () => {
-                              try {
-                                const res = await fetch('/api/stripe/portal', {
-                                  method: 'POST',
-                                  credentials: 'include'
-                                });
-                                const data = await res.json();
-                                if (data.url) {
-                                  window.location.href = data.url;
-                                }
-                              } catch (err) {
-                                console.error("Error opening billing portal:", err);
-                              }
-                            }}
-                            variant="outline"
-                            className="w-full border-primary/50 text-primary hover:bg-primary/10"
-                            data-testid="button-view-invoices"
-                          >
-                            View Invoices
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </div>
+                          <Card className="bg-background/50 border-border">
+                            <CardContent className="pt-6">
+                              <h4 className="font-semibold text-white mb-2">Billing History</h4>
+                              <p className="text-sm text-muted-foreground mb-4">View invoices and past payments</p>
+                              <Button
+                                onClick={async () => {
+                                  try {
+                                    const res = await fetch('/api/stripe/portal', {
+                                      method: 'POST',
+                                      credentials: 'include'
+                                    });
+                                    const data = await res.json();
+                                    if (data.url) {
+                                      window.location.href = data.url;
+                                    }
+                                  } catch (err) {
+                                    console.error("Error opening billing portal:", err);
+                                  }
+                                }}
+                                variant="outline"
+                                className="w-full border-primary/50 text-primary hover:bg-primary/10"
+                                data-testid="button-view-invoices"
+                              >
+                                View Invoices
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        </div>
 
-                    <Card className="bg-background/50 border-border">
-                      <CardContent className="pt-6">
-                        <h4 className="font-semibold text-white mb-2">Manage Subscription</h4>
-                        <p className="text-sm text-muted-foreground mb-4">Change your plan, update billing details, or cancel your subscription</p>
-                        <Button
-                          onClick={async () => {
-                            try {
-                              const res = await fetch('/api/stripe/portal', {
-                                method: 'POST',
-                                credentials: 'include'
-                              });
-                              const data = await res.json();
-                              if (data.url) {
-                                window.location.href = data.url;
-                              }
-                            } catch (err) {
-                              console.error("Error opening billing portal:", err);
-                            }
-                          }}
-                          variant="outline"
-                          className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
-                          data-testid="button-manage-subscription"
-                        >
-                          <Settings className="w-4 h-4 mr-2" />
-                          Manage Subscription
-                        </Button>
-                      </CardContent>
-                    </Card>
+                        <Card className="bg-background/50 border-border">
+                          <CardContent className="pt-6">
+                            <h4 className="font-semibold text-white mb-2">Manage Subscription</h4>
+                            <p className="text-sm text-muted-foreground mb-4">Change your plan, update billing details, or cancel your subscription</p>
+                            <Button
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch('/api/stripe/portal', {
+                                    method: 'POST',
+                                    credentials: 'include'
+                                  });
+                                  const data = await res.json();
+                                  if (data.url) {
+                                    window.location.href = data.url;
+                                  }
+                                } catch (err) {
+                                  console.error("Error opening billing portal:", err);
+                                }
+                              }}
+                              variant="outline"
+                              className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+                              data-testid="button-manage-subscription"
+                            >
+                              <Settings className="w-4 h-4 mr-2" />
+                              Manage Subscription
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      </>
+                    )}
                   </>
                 ) : (
                   <div className="text-center py-8">
@@ -1780,8 +1800,9 @@ function ProviderDashboardContent() {
                   setHasActiveSubscription(true);
                   setSubscriptionStatus({
                     subscriptionStatus: 'active',
-                    monthlyFee: 49,
-                    stripeSubscriptionId: data.subscription.id
+                    monthlyFee: data.subscription.hasFeeWaiver ? 0 : 49,
+                    stripeSubscriptionId: data.subscription.id,
+                    hasFeeWaiver: data.subscription.hasFeeWaiver || false
                   });
                 }
               }

@@ -744,6 +744,20 @@ Disallow: /auth/
         return res.status(404).json({ error: "User not found" });
       }
       
+      // First check for fee waiver in local subscriptions table
+      const localSubscription = await storage.getSubscriptionByProvider(user.id);
+      if (localSubscription?.hasFeeWaiver && localSubscription.status === 'active') {
+        return res.json({ 
+          subscription: {
+            id: `fee-waiver-${localSubscription.id}`,
+            status: 'active',
+            hasFeeWaiver: true,
+            currentPeriodEnd: localSubscription.currentPeriodEnd,
+            listingAllowance: localSubscription.listingAllowance
+          }
+        });
+      }
+      
       if (!user.stripeCustomerId) {
         return res.json({ subscription: null });
       }
