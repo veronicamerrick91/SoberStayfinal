@@ -32,6 +32,7 @@ interface User {
   status: "Active" | "Suspended" | "Pending";
   verified: boolean;
   documentsVerified?: boolean;
+  hasFeeWaiver?: boolean;
 }
 
 export function AdminDashboard() {
@@ -347,7 +348,8 @@ export function AdminDashboard() {
             phone: u.phone || '',
             status: 'Active' as const,
             verified: true,
-            documentsVerified: u.documentsVerified || false
+            documentsVerified: u.documentsVerified || false,
+            hasFeeWaiver: u.hasFeeWaiver || false
           }));
           setUsers(formattedUsers);
         }
@@ -367,7 +369,7 @@ export function AdminDashboard() {
             roomType: l.roomType,
             description: l.description,
             amenities: l.amenities || [],
-            status: l.status === 'approved' ? 'Approved' : l.status === 'pending' ? 'Pending' : 'Rejected',
+            status: l.status === 'approved' ? 'Approved' : l.status === 'pending' ? 'Pending' : l.status === 'draft' ? 'Draft' : l.status === 'rejected' ? 'Rejected' : l.status,
             providerId: l.providerId,
             createdAt: l.createdAt,
             isVerified: l.status === 'approved',
@@ -503,6 +505,31 @@ export function AdminDashboard() {
       } else {
         const err = await res.json();
         toast({ title: "Error", description: err.error || "Failed to update verification", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update verification", variant: "destructive" });
+    }
+  };
+
+  const handleToggleFeeWaiver = async (userId: string, currentlyHasWaiver: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/providers/${userId}/fee-waiver`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ hasFeeWaiver: !currentlyHasWaiver })
+      });
+      if (res.ok) {
+        setUsers(users.map(u => u.id === userId ? { ...u, hasFeeWaiver: !currentlyHasWaiver } : u));
+        toast({ 
+          title: !currentlyHasWaiver ? "Fee Waiver Granted" : "Fee Waiver Revoked", 
+          description: !currentlyHasWaiver 
+            ? "Provider can now create listings without payment." 
+            : "Provider will now need to pay for listings." 
+        });
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to update fee waiver", variant: "destructive" });
       }
     } catch (error) {
       toast({ title: "Error", description: "Failed to update verification", variant: "destructive" });
@@ -1454,28 +1481,46 @@ the actual document file stored on the server.
                       <div className="flex items-center gap-3">
                         <Badge variant={user.role === "Provider" ? "default" : "secondary"}>{user.role}</Badge>
                         {user.role === "Provider" && (
-                          <Badge 
-                            className={user.documentsVerified 
-                              ? "bg-blue-500/80 text-white" 
-                              : "bg-gray-500/50 text-gray-300"
-                            }
-                          >
-                            {user.documentsVerified ? "Docs Verified" : "Unverified"}
-                          </Badge>
+                          <>
+                            <Badge 
+                              className={user.documentsVerified 
+                                ? "bg-blue-500/80 text-white" 
+                                : "bg-gray-500/50 text-gray-300"
+                              }
+                            >
+                              {user.documentsVerified ? "Docs Verified" : "Unverified"}
+                            </Badge>
+                            {user.hasFeeWaiver && (
+                              <Badge className="bg-purple-500/80 text-white">
+                                Fee Waiver
+                              </Badge>
+                            )}
+                          </>
                         )}
                         <Badge variant={user.status === "Active" ? "default" : "outline"} className={user.status === "Active" ? "bg-green-500/80" : user.status === "Suspended" ? "bg-red-500/80" : "bg-amber-500/80"}>{user.status}</Badge>
                         <div className="flex gap-2">
                           <Button size="sm" variant="ghost" className="h-8 text-primary hover:bg-primary/10" onClick={() => handleEditUser(user)}>Edit</Button>
                           {user.role === "Provider" && (
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              className={`h-8 ${user.documentsVerified ? "text-amber-500 hover:bg-amber-500/10" : "text-blue-500 hover:bg-blue-500/10"}`}
-                              onClick={() => handleToggleProviderVerification(user.id, user.documentsVerified || false)}
-                              data-testid={`button-verify-provider-${user.id}`}
-                            >
-                              {user.documentsVerified ? "Revoke Verify" : "Verify Docs"}
-                            </Button>
+                            <>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className={`h-8 ${user.documentsVerified ? "text-amber-500 hover:bg-amber-500/10" : "text-blue-500 hover:bg-blue-500/10"}`}
+                                onClick={() => handleToggleProviderVerification(user.id, user.documentsVerified || false)}
+                                data-testid={`button-verify-provider-${user.id}`}
+                              >
+                                {user.documentsVerified ? "Revoke Verify" : "Verify Docs"}
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className={`h-8 ${user.hasFeeWaiver ? "text-green-500 hover:bg-green-500/10" : "text-purple-500 hover:bg-purple-500/10"}`}
+                                onClick={() => handleToggleFeeWaiver(user.id, user.hasFeeWaiver || false)}
+                                data-testid={`button-fee-waiver-${user.id}`}
+                              >
+                                {user.hasFeeWaiver ? "Revoke Waiver" : "Fee Waiver"}
+                              </Button>
+                            </>
                           )}
                           <Button 
                             size="sm" 
@@ -1514,6 +1559,9 @@ the actual document file stored on the server.
                   <Badge className="bg-red-500/20 text-red-400 text-xs">
                     {listings.filter(l => l.status === "Rejected").length} Rejected
                   </Badge>
+                  <Badge className="bg-slate-500/20 text-slate-400 text-xs">
+                    {listings.filter(l => l.status === "Draft").length} Draft
+                  </Badge>
                 </div>
                 
                 <div className="space-y-3">
@@ -1522,6 +1570,7 @@ the actual document file stored on the server.
                       listing.status === "Pending" ? "bg-amber-500/5 border-amber-500/20" :
                       listing.status === "Approved" ? "bg-green-500/5 border-green-500/20" :
                       listing.status === "Rejected" ? "bg-red-500/5 border-red-500/20" :
+                      listing.status === "Draft" ? "bg-slate-500/5 border-slate-500/20" :
                       "bg-white/5 border-border/50"
                     }`}>
                       <div className="flex items-start justify-between mb-3">

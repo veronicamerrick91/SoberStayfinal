@@ -306,24 +306,28 @@ Disallow: /auth/
     if (!isDraft) {
       // Check if provider has active subscription
       const subscription = await storage.getSubscriptionByProvider(providerId);
-      if (!subscription || subscription.status !== 'active') {
-        return res.status(402).json({ 
-          error: "You need an active subscription to publish listings",
-          requiresSubscription: true 
-        });
-      }
       
-      // Check if provider has listing allowance available (metered billing: $49 = 1 listing slot)
-      const currentListingCount = await storage.getActiveListingCount(providerId);
-      const allowance = subscription.listingAllowance || 0;
-      
-      if (currentListingCount >= allowance) {
-        return res.status(402).json({ 
-          error: `You can create ${allowance} listing(s). Pay $49 to add another listing slot.`,
-          currentListings: currentListingCount,
-          allowance,
-          requiresPayment: true 
-        });
+      // Skip all payment checks if provider has a fee waiver
+      if (!subscription?.hasFeeWaiver) {
+        if (!subscription || subscription.status !== 'active') {
+          return res.status(402).json({ 
+            error: "You need an active subscription to publish listings",
+            requiresSubscription: true 
+          });
+        }
+        
+        // Check if provider has listing allowance available (metered billing: $49 = 1 listing slot)
+        const currentListingCount = await storage.getActiveListingCount(providerId);
+        const allowance = subscription.listingAllowance || 0;
+        
+        if (currentListingCount >= allowance) {
+          return res.status(402).json({ 
+            error: `You can create ${allowance} listing(s). Pay $49 to add another listing slot.`,
+            currentListings: currentListingCount,
+            allowance,
+            requiresPayment: true 
+          });
+        }
       }
     }
     
@@ -409,9 +413,12 @@ Disallow: /auth/
     // Check subscription for publishing (not for drafts)
     const isDraft = req.body.status === "draft";
     if (!isDraft) {
-      const subscription = await storage.getSubscriptionByProvider(user.id);
-      if (!subscription || subscription.status !== "active") {
-        return res.status(402).json({ error: "Active subscription required to publish listings" });
+      const subscription = await storage.getSubscriptionByProvider(existingListing.providerId);
+      // Skip payment check if provider has fee waiver
+      if (!subscription?.hasFeeWaiver) {
+        if (!subscription || subscription.status !== "active") {
+          return res.status(402).json({ error: "Active subscription required to publish listings" });
+        }
       }
     }
     
@@ -433,17 +440,22 @@ Disallow: /auth/
     }
     const users = await storage.getAllUsers();
     
-    // Fetch provider profiles to get documentsVerified status
-    const usersWithVerification = await Promise.all(users.map(async (u) => {
+    // Fetch provider profiles and subscription info for providers
+    const usersWithExtendedInfo = await Promise.all(users.map(async (u) => {
       const { password, ...safe } = u;
       if (u.role === 'provider') {
         const profile = await storage.getProviderProfile(u.id);
-        return { ...safe, documentsVerified: profile?.documentsVerified || false };
+        const subscription = await storage.getSubscriptionByProvider(u.id);
+        return { 
+          ...safe, 
+          documentsVerified: profile?.documentsVerified || false,
+          hasFeeWaiver: subscription?.hasFeeWaiver || false
+        };
       }
       return safe;
     }));
     
-    res.json(usersWithVerification);
+    res.json(usersWithExtendedInfo);
   });
 
   app.get("/api/admin/listings", async (req, res) => {
@@ -502,6 +514,75 @@ Disallow: /auth/
     
     await storage.deleteListing(id);
     res.json({ success: true });
+  });
+
+  // Admin: Toggle fee waiver for a provider
+  app.patch("/api/admin/providers/:id/fee-waiver", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    const providerId = parseInt(req.params.id);
+    if (isNaN(providerId)) {
+      return res.status(400).json({ error: "Invalid provider ID" });
+    }
+    
+    const { hasFeeWaiver } = req.body;
+    if (typeof hasFeeWaiver !== "boolean") {
+      return res.status(400).json({ error: "hasFeeWaiver must be a boolean" });
+    }
+    
+    // Check if provider exists
+    const provider = await storage.getUser(providerId);
+    if (!provider || provider.role !== "provider") {
+      return res.status(404).json({ error: "Provider not found" });
+    }
+    
+    // Check if subscription exists
+    let subscription = await storage.getSubscriptionByProvider(providerId);
+    
+    if (!subscription) {
+      // Create a new subscription with fee waiver if one doesn't exist
+      subscription = await storage.createSubscription({
+        providerId,
+        status: "active",
+        currentPeriodEnd: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000), // 100 years from now
+        paymentMethod: "fee_waiver",
+        listingAllowance: 999, // Unlimited listings for fee waiver accounts
+        hasFeeWaiver: true,
+      });
+    } else {
+      // Update existing subscription
+      subscription = await storage.updateSubscription(providerId, {
+        hasFeeWaiver,
+        ...(hasFeeWaiver ? { 
+          status: "active", 
+          listingAllowance: 999,
+          currentPeriodEnd: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000)
+        } : {})
+      });
+    }
+    
+    res.json({ success: true, subscription });
+  });
+
+  // Admin: Get subscription info for a provider
+  app.get("/api/admin/providers/:id/subscription", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    const providerId = parseInt(req.params.id);
+    if (isNaN(providerId)) {
+      return res.status(400).json({ error: "Invalid provider ID" });
+    }
+    
+    const subscription = await storage.getSubscriptionByProvider(providerId);
+    res.json({ subscription: subscription || null });
   });
 
   // Stripe Configuration
