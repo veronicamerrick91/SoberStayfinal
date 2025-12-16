@@ -2,14 +2,7 @@
 
 ## Overview
 
-Sober Stay is a comprehensive web platform that connects individuals seeking recovery housing (tenants) with verified sober living providers. The application facilitates the entire journey from property discovery to application submission, with robust admin oversight and communication tools.
-
-The platform serves three distinct user roles:
-- **Tenants**: Browse listings, submit applications, message providers, schedule tours
-- **Providers**: Create and manage listings, review applications, communicate with prospective tenants
-- **Admins**: Oversee all platform activity, moderate listings, review reports, manage users
-
-This is a full-stack TypeScript application built for rapid iteration and deployment on Replit.
+Sober Stay is a web platform connecting individuals seeking recovery housing (tenants) with verified sober living providers. It manages the entire process from property discovery to application submission, supported by robust admin oversight and communication tools. The platform serves tenants, providers, and administrators, facilitating listing management, application review, and user management. It is a full-stack TypeScript application designed for rapid development and deployment.
 
 ## User Preferences
 
@@ -19,263 +12,40 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 
-**Framework & Build Tools**
-- React 18 with TypeScript for type-safe component development
-- Vite as the build tool for fast hot-module replacement during development
-- Wouter for lightweight client-side routing (alternative to React Router)
-- TailwindCSS v4 (new architecture) for utility-first styling with CSS variables for theming
-
-**UI Component System**
-- shadcn/ui component library (Radix UI primitives with custom styling)
-- All components use the "new-york" style variant with dark mode as default
-- Custom color palette centered on teal/green accents (#10b981 primary) against dark navy backgrounds
-- Lucide React for consistent iconography throughout the application
-
-**State Management**
-- TanStack Query (React Query) for server state management and caching
-- Local storage for client-side persistence (auth tokens, favorites, draft forms)
-- No global state library - component-level state with prop drilling where needed
-
-**Key Design Patterns**
-- Layout wrapper component provides consistent navigation and footer across all pages
-- Modal-based workflows for complex interactions (payments, applications, reviews)
-- Optimistic UI updates with local storage fallbacks for offline-like experience
-- Toast notifications for user feedback on actions
+The frontend is built with React 18 and TypeScript, using Vite for fast development. Wouter handles client-side routing, and TailwindCSS v4 with a custom dark-first color palette (teal/green accents on dark navy) provides styling. UI components are derived from shadcn/ui (Radix UI primitives). State management primarily uses TanStack Query for server state and local storage for client-side persistence, avoiding a global state library. Key patterns include a layout wrapper, modal-based workflows, optimistic UI updates, and toast notifications. Lucide React is used for iconography.
 
 ### Backend Architecture
 
-**Server Framework**
-- Express.js as the HTTP server framework
-- Node.js with ES modules (type: "module" in package.json)
-- TypeScript throughout for type safety
-
-**API Design**
-- RESTful endpoints under `/api` prefix
-- Session-based authentication using express-session
-- Passport.js for OAuth strategies (Google OAuth configured)
-- All routes check `req.isAuthenticated()` for protected endpoints
-
-**Database Layer**
-- Drizzle ORM for type-safe database queries
-- PostgreSQL as the database (via Neon serverless driver)
-- Schema defined in `shared/schema.ts` for type sharing between client/server
-- Zod schemas auto-generated from Drizzle tables for runtime validation
-
-**Session Management**
-- PostgreSQL-backed sessions via `connect-pg-simple`
-- Session data stored in database for persistence across deployments
-- Cookies with `secure` flag in production, proxy trust enabled
-
-**Build Process**
-- Custom build script (`script/build.ts`) using esbuild for server bundling
-- Selective bundling: common dependencies bundled, others externalized
-- Client built separately with Vite, output to `dist/public`
-- Production server runs bundled CommonJS output for faster cold starts
+The backend utilizes Express.js on Node.js with TypeScript. It provides RESTful APIs with session-based authentication via `express-session` and Passport.js for Google OAuth. Protected endpoints enforce authentication. Data is managed using Drizzle ORM with PostgreSQL (Neon serverless driver), and Zod schemas ensure type-safe validation. Session data is persisted in the PostgreSQL database using `connect-pg-simple`. The build process uses esbuild for server bundling and Vite for the client, optimizing for cold start performance. A monorepo structure is employed for `client/`, `server/`, and `shared/` codebases, ensuring type sharing and reducing duplication.
 
 ### Database Schema
 
-**Core Tables**
-1. **users** - All platform users (tenants, providers, admins)
-   - Authentication via username/email/password or Google OAuth (`googleId` field)
-   - Role-based access control via `role` field
+Core tables include `users` (for all roles with authentication and role-based access control), `listings` (for sober living properties with status workflows and JSON fields for flexibility), and `subscriptions` (for provider payment tracking). Zod schemas derived from Drizzle tables provide robust data validation, shared between client and server.
 
-2. **listings** - Sober living properties
-   - Owned by provider users via `providerId` foreign key
-   - JSON fields for flexible arrays (amenities, inclusions, photos)
-   - Status workflow: draft → pending → approved/rejected
+### System Design Choices
 
-3. **subscriptions** - Provider payment tracking
-   - Links providers to their active subscription status
-   - Tracks payment method and billing period
+The platform uses a monorepo structure for code organization. Session-based authentication is preferred over JWTs for enhanced web application security. The architecture emphasizes real data for primary user flows, with graceful empty states. A dark-first design is implemented for a modern aesthetic and reduced eye strain. ESBuild is used for efficient server bundling, improving performance. Provider profiles include logo uploads and detailed company information. Tenant profiles allow document uploads (photo, ID, pre-filled application) for streamlined applications. Listing features include an "Accepts Couples" option. Subscription management includes renewal reminders, a grace period for listing visibility, and automatic hiding/reactivation of listings. Providers can purchase "Featured Listings" boosts, requiring prior admin verification.
 
-**Data Validation**
-- Zod schemas created from Drizzle tables ensure type safety
-- Insert schemas exported for API endpoint validation
-- Client and server share schema definitions from `shared/` directory
+## External Dependencies
 
-### External Dependencies
+### Database & Infrastructure
+- **Neon Database**: Serverless PostgreSQL hosting.
 
-**Database & Infrastructure**
-- **Neon Database**: Serverless PostgreSQL hosting
-  - Configured via `DATABASE_URL` environment variable
-  - WebSocket support for serverless environments
-  - Connection pooling handled by `@neondatabase/serverless`
+### Authentication Services
+- **Google OAuth 2.0**: Social login integration.
 
-**Authentication Services**
-- **Google OAuth 2.0**: Social login integration
-  - Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
-  - Passport strategy configured in `server/auth.ts`
-  - Callback URL must be configured in Google Cloud Console
+### Email Service
+- **Resend API**: Transactional email service for password resets, admin campaigns, and notifications.
 
-**Email Service**
-- **Resend API**: Transactional email service (SETUP COMPLETE ✓)
-  - API key: `RESEND_API_KEY` (configured as secret)
-  - Email service abstracted in `server/email.ts`
-  - Endpoints:
-    - `/api/auth/forgot-password` - Request password reset
-    - `/api/auth/validate-reset-token` - Validate reset token
-    - `/api/auth/reset-password` - Complete password reset
-    - `/api/admin/send-email` - Send campaign emails to audience (all, tenants, providers)
-    - `/api/admin/send-user-email` - Send email to specific user
-  - Features:
-    - Password reset emails with 30-minute token expiration
-    - Marketing campaign emails with branded HTML templates
-    - Bulk email sending for campaigns
-    - Single and multiple recipient support
+### Payment Processing
+- **Stripe**: For provider subscriptions, integrated via `stripe-replit-sync` for real credit card payments, checkout flows, and customer portal management.
 
-**Payment Processing (Stripe - SETUP COMPLETE ✓)**
-- Stripe integration via `stripe-replit-sync` package
-- Real credit card payments for provider subscriptions
-- Products and prices:
-  - Provider Listing Subscription: $49/month or $399/year
-- Stripe data synced to PostgreSQL `stripe` schema tables
-- Endpoints:
-  - `POST /api/stripe/checkout` - Create checkout session for subscription
-  - `GET /api/stripe/subscription` - Get user's current subscription status
-  - `POST /api/stripe/portal` - Create customer portal session
-  - `GET /api/stripe/products` - List available products/prices
-  - `GET /api/stripe/config` - Get Stripe publishable key
-- Webhook: `/api/stripe/webhook/:uuid` - Handles Stripe events
-- Files:
-  - `server/stripeClient.ts` - Stripe client with Replit connection API
-  - `server/stripeService.ts` - Checkout and portal session creation
-  - `server/webhookHandlers.ts` - Webhook processing
-  - `scripts/seed-stripe-products.ts` - Product creation script
+### Third-Party UI Libraries
+- **Radix UI**: Accessible component primitives.
+- **Leaflet**: Map integration.
+- **Lucide Icons**: Icon library.
+- **date-fns**: Date manipulation and formatting.
 
-**Third-Party UI Libraries**
-- **Radix UI**: Accessible component primitives (15+ components)
-- **Leaflet**: Map integration for property location display
-- **Lucide Icons**: Icon library with 1000+ icons
-- **date-fns**: Date manipulation and formatting
-
-**Development Tools (Replit-Specific)**
-- `@replit/vite-plugin-cartographer`: Code navigation
-- `@replit/vite-plugin-dev-banner`: Development mode indicator
-- `@replit/vite-plugin-runtime-error-modal`: Error overlay
-- Custom `vite-plugin-meta-images`: Auto-updates OpenGraph meta tags for Replit deployments
-
-**Key Architectural Decisions**
-
-1. **Monorepo Structure**: Client, server, and shared code in single repository
-   - `client/` - React frontend
-   - `server/` - Express backend
-   - `shared/` - TypeScript types and schemas used by both
-   - Simplifies type sharing and reduces duplication
-
-2. **Session-Based Auth Over JWT**: 
-   - Better security for web applications (httpOnly cookies)
-   - Simpler server-side session invalidation
-   - Database-backed sessions survive server restarts
-
-3. **Real Data Architecture**: 
-   - Main user flows (Home, Browse, Property Details, Applications) fetch real data from PostgreSQL API
-   - Public endpoint: GET /api/listings returns approved listings
-   - Secondary pages (Quiz, Dashboards) may use mock data for complex logic during development
-   - Empty states display gracefully when no listings exist
-
-4. **Dark-First Design**: 
-   - Platform defaults to dark mode for modern aesthetic
-   - CSS variables allow future theme switching
-   - Reduced eye strain for users in recovery environments
-
-5. **ESBuild for Server Bundling**: 
-   - Selective dependency bundling reduces filesystem calls
-   - Improves Replit cold start performance
-   - Maintains Node.js compatibility via CommonJS output
-
-## Recent Updates
-
-**Provider Profile Feature (Implemented)**
-- Provider company profile page at `/provider-profile`
-- Logo upload with 2MB size limit and image validation
-- Company information fields: name, website, phone, description
-- Address fields: street, city, state, ZIP
-- Business details: year founded, total beds across all properties
-- Database table: `provider_profiles` with provider-specific data
-- Endpoints:
-  - `GET /api/provider/profile` - Retrieve provider's company profile
-  - `POST /api/provider/profile` - Update company information
-  - `POST /api/provider/upload-logo` - Upload company logo (validates image format and size)
-
-**Stripe Payment Integration (Implemented)**
-- Real credit card payment processing for provider subscriptions
-- Uses `stripe-replit-sync` for automatic data synchronization
-- Provider Listing Subscription: $49/month or $399/year
-- Secure Stripe Checkout flow redirects users to Stripe's hosted payment page
-- Subscription status fetched from real Stripe data via `/api/stripe/subscription`
-- Customer portal for managing billing at `/api/stripe/portal`
-- Products seeded via `scripts/seed-stripe-products.ts`
-
-**Email Sending Setup (Implemented)**
-- Resend API integrated for transactional emails
-- Email service fully functional in `server/email.ts`
-- Admin email campaign endpoints working
-- Password reset emails with branded templates
-
-**SEO Tools Portal (Implemented)**
-- Dedicated portal at `/seo-tools` for provider SEO optimization
-- Features: SEO score calculator, title/description optimizer, keyword tool
-- Custom keyword input with suggestion engine
-- Score breakdown showing point allocation
-- Social media preview (Facebook, Twitter/X)
-- Real-time optimization recommendations
-
-**Password Reset Feature (Implemented)**
-- Full email-based password reset flow using Resend API
-- Database table: `password_reset_tokens` stores secure tokens with 30-minute expiration
-- Endpoints: `/api/auth/forgot-password`, `/api/auth/validate-reset-token`, `/api/auth/reset-password`
-- Frontend pages: `/forgot-password` and `/reset-password`
-- Security: Tokens are invalidated after use, previous tokens are invalidated when new one is requested
-
-**Tenant Profile & Document Upload (Implemented)**
-- Tenant portal at `/tenant-profile` for uploading reusable documents
-- Tenants can upload: profile photo, government ID, and pre-filled application
-- Documents stored in database and associated with tenant profile
-- Features: Profile bio/summary, status display for uploaded documents, replace functionality
-- Database table: `tenant_profiles` stores photo URLs, ID URLs, application files, and bio
-- Endpoints:
-  - `GET /api/tenant/profile` - Retrieve tenant's profile and documents
-  - `POST /api/tenant/profile` - Update bio and application data
-  - `POST /api/tenant/upload` - Upload documents (converts to base64 data URLs)
-- Benefits: Tenants no longer fill out applications repeatedly - share saved documents with providers
-
-**Listing Features Updates**
-- Added "Accepts Couples" checkbox to listing creation form
-- Badge displays on browse page and property details with rose/pink styling
-- New column `accepts_couples` in listings table
-
-**Subscription Cancellation Lifecycle (Implemented)**
-- Automatic listing visibility management based on subscription status
-- Features:
-  - **Renewal reminders**: Emails sent 3 days before subscription renewal
-  - **7-day grace period**: Listings remain visible for 7 days after cancellation
-  - **Auto-hide listings**: Listings hidden from public after grace period expires
-  - **Reactivation support**: Listings restored when subscription is renewed
-- Database fields added:
-  - `subscriptions.gracePeriodEndsAt` - When grace period expires
-  - `subscriptions.renewalReminderSent` - Whether reminder email was sent
-  - `subscriptions.canceledAt` - When subscription was canceled
-  - `listings.isVisible` - Whether listing appears in public search
-- Files:
-  - `server/subscriptionScheduler.ts` - Hourly checks for reminders and grace period expiration
-  - `server/webhookHandlers.ts` - Processes Stripe subscription events
-  - `server/email.ts` - Email templates for renewal reminders and cancellation notices
-- Email notifications:
-  - Renewal reminder (3 days before billing)
-  - Subscription canceled (with grace period info)
-  - Listings hidden (after grace period expires)
-
-## Future Implementation Notes
-
-**Email Notification Enhancements**
-- Can extend email functionality to send provider notifications for applications
-- Automated workflows for application approvals/rejections
-- Tenant notification system for listing updates and matches
-- Use existing endpoints: `/api/admin/send-email` and `/api/admin/send-user-email`
-
-**Additional Email Templates**
-- Application notification emails
-- Provider onboarding sequence
-- Tenant resources and tips
-- Platform announcements
-- Can extend templates in `server/email.ts` with new functions
+### Development Tools (Replit-Specific)
+- `@replit/vite-plugin-cartographer`, `@replit/vite-plugin-dev-banner`, `@replit/vite-plugin-runtime-error-modal`: Replit-specific Vite plugins for development.
+- `vite-plugin-meta-images`: For OpenGraph meta tag updates.
