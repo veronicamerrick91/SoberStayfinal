@@ -1398,7 +1398,7 @@ function ProviderDashboardContent() {
                         <p className="text-xs text-muted-foreground">Add extra security to your account</p>
                       </div>
                     </div>
-                    <Button size="sm" variant="outline" className="border-primary/50">Enable</Button>
+                    <Badge variant="outline" className="text-xs text-muted-foreground border-muted-foreground/50">Coming Soon</Badge>
                   </div>
                   
                   <div className="space-y-2">

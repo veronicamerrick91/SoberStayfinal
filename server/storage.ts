@@ -17,6 +17,7 @@ export interface IStorage {
   updateUser(id: number, data: Partial<{ role: string; googleId?: string }>): Promise<User | undefined>;
   updateUserPassword(id: number, hashedPassword: string): Promise<User | undefined>;
   updateUserStripeCustomerId(id: number, stripeCustomerId: string): Promise<User | undefined>;
+  updateUserEmailOptOut(id: number, emailOptOut: boolean): Promise<User | undefined>;
   
   createListing(listing: InsertListing & { providerId: number }): Promise<Listing>;
   getListing(id: number): Promise<Listing | undefined>;
@@ -228,6 +229,15 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .update(users)
       .set({ stripeCustomerId })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async updateUserEmailOptOut(id: number, emailOptOut: boolean): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ emailOptOut })
       .where(eq(users.id, id))
       .returning();
     return user;

@@ -156,11 +156,11 @@ export function AdminDashboard() {
     { id: 7, name: "Provider Subscription Renewal", type: "Email", uses: 89, trigger: "7-days-before-renewal", audience: "providers", subject: "Your Subscription Renews Soon", body: "Hi [name],\n\nYour subscription renews in 7 days. Review your plan details." },
     { id: 8, name: "Resource Updates Newsletter", type: "Email", uses: 34, trigger: "weekly", audience: "all", subject: "Weekly Recovery Resources", body: "Hi [name],\n\nHere are this week's helpful resources for your recovery journey." },
   ]);
-  const [emailSubscribers, setEmailSubscribers] = useState<any[]>([
-    { id: 1, email: "john.doe@example.com", subscribeDate: "Dec 1, 2024", status: "Active" },
-    { id: 2, email: "sarah.smith@example.com", subscribeDate: "Dec 2, 2024", status: "Active" },
-    { id: 3, email: "mike.wilson@example.com", subscribeDate: "Dec 3, 2024", status: "Active" },
-  ]);
+  const [emailSubscribers, setEmailSubscribers] = useState<any[]>([]);
+  const [showComposeEmailModal, setShowComposeEmailModal] = useState(false);
+  const [composeEmailSubject, setComposeEmailSubject] = useState("");
+  const [composeEmailBody, setComposeEmailBody] = useState("");
+  const [sendingBulkEmail, setSendingBulkEmail] = useState(false);
   const [showBlogEditor, setShowBlogEditor] = useState(false);
   const [blogTitle, setBlogTitle] = useState("");
   const [blogContent, setBlogContent] = useState("");
@@ -352,6 +352,19 @@ export function AdminDashboard() {
             hasFeeWaiver: u.hasFeeWaiver || false
           }));
           setUsers(formattedUsers);
+          
+          // Populate email subscribers from users (all registered users are potential email recipients)
+          const subscribers = usersData
+            .filter((u: any) => u.role !== 'admin')
+            .map((u: any, index: number) => ({
+              id: u.id,
+              email: u.email,
+              name: u.name || u.username,
+              role: u.role,
+              subscribeDate: new Date(u.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+              status: u.emailOptOut ? 'Unsubscribed' : 'Active'
+            }));
+          setEmailSubscribers(subscribers);
         }
         
         if (listingsRes.ok) {
@@ -533,6 +546,71 @@ export function AdminDashboard() {
       }
     } catch (error) {
       toast({ title: "Error", description: "Failed to update verification", variant: "destructive" });
+    }
+  };
+
+  const handleUnsubscribe = async (subscriberId: number) => {
+    try {
+      const res = await fetch(`/api/admin/users/${subscriberId}/email-subscription`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ emailOptOut: true })
+      });
+      
+      if (res.ok) {
+        setEmailSubscribers(emailSubscribers.map(s => 
+          s.id === subscriberId ? { ...s, status: 'Unsubscribed' } : s
+        ));
+        toast({ 
+          title: "User Unsubscribed", 
+          description: "This user will no longer receive marketing emails." 
+        });
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to unsubscribe user", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to unsubscribe user", variant: "destructive" });
+    }
+  };
+
+  const handleSendBulkEmail = async () => {
+    if (!composeEmailSubject || !composeEmailBody) {
+      toast({ title: "Error", description: "Please enter both subject and message", variant: "destructive" });
+      return;
+    }
+    
+    setSendingBulkEmail(true);
+    try {
+      const res = await fetch('/api/admin/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          subject: composeEmailSubject,
+          body: composeEmailBody,
+          audience: 'all'
+        })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        toast({ 
+          title: "Emails Sent", 
+          description: data.message || `Successfully sent ${data.sent} emails`
+        });
+        setShowComposeEmailModal(false);
+        setComposeEmailSubject("");
+        setComposeEmailBody("");
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to send emails", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to send emails", variant: "destructive" });
+    } finally {
+      setSendingBulkEmail(false);
     }
   };
 
@@ -2290,55 +2368,92 @@ the actual document file stored on the server.
 
           {/* EMAIL SUBSCRIBER LIST */}
           <TabsContent value="email-list" className="space-y-6">
-            <div className="space-y-2 mb-6">
-              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-white">Email Subscribers</h2>
+              <Button 
+                onClick={() => setShowComposeEmailModal(true)}
+                className="bg-primary hover:bg-primary/90"
+                data-testid="button-compose-email"
+              >
+                <Mail className="w-4 h-4 mr-2" /> Send Email to All
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-border">
                 <Mail className="w-5 h-5 text-primary shrink-0" />
                 <div className="flex-1">
-                  <p className="text-white font-medium">Total Subscribers: {emailSubscribers.length}</p>
-                  <p className="text-xs text-muted-foreground">All active subscribers</p>
+                  <p className="text-white font-medium">{emailSubscribers.length}</p>
+                  <p className="text-xs text-muted-foreground">Total</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-border">
                 <Check className="w-5 h-5 text-green-500 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-white font-medium">Active: {emailSubscribers.filter(s => s.status === "Active").length}</p>
-                  <p className="text-xs text-muted-foreground">Actively receiving emails</p>
+                  <p className="text-white font-medium">{emailSubscribers.filter(s => s.status === "Active").length}</p>
+                  <p className="text-xs text-muted-foreground">Active</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
-                <TrendingUp className="w-5 h-5 text-blue-500 shrink-0" />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-border">
+                <Users className="w-5 h-5 text-blue-500 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-white font-medium">Growth Rate: +12%</p>
-                  <p className="text-xs text-muted-foreground">Month over month</p>
+                  <p className="text-white font-medium">{emailSubscribers.filter(s => s.role === "tenant").length}</p>
+                  <p className="text-xs text-muted-foreground">Tenants</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
-                <Clock className="w-5 h-5 text-amber-500 shrink-0" />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-border">
+                <Building className="w-5 h-5 text-amber-500 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-white font-medium">Last 7 Days: +3</p>
-                  <p className="text-xs text-muted-foreground">New subscriptions</p>
+                  <p className="text-white font-medium">{emailSubscribers.filter(s => s.role === "provider").length}</p>
+                  <p className="text-xs text-muted-foreground">Providers</p>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <h3 className="text-white font-semibold mb-3">Subscriber List</h3>
-              {emailSubscribers.map((subscriber) => (
-                <div key={subscriber.id} className="flex items-center justify-between text-sm p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default border-b border-border/50 last:border-0">
-                  <div>
-                    <p className="text-white font-medium">{subscriber.email}</p>
-                    <p className="text-xs text-muted-foreground">Subscribed {subscriber.subscribeDate}</p>
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white">Subscriber List</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {emailSubscribers.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No subscribers yet. Users who sign up will appear here.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {emailSubscribers.map((subscriber) => (
+                      <div key={subscriber.id} className="flex items-center justify-between text-sm p-3 rounded-lg hover:bg-white/5 transition-colors border border-border/50">
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <p className="text-white font-medium">{subscriber.email}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {subscriber.name} • {subscriber.role === 'tenant' ? 'Tenant' : 'Provider'} • Joined {subscriber.subscribeDate}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className={subscriber.status === "Active" ? "bg-green-500/20 text-green-500" : "bg-gray-500/20 text-gray-400"}>
+                            {subscriber.status}
+                          </Badge>
+                          {subscriber.status === "Active" && (
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="h-7 text-xs"
+                              onClick={() => handleUnsubscribe(subscriber.id)}
+                              data-testid={`button-unsubscribe-${subscriber.id}`}
+                            >
+                              Unsubscribe
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-green-500/20 text-green-500">{subscriber.status}</Badge>
-                    <Button size="sm" variant="outline" className="h-7 text-xs">Unsubscribe</Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* SETTINGS */}
@@ -4532,6 +4647,57 @@ Use the toolbar above for formatting, or write in Markdown:
               <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
                 <Button onClick={() => { setShowReplyModal(false); setReplyMessage(""); }} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">Send Reply</Button>
                 <Button onClick={() => { setShowReplyModal(false); setReplyMessage(""); }} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showComposeEmailModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Send Email to All Subscribers</h2>
+                <p className="text-xs text-muted-foreground mt-1">This email will be sent to all {emailSubscribers.filter(s => s.status === "Active").length} active subscribers</p>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Subject</label>
+                  <input
+                    type="text"
+                    placeholder="Enter email subject..."
+                    value={composeEmailSubject}
+                    onChange={(e) => setComposeEmailSubject(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                    data-testid="input-email-subject"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Message</label>
+                  <textarea
+                    placeholder="Type your email message..."
+                    value={composeEmailBody}
+                    onChange={(e) => setComposeEmailBody(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                    rows={6}
+                    data-testid="input-email-body"
+                  />
+                </div>
+              </div>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+                <Button 
+                  onClick={handleSendBulkEmail} 
+                  disabled={sendingBulkEmail || !composeEmailSubject || !composeEmailBody}
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                  data-testid="button-send-bulk-email"
+                >
+                  {sendingBulkEmail ? "Sending..." : "Send Email"}
+                </Button>
+                <Button 
+                  onClick={() => { setShowComposeEmailModal(false); setComposeEmailSubject(""); setComposeEmailBody(""); }} 
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
           </div>

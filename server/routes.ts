@@ -518,54 +518,66 @@ Disallow: /auth/
 
   // Admin: Toggle fee waiver for a provider
   app.patch("/api/admin/providers/:id/fee-waiver", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const user = req.user as any;
-    if (user.role !== "admin") {
-      return res.status(403).json({ error: "Admin access required" });
+    try {
+      if (!req.isAuthenticated()) return res.sendStatus(401);
+      const user = req.user as any;
+      if (user.role !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      const providerId = parseInt(req.params.id);
+      if (isNaN(providerId)) {
+        return res.status(400).json({ error: "Invalid provider ID" });
+      }
+      
+      const { hasFeeWaiver } = req.body;
+      if (typeof hasFeeWaiver !== "boolean") {
+        return res.status(400).json({ error: "hasFeeWaiver must be a boolean" });
+      }
+      
+      console.log(`[Fee Waiver] Toggling fee waiver for provider ${providerId} to ${hasFeeWaiver}`);
+      
+      // Check if provider exists
+      const provider = await storage.getUser(providerId);
+      if (!provider || provider.role !== "provider") {
+        return res.status(404).json({ error: "Provider not found" });
+      }
+      
+      // Check if subscription exists
+      let subscription = await storage.getSubscriptionByProvider(providerId);
+      console.log(`[Fee Waiver] Existing subscription:`, subscription);
+      
+      if (!subscription) {
+        // Create a new subscription with fee waiver if one doesn't exist
+        console.log(`[Fee Waiver] Creating new subscription with fee waiver for provider ${providerId}`);
+        subscription = await storage.createSubscription({
+          providerId,
+          status: "active",
+          currentPeriodEnd: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000), // 100 years from now
+          paymentMethod: "fee_waiver",
+          listingAllowance: 999, // Unlimited listings for fee waiver accounts
+          hasFeeWaiver: true,
+        });
+        console.log(`[Fee Waiver] Created subscription:`, subscription);
+      } else {
+        // Update existing subscription
+        console.log(`[Fee Waiver] Updating existing subscription ${subscription.id} for provider ${providerId}`);
+        subscription = await storage.updateSubscription(providerId, {
+          hasFeeWaiver,
+          ...(hasFeeWaiver ? { 
+            status: "active", 
+            listingAllowance: 999,
+            currentPeriodEnd: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000)
+          } : {})
+        });
+        console.log(`[Fee Waiver] Updated subscription:`, subscription);
+      }
+      
+      res.json({ success: true, subscription });
+    } catch (error) {
+      console.error("[Fee Waiver] Error:", error);
+      res.status(500).json({ error: "Failed to toggle fee waiver" });
     }
-    
-    const providerId = parseInt(req.params.id);
-    if (isNaN(providerId)) {
-      return res.status(400).json({ error: "Invalid provider ID" });
-    }
-    
-    const { hasFeeWaiver } = req.body;
-    if (typeof hasFeeWaiver !== "boolean") {
-      return res.status(400).json({ error: "hasFeeWaiver must be a boolean" });
-    }
-    
-    // Check if provider exists
-    const provider = await storage.getUser(providerId);
-    if (!provider || provider.role !== "provider") {
-      return res.status(404).json({ error: "Provider not found" });
-    }
-    
-    // Check if subscription exists
-    let subscription = await storage.getSubscriptionByProvider(providerId);
-    
-    if (!subscription) {
-      // Create a new subscription with fee waiver if one doesn't exist
-      subscription = await storage.createSubscription({
-        providerId,
-        status: "active",
-        currentPeriodEnd: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000), // 100 years from now
-        paymentMethod: "fee_waiver",
-        listingAllowance: 999, // Unlimited listings for fee waiver accounts
-        hasFeeWaiver: true,
-      });
-    } else {
-      // Update existing subscription
-      subscription = await storage.updateSubscription(providerId, {
-        hasFeeWaiver,
-        ...(hasFeeWaiver ? { 
-          status: "active", 
-          listingAllowance: 999,
-          currentPeriodEnd: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000)
-        } : {})
-      });
-    }
-    
-    res.json({ success: true, subscription });
   });
 
   // Admin: Get subscription info for a provider
@@ -824,21 +836,22 @@ Disallow: /auth/
       let recipients: string[] = [];
       
       if (audience) {
-        // Get users based on audience type
+        // Get users based on audience type, excluding those who opted out
         const allUsers = await storage.getAllUsers();
+        const subscribedUsers = allUsers.filter(u => !u.emailOptOut && u.role !== 'admin');
         
         switch (audience) {
           case 'all':
-            recipients = allUsers.map(u => u.email);
+            recipients = subscribedUsers.map(u => u.email);
             break;
           case 'tenants':
-            recipients = allUsers.filter(u => u.role === 'tenant').map(u => u.email);
+            recipients = subscribedUsers.filter(u => u.role === 'tenant').map(u => u.email);
             break;
           case 'providers':
-            recipients = allUsers.filter(u => u.role === 'provider').map(u => u.email);
+            recipients = subscribedUsers.filter(u => u.role === 'provider').map(u => u.email);
             break;
           default:
-            recipients = allUsers.map(u => u.email);
+            recipients = subscribedUsers.map(u => u.email);
         }
       } else if (to) {
         recipients = Array.isArray(to) ? to : [to];
@@ -906,6 +919,38 @@ Disallow: /auth/
     } catch (error: any) {
       console.error("Send user email error:", error);
       res.status(500).json({ error: error.message || "Failed to send email" });
+    }
+  });
+
+  // Admin: Toggle email subscription for a user
+  app.patch("/api/admin/users/:id/email-subscription", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const userId = parseInt(req.params.id);
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+
+    const { emailOptOut } = req.body;
+    if (typeof emailOptOut !== "boolean") {
+      return res.status(400).json({ error: "emailOptOut must be a boolean" });
+    }
+
+    try {
+      const targetUser = await storage.getUser(userId);
+      if (!targetUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const updatedUser = await storage.updateUserEmailOptOut(userId, emailOptOut);
+      res.json({ success: true, user: updatedUser });
+    } catch (error: any) {
+      console.error("Update email subscription error:", error);
+      res.status(500).json({ error: error.message || "Failed to update email subscription" });
     }
   });
 
