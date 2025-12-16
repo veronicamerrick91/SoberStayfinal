@@ -724,3 +724,139 @@ export async function sendApplicationDeniedEmail(
     return false;
   }
 }
+
+export async function sendPaymentReminderEmail(email: string, providerName: string): Promise<boolean> {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
+      to: email,
+      subject: 'Action Required: Update Your Payment Method - Sober Stay Homes',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f172a; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+                  <tr>
+                    <td style="padding: 40px 30px; text-align: center;">
+                      <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); width: 60px; height: 60px; border-radius: 12px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 28px;">💳</span>
+                      </div>
+                      <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 16px;">Payment Update Required</h1>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Hi ${providerName},
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        We were unable to process your recent payment for your Sober Stay Homes subscription. This could be due to an <strong style="color: #ef4444;">expired card or insufficient funds</strong>.
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        To keep your listings visible and continue connecting with tenants, please update your payment method as soon as possible.
+                      </p>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 32px;">
+                        You can update your payment information by logging into your Provider Dashboard and visiting the <strong style="color: #10b981;">Billing</strong> section.
+                      </p>
+                      <p style="color: #64748b; font-size: 14px; margin: 0;">
+                        If you have any questions, please don't hesitate to reach out to our support team.
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 24px 30px; border-top: 1px solid #334155; text-align: center;">
+                      <p style="color: #475569; font-size: 12px; margin: 0;">
+                        © ${new Date().getFullYear()} Sober Stay Homes. All rights reserved.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error('Failed to send payment reminder email:', error);
+      return false;
+    }
+
+    console.log('Payment reminder email sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Error sending payment reminder email:', error);
+    return false;
+  }
+}
+
+export async function sendAdminContactEmail(email: string, providerName: string, message: string): Promise<boolean> {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
+      to: email,
+      subject: 'Message from Sober Stay Homes Admin',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f172a; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+                  <tr>
+                    <td style="padding: 40px 30px; text-align: center;">
+                      <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 60px; height: 60px; border-radius: 12px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 28px;">📬</span>
+                      </div>
+                      <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 16px;">Message from Our Team</h1>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Hi ${providerName},
+                      </p>
+                      <div style="color: #cbd5e1; font-size: 16px; line-height: 1.7; text-align: left; background-color: #0f172a; padding: 20px; border-radius: 8px; margin: 0 0 24px;">
+                        ${message.replace(/\n/g, '<br>')}
+                      </div>
+                      <p style="color: #64748b; font-size: 14px; margin: 0;">
+                        If you have any questions, you can reply directly to this email.
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 24px 30px; border-top: 1px solid #334155; text-align: center;">
+                      <p style="color: #475569; font-size: 12px; margin: 0;">
+                        © ${new Date().getFullYear()} Sober Stay Homes. All rights reserved.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error('Failed to send admin contact email:', error);
+      return false;
+    }
+
+    console.log('Admin contact email sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Error sending admin contact email:', error);
+    return false;
+  }
+}

@@ -926,20 +926,66 @@ the actual document file stored on the server.
     setShowComplianceDetailsModal(true);
   };
 
-  const handleSendPaymentReminder = (provider: string, email: string) => {
-    console.log(`Sent payment reminder to ${provider} at ${email}`);
-    toast({
-      title: "Reminder Sent",
-      description: `Payment reminder sent to ${provider} at ${email}`,
-    });
+  const handleSendPaymentReminder = async (provider: string, email: string) => {
+    try {
+      const res = await fetch('/api/admin/send-payment-reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ providerName: provider, email })
+      });
+      
+      if (res.ok) {
+        toast({
+          title: "Reminder Sent",
+          description: `Payment reminder email sent to ${provider} at ${email}`,
+        });
+      } else {
+        const err = await res.json();
+        toast({
+          title: "Error",
+          description: err.error || "Failed to send payment reminder",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send payment reminder email",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleContactProvider = (provider: string, email: string) => {
-    console.log(`Contacting ${provider} at ${email}`);
-    toast({
-      title: "Contact Sent",
-      description: `Contact request initiated for ${provider}. Email: ${email}`,
-    });
+  const handleContactProvider = async (provider: string, email: string) => {
+    try {
+      const res = await fetch('/api/admin/contact-provider', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ providerName: provider, email })
+      });
+      
+      if (res.ok) {
+        toast({
+          title: "Contact Email Sent",
+          description: `Contact email sent to ${provider} at ${email}`,
+        });
+      } else {
+        const err = await res.json();
+        toast({
+          title: "Error",
+          description: err.error || "Failed to send contact email",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send contact email",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleUploadDocument = (docId: number) => {

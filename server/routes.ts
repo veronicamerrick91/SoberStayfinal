@@ -6,7 +6,7 @@ import { insertListingSchema, insertSubscriptionSchema, insertUserSchema } from 
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml, sendApplicationReceivedEmail, sendNewApplicationNotification, sendApplicationApprovedEmail, sendApplicationDeniedEmail } from "./email";
+import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml, sendApplicationReceivedEmail, sendNewApplicationNotification, sendApplicationApprovedEmail, sendApplicationDeniedEmail, sendPaymentReminderEmail, sendAdminContactEmail } from "./email";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import { sql } from "drizzle-orm";
@@ -965,6 +965,65 @@ Disallow: /auth/
     } catch (error: any) {
       console.error("Update email subscription error:", error);
       res.status(500).json({ error: error.message || "Failed to update email subscription" });
+    }
+  });
+
+  // Admin: Send payment reminder email to a provider
+  app.post("/api/admin/send-payment-reminder", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const { userId, providerName, email } = req.body;
+    
+    if (!email || !providerName) {
+      return res.status(400).json({ error: "email and providerName are required" });
+    }
+
+    try {
+      const success = await sendPaymentReminderEmail(email, providerName);
+      
+      if (success) {
+        res.json({ success: true, message: `Payment reminder sent to ${email}` });
+      } else {
+        res.status(500).json({ error: "Failed to send payment reminder email" });
+      }
+    } catch (error: any) {
+      console.error("Send payment reminder error:", error);
+      res.status(500).json({ error: error.message || "Failed to send payment reminder" });
+    }
+  });
+
+  // Admin: Send contact email to a provider
+  app.post("/api/admin/contact-provider", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const { providerName, email, message } = req.body;
+    
+    if (!email || !providerName) {
+      return res.status(400).json({ error: "email and providerName are required" });
+    }
+
+    // Default message if none provided
+    const contactMessage = message || "We noticed an issue with your account and wanted to reach out. Please log in to your Provider Dashboard to review your account status, or reply to this email if you need assistance.";
+
+    try {
+      const success = await sendAdminContactEmail(email, providerName, contactMessage);
+      
+      if (success) {
+        res.json({ success: true, message: `Contact email sent to ${email}` });
+      } else {
+        res.status(500).json({ error: "Failed to send contact email" });
+      }
+    } catch (error: any) {
+      console.error("Send contact email error:", error);
+      res.status(500).json({ error: error.message || "Failed to send contact email" });
     }
   });
 
