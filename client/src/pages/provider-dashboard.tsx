@@ -8,7 +8,8 @@ import {
   Users, Building, MessageSquare, AlertCircle, 
   Plus, Check, X, MoreHorizontal, Search, ChevronRight,
   Bed, FileText, Settings, Lock, Mail, Phone, Upload, Shield, ToggleRight,
-  Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video, Eye, CreditCard
+  Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video, Eye, CreditCard,
+  ShieldCheck
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
@@ -93,6 +94,9 @@ function ProviderDashboardContent() {
   const [boostLevel, setBoostLevel] = useState(2);
   const [boostDuration, setBoostDuration] = useState(7);
   const [isBoostLoading, setIsBoostLoading] = useState(false);
+  
+  // Provider verification state
+  const [isDocumentsVerified, setIsDocumentsVerified] = useState(false);
   
   // Provider marketing templates with triggers
   const [providerTemplates, setProviderTemplates] = useState([
@@ -261,6 +265,20 @@ function ProviderDashboardContent() {
       }
     };
     fetchFeaturedListings();
+    
+    // Fetch provider verification status
+    const fetchVerificationStatus = async () => {
+      try {
+        const res = await fetch('/api/provider/profile', { credentials: 'include' });
+        if (res.ok) {
+          const profile = await res.json();
+          setIsDocumentsVerified(profile.documentsVerified === true);
+        }
+      } catch (err) {
+        console.error("Error fetching verification status:", err);
+      }
+    };
+    fetchVerificationStatus();
   }, [user?.id]);
 
   // Handle return from Stripe checkout - refetch subscription status
@@ -1016,6 +1034,33 @@ function ProviderDashboardContent() {
                   Get your listings seen by more potential tenants. Featured listings appear at the top of search results with a special badge.
                 </p>
                 
+                {/* Verification Required Notice */}
+                {!isDocumentsVerified && (
+                  <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-amber-500/20 p-2 rounded text-amber-500">
+                        <ShieldCheck className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-amber-400 text-sm">Verification Required</h4>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Your documents must be verified by our team before you can purchase featured listings. 
+                          Please submit your business license and other required documents for review.
+                        </p>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="mt-3 border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+                          onClick={() => setLocation("/provider-profile")}
+                          data-testid="button-submit-verification"
+                        >
+                          Go to Profile & Documents
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 {/* Active Featured Listings */}
                 {featuredListings.filter(f => f.isActive && new Date(f.endDate) > new Date()).length > 0 && (
                   <div className="space-y-3">
@@ -1036,41 +1081,43 @@ function ProviderDashboardContent() {
                   </div>
                 )}
                 
-                {/* Listings Available to Boost */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-white">Boost a Listing</h4>
-                  {listings.filter(l => l.status === 'approved' && !isListingFeatured(l.id)).length === 0 ? (
-                    <p className="text-xs text-muted-foreground">
-                      {listings.filter(l => l.status === 'approved').length === 0 
-                        ? "No approved listings available to boost. Get your listings approved first."
-                        : "All your listings are already boosted!"}
-                    </p>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {listings.filter(l => l.status === 'approved' && !isListingFeatured(l.id)).map((listing) => (
-                        <div key={listing.id} className="p-3 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
-                          <div>
-                            <p className="text-white text-sm font-medium">{listing.propertyName}</p>
-                            <p className="text-xs text-muted-foreground">{listing.city}, {listing.state}</p>
+                {/* Listings Available to Boost - Only show if verified */}
+                {isDocumentsVerified && (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-white">Boost a Listing</h4>
+                    {listings.filter(l => l.status === 'approved' && !isListingFeatured(l.id)).length === 0 ? (
+                      <p className="text-xs text-muted-foreground">
+                        {listings.filter(l => l.status === 'approved').length === 0 
+                          ? "No approved listings available to boost. Get your listings approved first."
+                          : "All your listings are already boosted!"}
+                      </p>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {listings.filter(l => l.status === 'approved' && !isListingFeatured(l.id)).map((listing) => (
+                          <div key={listing.id} className="p-3 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
+                            <div>
+                              <p className="text-white text-sm font-medium">{listing.propertyName}</p>
+                              <p className="text-xs text-muted-foreground">{listing.city}, {listing.state}</p>
+                            </div>
+                            <Button 
+                              size="sm" 
+                              className="bg-purple-500 hover:bg-purple-600 text-white gap-1"
+                              onClick={() => {
+                                setSelectedListingToBoost(listing);
+                                setBoostLevel(2);
+                                setBoostDuration(7);
+                                setShowBoostModal(true);
+                              }}
+                              data-testid={`button-boost-listing-${listing.id}`}
+                            >
+                              <Zap className="w-3 h-3" /> Boost
+                            </Button>
                           </div>
-                          <Button 
-                            size="sm" 
-                            className="bg-purple-500 hover:bg-purple-600 text-white gap-1"
-                            onClick={() => {
-                              setSelectedListingToBoost(listing);
-                              setBoostLevel(2);
-                              setBoostDuration(7);
-                              setShowBoostModal(true);
-                            }}
-                            data-testid={`button-boost-listing-${listing.id}`}
-                          >
-                            <Zap className="w-3 h-3" /> Boost
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
                 
                 {/* Pricing Info */}
                 <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">

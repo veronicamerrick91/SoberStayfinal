@@ -89,6 +89,8 @@ export const providerProfiles = pgTable("provider_profiles", {
   zip: text("zip"),
   foundedYear: integer("founded_year"),
   totalBeds: integer("total_beds"),
+  documentsVerified: boolean("documents_verified").default(false).notNull(),
+  verifiedAt: timestamp("verified_at"),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

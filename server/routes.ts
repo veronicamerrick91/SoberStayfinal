@@ -1175,6 +1175,43 @@ Disallow: /auth/
     }
   });
 
+  // Admin Provider Verification endpoints
+  app.patch("/api/admin/providers/:id/verify", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const providerId = parseInt(req.params.id);
+      const profile = await storage.verifyProvider(providerId);
+      if (!profile) {
+        return res.status(404).json({ error: "Provider not found" });
+      }
+      res.json(profile);
+    } catch (error) {
+      console.error("Error verifying provider:", error);
+      res.status(500).json({ error: "Failed to verify provider" });
+    }
+  });
+
+  app.patch("/api/admin/providers/:id/unverify", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const providerId = parseInt(req.params.id);
+      const profile = await storage.unverifyProvider(providerId);
+      if (!profile) {
+        return res.status(404).json({ error: "Provider not found" });
+      }
+      res.json(profile);
+    } catch (error) {
+      console.error("Error unverifying provider:", error);
+      res.status(500).json({ error: "Failed to unverify provider" });
+    }
+  });
+
   // Featured Listings endpoints
   
   // Get all featured listings (admin)
@@ -1228,6 +1265,12 @@ Disallow: /auth/
     }
     try {
       const { listingId, boostLevel, durationDays } = req.body;
+      
+      // Check if provider is verified before allowing purchase
+      const isVerified = await storage.isProviderVerified(user.id);
+      if (!isVerified) {
+        return res.status(403).json({ error: "Your documents must be verified before purchasing featured listings. Please submit verification documents." });
+      }
       
       // Validate listing belongs to provider
       const listing = await storage.getListing(listingId);

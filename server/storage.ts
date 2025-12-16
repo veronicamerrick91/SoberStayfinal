@@ -40,6 +40,9 @@ export interface IStorage {
   
   getProviderProfile(providerId: number): Promise<ProviderProfile | undefined>;
   createOrUpdateProviderProfile(providerId: number, profile: Partial<InsertProviderProfile>): Promise<ProviderProfile>;
+  isProviderVerified(providerId: number): Promise<boolean>;
+  verifyProvider(providerId: number): Promise<ProviderProfile | undefined>;
+  unverifyProvider(providerId: number): Promise<ProviderProfile | undefined>;
   
   // Subscription lifecycle methods
   updateSubscription(providerId: number, data: Partial<Subscription>): Promise<Subscription | undefined>;
@@ -318,6 +321,41 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return created;
     }
+  }
+
+  async isProviderVerified(providerId: number): Promise<boolean> {
+    const profile = await this.getProviderProfile(providerId);
+    return profile?.documentsVerified ?? false;
+  }
+
+  async verifyProvider(providerId: number): Promise<ProviderProfile | undefined> {
+    const existingProfile = await this.getProviderProfile(providerId);
+    if (!existingProfile) {
+      // Create profile with verification
+      const [created] = await db
+        .insert(providerProfiles)
+        .values({ providerId, documentsVerified: true, verifiedAt: new Date() })
+        .returning();
+      return created;
+    }
+    const [updated] = await db
+      .update(providerProfiles)
+      .set({ documentsVerified: true, verifiedAt: new Date(), updatedAt: new Date() })
+      .where(eq(providerProfiles.providerId, providerId))
+      .returning();
+    return updated;
+  }
+
+  async unverifyProvider(providerId: number): Promise<ProviderProfile | undefined> {
+    const existingProfile = await this.getProviderProfile(providerId);
+    if (!existingProfile) return undefined;
+    
+    const [updated] = await db
+      .update(providerProfiles)
+      .set({ documentsVerified: false, verifiedAt: null, updatedAt: new Date() })
+      .where(eq(providerProfiles.providerId, providerId))
+      .returning();
+    return updated;
   }
 
   // Subscription lifecycle methods
