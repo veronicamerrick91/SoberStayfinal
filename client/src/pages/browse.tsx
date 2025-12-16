@@ -9,13 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { 
   Search, MapPin, ShieldCheck, Filter, LayoutGrid, List,
-  HelpCircle, Map, Home, Loader2
+  HelpCircle, Map, Home, Loader2, Zap
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
-import type { Listing } from "@shared/schema";
+import type { Listing, FeaturedListing } from "@shared/schema";
 import { useDocumentMeta } from "@/lib/use-document-meta";
 
 import placeholderHome from "@assets/stock_images/modern_comfortable_l_a00ffa5e.jpg";
@@ -24,6 +24,14 @@ async function fetchListings(): Promise<Listing[]> {
   const response = await fetch("/api/listings");
   if (!response.ok) {
     throw new Error("Failed to fetch listings");
+  }
+  return response.json();
+}
+
+async function fetchFeaturedListings(): Promise<FeaturedListing[]> {
+  const response = await fetch("/api/featured-listings");
+  if (!response.ok) {
+    return [];
   }
   return response.json();
 }
@@ -38,6 +46,20 @@ export default function Browse() {
     queryKey: ["listings"],
     queryFn: fetchListings,
   });
+
+  const { data: featuredListings = [] } = useQuery({
+    queryKey: ["featuredListings"],
+    queryFn: fetchFeaturedListings,
+  });
+
+  const isListingFeatured = (listingId: number) => {
+    return featuredListings.some(f => f.listingId === listingId && f.isActive && new Date(f.endDate) > new Date());
+  };
+
+  const getListingBoostLevel = (listingId: number) => {
+    const featured = featuredListings.find(f => f.listingId === listingId && f.isActive && new Date(f.endDate) > new Date());
+    return featured?.boostLevel || 0;
+  };
 
   useDocumentMeta({
     title: "Browse Sober Living Homes | Sober Stay",
@@ -65,6 +87,10 @@ export default function Browse() {
     return true;
   }).filter((listing) => {
     return listing.monthlyPrice <= priceRange[0];
+  }).sort((a, b) => {
+    const aBoost = getListingBoostLevel(a.id);
+    const bBoost = getListingBoostLevel(b.id);
+    return bBoost - aBoost;
   });
   
   return (
@@ -278,7 +304,12 @@ export default function Browse() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
                       
-                      <div className="absolute top-2 left-2">
+                      <div className="absolute top-2 left-2 flex gap-1">
+                        {isListingFeatured(listing.id) && (
+                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md text-xs">
+                            <Zap className="w-3 h-3" /> Featured
+                          </Badge>
+                        )}
                         {listing.status === "approved" && (
                           <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md bg-opacity-90 text-xs">
                             <ShieldCheck className="w-3 h-3" /> Verified
@@ -337,11 +368,18 @@ export default function Browse() {
                           loading="lazy"
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
-                        {listing.status === "approved" && (
-                          <Badge className="absolute top-2 left-2 bg-primary text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md bg-opacity-90 text-xs">
-                            <ShieldCheck className="w-3 h-3" /> Verified
-                          </Badge>
-                        )}
+                        <div className="absolute top-2 left-2 flex flex-col gap-1">
+                          {isListingFeatured(listing.id) && (
+                            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md text-xs">
+                              <Zap className="w-3 h-3" /> Featured
+                            </Badge>
+                          )}
+                          {listing.status === "approved" && (
+                            <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md bg-opacity-90 text-xs">
+                              <ShieldCheck className="w-3 h-3" /> Verified
+                            </Badge>
+                          )}
+                        </div>
                       </div>
 
                       <div className="flex-1 flex flex-col justify-between">
