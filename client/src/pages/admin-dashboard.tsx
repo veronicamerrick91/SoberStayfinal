@@ -31,6 +31,7 @@ interface User {
   phone?: string;
   status: "Active" | "Suspended" | "Pending";
   verified: boolean;
+  documentsVerified?: boolean;
 }
 
 export function AdminDashboard() {
@@ -345,7 +346,8 @@ export function AdminDashboard() {
             email: u.email,
             phone: u.phone || '',
             status: 'Active' as const,
-            verified: true
+            verified: true,
+            documentsVerified: u.documentsVerified || false
           }));
           setUsers(formattedUsers);
         }
@@ -480,6 +482,31 @@ export function AdminDashboard() {
         ? { ...u, status: u.status === "Suspended" ? "Active" : "Suspended" }
         : u
     ));
+  };
+
+  const handleToggleProviderVerification = async (userId: string, currentlyVerified: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/providers/${userId}/verify`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ verified: !currentlyVerified })
+      });
+      if (res.ok) {
+        setUsers(users.map(u => u.id === userId ? { ...u, documentsVerified: !currentlyVerified } : u));
+        toast({ 
+          title: !currentlyVerified ? "Provider Verified" : "Verification Removed", 
+          description: !currentlyVerified 
+            ? "Provider can now purchase featured listings." 
+            : "Provider's verification has been revoked." 
+        });
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to update verification", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update verification", variant: "destructive" });
+    }
   };
 
   const handleReviewListing = (listing: any) => {
@@ -1426,9 +1453,30 @@ the actual document file stored on the server.
                       </div>
                       <div className="flex items-center gap-3">
                         <Badge variant={user.role === "Provider" ? "default" : "secondary"}>{user.role}</Badge>
+                        {user.role === "Provider" && (
+                          <Badge 
+                            className={user.documentsVerified 
+                              ? "bg-blue-500/80 text-white" 
+                              : "bg-gray-500/50 text-gray-300"
+                            }
+                          >
+                            {user.documentsVerified ? "Docs Verified" : "Unverified"}
+                          </Badge>
+                        )}
                         <Badge variant={user.status === "Active" ? "default" : "outline"} className={user.status === "Active" ? "bg-green-500/80" : user.status === "Suspended" ? "bg-red-500/80" : "bg-amber-500/80"}>{user.status}</Badge>
                         <div className="flex gap-2">
                           <Button size="sm" variant="ghost" className="h-8 text-primary hover:bg-primary/10" onClick={() => handleEditUser(user)}>Edit</Button>
+                          {user.role === "Provider" && (
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              className={`h-8 ${user.documentsVerified ? "text-amber-500 hover:bg-amber-500/10" : "text-blue-500 hover:bg-blue-500/10"}`}
+                              onClick={() => handleToggleProviderVerification(user.id, user.documentsVerified || false)}
+                              data-testid={`button-verify-provider-${user.id}`}
+                            >
+                              {user.documentsVerified ? "Revoke Verify" : "Verify Docs"}
+                            </Button>
+                          )}
                           <Button 
                             size="sm" 
                             variant="ghost" 

@@ -432,11 +432,18 @@ Disallow: /auth/
       return res.status(403).json({ error: "Admin access required" });
     }
     const users = await storage.getAllUsers();
-    const safeUsers = users.map(u => {
+    
+    // Fetch provider profiles to get documentsVerified status
+    const usersWithVerification = await Promise.all(users.map(async (u) => {
       const { password, ...safe } = u;
+      if (u.role === 'provider') {
+        const profile = await storage.getProviderProfile(u.id);
+        return { ...safe, documentsVerified: profile?.documentsVerified || false };
+      }
       return safe;
-    });
-    res.json(safeUsers);
+    }));
+    
+    res.json(usersWithVerification);
   });
 
   app.get("/api/admin/listings", async (req, res) => {
