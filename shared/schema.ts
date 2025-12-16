@@ -186,6 +186,28 @@ export const insertFeaturedListingSchema = createInsertSchema(featuredListings).
   createdAt: true,
 });
 
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  excerpt: text("excerpt"),
+  content: text("content").notNull(),
+  author: text("author").notNull(),
+  category: text("category").notNull(),
+  tags: jsonb("tags").$type<string[]>().default([]),
+  status: text("status").default("draft").notNull(), // draft, published, scheduled
+  publishedAt: timestamp("published_at"),
+  scheduledAt: timestamp("scheduled_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Listing = typeof listings.$inferSelect;
@@ -203,3 +225,5 @@ export type PromoCode = typeof promoCodes.$inferSelect;
 export type InsertPromoCode = z.infer<typeof insertPromoCodeSchema>;
 export type FeaturedListing = typeof featuredListings.$inferSelect;
 export type InsertFeaturedListing = z.infer<typeof insertFeaturedListingSchema>;
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
