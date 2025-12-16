@@ -1175,5 +1175,150 @@ Disallow: /auth/
     }
   });
 
+  // Featured Listings endpoints
+  
+  // Get all featured listings (admin)
+  app.get("/api/admin/featured-listings", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const featured = await storage.getAllFeaturedListings();
+      res.json(featured);
+    } catch (error) {
+      console.error("Error fetching featured listings:", error);
+      res.status(500).json({ error: "Failed to fetch featured listings" });
+    }
+  });
+
+  // Get active featured listings (public - for browse page)
+  app.get("/api/featured-listings", async (req, res) => {
+    try {
+      // Deactivate expired ones first
+      await storage.deactivateExpiredFeaturedListings();
+      const featured = await storage.getActiveFeaturedListings();
+      res.json(featured);
+    } catch (error) {
+      console.error("Error fetching active featured listings:", error);
+      res.status(500).json({ error: "Failed to fetch featured listings" });
+    }
+  });
+
+  // Get provider's featured listings
+  app.get("/api/provider/featured-listings", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const featured = await storage.getFeaturedListingsByProvider(user.id);
+      res.json(featured);
+    } catch (error) {
+      console.error("Error fetching provider featured listings:", error);
+      res.status(500).json({ error: "Failed to fetch featured listings" });
+    }
+  });
+
+  // Purchase featured listing (provider)
+  app.post("/api/provider/featured-listings", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { listingId, boostLevel, durationDays } = req.body;
+      
+      // Validate listing belongs to provider
+      const listing = await storage.getListing(listingId);
+      if (!listing || listing.providerId !== user.id) {
+        return res.status(403).json({ error: "Listing not found or access denied" });
+      }
+      
+      // Check if listing is already featured
+      const existingFeatured = await storage.getFeaturedListingByListingId(listingId);
+      if (existingFeatured) {
+        return res.status(400).json({ error: "Listing is already featured" });
+      }
+      
+      // Calculate pricing: $7/day for 2x, $10/day for 3x, $15/day for 5x
+      const pricePerDay = boostLevel === 5 ? 1500 : boostLevel === 3 ? 1000 : 700;
+      const amountPaid = pricePerDay * durationDays;
+      
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + durationDays);
+      
+      const featured = await storage.createFeaturedListing({
+        listingId,
+        providerId: user.id,
+        boostLevel: boostLevel || 2,
+        amountPaid,
+        durationDays: durationDays || 7,
+        startDate,
+        endDate,
+        isActive: true,
+      });
+      
+      res.json(featured);
+    } catch (error) {
+      console.error("Error creating featured listing:", error);
+      res.status(500).json({ error: "Failed to create featured listing" });
+    }
+  });
+
+  // Deactivate featured listing (admin or provider who owns it)
+  app.patch("/api/featured-listings/:id/deactivate", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      const featured = await storage.getFeaturedListing(id);
+      
+      if (!featured) {
+        return res.status(404).json({ error: "Featured listing not found" });
+      }
+      
+      // Only admin or the owning provider can deactivate
+      if (user.role !== "admin" && featured.providerId !== user.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      await storage.deactivateFeaturedListing(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deactivating featured listing:", error);
+      res.status(500).json({ error: "Failed to deactivate featured listing" });
+    }
+  });
+
+  // Update featured listing (admin only)
+  app.patch("/api/admin/featured-listings/:id", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      const { boostLevel, isActive, endDate } = req.body;
+      
+      const updateData: any = {};
+      if (boostLevel !== undefined) updateData.boostLevel = boostLevel;
+      if (isActive !== undefined) updateData.isActive = isActive;
+      if (endDate !== undefined) updateData.endDate = new Date(endDate);
+      
+      const featured = await storage.updateFeaturedListing(id, updateData);
+      if (!featured) {
+        return res.status(404).json({ error: "Featured listing not found" });
+      }
+      res.json(featured);
+    } catch (error) {
+      console.error("Error updating featured listing:", error);
+      res.status(500).json({ error: "Failed to update featured listing" });
+    }
+  });
+
   return httpServer;
 }
