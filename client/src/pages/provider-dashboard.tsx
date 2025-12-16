@@ -280,6 +280,53 @@ function ProviderDashboardContent() {
       }
     };
     fetchVerificationStatus();
+    
+    // Fetch real applications from API
+    const fetchApplications = async () => {
+      try {
+        const res = await fetch('/api/provider/applications', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          // Handle both array and object wrapper response formats
+          const apps = Array.isArray(data) ? data : (data.applications || []);
+          // Map API response to ApplicationData format
+          const mappedApplications: ApplicationData[] = apps.map((app: any) => {
+            const appData = app.applicationData || {};
+            return {
+              id: String(app.id),
+              applicantName: app.tenantName || 'Unknown Applicant',
+              email: app.tenantEmail || '',
+              phone: appData.phone || appData.emergencyPhone || 'Not provided',
+              property: app.propertyName || 'Unknown Property',
+              submittedDate: app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'Unknown',
+              status: app.status === 'approved' ? 'Approved' : app.status === 'rejected' ? 'Denied' : app.status === 'pending' ? 'New' : 'Screening',
+              avatar: app.profilePhotoUrl || undefined,
+              idPhotoUrl: app.idPhotoUrl || undefined,
+              dob: appData.dateOfBirth || 'Not provided',
+              gender: appData.gender || 'Not provided',
+              currentAddress: appData.currentAddress || 'Not provided',
+              primarySubstance: appData.primarySubstance || 'Not disclosed',
+              soberDate: appData.sobrietyDate || 'Not provided',
+              soberLength: appData.sobrietyLength || 'Not provided',
+              matStatus: appData.matProgram === 'yes' || appData.matStatus === true,
+              matMeds: appData.matMedications || undefined,
+              probation: appData.legalStatus === 'probation' || appData.probation === true,
+              pendingCases: appData.pendingCases === true || appData.pendingLegalCases === 'yes',
+              medicalConditions: appData.medicalConditions || 'None',
+              medications: appData.currentMedications || 'None',
+              employmentStatus: appData.employmentStatus || 'Not provided',
+              incomeSource: appData.incomeSource || 'Not provided',
+              evictionHistory: appData.evictionHistory === true || appData.priorEvictions === 'yes',
+              reasonForLeaving: appData.reasonForLeaving || appData.whySeekingSoberLiving || 'Not provided',
+            };
+          });
+          setApplications(mappedApplications);
+        }
+      } catch (err) {
+        console.error("Error fetching applications:", err);
+      }
+    };
+    fetchApplications();
   }, [user?.id]);
 
   // Handle return from Stripe checkout - refetch subscription status

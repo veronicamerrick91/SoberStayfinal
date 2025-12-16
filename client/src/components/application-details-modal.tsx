@@ -18,6 +18,7 @@ export interface ApplicationData {
   submittedDate: string;
   status: "New" | "Screening" | "Approved" | "Denied";
   avatar?: string;
+  idPhotoUrl?: string;
   
   dob: string;
   gender: string;
@@ -137,6 +138,22 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
               <div className="col-span-2 flex items-start gap-2 text-gray-300"><MapPin className="w-4 h-4 mt-0.5" /> {application.currentAddress}</div>
             </div>
           </div>
+
+          {/* ID Document */}
+          {application.idPhotoUrl && (
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">Government ID</h3>
+              <div className="bg-white/5 border border-border rounded-lg p-4">
+                <img 
+                  src={application.idPhotoUrl} 
+                  alt="Government ID" 
+                  className="max-w-full max-h-48 rounded-lg border border-border mx-auto"
+                  data-testid="img-tenant-id"
+                />
+                <p className="text-xs text-muted-foreground text-center mt-2">Uploaded government-issued ID</p>
+              </div>
+            </div>
+          )}
 
           {/* Recovery & Health */}
           <div className="mb-6">
