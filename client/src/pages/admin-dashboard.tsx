@@ -6,13 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
   Users, Building, FileText, Activity, 
-  Check, X, Eye, ShieldAlert, BarChart3, AlertTriangle,
+  Check, X, Eye, EyeOff, ShieldAlert, BarChart3, AlertTriangle,
   Mail, MessageSquare, Settings, DollarSign, TrendingUp,
   Search, Download, Flag, Lock, Clock, Upload, Shield, Plus,
   CheckCircle, Bold, Italic, Underline, Strikethrough, 
   List, ListOrdered, Heading1, Heading2, Link2, Quote, 
   AlignLeft, AlignCenter, AlignRight, Undo, Redo, Type, Save,
-  ChevronRight
+  ChevronRight, RotateCcw, Trash2
 } from "lucide-react";
 import { getReports, updateReportStatus } from "@/lib/reports";
 import { UserEditModal } from "@/components/user-edit-modal";
@@ -488,6 +488,134 @@ export function AdminDashboard() {
   const handleDenyListing = (listingId: string, reason: string) => {
     setListings(listings.map(l => l.id === listingId ? { ...l, status: "Rejected", denialReason: reason } : l));
     setShowReviewModal(false);
+  };
+
+  const handleQuickApproveListing = async (listingId: string) => {
+    try {
+      const res = await fetch(`/api/admin/listings/${listingId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: 'approved' })
+      });
+      if (res.ok) {
+        setListings(listings.map(l => l.id === listingId ? { ...l, status: "Approved", denialReason: null } : l));
+        toast({ title: "Listing Approved", description: "The listing is now visible to users." });
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to approve listing", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to approve listing", variant: "destructive" });
+    }
+  };
+
+  const handleUnrejectListing = async (listingId: string) => {
+    try {
+      const res = await fetch(`/api/admin/listings/${listingId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: 'pending' })
+      });
+      if (res.ok) {
+        setListings(listings.map(l => l.id === listingId ? { ...l, status: "Pending", denialReason: null } : l));
+        toast({ title: "Listing Reset", description: "The listing has been reset to pending review." });
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to reset listing", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to reset listing", variant: "destructive" });
+    }
+  };
+
+  const handleToggleListingVisibility = async (listingId: string, currentlyHidden: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/listings/${listingId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ isVisible: currentlyHidden })
+      });
+      if (res.ok) {
+        setListings(listings.map(l => l.id === listingId ? { ...l, isHidden: !currentlyHidden } : l));
+        toast({ 
+          title: currentlyHidden ? "Listing Visible" : "Listing Hidden", 
+          description: currentlyHidden ? "The listing is now visible to users." : "The listing is now hidden from users." 
+        });
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to update visibility", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update visibility", variant: "destructive" });
+    }
+  };
+
+  const [rejectingListing, setRejectingListing] = useState<any>(null);
+  const [showRejectListingModal, setShowRejectListingModal] = useState(false);
+  const [rejectListingReason, setRejectListingReason] = useState("");
+
+  const openRejectListingModal = (listing: any) => {
+    setRejectingListing(listing);
+    setRejectListingReason("");
+    setShowRejectListingModal(true);
+  };
+
+  const handleConfirmRejectListing = async () => {
+    if (!rejectingListing || !rejectListingReason.trim()) return;
+    
+    try {
+      const res = await fetch(`/api/admin/listings/${rejectingListing.id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: 'rejected' })
+      });
+      if (res.ok) {
+        setListings(listings.map(l => l.id === rejectingListing.id ? { ...l, status: "Rejected", denialReason: rejectListingReason } : l));
+        toast({ title: "Listing Rejected", description: "The listing has been rejected." });
+        setShowRejectListingModal(false);
+        setRejectingListing(null);
+        setRejectListingReason("");
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to reject listing", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to reject listing", variant: "destructive" });
+    }
+  };
+
+  const [deletingListing, setDeletingListing] = useState<any>(null);
+  const [showDeleteListingModal, setShowDeleteListingModal] = useState(false);
+
+  const openDeleteListingModal = (listing: any) => {
+    setDeletingListing(listing);
+    setShowDeleteListingModal(true);
+  };
+
+  const handleConfirmDeleteListing = async () => {
+    if (!deletingListing) return;
+    
+    try {
+      const res = await fetch(`/api/admin/listings/${deletingListing.id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        setListings(listings.filter(l => l.id !== deletingListing.id));
+        toast({ title: "Listing Deleted", description: "The listing has been permanently removed." });
+        setShowDeleteListingModal(false);
+        setDeletingListing(null);
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to delete listing", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to delete listing", variant: "destructive" });
+    }
   };
 
   const handleViewApplication = (app: any) => {
@@ -1292,51 +1420,118 @@ the actual document file stored on the server.
 
           {/* LISTINGS MANAGEMENT */}
           <TabsContent value="listings" className="space-y-6">
-            <div className="space-y-2">
-              <h3 className="text-white font-semibold mb-3">Listing Management ({listings.length})</h3>
-              {listings.map((listing) => (
-                <div key={listing.id} className="p-3 rounded-lg hover:bg-white/5 transition-colors border-b border-border/50 last:border-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex gap-3 flex-1">
-                      <img src={listing.image} className="w-12 h-12 rounded object-cover" />
-                      <div className="flex-1">
-                        <p className="text-white font-medium">{listing.name}</p>
-                        <p className="text-xs text-muted-foreground">{listing.address}, {listing.city}</p>
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Building className="w-5 h-5" /> Listing Management
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">Review, approve, reject, and manage all property listings</p>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2 mb-4">
+                  <Badge variant="outline" className="text-xs">
+                    {listings.filter(l => l.status === "Pending").length} Pending
+                  </Badge>
+                  <Badge className="bg-green-500/20 text-green-400 text-xs">
+                    {listings.filter(l => l.status === "Approved").length} Approved
+                  </Badge>
+                  <Badge className="bg-red-500/20 text-red-400 text-xs">
+                    {listings.filter(l => l.status === "Rejected").length} Rejected
+                  </Badge>
+                </div>
+                
+                <div className="space-y-3">
+                  {listings.map((listing) => (
+                    <div key={listing.id} className={`p-4 rounded-lg border transition-all ${
+                      listing.status === "Pending" ? "bg-amber-500/5 border-amber-500/20" :
+                      listing.status === "Approved" ? "bg-green-500/5 border-green-500/20" :
+                      listing.status === "Rejected" ? "bg-red-500/5 border-red-500/20" :
+                      "bg-white/5 border-border/50"
+                    }`}>
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex gap-3 flex-1">
+                          <img src={listing.image} className="w-16 h-16 rounded-lg object-cover" />
+                          <div className="flex-1">
+                            <p className="text-white font-bold">{listing.name}</p>
+                            <p className="text-sm text-muted-foreground">{listing.address}, {listing.city}, {listing.state}</p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <Badge variant="outline" className="text-xs border-primary/30 text-primary">${listing.price}/{listing.pricePeriod}</Badge>
+                              <Badge variant="secondary" className="text-xs">{listing.bedsAvailable} beds</Badge>
+                              {listing.isVerified && <Badge className="bg-blue-500/80 text-xs">Verified</Badge>}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <Badge className={
+                            listing.status === "Approved" ? "bg-green-500/80" :
+                            listing.status === "Rejected" ? "bg-red-500/80" :
+                            listing.status === "Draft" ? "bg-gray-500/80" :
+                            "bg-amber-500/80"
+                          }>{listing.status}</Badge>
+                          {flaggedListings.has(listing.id) && <Badge className="bg-red-500/80 text-xs">⚠ Flagged</Badge>}
+                          {listing.isHidden && <Badge variant="outline" className="text-xs border-gray-500/30 text-gray-400">Hidden</Badge>}
+                        </div>
+                      </div>
+                      
+                      {listing.denialReason && (
+                        <div className="mb-3 p-2 bg-red-500/10 border border-red-500/20 rounded text-sm">
+                          <span className="text-red-400 font-medium">Rejection Reason:</span> <span className="text-red-300">{listing.denialReason}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" onClick={() => handleReviewListing(listing)} className="h-8 gap-1 text-xs" data-testid={`button-view-listing-${listing.id}`}>
+                          <Eye className="w-3 h-3" /> View Details
+                        </Button>
+                        
+                        {listing.status === "Pending" && (
+                          <>
+                            <Button size="sm" onClick={() => handleQuickApproveListing(listing.id)} className="h-8 bg-green-500/20 text-green-500 hover:bg-green-500/30 gap-1 text-xs" data-testid={`button-approve-listing-${listing.id}`}>
+                              <Check className="w-3 h-3" /> Approve
+                            </Button>
+                            <Button size="sm" onClick={() => openRejectListingModal(listing)} variant="outline" className="h-8 border-red-500/30 text-red-500 hover:bg-red-500/10 gap-1 text-xs" data-testid={`button-reject-listing-${listing.id}`}>
+                              <X className="w-3 h-3" /> Reject
+                            </Button>
+                          </>
+                        )}
+                        
+                        {listing.status === "Rejected" && (
+                          <>
+                            <Button size="sm" onClick={() => handleUnrejectListing(listing.id)} className="h-8 bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 gap-1 text-xs" data-testid={`button-unreject-listing-${listing.id}`}>
+                              <RotateCcw className="w-3 h-3" /> Reset to Pending
+                            </Button>
+                            <Button size="sm" onClick={() => handleQuickApproveListing(listing.id)} className="h-8 bg-green-500/20 text-green-500 hover:bg-green-500/30 gap-1 text-xs" data-testid={`button-approve-rejected-${listing.id}`}>
+                              <Check className="w-3 h-3" /> Approve
+                            </Button>
+                          </>
+                        )}
+                        
+                        {listing.status === "Approved" && (
+                          <Button size="sm" onClick={() => handleToggleListingVisibility(listing.id, listing.isHidden)} variant="outline" className={`h-8 gap-1 text-xs ${listing.isHidden ? "border-green-500/30 text-green-400 hover:bg-green-500/10" : "border-gray-500/30 text-gray-400 hover:bg-gray-500/10"}`} data-testid={`button-toggle-visibility-${listing.id}`}>
+                            {listing.isHidden ? <><Eye className="w-3 h-3" /> Show</> : <><EyeOff className="w-3 h-3" /> Hide</>}
+                          </Button>
+                        )}
+                        
+                        <Button size="sm" onClick={() => handleFlagListing(listing.id)} variant="ghost" className={`h-8 text-xs ${flaggedListings.has(listing.id) ? "text-red-400" : "text-amber-500"} hover:bg-amber-500/10 gap-1`} data-testid={`button-flag-listing-${listing.id}`}>
+                          <AlertTriangle className="w-3 h-3" /> {flaggedListings.has(listing.id) ? "Unflag" : "Flag"}
+                        </Button>
+                        
+                        <Button size="sm" onClick={() => openDeleteListingModal(listing)} variant="ghost" className="h-8 text-xs text-red-500 hover:bg-red-500/10 gap-1" data-testid={`button-delete-listing-${listing.id}`}>
+                          <Trash2 className="w-3 h-3" /> Delete
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      {listing.isVerified && <Badge className="bg-green-500/80 text-xs">Verified</Badge>}
-                      <Badge variant="outline" className="text-xs">${listing.price}/{listing.pricePeriod}</Badge>
-                      <Badge variant="secondary" className="text-xs">{listing.bedsAvailable} beds</Badge>
-                      <Badge className={
-                        listing.status === "Approved" ? "bg-green-500/80 text-xs" :
-                        listing.status === "Rejected" ? "bg-red-500/80 text-xs" :
-                        "bg-amber-500/80 text-xs"
-                      }>{listing.status}</Badge>
-                      {flaggedListings.has(listing.id) && <Badge className="bg-red-500/80 text-xs">⚠ Flagged</Badge>}
-                    </div>
-                  </div>
+                  ))}
                   
-                  {listing.denialReason && (
-                    <div className="mb-2 p-2 bg-red-500/10 border border-red-500/20 rounded text-sm">
-                      <span className="text-red-400 font-medium">Denial Reason:</span> <span className="text-red-300">{listing.denialReason}</span>
+                  {listings.length === 0 && (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Building className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                      <p>No listings to manage</p>
                     </div>
                   )}
-                  
-                  <div className="flex gap-2">
-                    {listing.status === "Pending" && (
-                      <>
-                        <Button size="sm" onClick={() => handleReviewListing(listing)} className="bg-primary/20 text-primary hover:bg-primary/30 h-7 text-xs">Review</Button>
-                        <Button size="sm" onClick={() => handleFlagListing(listing.id)} variant="ghost" className={`h-7 text-xs ${flaggedListings.has(listing.id) ? "text-red-400" : "text-red-500"} hover:bg-red-500/10`}>{flaggedListings.has(listing.id) ? "Unflag" : "Flag"}</Button>
-                      </>
-                    )}
-                    {listing.status !== "Pending" && (
-                      <Button size="sm" onClick={() => handleFlagListing(listing.id)} variant="ghost" className={`h-7 text-xs ${flaggedListings.has(listing.id) ? "text-red-400" : "text-red-500"} hover:bg-red-500/10`}>{flaggedListings.has(listing.id) ? "Unflag" : "Flag"}</Button>
-                    )}
-                  </div>
                 </div>
-              ))}
-            </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* APPLICATIONS REVIEW */}
@@ -3539,6 +3734,88 @@ the actual document file stored on the server.
                   setRequestInfoMessage("");
                   setViewingDocument(null);
                 }} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reject Listing Modal */}
+        {showRejectListingModal && rejectingListing && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-gradient-to-r from-red-500/10 to-red-500/5 border-b border-red-500/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <X className="w-5 h-5 text-red-500" /> Reject Listing
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">Provide a reason for rejection</p>
+              </div>
+              <div className="p-6 space-y-4">
+                <p className="text-muted-foreground text-sm">
+                  You are rejecting: <span className="text-white font-medium">{rejectingListing.name}</span>
+                </p>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Rejection Reason *</label>
+                  <textarea
+                    placeholder="Explain why this listing is being rejected..."
+                    value={rejectListingReason}
+                    onChange={(e) => setRejectListingReason(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-red-500/30 hover:border-red-500/50 focus:border-red-500 focus:outline-none text-white h-24 transition-colors"
+                    data-testid="input-reject-listing-reason"
+                  />
+                </div>
+              </div>
+              <div className="bg-background border-t border-red-500/20 px-6 py-4 flex gap-2">
+                <Button 
+                  onClick={handleConfirmRejectListing} 
+                  disabled={!rejectListingReason.trim()}
+                  className="flex-1 bg-red-600 hover:bg-red-700 gap-2"
+                  data-testid="button-confirm-reject-listing"
+                >
+                  <X className="w-4 h-4" /> Confirm Rejection
+                </Button>
+                <Button onClick={() => {
+                  setShowRejectListingModal(false);
+                  setRejectingListing(null);
+                  setRejectListingReason("");
+                }} variant="outline" data-testid="button-cancel-reject-listing">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Listing Modal */}
+        {showDeleteListingModal && deletingListing && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+              <div className="bg-gradient-to-r from-red-500/10 to-red-500/5 border-b border-red-500/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Trash2 className="w-5 h-5 text-red-500" /> Delete Listing
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">This action cannot be undone</p>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+                  <p className="text-red-400 text-sm font-medium mb-2">Warning: This is a permanent action</p>
+                  <p className="text-muted-foreground text-sm">
+                    You are about to permanently delete: <span className="text-white font-medium">{deletingListing.name}</span>
+                  </p>
+                  <p className="text-muted-foreground text-xs mt-2">
+                    This will remove the listing and all associated data. The provider will need to create a new listing if they want to relist the property.
+                  </p>
+                </div>
+              </div>
+              <div className="bg-background border-t border-red-500/20 px-6 py-4 flex gap-2">
+                <Button 
+                  onClick={handleConfirmDeleteListing}
+                  className="flex-1 bg-red-600 hover:bg-red-700 gap-2"
+                  data-testid="button-confirm-delete-listing"
+                >
+                  <Trash2 className="w-4 h-4" /> Delete Permanently
+                </Button>
+                <Button onClick={() => {
+                  setShowDeleteListingModal(false);
+                  setDeletingListing(null);
+                }} variant="outline" data-testid="button-cancel-delete-listing">Cancel</Button>
               </div>
             </div>
           </div>

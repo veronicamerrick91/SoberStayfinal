@@ -32,8 +32,8 @@ export async function registerRoutes(
     const baseUrl = "https://soberstay.com";
     
     // Get all approved listings for dynamic sitemap entries
-    const listings = await storage.getListings();
-    const approvedListings = listings.filter(l => l.status === "approved");
+    const listings = await storage.getAllListings();
+    const approvedListings = listings.filter((l: any) => l.status === "approved");
     
     const staticPages = [
       "", "/browse", "/quiz", "/mission", "/resources", "/how-to-choose",
@@ -447,6 +447,54 @@ Disallow: /auth/
     }
     const listings = await storage.getAllListings();
     res.json(listings);
+  });
+
+  app.patch("/api/admin/listings/:id/status", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid listing ID" });
+    }
+    
+    const { status, isVisible } = req.body;
+    const validStatuses = ["pending", "approved", "rejected", "draft"];
+    
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({ error: "Invalid status value" });
+    }
+    
+    const listing = await storage.getListing(id);
+    if (!listing) {
+      return res.status(404).json({ error: "Listing not found" });
+    }
+    
+    const updateData: any = {};
+    if (status !== undefined) updateData.status = status;
+    if (isVisible !== undefined) updateData.isVisible = isVisible;
+    
+    const updated = await storage.updateListingStatus(id, updateData);
+    res.json(updated);
+  });
+
+  app.delete("/api/admin/listings/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid listing ID" });
+    }
+    
+    await storage.deleteListing(id);
+    res.json({ success: true });
   });
 
   // Stripe Configuration

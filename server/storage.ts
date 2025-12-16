@@ -24,6 +24,8 @@ export interface IStorage {
   getApprovedListings(): Promise<Listing[]>;
   getListingsByProvider(providerId: number): Promise<Listing[]>;
   updateListing(id: number, listing: Partial<InsertListing>): Promise<Listing | undefined>;
+  updateListingStatus(id: number, data: { status?: string; isVisible?: boolean }): Promise<Listing | undefined>;
+  deleteListing(id: number): Promise<void>;
   
   createSubscription(subscription: InsertSubscription): Promise<Subscription>;
   getSubscriptionByProvider(providerId: number): Promise<Subscription | undefined>;
@@ -161,6 +163,19 @@ export class DatabaseStorage implements IStorage {
       .where(eq(listings.id, id))
       .returning();
     return listing;
+  }
+
+  async updateListingStatus(id: number, data: { status?: string; isVisible?: boolean }): Promise<Listing | undefined> {
+    const [listing] = await db
+      .update(listings)
+      .set(data as any)
+      .where(eq(listings.id, id))
+      .returning();
+    return listing;
+  }
+
+  async deleteListing(id: number): Promise<void> {
+    await db.delete(listings).where(eq(listings.id, id));
   }
 
   async createSubscription(insertSubscription: InsertSubscription): Promise<Subscription> {
