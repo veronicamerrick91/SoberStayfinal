@@ -47,6 +47,7 @@ export function CreateListing() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const [isLoading, setIsLoading] = useState(isEditMode);
+  const [hasFeeWaiver, setHasFeeWaiver] = useState(false);
 
   // Check authentication and role
   React.useEffect(() => {
@@ -59,6 +60,22 @@ export function CreateListing() {
   // Scroll to top on mount
   React.useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  // Check subscription status for fee waiver
+  useEffect(() => {
+    const checkFeeWaiver = async () => {
+      try {
+        const res = await fetch('/api/stripe/subscription', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setHasFeeWaiver(data.hasFeeWaiver === true);
+        }
+      } catch (err) {
+        console.error("Error checking fee waiver status:", err);
+      }
+    };
+    checkFeeWaiver();
   }, []);
 
   // Scroll to top when view changes
@@ -241,7 +258,12 @@ export function CreateListing() {
 
   const handlePublish = () => {
     if (user?.id && isFormComplete) {
-      setShowPaymentModal(true);
+      // Skip payment modal if provider has fee waiver
+      if (hasFeeWaiver) {
+        handlePaymentSuccess();
+      } else {
+        setShowPaymentModal(true);
+      }
     }
   };
 
