@@ -77,6 +77,10 @@ export default function Home() {
             <h2 className="text-xl md:text-2xl text-gray-300 max-w-lg leading-relaxed font-medium">
               Safe, Structured Housing for Recovery & Long-Term Sobriety
             </h2>
+
+            <p className="text-lg text-gray-400 max-w-lg">
+              Sober Stay is a nationwide directory connecting individuals in recovery with safe, verified sober living homes.
+            </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link href="/browse">
