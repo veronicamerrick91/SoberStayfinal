@@ -79,6 +79,7 @@ function TenantDashboardContent() {
   const [showApplicationModal, setShowApplicationModal] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<SubmittedApplication | null>(null);
   const [submittedApplications, setSubmittedApplications] = useState<SubmittedApplication[]>([]);
+  const [activeTab, setActiveTab] = useState("messages");
   const { toast } = useToast();
   const user = getAuth();
   
@@ -328,7 +329,7 @@ function TenantDashboardContent() {
             </Card>
           </div>
 
-          <Tabs defaultValue="messages" className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="bg-gradient-to-r from-card via-card to-card border border-border/50 p-2 flex flex-wrap gap-2 h-auto justify-start rounded-lg shadow-sm">
               <TabsTrigger value="messages" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
                 <MessageSquare className="w-4 h-4" />
@@ -763,7 +764,7 @@ function TenantDashboardContent() {
                 <Home className="w-5 h-5" />
                 Browse More Homes
               </Button>
-              <Button onClick={() => setLocation("/chat/property1")} variant="outline" className="h-12 gap-2 border-primary/50">
+              <Button onClick={() => setActiveTab("messages")} variant="outline" className="h-12 gap-2 border-primary/50">
                 <MessageSquare className="w-5 h-5" />
                 View Messages
               </Button>

@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useQuery } from "@tanstack/react-query";
 import type { Listing, FeaturedListing } from "@shared/schema";
 import { useDocumentMeta } from "@/lib/use-document-meta";
+import { isAuthenticated } from "@/lib/auth";
 
 import placeholderHome from "@assets/stock_images/modern_comfortable_l_a00ffa5e.jpg";
 
@@ -40,7 +41,24 @@ export default function Browse() {
   const [priceRange, setPriceRange] = useState([2000]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchLocation, setSearchLocation] = useState("");
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  
+  // Filter state
+  const [selectedGenders, setSelectedGenders] = useState<string[]>([]);
+  const [selectedSupervision, setSelectedSupervision] = useState<string[]>([]);
+  const [selectedRoomTypes, setSelectedRoomTypes] = useState<string[]>([]);
+  const [showMatFriendly, setShowMatFriendly] = useState(false);
+  const [showAcceptsCouples, setShowAcceptsCouples] = useState(false);
+  
+  const handleApply = (e: React.MouseEvent, listingId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isAuthenticated()) {
+      setLocation(`/apply/${listingId}`);
+    } else {
+      setLocation(`/login?returnPath=/apply/${listingId}`);
+    }
+  };
 
   const { data: listings = [], isLoading, error } = useQuery({
     queryKey: ["listings"],
@@ -76,22 +94,49 @@ export default function Browse() {
   }, [location]);
 
   const filteredListings = listings.filter((listing) => {
+    // Location search filter
     if (searchLocation) {
       const searchLower = searchLocation.toLowerCase();
-      return (
+      const matchesSearch = (
         listing.city.toLowerCase().includes(searchLower) ||
         listing.state.toLowerCase().includes(searchLower) ||
         listing.propertyName.toLowerCase().includes(searchLower)
       );
+      if (!matchesSearch) return false;
     }
+    
+    // Price filter
+    if (listing.monthlyPrice > priceRange[0]) return false;
+    
+    // Gender filter
+    if (selectedGenders.length > 0 && !selectedGenders.includes(listing.gender || "")) return false;
+    
+    // Supervision filter
+    if (selectedSupervision.length > 0 && !selectedSupervision.includes(listing.supervisionType || "")) return false;
+    
+    // Room type filter
+    if (selectedRoomTypes.length > 0 && !selectedRoomTypes.includes(listing.roomType || "")) return false;
+    
+    // MAT friendly filter
+    if (showMatFriendly && !listing.isMatFriendly) return false;
+    
+    // Accepts couples filter
+    if (showAcceptsCouples && !listing.acceptsCouples) return false;
+    
     return true;
-  }).filter((listing) => {
-    return listing.monthlyPrice <= priceRange[0];
   }).sort((a, b) => {
     const aBoost = getListingBoostLevel(a.id);
     const bBoost = getListingBoostLevel(b.id);
     return bBoost - aBoost;
   });
+  
+  const toggleFilter = (value: string, selected: string[], setSelected: React.Dispatch<React.SetStateAction<string[]>>) => {
+    if (selected.includes(value)) {
+      setSelected(selected.filter(v => v !== value));
+    } else {
+      setSelected([...selected, value]);
+    }
+  };
   
   return (
     <Layout>
@@ -131,8 +176,12 @@ export default function Browse() {
                   <div className="space-y-2">
                     {["Men Only", "Women Only", "Co-ed"].map((g) => (
                       <div key={g} className="flex items-center space-x-2">
-                        <Checkbox id={g} />
-                        <Label htmlFor={g} className="font-normal text-muted-foreground">{g}</Label>
+                        <Checkbox 
+                          id={g} 
+                          checked={selectedGenders.includes(g)}
+                          onCheckedChange={() => toggleFilter(g, selectedGenders, setSelectedGenders)}
+                        />
+                        <Label htmlFor={g} className="font-normal text-muted-foreground cursor-pointer">{g}</Label>
                       </div>
                     ))}
                   </div>
@@ -166,8 +215,12 @@ export default function Browse() {
                   <div className="space-y-2">
                     {Object.keys(SUPERVISION_DEFINITIONS).map((type) => (
                       <div key={type} className="flex items-center space-x-2">
-                        <Checkbox id={type} />
-                        <Label htmlFor={type} className="font-normal text-muted-foreground">{type}</Label>
+                        <Checkbox 
+                          id={type} 
+                          checked={selectedSupervision.includes(type)}
+                          onCheckedChange={() => toggleFilter(type, selectedSupervision, setSelectedSupervision)}
+                        />
+                        <Label htmlFor={type} className="font-normal text-muted-foreground cursor-pointer">{type}</Label>
                       </div>
                     ))}
                   </div>
@@ -182,16 +235,24 @@ export default function Browse() {
                       <Label htmlFor="verified" className="font-normal text-muted-foreground">Verified Only</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="mat" />
-                      <Label htmlFor="mat" className="font-normal text-muted-foreground">MAT Friendly</Label>
+                      <Checkbox 
+                        id="mat" 
+                        checked={showMatFriendly}
+                        onCheckedChange={(checked) => setShowMatFriendly(!!checked)}
+                      />
+                      <Label htmlFor="mat" className="font-normal text-muted-foreground cursor-pointer">MAT Friendly</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="pet" />
-                      <Label htmlFor="pet" className="font-normal text-muted-foreground">Pet Friendly</Label>
+                      <Checkbox 
+                        id="couples" 
+                        checked={showAcceptsCouples}
+                        onCheckedChange={(checked) => setShowAcceptsCouples(!!checked)}
+                      />
+                      <Label htmlFor="couples" className="font-normal text-muted-foreground cursor-pointer">Accepts Couples</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Checkbox id="lgbtq" />
-                      <Label htmlFor="lgbtq" className="font-normal text-muted-foreground">LGBTQ Friendly</Label>
+                      <Label htmlFor="lgbtq" className="font-normal text-muted-foreground cursor-pointer">LGBTQ Friendly</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Checkbox id="faith" />
@@ -344,7 +405,12 @@ export default function Browse() {
                         <Button size="sm" className="flex-1 h-7 bg-primary text-primary-foreground hover:bg-primary/90 text-xs">
                           Details
                         </Button>
-                        <Button size="sm" variant="outline" className="flex-1 h-7 border-primary/20 text-primary hover:bg-primary/10 text-xs">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="flex-1 h-7 border-primary/20 text-primary hover:bg-primary/10 text-xs"
+                          onClick={(e) => handleApply(e, listing.id)}
+                        >
                           Apply
                         </Button>
                       </div>
@@ -416,7 +482,11 @@ export default function Browse() {
                           <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">
                             View Details
                           </Button>
-                          <Button variant="outline" className="border-primary/20 text-primary hover:bg-primary/10">
+                          <Button 
+                            variant="outline" 
+                            className="border-primary/20 text-primary hover:bg-primary/10"
+                            onClick={(e) => handleApply(e, listing.id)}
+                          >
                             Apply
                           </Button>
                         </div>

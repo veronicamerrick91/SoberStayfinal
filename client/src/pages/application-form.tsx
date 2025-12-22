@@ -25,6 +25,10 @@ export default function ApplicationForm() {
   const [match, params] = useRoute("/apply/:id");
   const [location, setLocation] = useLocation();
   const [idUploaded, setIdUploaded] = useState(false);
+  const [employmentRequirement, setEmploymentRequirement] = useState("");
+  const [section8Confirmed, setSection8Confirmed] = useState(false);
+  const [section9Confirmed, setSection9Confirmed] = useState(false);
+  const [formError, setFormError] = useState("");
   
   const isPreview = params?.id === "preview";
   
@@ -76,10 +80,27 @@ export default function ApplicationForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError("");
+    
     if (isPreview) {
       alert("This is a preview. In the real form, this would submit the application.");
       return;
     }
+    
+    // Validate required checkboxes and employment requirement
+    if (employmentRequirement !== "yes") {
+      setFormError("You must agree to follow the home's employment requirements to submit this application.");
+      return;
+    }
+    if (!section8Confirmed) {
+      setFormError("Please confirm that you have read and completed Section 8 (Housing Background).");
+      return;
+    }
+    if (!section9Confirmed) {
+      setFormError("Please confirm that you have read and completed Section 9 (Personal Needs & Preferences).");
+      return;
+    }
+    
     incrementStat("applicationsSubmitted");
     setLocation(`/tenant-dashboard`);
   };
@@ -490,16 +511,17 @@ export default function ApplicationForm() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Willing to Follow Home's Employment Requirements?</Label>
-                  <Select>
+                  <Label>Willing to Follow Home's Employment Requirements? *</Label>
+                  <Select value={employmentRequirement} onValueChange={setEmploymentRequirement}>
                     <SelectTrigger className="bg-background/50 border-border">
-                      <SelectValue placeholder="Select answer" />
+                      <SelectValue placeholder="Select answer (Yes required)" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-border">
                       <SelectItem value="yes">Yes</SelectItem>
                       <SelectItem value="no">No</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-amber-400">* You must select "Yes" to submit this application</p>
                 </div>
               </CardContent>
             </Card>
@@ -553,6 +575,22 @@ export default function ApplicationForm() {
                       <SelectItem value="yes">Yes</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div className="flex items-start gap-3 bg-primary/5 border border-primary/20 rounded-lg p-4">
+                    <input 
+                      type="checkbox" 
+                      id="section8-confirm" 
+                      checked={section8Confirmed}
+                      onChange={(e) => setSection8Confirmed(e.target.checked)}
+                      className="mt-1" 
+                      required 
+                    />
+                    <label htmlFor="section8-confirm" className="text-sm text-gray-300">
+                      I confirm that I have read and accurately completed all questions in this Housing Background section. *
+                    </label>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -637,6 +675,22 @@ export default function ApplicationForm() {
                 <div className="space-y-2">
                   <Label>Desired Move-In Date *</Label>
                   <Input type="date" className="bg-background/50 border-border" required />
+                </div>
+                
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div className="flex items-start gap-3 bg-primary/5 border border-primary/20 rounded-lg p-4">
+                    <input 
+                      type="checkbox" 
+                      id="section9-confirm" 
+                      checked={section9Confirmed}
+                      onChange={(e) => setSection9Confirmed(e.target.checked)}
+                      className="mt-1" 
+                      required 
+                    />
+                    <label htmlFor="section9-confirm" className="text-sm text-gray-300">
+                      I confirm that I have read and accurately completed all questions in this Personal Needs & Preferences section. *
+                    </label>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -731,6 +785,11 @@ export default function ApplicationForm() {
             </Card>
 
             {/* Submit */}
+            {formError && (
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 text-destructive">
+                {formError}
+              </div>
+            )}
             <div className="flex gap-4 sticky bottom-4 bg-background p-4 rounded-lg border border-border">
               <Button type="submit" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg">
                 <CheckCircle2 className="w-5 h-5 mr-2" /> Submit Application
