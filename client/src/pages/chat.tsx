@@ -2,7 +2,7 @@ import { Layout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, Send, Phone, Video, MoreVertical, MessageCircle, MapPin, ShieldCheck, Loader2 } from "lucide-react";
+import { ArrowLeft, Send, MessageCircle, MapPin, ShieldCheck, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
@@ -24,7 +24,7 @@ async function fetchListing(id: string): Promise<Listing> {
   return response.json();
 }
 
-async function fetchTenantProfile(tenantId: number) {
+async function fetchTenantProfile() {
   try {
     const response = await fetch(`/api/tenant/profile`);
     if (response.ok) {
@@ -42,7 +42,9 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [tenantAvatar, setTenantAvatar] = useState<string | null>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const user = getAuth();
   
   const { data: property, isLoading } = useQuery({
@@ -54,7 +56,7 @@ export default function Chat() {
   // Load tenant profile photo
   useEffect(() => {
     if (user?.role === "tenant" && user?.id) {
-      fetchTenantProfile(user.id as number).then((profile) => {
+      fetchTenantProfile().then((profile) => {
         if (profile?.profilePhotoUrl) {
           setTenantAvatar(profile.profilePhotoUrl);
         }
@@ -85,13 +87,21 @@ export default function Chat() {
     }
   }, [property?.id, property?.propertyName, property?.photos]);
 
-  // Save messages to localStorage and scroll to bottom
+  // Save messages to localStorage and scroll to bottom only for new messages
   useEffect(() => {
-    if (!property?.id) return;
+    if (!property?.id || messages.length === 0) return;
     const key = `chat_${property.id}`;
     localStorage.setItem(key, JSON.stringify(messages));
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, property?.id]);
+    
+    // Only scroll to bottom after sending a new message, not on initial load
+    if (!isInitialLoad) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      // After initial load, scroll to top of messages container
+      messagesContainerRef.current?.scrollTo({ top: 0 });
+      setIsInitialLoad(false);
+    }
+  }, [messages, property?.id, isInitialLoad]);
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,22 +191,11 @@ export default function Chat() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all rounded-full">
-                <Phone className="w-4 h-4" />
-              </Button>
-              <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all rounded-full">
-                <Video className="w-4 h-4" />
-              </Button>
-              <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all rounded-full">
-                <MoreVertical className="w-4 h-4" />
-              </Button>
-            </div>
           </div>
         </div>
 
         {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto py-8 px-4">
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto py-8 px-4">
           <div className="max-w-2xl mx-auto space-y-8">
             {groupedMessages.map((group: any, groupIdx: number) => (
               <div key={groupIdx} className="space-y-4">

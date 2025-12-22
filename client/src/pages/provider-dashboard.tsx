@@ -119,6 +119,25 @@ function ProviderDashboardContent() {
   
   // Provider listings from API
   const [listings, setListings] = useState<Listing[]>([]);
+  
+  // Notification preferences with localStorage persistence
+  const [notificationPrefs, setNotificationPrefs] = useState(() => {
+    const saved = localStorage.getItem("provider_notification_prefs");
+    if (saved) return JSON.parse(saved);
+    return {
+      newInquiries: true,
+      applicationUpdates: true,
+      marketingEmails: false,
+      securityAlerts: true
+    };
+  });
+  
+  // Verification document uploads
+  const [verificationDocs, setVerificationDocs] = useState<Record<string, boolean>>(() => {
+    const saved = localStorage.getItem("provider_verification_docs");
+    if (saved) return JSON.parse(saved);
+    return {};
+  });
 
   const user = getAuth();
 
@@ -548,7 +567,7 @@ function ProviderDashboardContent() {
                 <Badge className={subscriptionStatus.subscriptionStatus === "active" ? "bg-green-500/80" : "bg-amber-500/80"}>
                   {subscriptionStatus.subscriptionStatus === "active" 
                     ? (subscriptionStatus.hasFeeWaiver 
-                        ? "✓ Fee Waiver Active · Unlimited Listings" 
+                        ? `✓ Fee Waiver Active until ${new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toLocaleDateString()} · Unlimited Listings` 
                         : `✓ Subscription Active · $${subscriptionStatus.monthlyFee}/month per listing`)
                     : "No Active Subscription"}
                 </Badge>
@@ -1284,19 +1303,19 @@ function ProviderDashboardContent() {
                 
                 {/* Pricing Info */}
                 <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                  <h4 className="text-sm font-medium text-purple-300 mb-2">Boost Pricing</h4>
+                  <h4 className="text-sm font-medium text-purple-300 mb-2">Boost Pricing (Monthly)</h4>
                   <div className="grid grid-cols-3 gap-2 text-center text-xs">
                     <div>
                       <p className="text-white font-bold">2x Visibility</p>
-                      <p className="text-muted-foreground">$7/day</p>
+                      <p className="text-muted-foreground">$199/month</p>
                     </div>
                     <div>
                       <p className="text-white font-bold">3x Visibility</p>
-                      <p className="text-muted-foreground">$10/day</p>
+                      <p className="text-muted-foreground">$299/month</p>
                     </div>
                     <div>
                       <p className="text-white font-bold">5x Visibility</p>
-                      <p className="text-muted-foreground">$15/day</p>
+                      <p className="text-muted-foreground">$449/month</p>
                     </div>
                   </div>
                 </div>
@@ -1492,24 +1511,44 @@ function ProviderDashboardContent() {
                   
                   <div className="space-y-3">
                     {[
-                      { name: "Business License", status: "uploaded", icon: "📄" },
-                      { name: "Insurance Certificate", status: "pending", icon: "📋" },
-                      { name: "Property Photos", status: "uploaded", icon: "📸" },
-                      { name: "Safety Certifications", status: "pending", icon: "✓" }
-                    ].map((doc, i) => (
-                      <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border hover:border-primary/50 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{doc.icon}</span>
-                          <div>
-                            <p className="text-white font-medium">{doc.name}</p>
-                            <p className="text-xs text-muted-foreground capitalize">{doc.status}</p>
+                      { key: "businessLicense", name: "Business License", icon: "📄" },
+                      { key: "insuranceCert", name: "Insurance Certificate", icon: "📋" },
+                      { key: "propertyPhotos", name: "Property Photos", icon: "📸" },
+                      { key: "safetyCerts", name: "Safety Certifications", icon: "✓" }
+                    ].map((doc) => {
+                      const isUploaded = verificationDocs[doc.key];
+                      return (
+                        <div key={doc.key} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border hover:border-primary/50 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <span className="text-2xl">{doc.icon}</span>
+                            <div>
+                              <p className="text-white font-medium">{doc.name}</p>
+                              <p className={`text-xs ${isUploaded ? 'text-primary' : 'text-muted-foreground'}`}>
+                                {isUploaded ? '✓ Uploaded' : 'Pending'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="relative">
+                            <input 
+                              type="file" 
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files.length > 0) {
+                                  const newDocs = { ...verificationDocs, [doc.key]: true };
+                                  setVerificationDocs(newDocs);
+                                  localStorage.setItem("provider_verification_docs", JSON.stringify(newDocs));
+                                }
+                              }}
+                              data-testid={`input-upload-${doc.key}`}
+                            />
+                            <Button size="sm" className="gap-2" variant={isUploaded ? "outline" : "default"}>
+                              <Upload className="w-4 h-4" /> {isUploaded ? "Update" : "Upload"}
+                            </Button>
                           </div>
                         </div>
-                        <Button size="sm" className="gap-2" variant={doc.status === "uploaded" ? "outline" : "default"}>
-                          <Upload className="w-4 h-4" /> {doc.status === "uploaded" ? "Update" : "Upload"}
-                        </Button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -1606,17 +1645,26 @@ function ProviderDashboardContent() {
                 <CardContent>
                   <div className="space-y-4">
                     {[
-                      { label: "New tenant inquiries", desc: "Get notified about new messages" },
-                      { label: "Application updates", desc: "Alerts when tenants update applications" },
-                      { label: "Marketing emails", desc: "New features and platform updates" },
-                      { label: "Security alerts", desc: "Important account security notices" }
-                    ].map((notif, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5">
+                      { key: "newInquiries", label: "New tenant inquiries", desc: "Get notified about new messages" },
+                      { key: "applicationUpdates", label: "Application updates", desc: "Alerts when tenants update applications" },
+                      { key: "marketingEmails", label: "Marketing emails", desc: "New features and platform updates" },
+                      { key: "securityAlerts", label: "Security alerts", desc: "Important account security notices" }
+                    ].map((notif) => (
+                      <div key={notif.key} className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5">
                         <div>
                           <p className="text-white text-sm font-medium">{notif.label}</p>
                           <p className="text-xs text-muted-foreground">{notif.desc}</p>
                         </div>
-                        <Checkbox className="h-5 w-5 border-primary/50" defaultChecked={i < 2} />
+                        <Checkbox 
+                          className="h-5 w-5 border-primary/50" 
+                          checked={notificationPrefs[notif.key as keyof typeof notificationPrefs]}
+                          onCheckedChange={(checked) => {
+                            const newPrefs = { ...notificationPrefs, [notif.key]: checked };
+                            setNotificationPrefs(newPrefs);
+                            localStorage.setItem("provider_notification_prefs", JSON.stringify(newPrefs));
+                          }}
+                          data-testid={`checkbox-notif-${notif.key}`}
+                        />
                       </div>
                     ))}
                   </div>
