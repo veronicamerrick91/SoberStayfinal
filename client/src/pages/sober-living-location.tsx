@@ -119,10 +119,7 @@ export function SoberLivingLocation() {
   const params = useParams<{ slug: string }>();
   const slug = params.slug || "";
   
-  console.log("SoberLivingLocation rendering, slug:", slug, "params:", params);
-  
   const location = getLocationBySlug(slug);
-  console.log("Location found:", location);
   
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["listings"],
