@@ -186,6 +186,23 @@ export const insertFeaturedListingSchema = createInsertSchema(featuredListings).
   createdAt: true,
 });
 
+export const partners = pgTable("partners", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  category: text("category").notNull(), // organization, treatment, blog, hotline, association
+  description: text("description").notNull(),
+  website: text("website").notNull(),
+  focus: jsonb("focus").$type<string[]>().notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+});
+
+export const insertPartnerSchema = createInsertSchema(partners).omit({
+  id: true,
+});
+
+export type Partner = typeof partners.$inferSelect;
+export type InsertPartner = z.infer<typeof insertPartnerSchema>;
+
 export const blogPosts = pgTable("blog_posts", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
