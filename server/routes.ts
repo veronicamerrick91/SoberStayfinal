@@ -2112,5 +2112,83 @@ Disallow: /auth/
     }
   });
 
+  // ========== PARTNERS API ==========
+
+  // Get active partners (public)
+  app.get("/api/partners", async (req, res) => {
+    try {
+      const partners = await storage.getActivePartners();
+      res.json(partners);
+    } catch (error) {
+      console.error("Error fetching partners:", error);
+      res.status(500).json({ error: "Failed to fetch partners" });
+    }
+  });
+
+  // Get all partners (admin only)
+  app.get("/api/admin/partners", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const partners = await storage.getAllPartners();
+      res.json(partners);
+    } catch (error) {
+      console.error("Error fetching partners:", error);
+      res.status(500).json({ error: "Failed to fetch partners" });
+    }
+  });
+
+  // Create partner (admin only)
+  app.post("/api/admin/partners", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const partner = await storage.createPartner(req.body);
+      res.json(partner);
+    } catch (error) {
+      console.error("Error creating partner:", error);
+      res.status(500).json({ error: "Failed to create partner" });
+    }
+  });
+
+  // Update partner (admin only)
+  app.put("/api/admin/partners/:id", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      const partner = await storage.updatePartner(id, req.body);
+      if (!partner) {
+        return res.status(404).json({ error: "Partner not found" });
+      }
+      res.json(partner);
+    } catch (error) {
+      console.error("Error updating partner:", error);
+      res.status(500).json({ error: "Failed to update partner" });
+    }
+  });
+
+  // Delete partner (admin only)
+  app.delete("/api/admin/partners/:id", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deletePartner(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting partner:", error);
+      res.status(500).json({ error: "Failed to delete partner" });
+    }
+  });
+
   return httpServer;
 }

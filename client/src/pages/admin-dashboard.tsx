@@ -189,6 +189,15 @@ export function AdminDashboard() {
   const [sequenceEmailBody, setSequenceEmailBody] = useState("");
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [previewEmail, setPreviewEmail] = useState<{ subject: string; body: string } | null>(null);
+  const [partners, setPartners] = useState<any[]>([]);
+  const [showPartnerModal, setShowPartnerModal] = useState(false);
+  const [editingPartner, setEditingPartner] = useState<any | null>(null);
+  const [partnerName, setPartnerName] = useState("");
+  const [partnerCategory, setPartnerCategory] = useState("organization");
+  const [partnerDescription, setPartnerDescription] = useState("");
+  const [partnerWebsite, setPartnerWebsite] = useState("");
+  const [partnerFocus, setPartnerFocus] = useState<string[]>([]);
+  const [partnerIsActive, setPartnerIsActive] = useState(true);
   const [emailSequences, setEmailSequences] = useState([
     {
       id: "provider-onboarding",
@@ -335,12 +344,13 @@ export function AdminDashboard() {
     // Fetch real data from database
     const fetchAdminData = async () => {
       try {
-        const [usersRes, listingsRes, promosRes, featuredRes, blogPostsRes] = await Promise.all([
+        const [usersRes, listingsRes, promosRes, featuredRes, blogPostsRes, partnersRes] = await Promise.all([
           fetch('/api/admin/users', { credentials: 'include' }),
           fetch('/api/admin/listings', { credentials: 'include' }),
           fetch('/api/admin/promos', { credentials: 'include' }),
           fetch('/api/admin/featured-listings', { credentials: 'include' }),
-          fetch('/api/admin/blog-posts', { credentials: 'include' })
+          fetch('/api/admin/blog-posts', { credentials: 'include' }),
+          fetch('/api/admin/partners', { credentials: 'include' })
         ]);
         
         if (usersRes.ok) {
@@ -409,6 +419,11 @@ export function AdminDashboard() {
         if (blogPostsRes.ok) {
           const blogPostsData = await blogPostsRes.json();
           setDatabaseBlogPosts(blogPostsData);
+        }
+        
+        if (partnersRes.ok) {
+          const partnersData = await partnersRes.json();
+          setPartners(partnersData);
         }
         
         // Sample applications data
@@ -1574,6 +1589,7 @@ the actual document file stored on the server.
             <TabsTrigger value="workflows" className="px-3 py-2 text-xs font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-1.5"><Activity className="w-3.5 h-3.5" /> Workflows</TabsTrigger>
             <TabsTrigger value="email-list" className="px-3 py-2 text-xs font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-1.5"><Mail className="w-3.5 h-3.5" /> Email List</TabsTrigger>
             <TabsTrigger value="settings" className="px-3 py-2 text-xs font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-1.5"><Settings className="w-3.5 h-3.5" /> Settings</TabsTrigger>
+            <TabsTrigger value="partners" className="px-3 py-2 text-xs font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-1.5"><Users className="w-3.5 h-3.5" /> Partners</TabsTrigger>
           </TabsList>
 
           {blogPublishSuccess && (
@@ -2740,6 +2756,108 @@ the actual document file stored on the server.
                   <Button onClick={handleResetSettings} variant="outline">Reset to Default</Button>
                   <Button onClick={handleExportData} variant="ghost" className="text-red-500 hover:bg-red-500/10 ml-auto">Export Data</Button>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* PARTNERS MANAGEMENT */}
+          <TabsContent value="partners" className="space-y-6">
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Users className="w-5 h-5" /> Partners Management
+                  </CardTitle>
+                  <Button 
+                    onClick={() => {
+                      setEditingPartner(null);
+                      setPartnerName("");
+                      setPartnerCategory("organization");
+                      setPartnerDescription("");
+                      setPartnerWebsite("");
+                      setPartnerFocus([]);
+                      setPartnerIsActive(true);
+                      setShowPartnerModal(true);
+                    }} 
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                    data-testid="button-add-partner"
+                  >
+                    <Plus className="w-4 h-4" /> Add Partner
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Manage recovery partners, treatment centers, and resource organizations.</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {partners.length === 0 ? (
+                  <div className="text-center py-12 rounded-lg bg-white/5 border border-white/10 border-dashed">
+                    <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-white font-medium mb-1">No partners yet</p>
+                    <p className="text-muted-foreground text-sm">Add treatment centers, organizations, and other recovery resources.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {partners.map((partner) => (
+                      <div key={partner.id} className="p-4 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between" data-testid={`partner-row-${partner.id}`}>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="text-white font-medium">{partner.name}</p>
+                            <Badge className={partner.isActive ? "bg-green-500/20 text-green-500" : "bg-gray-500/20 text-gray-400"}>
+                              {partner.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs capitalize">{partner.category}</Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{partner.description}</p>
+                          {partner.website && (
+                            <a href={partner.website} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">{partner.website}</a>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              setEditingPartner(partner);
+                              setPartnerName(partner.name);
+                              setPartnerCategory(partner.category);
+                              setPartnerDescription(partner.description || "");
+                              setPartnerWebsite(partner.website || "");
+                              setPartnerFocus(partner.focus || []);
+                              setPartnerIsActive(partner.isActive);
+                              setShowPartnerModal(true);
+                            }}
+                            data-testid={`button-edit-partner-${partner.id}`}
+                          >
+                            Edit
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-red-500 hover:text-red-400"
+                            onClick={async () => {
+                              if (confirm("Are you sure you want to delete this partner?")) {
+                                try {
+                                  const res = await fetch(`/api/admin/partners/${partner.id}`, {
+                                    method: 'DELETE',
+                                    credentials: 'include'
+                                  });
+                                  if (res.ok) {
+                                    setPartners(partners.filter(p => p.id !== partner.id));
+                                    toast({ title: "Partner Deleted", description: `${partner.name} has been removed.` });
+                                  }
+                                } catch (error) {
+                                  toast({ title: "Error", description: "Failed to delete partner", variant: "destructive" });
+                                }
+                              }
+                            }}
+                            data-testid={`button-delete-partner-${partner.id}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -5530,6 +5648,143 @@ Use the toolbar above for formatting, or write in Markdown:
               <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
                 <Button onClick={handleSavePromo} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90" data-testid="button-save-promo">Save Changes</Button>
                 <Button onClick={() => { setShowPromoModal(false); setEditingPromo(null); }} variant="outline" data-testid="button-cancel-promo">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showPartnerModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" data-testid="partner-modal">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] overflow-y-auto">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">{editingPartner ? "Edit Partner" : "Add Partner"}</h2>
+                <p className="text-xs text-muted-foreground mt-1">{editingPartner ? "Update partner information" : "Add a new recovery partner or resource"}</p>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Partner Name *</label>
+                  <input 
+                    type="text" 
+                    value={partnerName}
+                    onChange={(e) => setPartnerName(e.target.value)}
+                    placeholder="e.g., SAMHSA, New Hope Treatment Center"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
+                    data-testid="input-partner-name"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Category *</label>
+                  <select 
+                    value={partnerCategory}
+                    onChange={(e) => setPartnerCategory(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
+                    data-testid="select-partner-category"
+                  >
+                    <option value="organization">Organization</option>
+                    <option value="treatment">Treatment Center</option>
+                    <option value="blog">Blog/Resource</option>
+                    <option value="hotline">Hotline</option>
+                    <option value="association">Association</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Description</label>
+                  <textarea 
+                    value={partnerDescription}
+                    onChange={(e) => setPartnerDescription(e.target.value)}
+                    placeholder="Brief description of the partner organization..."
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors resize-none"
+                    data-testid="input-partner-description"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Website URL</label>
+                  <input 
+                    type="url" 
+                    value={partnerWebsite}
+                    onChange={(e) => setPartnerWebsite(e.target.value)}
+                    placeholder="https://example.com"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
+                    data-testid="input-partner-website"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Focus Areas (comma-separated)</label>
+                  <input 
+                    type="text" 
+                    value={partnerFocus.join(", ")}
+                    onChange={(e) => setPartnerFocus(e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
+                    placeholder="e.g., Alcohol, Opioids, Mental Health"
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
+                    data-testid="input-partner-focus"
+                  />
+                </div>
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="checkbox" 
+                    checked={partnerIsActive}
+                    onChange={(e) => setPartnerIsActive(e.target.checked)}
+                    className="w-4 h-4 rounded"
+                    data-testid="checkbox-partner-active"
+                  />
+                  <label className="text-sm text-white">Active (visible on public partners page)</label>
+                </div>
+              </div>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+                <Button 
+                  onClick={async () => {
+                    if (!partnerName.trim()) {
+                      toast({ title: "Error", description: "Partner name is required", variant: "destructive" });
+                      return;
+                    }
+                    try {
+                      const partnerData = {
+                        name: partnerName.trim(),
+                        category: partnerCategory,
+                        description: partnerDescription.trim() || null,
+                        website: partnerWebsite.trim() || null,
+                        focus: partnerFocus.length > 0 ? partnerFocus : null,
+                        isActive: partnerIsActive
+                      };
+                      
+                      if (editingPartner) {
+                        const res = await fetch(`/api/admin/partners/${editingPartner.id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                          body: JSON.stringify(partnerData)
+                        });
+                        if (res.ok) {
+                          const updated = await res.json();
+                          setPartners(partners.map(p => p.id === editingPartner.id ? updated : p));
+                          toast({ title: "Partner Updated", description: `${partnerName} has been updated.` });
+                        }
+                      } else {
+                        const res = await fetch('/api/admin/partners', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                          body: JSON.stringify(partnerData)
+                        });
+                        if (res.ok) {
+                          const newPartner = await res.json();
+                          setPartners([...partners, newPartner]);
+                          toast({ title: "Partner Added", description: `${partnerName} has been added.` });
+                        }
+                      }
+                      setShowPartnerModal(false);
+                      setEditingPartner(null);
+                    } catch (error) {
+                      toast({ title: "Error", description: "Failed to save partner", variant: "destructive" });
+                    }
+                  }} 
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90" 
+                  data-testid="button-save-partner"
+                >
+                  {editingPartner ? "Save Changes" : "Add Partner"}
+                </Button>
+                <Button onClick={() => { setShowPartnerModal(false); setEditingPartner(null); }} variant="outline" data-testid="button-cancel-partner">Cancel</Button>
               </div>
             </div>
           </div>
