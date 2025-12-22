@@ -38,27 +38,31 @@
   </head>
   <body>
     <div id="root">
-      <!-- SEO content visible to search engines before JavaScript loads -->
-      <header style="padding: 20px; text-align: center;">
-        <h1>Find Sober Living Homes Near You</h1>
-        <p>Sober Stay helps people find safe, verified sober living homes. Browse recovery housing, learn the rules, and connect with providers.</p>
-      </header>
-      <main style="padding: 20px; max-width: 800px; margin: 0 auto;">
-        <section>
-          <h2>What Is a Sober Living Home?</h2>
-          <p>A sober living home is a safe, substance-free residence designed for people in recovery from addiction. These homes provide structure, peer support, and accountability while residents work, attend school, or transition back into independent living.</p>
-        </section>
-        <section>
-          <h2>How Sober Stay Helps You Find the Right Home</h2>
-          <p>Sober Stay makes it easy to find verified sober living homes that match your needs. Our platform lets you search by location, price, gender, amenities, and more. Contact providers directly, schedule tours, and submit applications online.</p>
-        </section>
-        <section>
-          <h2>Who Sober Stay Is For</h2>
-          <p>Sober Stay is for individuals in recovery seeking safe housing, families helping loved ones find sober living, and providers looking to connect with prospective residents.</p>
-        </section>
-      </main>
+      <!-- SEO content for search engines - hidden from users, shown only to crawlers -->
+      <div id="seo-content" style="position: absolute; left: -9999px; top: -9999px; visibility: hidden;">
+        <header>
+          <h1>Find Sober Living Homes Near You</h1>
+          <p>Sober Stay helps people find safe, verified sober living homes. Browse recovery housing, learn the rules, and connect with providers.</p>
+        </header>
+        <main>
+          <section>
+            <h2>What Is a Sober Living Home?</h2>
+            <p>A sober living home is a safe, substance-free residence designed for people in recovery from addiction. These homes provide structure, peer support, and accountability while residents work, attend school, or transition back into independent living.</p>
+          </section>
+          <section>
+            <h2>How Sober Stay Helps You Find the Right Home</h2>
+            <p>Sober Stay makes it easy to find verified sober living homes that match your needs. Our platform lets you search by location, price, gender, amenities, and more. Contact providers directly, schedule tours, and submit applications online.</p>
+          </section>
+          <section>
+            <h2>Who Sober Stay Is For</h2>
+            <p>Sober Stay is for individuals in recovery seeking safe housing, families helping loved ones find sober living, and providers looking to connect with prospective residents.</p>
+          </section>
+        </main>
+      </div>
       <noscript>
-        <p>Please enable JavaScript to use the full features of Sober Stay. You can still browse our <a href="/browse">sober living directory</a> and learn more about <a href="/what-is-sober-living">what sober living is</a>.</p>
+        <div style="padding: 20px; text-align: center;">
+          <p>Please enable JavaScript to use the full features of Sober Stay. You can still browse our <a href="/browse">sober living directory</a> and learn more about <a href="/what-is-sober-living">what sober living is</a>.</p>
+        </div>
       </noscript>
     </div>
     <script type="module" src="/src/main.tsx"></script>
