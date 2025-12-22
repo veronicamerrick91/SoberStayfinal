@@ -2,14 +2,14 @@ import { Layout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ExternalLink, Search, Building2, Heart, BookOpen, Phone, Globe, Users } from "lucide-react";
+import { ExternalLink, Search, Building2, BookOpen, Phone, Globe, Users } from "lucide-react";
 import { useState } from "react";
 import { useDocumentMeta } from "@/lib/use-document-meta";
 
 interface Partner {
   id: number;
   name: string;
-  category: "organization" | "treatment" | "blog" | "hotline" | "association";
+  category: "organization" | "blog" | "hotline" | "association";
   description: string;
   website: string;
   focus: string[];
@@ -138,129 +138,7 @@ const partners: Partner[] = [
     focus: ["Recovery Support", "Community Building", "Advocacy"]
   },
 
-  // Treatment Centers & Rehabs (16-30)
-  {
-    id: 16,
-    name: "Hazelden Betty Ford Foundation",
-    category: "treatment",
-    description: "Leading nonprofit addiction treatment provider with locations across the US.",
-    website: "https://www.hazeldenbettyford.org",
-    focus: ["Inpatient", "Outpatient", "Research"]
-  },
-  {
-    id: 17,
-    name: "The Recovery Village",
-    category: "treatment",
-    description: "Network of rehabilitation centers offering comprehensive addiction treatment.",
-    website: "https://www.therecoveryvillage.com",
-    focus: ["Medical Detox", "Rehab", "Aftercare"]
-  },
-  {
-    id: 18,
-    name: "American Addiction Centers",
-    category: "treatment",
-    description: "Nationwide network of addiction treatment facilities and recovery resources.",
-    website: "https://americanaddictioncenters.org",
-    focus: ["Detox", "Residential", "Outpatient"]
-  },
-  {
-    id: 19,
-    name: "Caron Treatment Centers",
-    category: "treatment",
-    description: "Nonprofit treatment provider offering evidence-based addiction care.",
-    website: "https://www.caron.org",
-    focus: ["Adolescent", "Adult", "Family Programs"]
-  },
-  {
-    id: 20,
-    name: "Promises Behavioral Health",
-    category: "treatment",
-    description: "Premium addiction and mental health treatment centers across multiple states.",
-    website: "https://www.promises.com",
-    focus: ["Luxury Rehab", "Dual Diagnosis", "Aftercare"]
-  },
-  {
-    id: 21,
-    name: "Gateway Foundation",
-    category: "treatment",
-    description: "Nonprofit providing accessible substance use treatment since 1968.",
-    website: "https://www.gatewayfoundation.org",
-    focus: ["Affordable Care", "Evidence-Based", "Community"]
-  },
-  {
-    id: 22,
-    name: "Sierra Tucson",
-    category: "treatment",
-    description: "Residential treatment center specializing in complex behavioral health conditions.",
-    website: "https://www.sierratucson.com",
-    focus: ["Trauma", "Dual Diagnosis", "Holistic"]
-  },
-  {
-    id: 23,
-    name: "Rosecrance Health Network",
-    category: "treatment",
-    description: "Midwest behavioral health provider offering addiction and mental health services.",
-    website: "https://rosecrance.org",
-    focus: ["Youth", "Adult", "Family Services"]
-  },
-  {
-    id: 24,
-    name: "Phoenix House",
-    category: "treatment",
-    description: "Nonprofit addiction treatment organization serving communities for over 50 years.",
-    website: "https://www.phoenixhouse.org",
-    focus: ["Community-Based", "Affordable", "Comprehensive"]
-  },
-  {
-    id: 25,
-    name: "Cliffside Malibu",
-    category: "treatment",
-    description: "Luxury addiction treatment center offering personalized care in Malibu.",
-    website: "https://www.cliffsidemalibu.com",
-    focus: ["Luxury", "Personalized", "Evidence-Based"]
-  },
-  {
-    id: 26,
-    name: "Mountainside Treatment Center",
-    category: "treatment",
-    description: "Evidence-based addiction treatment with locations in the Northeast.",
-    website: "https://www.mountainside.com",
-    focus: ["Extended Care", "Alumni Support", "Family"]
-  },
-  {
-    id: 27,
-    name: "Turning Point of Tampa",
-    category: "treatment",
-    description: "Florida addiction treatment center offering comprehensive recovery programs.",
-    website: "https://www.tfrpg.com",
-    focus: ["Florida", "Affordable", "Long-Term"]
-  },
-  {
-    id: 28,
-    name: "Ashley Addiction Treatment",
-    category: "treatment",
-    description: "Nonprofit treatment center in Maryland offering all levels of addiction care.",
-    website: "https://www.ashleytreatment.org",
-    focus: ["Nonprofit", "Evidence-Based", "Continuum of Care"]
-  },
-  {
-    id: 29,
-    name: "Foundations Recovery Network",
-    category: "treatment",
-    description: "Dual diagnosis treatment centers addressing addiction and mental health.",
-    website: "https://www.foundationsrecoverynetwork.com",
-    focus: ["Dual Diagnosis", "Integrated Care", "Research"]
-  },
-  {
-    id: 30,
-    name: "Elements Behavioral Health",
-    category: "treatment",
-    description: "Network of addiction and mental health treatment programs across the US.",
-    website: "https://www.elementsbehavioralhealth.com",
-    focus: ["Specialized Programs", "Trauma", "Young Adult"]
-  },
-
-  // Recovery Blogs & Publications (31-42)
+  // Recovery Blogs & Publications (16-27)
   {
     id: 31,
     name: "The Fix",
@@ -427,7 +305,6 @@ const partners: Partner[] = [
 
 const categoryInfo = {
   organization: { label: "National Organization", icon: Building2, color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
-  treatment: { label: "Treatment Center", icon: Heart, color: "bg-green-500/10 text-green-400 border-green-500/20" },
   blog: { label: "Recovery Blog", icon: BookOpen, color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
   hotline: { label: "Crisis Hotline", icon: Phone, color: "bg-red-500/10 text-red-400 border-red-500/20" },
   association: { label: "Professional Association", icon: Users, color: "bg-amber-500/10 text-amber-400 border-amber-500/20" }
@@ -439,7 +316,7 @@ export function PartnersDirectory() {
 
   useDocumentMeta({
     title: "Recovery Partners & Resources Directory | Sober Stay",
-    description: "Browse our directory of 50+ trusted recovery organizations, treatment centers, and addiction resources. Find support for your recovery journey."
+    description: "Browse our directory of trusted recovery organizations, blogs, and addiction resources. Find support for your recovery journey."
   });
 
   const filteredPartners = partners.filter(partner => {
@@ -452,7 +329,6 @@ export function PartnersDirectory() {
   const categories = [
     { key: "all", label: "All Partners", count: partners.length },
     { key: "organization", label: "Organizations", count: partners.filter(p => p.category === "organization").length },
-    { key: "treatment", label: "Treatment Centers", count: partners.filter(p => p.category === "treatment").length },
     { key: "blog", label: "Blogs & Publications", count: partners.filter(p => p.category === "blog").length },
     { key: "hotline", label: "Crisis Hotlines", count: partners.filter(p => p.category === "hotline").length },
     { key: "association", label: "Associations", count: partners.filter(p => p.category === "association").length }
@@ -467,8 +343,8 @@ export function PartnersDirectory() {
               Recovery Partners & Resources
             </h1>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
-              We're proud to be part of the recovery community. Explore our directory of trusted organizations, 
-              treatment providers, and resources dedicated to helping people achieve lasting recovery.
+              We're proud to be part of the recovery community. Explore our directory of trusted organizations 
+              and resources dedicated to helping people achieve lasting recovery.
             </p>
             
             <div className="relative max-w-xl mx-auto">

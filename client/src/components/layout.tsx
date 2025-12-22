@@ -39,6 +39,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/how-to-choose", label: "How to Choose a Sober Living" },
     { href: "/insurance-info", label: "Insurance Info" },
     { href: "/crisis-resources", label: "Emergency Hotlines" },
+    { href: "/partners", label: "Partners Directory" },
     { href: "/blog", label: "Blog" },
   ];
 
