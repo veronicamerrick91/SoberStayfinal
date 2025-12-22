@@ -72,7 +72,7 @@ export function PartnersDirectory() {
               and resources dedicated to helping people achieve lasting recovery.
             </p>
             
-            <div className="relative max-w-xl mx-auto">
+            <div className="relative max-w-xl mx-auto mb-6">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 type="text"
@@ -83,6 +83,11 @@ export function PartnersDirectory() {
                 data-testid="input-search-partners"
               />
             </div>
+            <a href="/contact">
+              <Button size="lg" data-testid="button-contact-partnership-top">
+                Contact Us About Partnerships
+              </Button>
+            </a>
           </div>
         </div>
       </div>
