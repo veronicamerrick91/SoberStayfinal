@@ -106,6 +106,9 @@ function ProviderDashboardContent() {
   const [twoFactorToken, setTwoFactorToken] = useState("");
   const [twoFactorLoading, setTwoFactorLoading] = useState(false);
   const [twoFactorError, setTwoFactorError] = useState("");
+  const [twoFactorMethod, setTwoFactorMethod] = useState<"app" | "sms">("app");
+  const [smsPhoneNumber, setSmsPhoneNumber] = useState("");
+  const [smsSent, setSmsSent] = useState(false);
   
   // Provider marketing templates with triggers
   const [providerTemplates, setProviderTemplates] = useState([
@@ -1059,40 +1062,6 @@ function ProviderDashboardContent() {
 
           {/* MARKETING & SEO TAB */}
           <TabsContent value="marketing" className="space-y-6">
-            {marketingSection === "seo" && (
-              <Card className="bg-primary/10 border border-primary/50 mb-4">
-                <CardHeader>
-                  <CardTitle className="text-primary flex items-center gap-2"><TrendingUp className="w-5 h-5" /> SEO Optimization Dashboard</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">Optimize your listings for maximum visibility in search results.</p>
-                  <div className="space-y-3">
-                    <div className="p-4 bg-white/5 border border-primary/30 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <div className="bg-primary/20 p-2 rounded text-primary">
-                          <BarChart3 className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-white text-sm">Automatic Keyword Targeting</h4>
-                          <p className="text-xs text-muted-foreground mt-1">We optimize your listings for "sober living homes", "recovery housing", "sober living near me", "halfway houses", and more relevant keywords to your market.</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-white/5 border border-primary/30 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <div className="bg-primary/20 p-2 rounded text-primary">
-                          <Share2 className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-white text-sm">Social Media Integration</h4>
-                          <p className="text-xs text-muted-foreground mt-1">Share listings to social media with one click - reaches more potential residents on Facebook, Instagram, LinkedIn, and Twitter. One-click sharing to expand your reach.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="bg-card border-border">
                 <CardHeader>
@@ -1407,10 +1376,26 @@ function ProviderDashboardContent() {
               <Card className="bg-amber-500/10 border border-amber-500/50 mb-4">
                 <CardHeader>
                   <CardTitle className="text-amber-300 flex items-center gap-2"><Mail className="w-5 h-5" /> Email Campaign Editor</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Create and customize email campaigns to reach potential tenants. Use the editor below to design your message.
+                  </p>
                 </CardHeader>
               </Card>
             )}
-            <ContentEditor />
+            <Card className="bg-card border-border mb-4">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" /> Content Editor
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Use this rich text editor to create and format marketing content, listing descriptions, and email templates. 
+                  Your content is automatically saved as you type.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <ContentEditor />
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* DIGITAL RESIDENT FILES TAB */}
@@ -1641,14 +1626,17 @@ function ProviderDashboardContent() {
               <Card className="bg-card border-border lg:col-span-2">
                 <CardHeader>
                   <CardTitle className="text-white">Notification Preferences</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Notifications are sent to your registered email address and appear in your dashboard inbox.
+                  </p>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {[
-                      { key: "newInquiries", label: "New tenant inquiries", desc: "Get notified about new messages" },
-                      { key: "applicationUpdates", label: "Application updates", desc: "Alerts when tenants update applications" },
-                      { key: "marketingEmails", label: "Marketing emails", desc: "New features and platform updates" },
-                      { key: "securityAlerts", label: "Security alerts", desc: "Important account security notices" }
+                      { key: "newInquiries", label: "New tenant inquiries", desc: "Email + dashboard notification when tenants message you" },
+                      { key: "applicationUpdates", label: "Application updates", desc: "Email alert when tenants submit or update applications" },
+                      { key: "marketingEmails", label: "Marketing emails", desc: "Email updates about new features and platform news" },
+                      { key: "securityAlerts", label: "Security alerts", desc: "Email notifications for login attempts and account changes" }
                     ].map((notif) => (
                       <div key={notif.key} className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5">
                         <div>
@@ -2030,6 +2018,8 @@ function ProviderDashboardContent() {
                     setShow2FASetupModal(false);
                     setTwoFactorToken("");
                     setTwoFactorError("");
+                    setSmsSent(false);
+                    setTwoFactorMethod("app");
                   }}
                   data-testid="button-close-2fa-modal"
                 >
@@ -2038,48 +2028,136 @@ function ProviderDashboardContent() {
               </div>
               
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.):
-                </p>
-                
-                {twoFactorQRCode && (
-                  <div className="flex justify-center p-4 bg-white rounded-lg">
-                    <img src={twoFactorQRCode} alt="2FA QR Code" className="w-48 h-48" data-testid="img-2fa-qrcode" />
-                  </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant={twoFactorMethod === "app" ? "default" : "outline"}
+                    className={twoFactorMethod === "app" ? "bg-primary" : ""}
+                    onClick={() => setTwoFactorMethod("app")}
+                    data-testid="button-2fa-method-app"
+                  >
+                    <ToggleRight className="w-4 h-4 mr-2" />
+                    Authenticator App
+                  </Button>
+                  <Button
+                    variant={twoFactorMethod === "sms" ? "default" : "outline"}
+                    className={twoFactorMethod === "sms" ? "bg-primary" : ""}
+                    onClick={() => setTwoFactorMethod("sms")}
+                    data-testid="button-2fa-method-sms"
+                  >
+                    <Phone className="w-4 h-4 mr-2" />
+                    Text Message (SMS)
+                  </Button>
+                </div>
+
+                {twoFactorMethod === "app" ? (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.):
+                    </p>
+                    
+                    {twoFactorQRCode && (
+                      <div className="flex justify-center p-4 bg-white rounded-lg">
+                        <img src={twoFactorQRCode} alt="2FA QR Code" className="w-48 h-48" data-testid="img-2fa-qrcode" />
+                      </div>
+                    )}
+                    
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground mb-1">Or enter this code manually:</p>
+                      <code className="text-sm bg-background px-2 py-1 rounded font-mono text-primary" data-testid="text-2fa-secret">
+                        {twoFactorSecret}
+                      </code>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label className="text-white text-sm">Enter the 6-digit code from your app:</Label>
+                      <Input
+                        type="text"
+                        maxLength={6}
+                        placeholder="000000"
+                        value={twoFactorToken}
+                        onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, ''))}
+                        className="bg-background/60 border-2 border-primary/40 text-center text-xl tracking-widest font-mono"
+                        data-testid="input-2fa-token"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      We'll send a verification code to your mobile phone via text message.
+                    </p>
+                    
+                    {!smsSent ? (
+                      <div className="space-y-3">
+                        <div className="space-y-2">
+                          <Label className="text-white text-sm">Mobile Phone Number</Label>
+                          <Input
+                            type="tel"
+                            placeholder="+1 (555) 000-0000"
+                            value={smsPhoneNumber}
+                            onChange={(e) => setSmsPhoneNumber(e.target.value)}
+                            className="bg-background/60 border-2 border-primary/40"
+                            data-testid="input-2fa-phone"
+                          />
+                        </div>
+                        <Button
+                          className="w-full bg-primary hover:bg-primary/80"
+                          onClick={() => {
+                            if (smsPhoneNumber.length >= 10) {
+                              setSmsSent(true);
+                              setTwoFactorError("");
+                            } else {
+                              setTwoFactorError("Please enter a valid phone number");
+                            }
+                          }}
+                          disabled={smsPhoneNumber.length < 10}
+                          data-testid="button-send-sms-code"
+                        >
+                          Send Verification Code
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg text-center">
+                          <p className="text-sm text-primary">Code sent to {smsPhoneNumber}</p>
+                          <button 
+                            className="text-xs text-muted-foreground underline mt-1"
+                            onClick={() => setSmsSent(false)}
+                          >
+                            Change number
+                          </button>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-white text-sm">Enter the 6-digit code:</Label>
+                          <Input
+                            type="text"
+                            maxLength={6}
+                            placeholder="000000"
+                            value={twoFactorToken}
+                            onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, ''))}
+                            className="bg-background/60 border-2 border-primary/40 text-center text-xl tracking-widest font-mono"
+                            data-testid="input-2fa-sms-token"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
-                
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Or enter this code manually:</p>
-                  <code className="text-sm bg-background px-2 py-1 rounded font-mono text-primary" data-testid="text-2fa-secret">
-                    {twoFactorSecret}
-                  </code>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label className="text-white text-sm">Enter the 6-digit code from your app:</Label>
-                  <Input
-                    type="text"
-                    maxLength={6}
-                    placeholder="000000"
-                    value={twoFactorToken}
-                    onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, ''))}
-                    className="bg-background/60 border-2 border-primary/40 text-center text-xl tracking-widest font-mono"
-                    data-testid="input-2fa-token"
-                  />
-                </div>
                 
                 {twoFactorError && (
                   <p className="text-sm text-red-400 text-center" data-testid="text-2fa-error">{twoFactorError}</p>
                 )}
                 
-                <Button 
-                  className="w-full bg-primary hover:bg-primary/80"
-                  onClick={handleVerify2FA}
-                  disabled={twoFactorLoading || twoFactorToken.length !== 6}
-                  data-testid="button-verify-2fa"
-                >
-                  {twoFactorLoading ? "Verifying..." : "Verify and Enable 2FA"}
-                </Button>
+                {(twoFactorMethod === "app" || smsSent) && (
+                  <Button 
+                    className="w-full bg-primary hover:bg-primary/80"
+                    onClick={handleVerify2FA}
+                    disabled={twoFactorLoading || twoFactorToken.length !== 6}
+                    data-testid="button-verify-2fa"
+                  >
+                    {twoFactorLoading ? "Verifying..." : "Verify and Enable 2FA"}
+                  </Button>
+                )}
               </div>
             </div>
           </div>

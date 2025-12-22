@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, CheckCircle2, Upload, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Upload, Loader2, PartyPopper } from "lucide-react";
 import { useState, useEffect } from "react";
 import { isAuthenticated, getAuth } from "@/lib/auth";
 import { incrementStat } from "@/lib/tenant-engagement";
@@ -31,6 +31,21 @@ export default function ApplicationForm() {
   const [consentShareInfo, setConsentShareInfo] = useState(false);
   const [consentTerms, setConsentTerms] = useState(false);
   const [formError, setFormError] = useState("");
+  
+  // Pre-filled form data from tenant profile
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [currentAddress, setCurrentAddress] = useState("");
+  const [emergencyContactName, setEmergencyContactName] = useState("");
+  const [emergencyContactPhone, setEmergencyContactPhone] = useState("");
+  const [emergencyContactRelationship, setEmergencyContactRelationship] = useState("");
+  const [profileLoading, setProfileLoading] = useState(false);
+  
+  // Submission state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   
   const isPreview = params?.id === "preview";
   
@@ -62,6 +77,33 @@ export default function ApplicationForm() {
       setLocation("/");
     }
   }, [params?.id, setLocation, isPreview]);
+  
+  // Pre-fill form from tenant profile
+  useEffect(() => {
+    const fetchTenantProfile = async () => {
+      if (isPreview) return;
+      setProfileLoading(true);
+      try {
+        const res = await fetch('/api/tenant/profile', { credentials: 'include' });
+        if (res.ok) {
+          const profile = await res.json();
+          if (profile.firstName) setFirstName(profile.firstName);
+          if (profile.lastName) setLastName(profile.lastName);
+          if (profile.email) setEmail(profile.email);
+          if (profile.phone) setPhone(profile.phone);
+          if (profile.currentAddress) setCurrentAddress(profile.currentAddress);
+          if (profile.emergencyContactName) setEmergencyContactName(profile.emergencyContactName);
+          if (profile.emergencyContactPhone) setEmergencyContactPhone(profile.emergencyContactPhone);
+          if (profile.emergencyContactRelationship) setEmergencyContactRelationship(profile.emergencyContactRelationship);
+        }
+      } catch (err) {
+        console.error("Error fetching tenant profile:", err);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    fetchTenantProfile();
+  }, [isPreview]);
 
   if (isLoading && !isPreview) {
     return (
@@ -80,7 +122,7 @@ export default function ApplicationForm() {
 
   const propertyName = "propertyName" in property ? property.propertyName : "Property";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
     
@@ -115,8 +157,38 @@ export default function ApplicationForm() {
       return;
     }
     
-    incrementStat("applicationsSubmitted");
-    setLocation(`/tenant-dashboard`);
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/applications', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          listingId: property.id,
+          firstName,
+          lastName,
+          email,
+          phone,
+          currentAddress,
+          emergencyContactName,
+          emergencyContactPhone,
+          emergencyContactRelationship
+        })
+      });
+      
+      if (res.ok) {
+        incrementStat("applicationsSubmitted");
+        setShowConfirmation(true);
+      } else {
+        const error = await res.json();
+        setFormError(error.error || "Failed to submit application. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error submitting application:", err);
+      setFormError("Failed to submit application. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = () => {
@@ -157,27 +229,44 @@ export default function ApplicationForm() {
             {/* 1. Personal Information */}
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-white">1. Personal Information</CardTitle>
+                <CardTitle className="text-white flex items-center gap-2">
+                  1. Personal Information
+                  {profileLoading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>First Name *</Label>
-                    <Input placeholder="John" className="bg-background/50 border-border" required />
+                    <Input 
+                      placeholder="John" 
+                      className="bg-background/50 border-border" 
+                      required 
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      data-testid="input-first-name"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Last Name *</Label>
-                    <Input placeholder="Doe" className="bg-background/50 border-border" required />
+                    <Input 
+                      placeholder="Doe" 
+                      className="bg-background/50 border-border" 
+                      required 
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      data-testid="input-last-name"
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Date of Birth *</Label>
-                  <Input type="date" className="bg-background/50 border-border" required />
+                  <Input type="date" className="bg-background/50 border-border" required data-testid="input-dob" />
                 </div>
                 <div className="space-y-2">
                   <Label>Gender *</Label>
                   <Select>
-                    <SelectTrigger className="bg-background/50 border-border">
+                    <SelectTrigger className="bg-background/50 border-border" data-testid="select-gender">
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-border">
@@ -191,28 +280,73 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Phone Number *</Label>
-                  <Input type="tel" placeholder="(555) 123-4567" className="bg-background/50 border-border" required />
+                  <Input 
+                    type="tel" 
+                    placeholder="(555) 123-4567" 
+                    className="bg-background/50 border-border" 
+                    required 
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    data-testid="input-phone"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Email Address *</Label>
-                  <Input type="email" placeholder="john@example.com" className="bg-background/50 border-border" required />
+                  <Input 
+                    type="email" 
+                    placeholder="john@example.com" 
+                    className="bg-background/50 border-border" 
+                    required 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    data-testid="input-email"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Current Address *</Label>
-                  <Input placeholder="Street address" className="bg-background/50 border-border" required />
+                  <Input 
+                    placeholder="Street address" 
+                    className="bg-background/50 border-border" 
+                    required 
+                    value={currentAddress}
+                    onChange={(e) => setCurrentAddress(e.target.value)}
+                    data-testid="input-address"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Emergency Contact Name *</Label>
-                  <Input placeholder="Name" className="bg-background/50 border-border" required />
+                  <Input 
+                    placeholder="Name" 
+                    className="bg-background/50 border-border" 
+                    required 
+                    value={emergencyContactName}
+                    onChange={(e) => setEmergencyContactName(e.target.value)}
+                    data-testid="input-emergency-name"
+                  />
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Emergency Contact Phone *</Label>
-                    <Input type="tel" placeholder="(555) 123-4567" className="bg-background/50 border-border" required />
+                    <Input 
+                      type="tel" 
+                      placeholder="(555) 123-4567" 
+                      className="bg-background/50 border-border" 
+                      required 
+                      value={emergencyContactPhone}
+                      onChange={(e) => setEmergencyContactPhone(e.target.value)}
+                      data-testid="input-emergency-phone"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Relationship *</Label>
-                    <Input placeholder="e.g., Sister, Friend, Sponsor" className="bg-background/50 border-border" required />
+                    <Input 
+                      placeholder="e.g., Sister, Friend, Sponsor" 
+                      className="bg-background/50 border-border" 
+                      required 
+                      value={emergencyContactRelationship}
+                      onChange={(e) => setEmergencyContactRelationship(e.target.value)}
+                      data-testid="input-emergency-relationship"
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -823,16 +957,72 @@ export default function ApplicationForm() {
               </div>
             )}
             <div className="flex gap-4 sticky bottom-4 bg-background p-4 rounded-lg border border-border">
-              <Button type="submit" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg">
-                <CheckCircle2 className="w-5 h-5 mr-2" /> Submit Application
+              <Button 
+                type="submit" 
+                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg"
+                disabled={isSubmitting}
+                data-testid="button-submit-application"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Submitting...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 mr-2" /> Submit Application
+                  </>
+                )}
               </Button>
-              <Button type="button" variant="outline" onClick={handleBack} className="flex-1 h-12">
+              <Button type="button" variant="outline" onClick={handleBack} className="flex-1 h-12" data-testid="button-cancel-application">
                 Cancel
               </Button>
             </div>
           </form>
         </div>
       </div>
+
+      {/* Application Submitted Confirmation Modal */}
+      {showConfirmation && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-xl max-w-md w-full p-6 text-center">
+            <div className="mb-4">
+              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                <PartyPopper className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">Application Submitted!</h3>
+              <p className="text-muted-foreground">
+                Your application to <span className="text-white font-medium">{propertyName}</span> has been submitted successfully.
+              </p>
+            </div>
+            
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6 text-left">
+              <h4 className="font-medium text-white text-sm mb-2">What happens next?</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                  The provider will review your application
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                  You'll receive an email when they respond
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                  Track your application status in your dashboard
+                </li>
+              </ul>
+            </div>
+            
+            <Button 
+              className="w-full bg-primary hover:bg-primary/80"
+              onClick={() => setLocation('/tenant-dashboard')}
+              data-testid="button-go-to-dashboard"
+            >
+              Go to My Dashboard
+            </Button>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
