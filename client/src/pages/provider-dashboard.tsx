@@ -1,6 +1,7 @@
 import { Layout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ContentEditor } from "@/components/content-editor";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +10,9 @@ import {
   Plus, Check, X, MoreHorizontal, Search, ChevronRight,
   Bed, FileText, Settings, Lock, Mail, Phone, Upload, Shield, ToggleRight,
   Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video, Eye, CreditCard,
-  ShieldCheck
+  ShieldCheck, Loader2, RotateCcw
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
 import type { Listing } from "@shared/schema";
@@ -122,6 +124,12 @@ function ProviderDashboardContent() {
   
   // Provider listings from API
   const [listings, setListings] = useState<Listing[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Provider settings state
+  const [settingsEmail, setSettingsEmail] = useState("");
+  const [settingsPhone, setSettingsPhone] = useState("");
+  const [settingsLoading, setSettingsLoading] = useState(false);
   
   // Notification preferences with localStorage persistence
   const [notificationPrefs, setNotificationPrefs] = useState(() => {
@@ -147,6 +155,33 @@ function ProviderDashboardContent() {
   const handleViewApplication = (app: ApplicationData) => {
     setSelectedApplication(app);
     setIsAppDetailsOpen(true);
+  };
+  
+  // Handle provider settings update
+  const handleUpdateSettings = async () => {
+    setSettingsLoading(true);
+    try {
+      const res = await fetch('/api/provider/profile', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contactEmail: settingsEmail,
+          contactPhone: settingsPhone
+        })
+      });
+      if (res.ok) {
+        alert("Settings updated successfully!");
+      } else {
+        const error = await res.json();
+        alert(error.error || "Failed to update settings");
+      }
+    } catch (err) {
+      console.error("Error updating settings:", err);
+      alert("Failed to update settings");
+    } finally {
+      setSettingsLoading(false);
+    }
   };
 
   const handleApproveApplication = (id: string) => {
@@ -330,8 +365,6 @@ function ProviderDashboardContent() {
         console.error("Error fetching listings:", err);
       }
     };
-    
-    fetchListings();
 
     // Load tour requests from localStorage
     const storedTours = localStorage.getItem("tour_requests");
@@ -368,7 +401,6 @@ function ProviderDashboardContent() {
         setHasActiveSubscription(false);
       }
     };
-    fetchSubscription();
     
     // Fetch featured listings
     const fetchFeaturedListings = async () => {
@@ -382,9 +414,8 @@ function ProviderDashboardContent() {
         console.error("Error fetching featured listings:", err);
       }
     };
-    fetchFeaturedListings();
     
-    // Fetch provider verification status
+    // Fetch provider verification status and profile data
     const fetchVerificationStatus = async () => {
       try {
         const res = await fetch('/api/provider/profile', { credentials: 'include' });
@@ -392,12 +423,19 @@ function ProviderDashboardContent() {
           const profile = await res.json();
           setIsDocumentsVerified(profile.documentsVerified === true);
           setTwoFactorEnabled(profile.twoFactorEnabled === true);
+          // Pre-fill settings from profile
+          if (profile.phone) setSettingsPhone(profile.phone);
+          if (profile.contactPhone) setSettingsPhone(profile.contactPhone);
         }
       } catch (err) {
         console.error("Error fetching verification status:", err);
       }
+      // Also try to get email from user if not in profile
+      const user = getAuth();
+      if (user?.email && !settingsEmail) {
+        setSettingsEmail(user.email);
+      }
     };
-    fetchVerificationStatus();
     
     // Also fetch 2FA status from dedicated endpoint
     const fetch2FAStatus = async () => {
@@ -411,7 +449,6 @@ function ProviderDashboardContent() {
         console.error("Error fetching 2FA status:", err);
       }
     };
-    fetch2FAStatus();
     
     // Fetch real applications from API
     const fetchApplications = async () => {
@@ -458,7 +495,25 @@ function ProviderDashboardContent() {
         console.error("Error fetching applications:", err);
       }
     };
-    fetchApplications();
+
+    // Load all data in parallel and set loading to false when done
+    const loadAllData = async () => {
+      setIsLoading(true);
+      try {
+        await Promise.all([
+          fetchListings(),
+          fetchSubscription(),
+          fetchFeaturedListings(),
+          fetchVerificationStatus(),
+          fetch2FAStatus(),
+          fetchApplications()
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadAllData();
   }, [user?.id]);
 
   // Handle return from Stripe checkout - refetch subscription status
@@ -545,12 +600,44 @@ function ProviderDashboardContent() {
     return labels[trigger] || trigger;
   };
 
-  const handleTourResponse = (tourId: string, status: "approved" | "denied" | "rescheduled", notes?: string) => {
+  const handleTourResponse = (tourId: string, status: "approved" | "denied" | "rescheduled" | "pending", notes?: string, suggestedTime?: string) => {
     const updatedTours = tourRequests.map(tour =>
-      tour.id === tourId ? { ...tour, status, providerNotes: notes } : tour
+      tour.id === tourId ? { 
+        ...tour, 
+        status, 
+        providerNotes: notes,
+        suggestedTime: suggestedTime || tour.suggestedTime
+      } : tour
     );
     setTourRequests(updatedTours);
     localStorage.setItem("tour_requests", JSON.stringify(updatedTours));
+  };
+
+  const [showRescheduleDialog, setShowRescheduleDialog] = useState(false);
+  const [rescheduleTarget, setRescheduleTarget] = useState<string | null>(null);
+  const [suggestedDate, setSuggestedDate] = useState("");
+  const [suggestedTime, setSuggestedTime] = useState("");
+  const [rescheduleNotes, setRescheduleNotes] = useState("");
+
+  const handleSuggestDifferentTime = (tourId: string) => {
+    setRescheduleTarget(tourId);
+    setSuggestedDate("");
+    setSuggestedTime("");
+    setRescheduleNotes("");
+    setShowRescheduleDialog(true);
+  };
+
+  const confirmReschedule = () => {
+    if (rescheduleTarget && suggestedDate && suggestedTime) {
+      const notes = `Suggested alternative: ${suggestedDate} at ${suggestedTime}${rescheduleNotes ? `. ${rescheduleNotes}` : ""}`;
+      handleTourResponse(rescheduleTarget, "rescheduled", notes, `${suggestedDate} ${suggestedTime}`);
+      setShowRescheduleDialog(false);
+      setRescheduleTarget(null);
+      toast({
+        title: "Reschedule Suggested",
+        description: "The tenant has been notified of your suggested time.",
+      });
+    }
   };
 
   // Scroll to top on mount
@@ -613,6 +700,24 @@ function ProviderDashboardContent() {
 
           {/* OVERVIEW */}
           <TabsContent value="overview" className="space-y-6">
+            {isLoading ? (
+              <div className="grid md:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <Card key={i} className="bg-card border-border">
+                    <CardContent className="pt-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-8 w-16" />
+                        </div>
+                        <Skeleton className="h-9 w-9 rounded-lg" />
+                      </div>
+                      <Skeleton className="h-3 w-20" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
             <div className="grid md:grid-cols-4 gap-6">
               <Card className="bg-card border-border">
                 <CardContent className="pt-6">
@@ -682,6 +787,7 @@ function ProviderDashboardContent() {
                 </CardContent>
               </Card>
             </div>
+            )}
 
             {!hasActiveSubscription && (
               <Card className="bg-gradient-to-r from-primary/20 via-primary/10 to-card border-primary/30">
@@ -1561,13 +1667,32 @@ function ProviderDashboardContent() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label className="text-white text-sm">Email Address</Label>
-                    <Input placeholder="provider@example.com" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" />
+                    <Input 
+                      placeholder="provider@example.com" 
+                      className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" 
+                      value={settingsEmail}
+                      onChange={(e) => setSettingsEmail(e.target.value)}
+                      data-testid="input-settings-email"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-white text-sm">Phone Number</Label>
-                    <Input placeholder="+1 (555) 000-0000" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" />
+                    <Input 
+                      placeholder="+1 (555) 000-0000" 
+                      className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
+                      value={settingsPhone}
+                      onChange={(e) => setSettingsPhone(e.target.value)}
+                      data-testid="input-settings-phone"
+                    />
                   </div>
-                  <Button className="w-full bg-primary/20 text-primary hover:bg-primary/30">Update Information</Button>
+                  <Button 
+                    className="w-full bg-primary/20 text-primary hover:bg-primary/30"
+                    onClick={handleUpdateSettings}
+                    disabled={settingsLoading}
+                    data-testid="button-update-settings"
+                  >
+                    {settingsLoading ? "Saving..." : "Update Information"}
+                  </Button>
                 </CardContent>
               </Card>
 
@@ -1725,11 +1850,11 @@ function ProviderDashboardContent() {
                             <Check className="w-4 h-4" /> Approve
                           </Button>
                           <Button
-                            onClick={() => handleTourResponse(tour.id, "rescheduled", "Please suggest alternative times")}
+                            onClick={() => handleSuggestDifferentTime(tour.id)}
                             className="flex-1 bg-amber-600/80 hover:bg-amber-600 text-white gap-2"
                             data-testid={`button-reschedule-tour-${tour.id}`}
                           >
-                            <Clock className="w-4 h-4" /> Reschedule
+                            <Clock className="w-4 h-4" /> Suggest Different Time
                           </Button>
                           <Button
                             onClick={() => handleTourResponse(tour.id, "denied")}
@@ -1738,6 +1863,46 @@ function ProviderDashboardContent() {
                             data-testid={`button-deny-tour-${tour.id}`}
                           >
                             <X className="w-4 h-4" /> Deny
+                          </Button>
+                        </div>
+                      )}
+
+                      {tour.status === "approved" && (
+                        <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-border">
+                          <Button
+                            onClick={() => handleTourResponse(tour.id, "pending", undefined)}
+                            variant="outline"
+                            className="flex-1 border-amber-500/50 hover:bg-amber-500/10 gap-2"
+                            data-testid={`button-unapprove-tour-${tour.id}`}
+                          >
+                            <RotateCcw className="w-4 h-4" /> Unapprove
+                          </Button>
+                          <Button
+                            onClick={() => handleSuggestDifferentTime(tour.id)}
+                            className="flex-1 bg-amber-600/80 hover:bg-amber-600 text-white gap-2"
+                            data-testid={`button-reschedule-approved-tour-${tour.id}`}
+                          >
+                            <Clock className="w-4 h-4" /> Suggest Different Time
+                          </Button>
+                        </div>
+                      )}
+
+                      {tour.status === "rescheduled" && (
+                        <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-border">
+                          <Button
+                            onClick={() => handleTourResponse(tour.id, "approved")}
+                            className="flex-1 bg-green-600/80 hover:bg-green-600 text-white gap-2"
+                            data-testid={`button-approve-rescheduled-tour-${tour.id}`}
+                          >
+                            <Check className="w-4 h-4" /> Approve Original Time
+                          </Button>
+                          <Button
+                            onClick={() => handleSuggestDifferentTime(tour.id)}
+                            variant="outline"
+                            className="flex-1 border-amber-500/50 hover:bg-amber-500/10 gap-2"
+                            data-testid={`button-new-time-tour-${tour.id}`}
+                          >
+                            <Clock className="w-4 h-4" /> Suggest New Time
                           </Button>
                         </div>
                       )}
@@ -2162,6 +2327,70 @@ function ProviderDashboardContent() {
             </div>
           </div>
         )}
+
+        <Dialog open={showRescheduleDialog} onOpenChange={setShowRescheduleDialog}>
+          <DialogContent className="bg-card border-border">
+            <DialogHeader>
+              <DialogTitle className="text-white">Suggest Different Time</DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                Propose an alternative date and time for this tour.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="suggested-date" className="text-white">Suggested Date</Label>
+                <Input
+                  id="suggested-date"
+                  type="date"
+                  value={suggestedDate}
+                  onChange={(e) => setSuggestedDate(e.target.value)}
+                  className="bg-background border-border text-white"
+                  data-testid="input-suggested-date"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="suggested-time" className="text-white">Suggested Time</Label>
+                <Input
+                  id="suggested-time"
+                  type="time"
+                  value={suggestedTime}
+                  onChange={(e) => setSuggestedTime(e.target.value)}
+                  className="bg-background border-border text-white"
+                  data-testid="input-suggested-time"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="reschedule-notes" className="text-white">Additional Notes (optional)</Label>
+                <Input
+                  id="reschedule-notes"
+                  placeholder="E.g., I have availability in the mornings..."
+                  value={rescheduleNotes}
+                  onChange={(e) => setRescheduleNotes(e.target.value)}
+                  className="bg-background border-border text-white"
+                  data-testid="input-reschedule-notes"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowRescheduleDialog(false)}
+                className="border-border"
+                data-testid="button-cancel-reschedule"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmReschedule}
+                disabled={!suggestedDate || !suggestedTime}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                data-testid="button-confirm-reschedule"
+              >
+                Send Suggestion
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <PaymentModal 
           open={showPaymentModal}

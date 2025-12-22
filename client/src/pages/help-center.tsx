@@ -1,11 +1,60 @@
 import { Layout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export function HelpCenter() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const { toast } = useToast();
+
+  const handleSendMessage = async () => {
+    if (!contactEmail.trim() || !contactMessage.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Please enter your email and message",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSendingMessage(true);
+    try {
+      const response = await fetch("/api/admin/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "Help Center Inquiry",
+          email: contactEmail,
+          subject: "Help Center Support Request",
+          message: contactMessage,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Message sent",
+          description: "We'll get back to you within 24 hours",
+        });
+        setContactEmail("");
+        setContactMessage("");
+      } else {
+        throw new Error("Failed to send message");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingMessage(false);
+    }
+  };
 
   const faqs = [
     {
@@ -173,9 +222,37 @@ export function HelpCenter() {
                 Can't find your answer? Contact our support team and we'll help within 24 hours.
               </p>
               <div className="space-y-3">
-                <input type="email" placeholder="Your email" className="w-full px-4 py-2 rounded-lg bg-background/50 border border-white/10 text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary" />
-                <textarea placeholder="Your question or issue..." rows={4} className="w-full px-4 py-2 rounded-lg bg-background/50 border border-white/10 text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary" />
-                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">Send Message</Button>
+                <input 
+                  type="email" 
+                  placeholder="Your email" 
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  data-testid="input-help-email"
+                  className="w-full px-4 py-2 rounded-lg bg-background/50 border border-white/10 text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary" 
+                />
+                <textarea 
+                  placeholder="Your question or issue..." 
+                  rows={4} 
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  data-testid="input-help-message"
+                  className="w-full px-4 py-2 rounded-lg bg-background/50 border border-white/10 text-white placeholder:text-muted-foreground focus:outline-none focus:border-primary" 
+                />
+                <Button 
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  onClick={handleSendMessage}
+                  disabled={sendingMessage}
+                  data-testid="button-send-help-message"
+                >
+                  {sendingMessage ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Send Message"
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>

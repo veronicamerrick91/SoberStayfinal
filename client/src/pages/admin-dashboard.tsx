@@ -187,6 +187,8 @@ export function AdminDashboard() {
   const [editingSequenceEmail, setEditingSequenceEmail] = useState<any | null>(null);
   const [sequenceEmailSubject, setSequenceEmailSubject] = useState("");
   const [sequenceEmailBody, setSequenceEmailBody] = useState("");
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
+  const [previewEmail, setPreviewEmail] = useState<{ subject: string; body: string } | null>(null);
   const [emailSequences, setEmailSequences] = useState([
     {
       id: "provider-onboarding",
@@ -3696,20 +3698,35 @@ the actual document file stored on the server.
                                 </p>
                               </div>
                             </div>
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              className="h-7 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingSequenceEmail({ sequenceId: seq.id, email });
-                                setSequenceEmailSubject(email.subject);
-                                setSequenceEmailBody(email.body);
-                                setShowSequenceEmailEditor(true);
-                              }}
-                            >
-                              Edit
-                            </Button>
+                            <div className="flex gap-1">
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-7 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPreviewEmail({ subject: email.subject, body: email.body });
+                                  setShowEmailPreview(true);
+                                }}
+                                data-testid={`button-preview-email-${email.id}`}
+                              >
+                                <Eye className="w-3 h-3 mr-1" /> Preview
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-7 text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingSequenceEmail({ sequenceId: seq.id, email });
+                                  setSequenceEmailSubject(email.subject);
+                                  setSequenceEmailBody(email.body);
+                                  setShowSequenceEmailEditor(true);
+                                }}
+                              >
+                                Edit
+                              </Button>
+                            </div>
                           </div>
                         ))}
                         <Button 
@@ -5125,6 +5142,62 @@ Use the toolbar above for formatting, or write in Markdown:
                   variant="outline"
                 >
                   Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showEmailPreview && previewEmail && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowEmailPreview(false)}>
+            <div 
+              className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Email Preview</h2>
+                    <p className="text-xs text-muted-foreground mt-1">Preview how this email will appear to recipients</p>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowEmailPreview(false)}
+                    className="text-muted-foreground hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                  <div className="bg-primary px-6 py-4">
+                    <p className="text-xs text-primary-foreground/80 mb-1">From: Sober Stay &lt;noreply@soberstay.com&gt;</p>
+                    <p className="text-xs text-primary-foreground/80">To: [recipient email]</p>
+                  </div>
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <p className="text-lg font-semibold text-gray-900">{previewEmail.subject}</p>
+                  </div>
+                  <div className="px-6 py-6 text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                    {previewEmail.body}
+                  </div>
+                  <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                    <p className="text-xs text-gray-500 text-center">
+                      Sober Stay Recovery Housing Platform<br />
+                      <span className="text-primary">www.soberstay.com</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex justify-end">
+                <Button 
+                  onClick={() => setShowEmailPreview(false)}
+                  variant="outline"
+                >
+                  Close Preview
                 </Button>
               </div>
             </div>

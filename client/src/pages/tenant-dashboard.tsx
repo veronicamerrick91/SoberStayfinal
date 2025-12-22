@@ -13,8 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   Home, FileText, MessageSquare, Heart, Bell, Eye, CalendarCheck,
   Clock, CheckCircle, XCircle, ChevronRight, MapPin, Send, 
-  Zap, Settings, LogOut, User, Phone, Mail, Calendar, Shield
+  Zap, Settings, LogOut, User, Phone, Mail, Calendar, Shield, Loader2
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Listing } from "@shared/schema";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
@@ -88,6 +89,7 @@ function TenantDashboardContent() {
   const [daysClean, setDaysClean] = useState(0);
   const [viewedHomes, setViewedHomes] = useState<Listing[]>([]);
   const [tourRequests, setTourRequests] = useState<TourRequest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   const [profile, setProfile] = useState<TenantProfile>(() => {
     const saved = localStorage.getItem("tenant_profile");
@@ -195,28 +197,78 @@ function TenantDashboardContent() {
           .filter((p): p is Listing => p !== undefined);
         setViewedHomes(viewedProperties);
         
-        // Update engagement stats with saved homes count
-        setEngagementStats(prev => ({ ...prev, savedHomes: favorited.length }));
+        // Update engagement stats with saved homes count and viewed homes count
+        setEngagementStats(prev => ({ ...prev, savedHomes: favorited.length, homesViewed: viewedProperties.length }));
       } catch (error) {
         console.error('Failed to load listings:', error);
       }
     };
 
-    loadData();
+    // Fetch applications from API
+    const fetchApplications = async () => {
+      try {
+        const res = await fetch('/api/applications', { credentials: 'include' });
+        if (res.ok) {
+          const apps = await res.json();
+          // Fetch listing details for each application
+          const appsWithDetails: SubmittedApplication[] = await Promise.all(
+            apps.map(async (app: any) => {
+              let propertyName = 'Unknown Property';
+              try {
+                const listingRes = await fetch(`/api/listings/${app.listingId}`);
+                if (listingRes.ok) {
+                  const listing = await listingRes.json();
+                  propertyName = listing.propertyName;
+                }
+              } catch {}
+              return {
+                id: String(app.id),
+                propertyId: String(app.listingId),
+                propertyName,
+                submittedAt: app.createdAt,
+                status: app.status === 'approved' ? 'approved' : 
+                        app.status === 'rejected' ? 'denied' : 
+                        app.status === 'pending' ? 'pending' : 'under_review',
+                applicationData: app.applicationData || {}
+              };
+            })
+          );
+          setSubmittedApplications(appsWithDetails);
+          // Update engagement stats
+          setEngagementStats(prev => ({
+            ...prev,
+            applicationsSubmitted: appsWithDetails.length,
+            approvalsReceived: appsWithDetails.filter(a => a.status === 'approved').length
+          }));
+        }
+      } catch (err) {
+        console.error("Error fetching applications:", err);
+        // Fall back to localStorage
+        setSubmittedApplications(getSubmittedApplications());
+      }
+    };
     
-    // Load tour requests
-    setTourRequests(getTourRequests());
+    // Load all data in parallel and set loading to false when done
+    const loadAllData = async () => {
+      setIsLoading(true);
+      try {
+        await Promise.all([loadData(), fetchApplications()]);
+      } finally {
+        // Load tour requests
+        setTourRequests(getTourRequests());
+        
+        // Load recovery badges based on profile sobriety date
+        const savedProfile = localStorage.getItem("tenant_profile");
+        if (savedProfile) {
+          const parsed = JSON.parse(savedProfile);
+          setRecoveryBadges(getRecoveryBadges(parsed.sobrietyDate));
+          setDaysClean(getDaysClean(parsed.sobrietyDate));
+        }
+        setIsLoading(false);
+      }
+    };
     
-    // Load submitted applications (from localStorage, not mock)
-    setSubmittedApplications(getSubmittedApplications());
-    
-    // Load recovery badges based on profile sobriety date
-    const savedProfile = localStorage.getItem("tenant_profile");
-    if (savedProfile) {
-      const parsed = JSON.parse(savedProfile);
-      setRecoveryBadges(getRecoveryBadges(parsed.sobrietyDate));
-      setDaysClean(getDaysClean(parsed.sobrietyDate));
-    }
+    loadAllData();
   }, []);
 
   const handleSignOut = async () => {
@@ -251,13 +303,31 @@ function TenantDashboardContent() {
 
         <div className="container mx-auto px-4 py-8">
           {/* Progress Dashboard */}
+          {isLoading ? (
+            <div className="grid md:grid-cols-5 gap-4 mb-8">
+              {[...Array(5)].map((_, i) => (
+                <Card key={i} className="bg-card border-border">
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-8 w-16" />
+                      </div>
+                      <Skeleton className="h-9 w-9 rounded-lg" />
+                    </div>
+                    <Skeleton className="h-3 w-20" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
           <div className="grid md:grid-cols-5 gap-4 mb-8">
-            <Card className="bg-card border-border hover:border-primary/50 transition-colors" data-testid="stat-homes-viewed">
+            <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setActiveTab("viewed")} data-testid="stat-homes-viewed">
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Homes Viewed</p>
-                    <h3 className="text-3xl font-bold text-white">{engagementStats.homesViewed}</h3>
+                    <h3 className="text-3xl font-bold text-white">{viewedHomes.length}</h3>
                   </div>
                   <div className="p-2 bg-blue-500/10 rounded-lg">
                     <Home className="w-5 h-5 text-blue-500" />
@@ -267,7 +337,7 @@ function TenantDashboardContent() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border hover:border-primary/50 transition-colors" data-testid="stat-saved-homes">
+            <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setActiveTab("saved")} data-testid="stat-saved-homes">
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -282,7 +352,7 @@ function TenantDashboardContent() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border hover:border-primary/50 transition-colors" data-testid="stat-applications">
+            <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer" onClick={() => setActiveTab("applications")} data-testid="stat-applications">
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
@@ -328,6 +398,7 @@ function TenantDashboardContent() {
               </CardContent>
             </Card>
           </div>
+          )}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="bg-gradient-to-r from-card via-card to-card border border-border/50 p-2 flex flex-wrap gap-2 h-auto justify-start rounded-lg shadow-sm">

@@ -165,14 +165,16 @@ export default function ApplicationForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           listingId: property.id,
-          firstName,
-          lastName,
-          email,
-          phone,
-          currentAddress,
-          emergencyContactName,
-          emergencyContactPhone,
-          emergencyContactRelationship
+          applicationData: {
+            firstName,
+            lastName,
+            email,
+            phone,
+            currentAddress,
+            emergencyContactName,
+            emergencyContactPhone,
+            emergencyContactRelationship
+          }
         })
       });
       

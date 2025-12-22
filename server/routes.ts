@@ -1312,6 +1312,27 @@ Disallow: /auth/
     }
   });
 
+  // Update provider profile settings (phone)
+  app.patch("/api/provider/profile", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { contactPhone, phone } = req.body;
+      const updateData: any = {};
+      // Use phone field from schema (accept both contactPhone and phone)
+      if (contactPhone !== undefined) updateData.phone = contactPhone;
+      if (phone !== undefined) updateData.phone = phone;
+      
+      const profile = await storage.createOrUpdateProviderProfile(user.id, updateData);
+      res.json({ ...profile, contactPhone: profile?.phone });
+    } catch (error) {
+      console.error("Error updating provider profile:", error);
+      res.status(500).json({ error: "Failed to update profile" });
+    }
+  });
+
   app.post("/api/provider/upload-logo", async (req, res) => {
     const user = req.user as any;
     if (!req.isAuthenticated() || user?.role !== "provider") {
