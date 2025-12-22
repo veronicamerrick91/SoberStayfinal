@@ -43,7 +43,9 @@ export function PartnersDirectory() {
     }
   });
 
-  const filteredPartners = partners.filter(partner => {
+  const visiblePartners = partners.filter(p => p.category !== "blog");
+
+  const filteredPartners = visiblePartners.filter(partner => {
     const matchesSearch = partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           (partner.description || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || partner.category === selectedCategory;
@@ -51,12 +53,11 @@ export function PartnersDirectory() {
   });
 
   const categories = [
-    { key: "all", label: "All Partners", count: partners.length },
-    { key: "organization", label: "Organizations", count: partners.filter(p => p.category === "organization").length },
-    { key: "treatment", label: "Treatment Centers", count: partners.filter(p => p.category === "treatment").length },
-    { key: "blog", label: "Blogs & Publications", count: partners.filter(p => p.category === "blog").length },
-    { key: "hotline", label: "Crisis Hotlines", count: partners.filter(p => p.category === "hotline").length },
-    { key: "association", label: "Associations", count: partners.filter(p => p.category === "association").length }
+    { key: "all", label: "All Partners", count: visiblePartners.length },
+    { key: "organization", label: "Organizations", count: visiblePartners.filter(p => p.category === "organization").length },
+    { key: "treatment", label: "Treatment Centers", count: visiblePartners.filter(p => p.category === "treatment").length },
+    { key: "hotline", label: "Crisis Hotlines", count: visiblePartners.filter(p => p.category === "hotline").length },
+    { key: "association", label: "Associations", count: visiblePartners.filter(p => p.category === "association").length }
   ];
 
   return (
