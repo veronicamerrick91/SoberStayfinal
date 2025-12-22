@@ -133,12 +133,12 @@ function Router() {
         <Route path="/what-is-sober-living" component={WhatIsSoberLiving} />
         <Route path="/apply-for-sober-living" component={ApplyForSoberLiving} />
         <Route path="/california-sober-living" component={SoberLivingCalifornia} />
+        <Route path="/partners" component={PartnersDirectory} />
+        <Route path="/link-to-us" component={LinkToUs} />
+        <Route path="/resource-center" component={ResourceCenter} />
         <Route path="/sober-living/:slug" component={SoberLivingLocation} />
         <Route path="/:slug-sober-living" component={LocationLanding} />
         <Route path="/locations" component={LocationLanding} />
-        <Route path="/resource-center" component={ResourceCenter} />
-        <Route path="/partners" component={PartnersDirectory} />
-        <Route path="/link-to-us" component={LinkToUs} />
         <Route path="/blog/:slug" component={BlogHub} />
         <Route component={NotFound} />
       </Switch>
