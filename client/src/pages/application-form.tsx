@@ -28,6 +28,8 @@ export default function ApplicationForm() {
   const [employmentRequirement, setEmploymentRequirement] = useState("");
   const [section8Confirmed, setSection8Confirmed] = useState(false);
   const [section9Confirmed, setSection9Confirmed] = useState(false);
+  const [consentShareInfo, setConsentShareInfo] = useState(false);
+  const [consentTerms, setConsentTerms] = useState(false);
   const [formError, setFormError] = useState("");
   
   const isPreview = params?.id === "preview";
@@ -88,6 +90,10 @@ export default function ApplicationForm() {
     }
     
     // Validate required checkboxes and employment requirement
+    if (!idUploaded) {
+      setFormError("Please upload a valid government-issued ID to submit this application.");
+      return;
+    }
     if (employmentRequirement !== "yes") {
       setFormError("You must agree to follow the home's employment requirements to submit this application.");
       return;
@@ -98,6 +104,14 @@ export default function ApplicationForm() {
     }
     if (!section9Confirmed) {
       setFormError("Please confirm that you have read and completed Section 9 (Personal Needs & Preferences).");
+      return;
+    }
+    if (!consentShareInfo) {
+      setFormError("Please consent to sharing your information with the provider.");
+      return;
+    }
+    if (!consentTerms) {
+      setFormError("Please agree to the Sober Stay Terms of Use and Privacy Policy.");
       return;
     }
     
@@ -207,21 +221,25 @@ export default function ApplicationForm() {
             {/* 2. Identification Upload */}
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-white">2. Identification Upload</CardTitle>
+                <CardTitle className="text-white">2. Identification Upload *</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-primary/5 border border-primary/20 rounded-lg p-6">
+                <div className={`bg-primary/5 border rounded-lg p-6 ${idUploaded ? 'border-primary/20' : 'border-destructive/30'}`}>
                   <div className="text-center">
                     <Upload className="w-12 h-12 mx-auto mb-3 text-primary/60" />
-                    <p className="text-sm text-gray-300 mb-4">Upload a government-issued photo ID</p>
+                    <p className="text-sm text-gray-300 mb-4">Upload a government-issued photo ID <span className="text-destructive">*</span></p>
                     <p className="text-xs text-muted-foreground mb-4">Accepted: Driver's License, State ID, Passport</p>
-                    <input type="file" accept="image/*,.pdf" onChange={handleFileUpload} className="hidden" id="id-upload" />
+                    <input type="file" accept="image/*,.pdf" onChange={handleFileUpload} className="hidden" id="id-upload" data-testid="input-id-upload" />
                     <label htmlFor="id-upload">
-                      <Button type="button" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10" onClick={() => document.getElementById('id-upload')?.click()}>
+                      <Button type="button" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10" onClick={() => document.getElementById('id-upload')?.click()} data-testid="button-upload-id">
                         <Upload className="w-4 h-4 mr-2" /> Choose File
                       </Button>
                     </label>
-                    {idUploaded && <p className="text-xs text-primary mt-2">✓ File selected</p>}
+                    {idUploaded ? (
+                      <p className="text-xs text-primary mt-2">✓ File selected</p>
+                    ) : (
+                      <p className="text-xs text-destructive/70 mt-2">Required for application submission</p>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -769,13 +787,27 @@ export default function ApplicationForm() {
               <CardContent className="space-y-4">
                 <div className="space-y-3 bg-primary/5 border border-primary/20 rounded-lg p-4">
                   <div className="flex items-start gap-3">
-                    <input type="checkbox" id="consent7" className="mt-1" required />
+                    <input 
+                      type="checkbox" 
+                      id="consent7" 
+                      checked={consentShareInfo}
+                      onChange={(e) => setConsentShareInfo(e.target.checked)}
+                      className="mt-1" 
+                      required 
+                    />
                     <label htmlFor="consent7" className="text-sm text-gray-300">
                       I consent to share my information with this provider for review *
                     </label>
                   </div>
                   <div className="flex items-start gap-3">
-                    <input type="checkbox" id="consent8" className="mt-1" required />
+                    <input 
+                      type="checkbox" 
+                      id="consent8" 
+                      checked={consentTerms}
+                      onChange={(e) => setConsentTerms(e.target.checked)}
+                      className="mt-1" 
+                      required 
+                    />
                     <label htmlFor="consent8" className="text-sm text-gray-300">
                       I agree to the Sober Stay Terms of Use and Privacy Policy *
                     </label>
