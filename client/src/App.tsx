@@ -46,6 +46,8 @@ import { SoberLivingLocation } from "@/pages/sober-living-location";
 import { ForProviders } from "@/pages/for-providers";
 import { ResourceCenter } from "@/pages/resource-center";
 import { BlogHub } from "@/pages/blog-hub";
+import { PartnersDirectory } from "@/pages/partners-directory";
+import { LinkToUs } from "@/pages/link-to-us";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
 
@@ -135,6 +137,8 @@ function Router() {
         <Route path="/:slug-sober-living" component={LocationLanding} />
         <Route path="/locations" component={LocationLanding} />
         <Route path="/resource-center" component={ResourceCenter} />
+        <Route path="/partners" component={PartnersDirectory} />
+        <Route path="/link-to-us" component={LinkToUs} />
         <Route path="/blog/:slug" component={BlogHub} />
         <Route component={NotFound} />
       </Switch>
