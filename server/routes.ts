@@ -31,7 +31,7 @@ export async function registerRoutes(
 
   // Sitemap.xml for SEO
   app.get("/sitemap.xml", async (req, res) => {
-    const baseUrl = "https://soberstay.com";
+    const baseUrl = "https://soberstayhomes.com";
     
     // Get all approved listings for dynamic sitemap entries
     const listings = await storage.getAllListings();
@@ -89,7 +89,7 @@ export async function registerRoutes(
     res.send(`User-agent: *
 Allow: /
 
-Sitemap: https://soberstay.com/sitemap.xml
+Sitemap: https://soberstayhomes.com/sitemap.xml
 
 # Block admin and user-specific pages
 Disallow: /admin-dashboard
