@@ -6,6 +6,7 @@ import { ExternalLink, Search, Building2, BookOpen, Phone, Globe, Users, Heart, 
 import { useState } from "react";
 import { useDocumentMeta } from "@/lib/use-document-meta";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 
 interface Partner {
   id: number;
@@ -84,11 +85,11 @@ export function PartnersDirectory() {
                 data-testid="input-search-partners"
               />
             </div>
-            <a href="/contact">
+            <Link href="/contact">
               <Button size="lg" data-testid="button-contact-partnership-top">
                 Contact Us About Partnerships
               </Button>
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -189,11 +190,11 @@ export function PartnersDirectory() {
             quality recovery housing. If you'd like to be listed in our directory or explore partnership opportunities, 
             we'd love to hear from you.
           </p>
-          <a href="/contact">
+          <Link href="/contact">
             <Button size="lg" data-testid="button-contact-partnership">
               Contact Us About Partnerships
             </Button>
-          </a>
+          </Link>
         </div>
       </div>
     </Layout>
