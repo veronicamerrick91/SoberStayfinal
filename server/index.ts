@@ -23,51 +23,6 @@ function isBot(userAgent: string): boolean {
 const app = express();
 const httpServer = createServer(app);
 
-// Sitemap.xml - serve via both paths
-app.get("/api/sitemap.xml", (_req, res) => {
-  res.setHeader("Content-Type", "application/xml");
-  res.send(`<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/browse</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/sober-living-near-me</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/what-is-sober-living</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/apply-for-sober-living</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/california-sober-living</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/mission</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/resources</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/how-to-choose</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/insurance-info</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/crisis-resources</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/blog</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/contact</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/for-tenants</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/for-providers</loc></url>
-</urlset>`);
-});
-
-app.get("/sitemap.xml", (_req, res) => {
-  res.setHeader("Content-Type", "application/xml");
-  res.send(`<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/browse</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/sober-living-near-me</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/what-is-sober-living</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/apply-for-sober-living</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/california-sober-living</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/mission</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/resources</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/how-to-choose</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/insurance-info</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/crisis-resources</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/blog</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/contact</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/for-tenants</loc></url>
-  <url><loc>https://sober-stay--y2sqw27xjv.replit.app/for-providers</loc></url>
-</urlset>`);
-});
-
 declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;
