@@ -152,6 +152,30 @@ export const tenantViewedHomes = pgTable("tenant_viewed_homes", {
   viewedAt: timestamp("viewed_at").defaultNow().notNull(),
 });
 
+// Analytics tracking tables
+export const listingAnalyticsEvents = pgTable("listing_analytics_events", {
+  id: serial("id").primaryKey(),
+  listingId: integer("listing_id").notNull().references(() => listings.id),
+  providerId: integer("provider_id").notNull().references(() => users.id),
+  tenantId: integer("tenant_id").references(() => users.id), // nullable for anonymous
+  eventType: text("event_type").notNull(), // view, click, inquiry, tour_request, application
+  city: text("city"), // geo context
+  state: text("state"),
+  occurredAt: timestamp("occurred_at").defaultNow().notNull(),
+});
+
+export const listingAnalyticsDaily = pgTable("listing_analytics_daily", {
+  id: serial("id").primaryKey(),
+  listingId: integer("listing_id").notNull().references(() => listings.id),
+  providerId: integer("provider_id").notNull().references(() => users.id),
+  eventDate: timestamp("event_date").notNull(),
+  views: integer("views").default(0).notNull(),
+  clicks: integer("clicks").default(0).notNull(),
+  inquiries: integer("inquiries").default(0).notNull(),
+  tourRequests: integer("tour_requests").default(0).notNull(),
+  applications: integer("applications").default(0).notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   email: true,
@@ -260,3 +284,17 @@ export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type TenantFavorite = typeof tenantFavorites.$inferSelect;
 export type TenantViewedHome = typeof tenantViewedHomes.$inferSelect;
+
+export const insertListingAnalyticsEventSchema = createInsertSchema(listingAnalyticsEvents).omit({
+  id: true,
+  occurredAt: true,
+});
+
+export const insertListingAnalyticsDailySchema = createInsertSchema(listingAnalyticsDaily).omit({
+  id: true,
+});
+
+export type ListingAnalyticsEvent = typeof listingAnalyticsEvents.$inferSelect;
+export type InsertListingAnalyticsEvent = z.infer<typeof insertListingAnalyticsEventSchema>;
+export type ListingAnalyticsDaily = typeof listingAnalyticsDaily.$inferSelect;
+export type InsertListingAnalyticsDaily = z.infer<typeof insertListingAnalyticsDailySchema>;
