@@ -7,7 +7,7 @@ import {
   MapPin, ShieldCheck, Check, ArrowLeft, Share2, Heart, Flag,
   Wifi, Car, Utensils, Tv, Dumbbell, Calendar,
   Info, Mail, Phone, MessageSquare, Bus, ShoppingCart, Stethoscope, Users,
-  Video, Lock, Loader2, Home, Briefcase
+  Video, Lock, Loader2, Home
 } from "lucide-react";
 import { useRoute, Link, useLocation } from "wouter";
 import { isAuthenticated, getAuth } from "@/lib/auth";
@@ -299,10 +299,6 @@ export default function PropertyDetails() {
                   { category: "Therapy/IOP", items: [
                     { name: `${listing.city} Counseling Services`, distance: "0.8 mi" },
                     { name: `Pathways Outpatient Program`, distance: "1.5 mi" }
-                  ]},
-                  { category: "Employment Services", items: [
-                    { name: `${listing.state} Workforce Center`, distance: "1.8 mi" },
-                    { name: `${listing.city} Job Corps`, distance: "3.2 mi" }
                   ]}
                 ].map((amenity, idx) => {
                   const getCategoryIcon = (category: string) => {
@@ -313,7 +309,6 @@ export default function PropertyDetails() {
                       case "Therapy/IOP": return <Stethoscope className="w-5 h-5" />;
                       case "Recovery Meetings": return <Users className="w-5 h-5" />;
                       case "Treatment Centers": return <Stethoscope className="w-5 h-5" />;
-                      case "Employment Services": return <Briefcase className="w-5 h-5" />;
                       default: return <Check className="w-5 h-5" />;
                     }
                   };
