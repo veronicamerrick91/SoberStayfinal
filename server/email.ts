@@ -1,36 +1,19 @@
 import { Resend } from 'resend';
 
-// Resend integration via Replit connector
-// WARNING: Never cache this client. Access tokens expire, so a new client must be created each time.
+// Email configuration - uses RESEND_API_KEY environment variable
+// Works in both Replit development and external hosting (Render, etc.)
+const FROM_EMAIL = 'support@soberstayhomes.com';
+
 async function getResendClient(): Promise<{ client: Resend; fromEmail: string }> {
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
-  const xReplitToken = process.env.REPL_IDENTITY 
-    ? 'repl ' + process.env.REPL_IDENTITY 
-    : process.env.WEB_REPL_RENEWAL 
-    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
-    : null;
-
-  if (!xReplitToken) {
-    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
-  }
-
-  const connectionSettings = await fetch(
-    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=resend',
-    {
-      headers: {
-        'Accept': 'application/json',
-        'X_REPLIT_TOKEN': xReplitToken
-      }
-    }
-  ).then(res => res.json()).then(data => data.items?.[0]);
-
-  if (!connectionSettings || !connectionSettings.settings?.api_key) {
-    throw new Error('Resend not connected');
+  const apiKey = process.env.RESEND_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY environment variable is not set');
   }
 
   return {
-    client: new Resend(connectionSettings.settings.api_key),
-    fromEmail: connectionSettings.settings.from_email || 'onboarding@resend.dev'
+    client: new Resend(apiKey),
+    fromEmail: FROM_EMAIL
   };
 }
 
