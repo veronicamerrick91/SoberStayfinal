@@ -26,6 +26,21 @@ Core tables include `users` (for all roles with authentication and role-based ac
 
 The platform uses a monorepo structure for code organization. Session-based authentication is preferred over JWTs for enhanced web application security. The architecture emphasizes real data for primary user flows, with graceful empty states. A dark-first design is implemented for a modern aesthetic and reduced eye strain. ESBuild is used for efficient server bundling, improving performance. Provider profiles include logo uploads and detailed company information. Tenant profiles allow document uploads (photo, ID, pre-filled application) for streamlined applications. Listing features include an "Accepts Couples" option. Subscription management includes renewal reminders, a grace period for listing visibility, and automatic hiding/reactivation of listings. Providers can purchase "Featured Listings" boosts, requiring prior admin verification.
 
+### Analytics Tracking System
+
+The platform includes a comprehensive analytics tracking system for providers:
+
+- **Database Schema**: Two-table approach with `listing_analytics_events` (raw events) and `listing_analytics_daily` (aggregated daily stats for performance)
+- **Event Types**: Views, clicks, inquiries, tour requests, and applications
+- **Tracking Helper** (`client/src/lib/analytics.ts`): Uses sendBeacon API for non-blocking event submission with sessionStorage debouncing (5-second window for views)
+- **Provider Dashboard**: Analytics tab shows KPIs, daily breakdown charts, and top visitor locations with 7/30/90 day filtering
+- **Event Triggers**:
+  - `trackListingView`: Fires once per session when property detail page loads
+  - `trackListingClick`: Fires when clicking listing cards in browse page
+  - `trackTourRequest`: Fires on confirmed tour submission (in modal, not on open)
+  - `trackInquiry`: Fires when clicking "Message Provider" link
+  - `trackApplication`: Fires on all "Apply" CTAs (browse and detail pages)
+
 ## External Dependencies
 
 ### Database & Infrastructure
