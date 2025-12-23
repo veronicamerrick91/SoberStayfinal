@@ -1,6 +1,6 @@
-import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, type TenantFavorite, type TenantViewedHome, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners, tenantFavorites, tenantViewedHomes } from "@shared/schema";
+import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, type TenantFavorite, type TenantViewedHome, type ListingAnalyticsEvent, type InsertListingAnalyticsEvent, type ListingAnalyticsDaily, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners, tenantFavorites, tenantViewedHomes, listingAnalyticsEvents, listingAnalyticsDaily } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gt, lt, isNull, or, desc, count, inArray } from "drizzle-orm";
+import { eq, and, gt, lt, isNull, or, desc, count, inArray, gte, lte, sql } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -116,6 +116,13 @@ export interface IStorage {
   // Tenant Viewed Homes
   getTenantViewedHomes(tenantId: number): Promise<TenantViewedHome[]>;
   addTenantViewedHome(tenantId: number, listingId: number): Promise<TenantViewedHome>;
+  
+  // Analytics
+  recordAnalyticsEvent(event: InsertListingAnalyticsEvent): Promise<ListingAnalyticsEvent>;
+  getProviderAnalyticsSummary(providerId: number, startDate: Date, endDate: Date): Promise<ListingAnalyticsDaily[]>;
+  getProviderAnalyticsByListing(providerId: number, listingId: number, startDate: Date, endDate: Date): Promise<ListingAnalyticsDaily[]>;
+  getProviderTopLocations(providerId: number, startDate: Date, endDate: Date): Promise<{city: string; state: string; count: number}[]>;
+  aggregateDailyAnalytics(): Promise<void>;
   
   sessionStore: session.Store;
 }
@@ -863,6 +870,126 @@ export class DatabaseStorage implements IStorage {
     }
     const [viewed] = await db.insert(tenantViewedHomes).values({ tenantId, listingId }).returning();
     return viewed;
+  }
+
+  // Analytics methods
+  async recordAnalyticsEvent(event: InsertListingAnalyticsEvent): Promise<ListingAnalyticsEvent> {
+    const [recorded] = await db.insert(listingAnalyticsEvents).values(event).returning();
+    return recorded;
+  }
+
+  async getProviderAnalyticsSummary(providerId: number, startDate: Date, endDate: Date): Promise<ListingAnalyticsDaily[]> {
+    return await db.select().from(listingAnalyticsDaily)
+      .where(and(
+        eq(listingAnalyticsDaily.providerId, providerId),
+        gte(listingAnalyticsDaily.eventDate, startDate),
+        lte(listingAnalyticsDaily.eventDate, endDate)
+      ))
+      .orderBy(desc(listingAnalyticsDaily.eventDate));
+  }
+
+  async getProviderAnalyticsByListing(providerId: number, listingId: number, startDate: Date, endDate: Date): Promise<ListingAnalyticsDaily[]> {
+    return await db.select().from(listingAnalyticsDaily)
+      .where(and(
+        eq(listingAnalyticsDaily.providerId, providerId),
+        eq(listingAnalyticsDaily.listingId, listingId),
+        gte(listingAnalyticsDaily.eventDate, startDate),
+        lte(listingAnalyticsDaily.eventDate, endDate)
+      ))
+      .orderBy(desc(listingAnalyticsDaily.eventDate));
+  }
+
+  async getProviderTopLocations(providerId: number, startDate: Date, endDate: Date): Promise<{city: string; state: string; count: number}[]> {
+    const results = await db.select({
+      city: listingAnalyticsEvents.city,
+      state: listingAnalyticsEvents.state,
+      count: count()
+    })
+    .from(listingAnalyticsEvents)
+    .where(and(
+      eq(listingAnalyticsEvents.providerId, providerId),
+      gte(listingAnalyticsEvents.occurredAt, startDate),
+      lte(listingAnalyticsEvents.occurredAt, endDate),
+      sql`${listingAnalyticsEvents.city} IS NOT NULL`
+    ))
+    .groupBy(listingAnalyticsEvents.city, listingAnalyticsEvents.state)
+    .orderBy(desc(count()))
+    .limit(10);
+    
+    return results.map(r => ({
+      city: r.city || 'Unknown',
+      state: r.state || 'Unknown',
+      count: r.count
+    }));
+  }
+
+  async aggregateDailyAnalytics(): Promise<void> {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Get all events from yesterday grouped by listing
+    const events = await db.select({
+      listingId: listingAnalyticsEvents.listingId,
+      providerId: listingAnalyticsEvents.providerId,
+      eventType: listingAnalyticsEvents.eventType,
+      count: count()
+    })
+    .from(listingAnalyticsEvents)
+    .where(and(
+      gte(listingAnalyticsEvents.occurredAt, yesterday),
+      lt(listingAnalyticsEvents.occurredAt, today)
+    ))
+    .groupBy(listingAnalyticsEvents.listingId, listingAnalyticsEvents.providerId, listingAnalyticsEvents.eventType);
+
+    // Aggregate by listing
+    const aggregates: Record<number, {
+      listingId: number;
+      providerId: number;
+      views: number;
+      clicks: number;
+      inquiries: number;
+      tourRequests: number;
+      applications: number;
+    }> = {};
+
+    for (const event of events) {
+      if (!aggregates[event.listingId]) {
+        aggregates[event.listingId] = {
+          listingId: event.listingId,
+          providerId: event.providerId,
+          views: 0,
+          clicks: 0,
+          inquiries: 0,
+          tourRequests: 0,
+          applications: 0
+        };
+      }
+      const agg = aggregates[event.listingId];
+      switch (event.eventType) {
+        case 'view': agg.views += event.count; break;
+        case 'click': agg.clicks += event.count; break;
+        case 'inquiry': agg.inquiries += event.count; break;
+        case 'tour_request': agg.tourRequests += event.count; break;
+        case 'application': agg.applications += event.count; break;
+      }
+    }
+
+    // Insert daily aggregates
+    for (const agg of Object.values(aggregates)) {
+      await db.insert(listingAnalyticsDaily).values({
+        listingId: agg.listingId,
+        providerId: agg.providerId,
+        eventDate: yesterday,
+        views: agg.views,
+        clicks: agg.clicks,
+        inquiries: agg.inquiries,
+        tourRequests: agg.tourRequests,
+        applications: agg.applications
+      });
+    }
   }
 }
 
