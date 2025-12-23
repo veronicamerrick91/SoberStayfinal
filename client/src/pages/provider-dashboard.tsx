@@ -10,7 +10,7 @@ import {
   Plus, Check, X, MoreHorizontal, Search, ChevronRight,
   Bed, FileText, Settings, Lock, Mail, Phone, Upload, Shield, ToggleRight,
   Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video, Eye, CreditCard,
-  ShieldCheck, Loader2, RotateCcw
+  ShieldCheck, Loader2, RotateCcw, CheckCircle
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -85,9 +85,8 @@ function ProviderDashboardContent() {
   // Beds Management State - initialized from real listings
   const [bedsAvailable, setBedsAvailable] = useState<Record<string, number>>({});
 
-  // Marketing subsection and tab state
+  // Tab state
   const [activeTab, setActiveTab] = useState("overview");
-  const [marketingSection, setMarketingSection] = useState<"overview" | "seo" | "campaign">("overview");
   
   // Featured Listings state
   const [featuredListings, setFeaturedListings] = useState<any[]>([]);
@@ -112,15 +111,6 @@ function ProviderDashboardContent() {
   const [smsPhoneNumber, setSmsPhoneNumber] = useState("");
   const [smsSent, setSmsSent] = useState(false);
   
-  // Provider marketing templates with triggers
-  const [providerTemplates, setProviderTemplates] = useState([
-    { id: 1, name: "New Listing Announcement", type: "Email", uses: 12, trigger: "none", audience: "interested-tenants" },
-    { id: 2, name: "Vacancy Available Alert", type: "Email", uses: 28, trigger: "none", audience: "waitlist" },
-    { id: 3, name: "Tour Follow-Up", type: "Email", uses: 45, trigger: "on-tour-completed", audience: "tour-attendees" },
-    { id: 4, name: "Application Received", type: "Email", uses: 67, trigger: "on-application-received", audience: "applicants" },
-    { id: 5, name: "Welcome New Resident", type: "Email", uses: 34, trigger: "on-move-in", audience: "new-residents" },
-    { id: 6, name: "Monthly Newsletter", type: "Email", uses: 8, trigger: "monthly", audience: "all-contacts" },
-  ]);
   
   // Provider listings from API
   const [listings, setListings] = useState<Listing[]>([]);
@@ -557,57 +547,12 @@ function ProviderDashboardContent() {
     }
   }, []);
 
-  const handleUpdateProviderTemplateTrigger = (templateId: number, newTrigger: string) => {
-    const template = providerTemplates.find(t => t.id === templateId);
-    setProviderTemplates(providerTemplates.map(t =>
-      t.id === templateId ? { ...t, trigger: newTrigger } : t
-    ));
-    
-    if (template) {
-      const triggerLabels: { [key: string]: string } = {
-        "none": "Manual Only",
-        "on-tenant-signup": "On Tenant Signup",
-        "on-tour-scheduled": "On Tour Scheduled",
-        "on-tour-completed": "After Tour Completed",
-        "on-application-received": "On Application Received",
-        "on-application-approved": "On Application Approved",
-        "on-move-in": "On Move-In",
-        "on-vacancy": "When Vacancy Opens",
-        "weekly": "Weekly",
-        "monthly": "Monthly",
-      };
-      
-      if (newTrigger === "none") {
-        console.log(`Template "${template.name}" trigger deactivated`);
-      } else {
-        console.log(`Template "${template.name}" will now send ${triggerLabels[newTrigger] || newTrigger}`);
-      }
-    }
-  };
-
-  const getProviderTriggerLabel = (trigger: string) => {
-    const labels: { [key: string]: string } = {
-      "none": "Manual Only",
-      "on-tenant-signup": "Tenant Signup",
-      "on-tour-scheduled": "Tour Scheduled",
-      "on-tour-completed": "After Tour",
-      "on-application-received": "On Application",
-      "on-application-approved": "App Approved",
-      "on-move-in": "On Move-In",
-      "on-vacancy": "On Vacancy",
-      "weekly": "Weekly",
-      "monthly": "Monthly",
-    };
-    return labels[trigger] || trigger;
-  };
-
-  const handleTourResponse = (tourId: string, status: "approved" | "denied" | "rescheduled" | "pending", notes?: string, suggestedTime?: string) => {
+  const handleTourResponse = (tourId: string, status: "approved" | "denied" | "rescheduled" | "pending", notes?: string) => {
     const updatedTours = tourRequests.map(tour =>
       tour.id === tourId ? { 
         ...tour, 
         status, 
-        providerNotes: notes,
-        suggestedTime: suggestedTime || tour.suggestedTime
+        providerNotes: notes
       } : tour
     );
     setTourRequests(updatedTours);
@@ -631,13 +576,9 @@ function ProviderDashboardContent() {
   const confirmReschedule = () => {
     if (rescheduleTarget && suggestedDate && suggestedTime) {
       const notes = `Suggested alternative: ${suggestedDate} at ${suggestedTime}${rescheduleNotes ? `. ${rescheduleNotes}` : ""}`;
-      handleTourResponse(rescheduleTarget, "rescheduled", notes, `${suggestedDate} ${suggestedTime}`);
+      handleTourResponse(rescheduleTarget, "rescheduled", notes);
       setShowRescheduleDialog(false);
       setRescheduleTarget(null);
-      toast({
-        title: "Reschedule Suggested",
-        description: "The tenant has been notified of your suggested time.",
-      });
     }
   };
 
@@ -1172,84 +1113,73 @@ function ProviderDashboardContent() {
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="bg-card border-border">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary" /> SEO Optimization</CardTitle>
+                  <CardTitle className="text-white flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary" /> SEO & Visibility</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">Boost your listing visibility with our built-in SEO tools.</p>
+                  <p className="text-sm text-muted-foreground">Your listings are automatically optimized for search engines.</p>
                   <div className="space-y-3">
                     <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
                       <div className="flex items-start gap-3">
                         <div className="bg-primary/20 p-2 rounded text-primary">
-                          <BarChart3 className="w-5 h-5" />
+                          <CheckCircle className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-white text-sm">Automatic Keyword Targeting</h4>
-                          <p className="text-xs text-muted-foreground mt-1">We optimize your listings for "sober living homes", "recovery housing", and more.</p>
+                          <h4 className="font-semibold text-white text-sm">Automatic Optimization</h4>
+                          <p className="text-xs text-muted-foreground mt-1">We optimize your listings for search terms like "sober living homes" and "recovery housing".</p>
                         </div>
                       </div>
                     </div>
                     <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
                       <div className="flex items-start gap-3">
                         <div className="bg-primary/20 p-2 rounded text-primary">
-                          <Share2 className="w-5 h-5" />
+                          <CheckCircle className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-white text-sm">Social Media Integration</h4>
-                          <p className="text-xs text-muted-foreground mt-1">Share listings to social media with one click - reaches more potential residents.</p>
+                          <h4 className="font-semibold text-white text-sm">Location-Based Targeting</h4>
+                          <p className="text-xs text-muted-foreground mt-1">Your listings appear in local search results for your city and state.</p>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <Button 
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
-                    onClick={() => setLocation("/seo-tools")}
-                    data-testid="button-view-seo"
-                  >
-                    View SEO Dashboard
-                  </Button>
+                  <div className="text-center p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                    <p className="text-xs text-emerald-400 font-medium">SEO features are included with your subscription</p>
+                  </div>
                 </CardContent>
               </Card>
 
               <Card className="bg-card border-border">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2"><Zap className="w-5 h-5 text-amber-500" /> Marketing Tools</CardTitle>
+                  <CardTitle className="text-white flex items-center gap-2"><Zap className="w-5 h-5 text-amber-500" /> Boost Your Listings</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">Reach more qualified applicants with our marketing suite.</p>
+                  <p className="text-sm text-muted-foreground">Get premium placement and reach more potential tenants.</p>
                   <div className="space-y-3">
-                    <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                    <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
                       <div className="flex items-start gap-3">
-                        <div className="bg-amber-500/20 p-2 rounded text-amber-500">
-                          <Mail className="w-5 h-5" />
+                        <div className="bg-purple-500/20 p-2 rounded text-purple-400">
+                          <Zap className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-white text-sm">Email Campaigns</h4>
-                          <p className="text-xs text-muted-foreground mt-1">Send targeted emails to interested tenants - included with your subscription.</p>
+                          <h4 className="font-semibold text-white text-sm">Featured Placement</h4>
+                          <p className="text-xs text-muted-foreground mt-1">Boosted listings appear at the top of search results with a special badge.</p>
                         </div>
                       </div>
                     </div>
-                    <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                    <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
                       <div className="flex items-start gap-3">
-                        <div className="bg-amber-500/20 p-2 rounded text-amber-500">
-                          <BarChart3 className="w-5 h-5" />
+                        <div className="bg-purple-500/20 p-2 rounded text-purple-400">
+                          <TrendingUp className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-white text-sm">Analytics & Insights</h4>
-                          <p className="text-xs text-muted-foreground mt-1">Track views, clicks, and applications - see what's working for your listings.</p>
+                          <h4 className="font-semibold text-white text-sm">Increased Visibility</h4>
+                          <p className="text-xs text-muted-foreground mt-1">Get 2x, 3x, or 5x more views on your listings.</p>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <Button 
-                    className="w-full bg-amber-500 text-white hover:bg-amber-600"
-                    onClick={() => {
-                      setActiveTab("marketing");
-                      setMarketingSection("campaign");
-                    }}
-                    data-testid="button-launch-campaign"
-                  >
-                    Launch Campaign
-                  </Button>
+                  <p className="text-xs text-center text-muted-foreground">
+                    Starting at $100/month. Scroll down to boost a listing.
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -1383,124 +1313,61 @@ function ProviderDashboardContent() {
                   <div className="grid grid-cols-3 gap-2 text-center text-xs">
                     <div>
                       <p className="text-white font-bold">2x Visibility</p>
-                      <p className="text-muted-foreground">$199/month</p>
+                      <p className="text-muted-foreground">$100/month</p>
                     </div>
                     <div>
                       <p className="text-white font-bold">3x Visibility</p>
-                      <p className="text-muted-foreground">$299/month</p>
+                      <p className="text-muted-foreground">$150/month</p>
                     </div>
                     <div>
                       <p className="text-white font-bold">5x Visibility</p>
-                      <p className="text-muted-foreground">$449/month</p>
+                      <p className="text-muted-foreground">$200/month</p>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Email Templates with Triggers */}
+            {/* How Marketing Works */}
             <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-amber-500" /> Email Templates
+                  <Mail className="w-5 h-5 text-amber-500" /> How Marketing Works
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Set up automated emails to engage with tenants. Choose a trigger to automatically send emails based on specific events.
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Sober Stay automatically helps you reach more potential tenants through our built-in marketing features.
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {providerTemplates.map((template) => (
-                    <div key={template.id} className="p-4 rounded-lg bg-white/5 border border-white/10 flex flex-col gap-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-white text-sm font-medium">{template.name}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{template.type} • Used {template.uses} times</p>
-                        </div>
-                        {template.trigger !== "none" && (
-                          <Badge variant="outline" className="text-xs bg-amber-500/20 text-amber-400 border-amber-500/30">
-                            {getProviderTriggerLabel(template.trigger)}
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      <div>
-                        <label className="text-xs text-muted-foreground mb-1 block">Auto-send Trigger</label>
-                        <select 
-                          value={template.trigger}
-                          onChange={(e) => handleUpdateProviderTemplateTrigger(template.id, e.target.value)}
-                          className="w-full px-3 py-2 rounded-md bg-background/80 border border-amber-500/30 hover:border-amber-500/50 focus:border-amber-500 focus:outline-none transition-colors text-white text-xs"
-                          data-testid={`select-provider-trigger-${template.id}`}
-                        >
-                          <option value="none">Manual Only (No Trigger)</option>
-                          <optgroup label="Tenant Events">
-                            <option value="on-tenant-signup">On Tenant Signup</option>
-                            <option value="on-application-received">On Application Received</option>
-                            <option value="on-application-approved">On Application Approved</option>
-                          </optgroup>
-                          <optgroup label="Tour Events">
-                            <option value="on-tour-scheduled">On Tour Scheduled</option>
-                            <option value="on-tour-completed">After Tour Completed</option>
-                          </optgroup>
-                          <optgroup label="Resident Events">
-                            <option value="on-move-in">On Move-In</option>
-                            <option value="on-vacancy">When Vacancy Opens</option>
-                          </optgroup>
-                          <optgroup label="Scheduled">
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                          </optgroup>
-                        </select>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <Button 
-                          onClick={() => setMarketingSection("campaign")}
-                          size="sm" 
-                          variant="ghost" 
-                          className="text-xs flex-1 text-amber-400 hover:bg-amber-500/10"
-                          data-testid={`button-use-provider-template-${template.id}`}
-                        >
-                          Use Template
-                        </Button>
-                        <Button 
-                          onClick={() => setMarketingSection("campaign")}
-                          size="sm" 
-                          variant="outline" 
-                          className="text-xs border-amber-500/30 hover:bg-amber-500/10"
-                          data-testid={`button-edit-provider-template-${template.id}`}
-                        >
-                          Edit
-                        </Button>
-                      </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="w-4 h-4 text-emerald-400" />
+                      <h4 className="font-medium text-white text-sm">Automatic Notifications</h4>
                     </div>
-                  ))}
+                    <p className="text-xs text-muted-foreground">
+                      Tenants receive automatic email notifications when they apply, get approved, or are denied.
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="w-4 h-4 text-emerald-400" />
+                      <h4 className="font-medium text-white text-sm">SEO Optimized Listings</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Your listings are automatically optimized for search engines to help tenants find you.
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="w-4 h-4 text-emerald-400" />
+                      <h4 className="font-medium text-white text-sm">Featured Placement</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Boost your listings for premium placement at the top of search results.
+                    </p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-
-            {marketingSection === "campaign" && (
-              <Card className="bg-amber-500/10 border border-amber-500/50 mb-4">
-                <CardHeader>
-                  <CardTitle className="text-amber-300 flex items-center gap-2"><Mail className="w-5 h-5" /> Email Campaign Editor</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Create and customize email campaigns to reach potential tenants. Use the editor below to design your message.
-                  </p>
-                </CardHeader>
-              </Card>
-            )}
-            <Card className="bg-card border-border mb-4">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-primary" /> Content Editor
-                </CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Use this rich text editor to create and format marketing content, listing descriptions, and email templates. 
-                  Your content is automatically saved as you type.
-                </p>
-              </CardHeader>
-              <CardContent>
-                <ContentEditor />
               </CardContent>
             </Card>
           </TabsContent>

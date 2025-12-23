@@ -83,7 +83,7 @@ export default function ApplicationForm() {
     }
   }, [params?.id, setLocation, isPreview]);
   
-  // Pre-fill form from tenant profile
+  // Pre-fill form from tenant profile applicationData (with fallback to top-level fields)
   useEffect(() => {
     const fetchTenantProfile = async () => {
       if (isPreview) return;
@@ -92,14 +92,16 @@ export default function ApplicationForm() {
         const res = await fetch('/api/tenant/profile', { credentials: 'include' });
         if (res.ok) {
           const profile = await res.json();
-          if (profile.firstName) setFirstName(profile.firstName);
-          if (profile.lastName) setLastName(profile.lastName);
-          if (profile.email) setEmail(profile.email);
-          if (profile.phone) setPhone(profile.phone);
-          if (profile.currentAddress) setCurrentAddress(profile.currentAddress);
-          if (profile.emergencyContactName) setEmergencyContactName(profile.emergencyContactName);
-          if (profile.emergencyContactPhone) setEmergencyContactPhone(profile.emergencyContactPhone);
-          if (profile.emergencyContactRelationship) setEmergencyContactRelationship(profile.emergencyContactRelationship);
+          const appData = profile.applicationData || {};
+          // Check applicationData first, then fall back to top-level profile fields
+          if (appData.firstName || profile.firstName) setFirstName(appData.firstName || profile.firstName);
+          if (appData.lastName || profile.lastName) setLastName(appData.lastName || profile.lastName);
+          if (appData.email || profile.email) setEmail(appData.email || profile.email);
+          if (appData.phone || profile.phone) setPhone(appData.phone || profile.phone);
+          if (appData.currentAddress || profile.currentAddress) setCurrentAddress(appData.currentAddress || profile.currentAddress);
+          if (appData.emergencyContactName || profile.emergencyContactName) setEmergencyContactName(appData.emergencyContactName || profile.emergencyContactName);
+          if (appData.emergencyContactPhone || profile.emergencyContactPhone) setEmergencyContactPhone(appData.emergencyContactPhone || profile.emergencyContactPhone);
+          if (appData.emergencyContactRelationship || profile.emergencyContactRelationship) setEmergencyContactRelationship(appData.emergencyContactRelationship || profile.emergencyContactRelationship);
         }
       } catch (err) {
         console.error("Error fetching tenant profile:", err);
