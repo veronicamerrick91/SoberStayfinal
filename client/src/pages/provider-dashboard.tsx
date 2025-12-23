@@ -39,6 +39,255 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+interface AnalyticsSummary {
+  totals: {
+    views: number;
+    clicks: number;
+    inquiries: number;
+    tourRequests: number;
+    applications: number;
+  };
+  dailyData: Array<{
+    eventDate: string;
+    views: number;
+    clicks: number;
+    inquiries: number;
+    tourRequests: number;
+    applications: number;
+  }>;
+  period: {
+    startDate: string;
+    endDate: string;
+    days: number;
+  };
+}
+
+interface LocationData {
+  city: string;
+  state: string;
+  count: number;
+}
+
+function AnalyticsDashboard() {
+  const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
+  const [locations, setLocations] = useState<LocationData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [timeframe, setTimeframe] = useState(30);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      setIsLoading(true);
+      try {
+        const [summaryRes, locationsRes] = await Promise.all([
+          fetch(`/api/provider/analytics/summary?days=${timeframe}`, { credentials: 'include' }),
+          fetch(`/api/provider/analytics/locations?days=${timeframe}`, { credentials: 'include' })
+        ]);
+        
+        if (summaryRes.ok) {
+          const data = await summaryRes.json();
+          setAnalytics(data);
+        }
+        
+        if (locationsRes.ok) {
+          const data = await locationsRes.json();
+          setLocations(data.locations || []);
+        }
+      } catch (err) {
+        console.error("Error fetching analytics:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchAnalytics();
+  }, [timeframe]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid md:grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map(i => (
+            <Card key={i} className="bg-card border-border">
+              <CardContent className="pt-6">
+                <Skeleton className="h-4 w-20 mb-2" />
+                <Skeleton className="h-8 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  const totals = analytics?.totals || { views: 0, clicks: 0, inquiries: 0, tourRequests: 0, applications: 0 };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+          <BarChart3 className="w-6 h-6 text-primary" />
+          Performance Analytics
+        </h2>
+        <div className="flex gap-2">
+          {[7, 30, 90].map(days => (
+            <Button
+              key={days}
+              variant={timeframe === days ? "default" : "outline"}
+              size="sm"
+              onClick={() => setTimeframe(days)}
+              data-testid={`button-timeframe-${days}`}
+            >
+              {days}d
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-5 gap-4">
+        <Card className="bg-card border-border">
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Views</p>
+                <h3 className="text-2xl font-bold text-white">{totals.views.toLocaleString()}</h3>
+              </div>
+              <Eye className="w-5 h-5 text-blue-400" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Clicks</p>
+                <h3 className="text-2xl font-bold text-white">{totals.clicks.toLocaleString()}</h3>
+              </div>
+              <ChevronRight className="w-5 h-5 text-green-400" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Inquiries</p>
+                <h3 className="text-2xl font-bold text-white">{totals.inquiries.toLocaleString()}</h3>
+              </div>
+              <MessageSquare className="w-5 h-5 text-purple-400" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Tour Requests</p>
+                <h3 className="text-2xl font-bold text-white">{totals.tourRequests.toLocaleString()}</h3>
+              </div>
+              <Calendar className="w-5 h-5 text-amber-400" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Applications</p>
+                <h3 className="text-2xl font-bold text-white">{totals.applications.toLocaleString()}</h3>
+              </div>
+              <FileText className="w-5 h-5 text-primary" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary" />
+              Performance Over Time
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {analytics?.dailyData && analytics.dailyData.length > 0 ? (
+              <div className="space-y-2">
+                {analytics.dailyData.slice(0, 7).map((day, i) => (
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(day.eventDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
+                    <div className="flex gap-4 text-sm">
+                      <span className="text-blue-400">{day.views} views</span>
+                      <span className="text-green-400">{day.clicks} clicks</span>
+                      <span className="text-primary">{day.applications} apps</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <BarChart3 className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-muted-foreground">No data yet for this period</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">Analytics will appear as visitors interact with your listings</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-primary" />
+              Top Visitor Locations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {locations.length > 0 ? (
+              <div className="space-y-2">
+                {locations.slice(0, 10).map((loc, i) => (
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                    <span className="text-sm text-white">{loc.city}, {loc.state}</span>
+                    <Badge variant="secondary">{loc.count} visits</Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <MapPin className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-muted-foreground">No location data yet</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">Location tracking requires visitor interactions</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="bg-gradient-to-r from-primary/10 to-card border-primary/20">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-4">
+            <div className="bg-primary/20 p-3 rounded-lg">
+              <TrendingUp className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-white">Real-Time Tracking Active</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Your listings are being tracked for views, clicks, inquiries, tour requests, and applications. 
+                Data updates automatically as visitors interact with your properties.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 interface Conversation {
   propertyId: string;
   propertyName: string;
@@ -632,6 +881,7 @@ function ProviderDashboardContent() {
             <TabsTrigger value="messages" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Messages</TabsTrigger>
             <TabsTrigger value="inbox" className="px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">Applications</TabsTrigger>
             <TabsTrigger value="beds" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Bed className="w-4 h-4" /> Beds</TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><BarChart3 className="w-4 h-4" /> Analytics</TabsTrigger>
             <TabsTrigger value="marketing" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Zap className="w-4 h-4" /> Marketing</TabsTrigger>
             <TabsTrigger value="files" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><FileArchive className="w-4 h-4" /> Files</TabsTrigger>
             <TabsTrigger value="verification" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Shield className="w-4 h-4" /> Verify</TabsTrigger>
@@ -1106,6 +1356,11 @@ function ProviderDashboardContent() {
                 );
               })}
             </div>
+          </TabsContent>
+
+          {/* ANALYTICS TAB */}
+          <TabsContent value="analytics" className="space-y-6">
+            <AnalyticsDashboard />
           </TabsContent>
 
           {/* MARKETING & SEO TAB */}
