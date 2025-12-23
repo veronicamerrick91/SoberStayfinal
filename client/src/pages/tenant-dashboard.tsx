@@ -22,7 +22,7 @@ import { useLocation } from "wouter";
 import { getFavorites } from "@/lib/favorites";
 import { logout, getAuth, saveAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
-import { getEngagementStats, getRecoveryBadges, getNextStep, getDaysClean, getViewedHomes, getTourRequests, TourRequest } from "@/lib/tenant-engagement";
+import { getEngagementStats, getRecoveryBadges, getNextStep, getDaysClean, getViewedHomes, fetchServerViewedHomes, getTourRequests, TourRequest } from "@/lib/tenant-engagement";
 import { getSubmittedApplications, initializeSampleApplications, SubmittedApplication } from "@/lib/application-profile";
 import { formatDistanceToNow } from "date-fns";
 
@@ -190,7 +190,8 @@ function TenantDashboardContent() {
         const favorited = listings.filter(p => favorites.includes(String(p.id)));
         setSavedHomes(favorited);
         
-        // Load viewed homes - match against real listings
+        // Load viewed homes - fetch from server first, then match against real listings
+        await fetchServerViewedHomes();
         const viewedData = getViewedHomes();
         const viewedProperties = viewedData
           .map(v => listings.find(p => String(p.id) === v.propertyId))
