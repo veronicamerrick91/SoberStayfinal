@@ -444,7 +444,10 @@ export function CreateListing() {
                     <div className="text-sm">
                       <p className="text-white font-semibold mb-1">Ready to Publish</p>
                       <p className="text-muted-foreground">
-                        Save as a draft to finish later, or click "Publish & Pay" to complete your $49/month subscription and publish this listing.
+                        {hasFeeWaiver 
+                          ? "Your account has a fee waiver - you can publish this listing at no cost!"
+                          : "Save as a draft to finish later, or click \"Publish & Pay\" to complete your $49/month subscription and publish this listing."
+                        }
                       </p>
                     </div>
                   </div>
@@ -476,7 +479,7 @@ export function CreateListing() {
                   data-testid="button-publish-listing"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  Publish & Pay
+                  {hasFeeWaiver ? "Publish Listing" : "Publish & Pay"}
                 </Button>
               </div>
             </div>

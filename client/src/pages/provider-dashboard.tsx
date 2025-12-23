@@ -321,8 +321,9 @@ function ProviderDashboardContent() {
   };
 
   const getBoostPrice = () => {
-    const pricePerDay = boostLevel === 5 ? 15 : boostLevel === 3 ? 10 : 7;
-    return pricePerDay * boostDuration;
+    if (boostLevel === 5) return 200;
+    if (boostLevel === 3) return 150;
+    return 100;
   };
 
   useEffect(() => {
@@ -2103,7 +2104,7 @@ function ProviderDashboardContent() {
                         data-testid={`button-boost-level-${level}`}
                       >
                         <p className="text-lg font-bold">{level}x</p>
-                        <p className="text-xs">${level === 5 ? 15 : level === 3 ? 10 : 7}/day</p>
+                        <p className="text-xs">${level === 5 ? 200 : level === 3 ? 150 : 100}/mo</p>
                       </button>
                     ))}
                   </div>
@@ -2132,11 +2133,11 @@ function ProviderDashboardContent() {
                 
                 <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
                   <div className="flex items-center justify-between">
-                    <span className="text-white">Total Cost</span>
-                    <span className="text-2xl font-bold text-purple-400">${getBoostPrice()}</span>
+                    <span className="text-white">Monthly Cost</span>
+                    <span className="text-2xl font-bold text-purple-400">${getBoostPrice()}/mo</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {boostLevel}x visibility for {boostDuration} days
+                    {boostLevel}x visibility boost for your listing
                   </p>
                 </div>
               </div>

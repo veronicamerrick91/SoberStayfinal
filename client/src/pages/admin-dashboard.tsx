@@ -3676,9 +3676,9 @@ the actual document file stored on the server.
                     <p className="text-white font-semibold mb-3">Sponsored Listings</p>
                     <div className="space-y-2">
                       {[
-                        { boost: "2x Visibility", price: "$49/week", impressions: "~5,000" },
-                        { boost: "3x Visibility", price: "$99/week", impressions: "~12,000" },
-                        { boost: "Top Placement", price: "$149/week", impressions: "~20,000+" },
+                        { boost: "2x Visibility", price: "$100/month", impressions: "~5,000" },
+                        { boost: "3x Visibility", price: "$150/month", impressions: "~12,000" },
+                        { boost: "Top Placement", price: "$200/month", impressions: "~20,000+" },
                       ].map((spot, i) => (
                         <div key={i} className="p-2 bg-background/50 rounded-lg text-xs border border-white/10">
                           <div className="flex items-center justify-between">

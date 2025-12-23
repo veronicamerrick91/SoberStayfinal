@@ -78,9 +78,9 @@ export default function PropertyDetails() {
     }
   };
 
-  const handleFavorite = () => {
+  const handleFavorite = async () => {
     if (listing?.id) {
-      const newState = toggleFavorite(String(listing.id));
+      const newState = await toggleFavorite(String(listing.id));
       setIsFav(newState);
     }
   };

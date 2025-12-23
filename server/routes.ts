@@ -1268,6 +1268,81 @@ Disallow: /auth/
     }
   });
 
+  // Tenant Favorites Routes
+  app.get("/api/tenant/favorites", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "tenant") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const favorites = await storage.getTenantFavorites(user.id);
+      res.json(favorites.map(f => String(f.listingId)));
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+      res.status(500).json({ error: "Failed to fetch favorites" });
+    }
+  });
+
+  app.post("/api/tenant/favorites/:listingId", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "tenant") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const listingId = parseInt(req.params.listingId);
+      await storage.addTenantFavorite(user.id, listingId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error adding favorite:", error);
+      res.status(500).json({ error: "Failed to add favorite" });
+    }
+  });
+
+  app.delete("/api/tenant/favorites/:listingId", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "tenant") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const listingId = parseInt(req.params.listingId);
+      await storage.removeTenantFavorite(user.id, listingId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      res.status(500).json({ error: "Failed to remove favorite" });
+    }
+  });
+
+  // Tenant Viewed Homes Routes
+  app.get("/api/tenant/viewed-homes", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "tenant") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const viewedHomes = await storage.getTenantViewedHomes(user.id);
+      res.json(viewedHomes.map(v => ({ propertyId: String(v.listingId), viewedAt: v.viewedAt })));
+    } catch (error) {
+      console.error("Error fetching viewed homes:", error);
+      res.status(500).json({ error: "Failed to fetch viewed homes" });
+    }
+  });
+
+  app.post("/api/tenant/viewed-homes/:listingId", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "tenant") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const listingId = parseInt(req.params.listingId);
+      await storage.addTenantViewedHome(user.id, listingId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error adding viewed home:", error);
+      res.status(500).json({ error: "Failed to record viewed home" });
+    }
+  });
+
   // Provider Profile Routes
   app.get("/api/provider/profile", async (req, res) => {
     const user = req.user as any;

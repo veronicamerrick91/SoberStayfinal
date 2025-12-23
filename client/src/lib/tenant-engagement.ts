@@ -1,4 +1,5 @@
 import { differenceInDays } from "date-fns";
+import { getAuth } from "./auth";
 
 export interface EngagementStats {
   applicationsSubmitted: number;
@@ -119,7 +120,26 @@ export interface ViewedHome {
   viewedAt: string;
 }
 
-export function getViewedHomes(): ViewedHome[] {
+let serverViewedHomes: ViewedHome[] | null = null;
+
+export async function fetchServerViewedHomes(): Promise<ViewedHome[]> {
+  const user = getAuth();
+  if (!user || user.role !== "tenant") {
+    return [];
+  }
+  try {
+    const res = await fetch("/api/tenant/viewed-homes", { credentials: "include" });
+    if (res.ok) {
+      serverViewedHomes = await res.json();
+      return serverViewedHomes || [];
+    }
+  } catch (error) {
+    console.error("Error fetching viewed homes:", error);
+  }
+  return [];
+}
+
+function getLocalViewedHomes(): ViewedHome[] {
   const stored = localStorage.getItem(VIEWED_HOMES_KEY);
   if (stored) {
     return JSON.parse(stored);
@@ -127,14 +147,40 @@ export function getViewedHomes(): ViewedHome[] {
   return [];
 }
 
-export function addViewedHome(propertyId: string): ViewedHome[] {
-  const viewed = getViewedHomes();
-  const exists = viewed.find(v => v.propertyId === propertyId);
-  if (!exists) {
-    viewed.unshift({ propertyId, viewedAt: new Date().toISOString() });
-    localStorage.setItem(VIEWED_HOMES_KEY, JSON.stringify(viewed.slice(0, 50)));
+export function getViewedHomes(): ViewedHome[] {
+  const user = getAuth();
+  if (user && user.role === "tenant" && serverViewedHomes !== null) {
+    return serverViewedHomes;
   }
-  return viewed;
+  return getLocalViewedHomes();
+}
+
+export async function addViewedHome(propertyId: string): Promise<ViewedHome[]> {
+  const user = getAuth();
+  if (user && user.role === "tenant") {
+    try {
+      await fetch(`/api/tenant/viewed-homes/${propertyId}`, { 
+        method: "POST", 
+        credentials: "include" 
+      });
+      const newEntry = { propertyId, viewedAt: new Date().toISOString() };
+      if (serverViewedHomes && !serverViewedHomes.find(v => v.propertyId === propertyId)) {
+        serverViewedHomes.unshift(newEntry);
+      }
+      return serverViewedHomes || [newEntry];
+    } catch (error) {
+      console.error("Error adding viewed home:", error);
+    }
+  } else {
+    const viewed = getLocalViewedHomes();
+    const exists = viewed.find(v => v.propertyId === propertyId);
+    if (!exists) {
+      viewed.unshift({ propertyId, viewedAt: new Date().toISOString() });
+      localStorage.setItem(VIEWED_HOMES_KEY, JSON.stringify(viewed.slice(0, 50)));
+    }
+    return viewed;
+  }
+  return [];
 }
 
 const TOUR_REQUESTS_KEY = "tour_requests";

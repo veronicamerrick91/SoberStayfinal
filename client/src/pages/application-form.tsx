@@ -71,10 +71,15 @@ export default function ApplicationForm() {
       setLocation(`/login?returnPath=/apply/${params?.id}`);
       return;
     }
-    // Only tenants can submit applications
+    // Only tenants can submit applications - providers should go to their dashboard
     const user = getAuth();
-    if (user && user.role !== "tenant" && !isPreview) {
-      setLocation("/");
+    if (user && user.role === "provider" && !isPreview) {
+      setLocation("/provider-dashboard");
+      return;
+    }
+    if (user && user.role === "admin" && !isPreview) {
+      setLocation("/admin-dashboard");
+      return;
     }
   }, [params?.id, setLocation, isPreview]);
   

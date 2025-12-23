@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners } from "@shared/schema";
+import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, type TenantFavorite, type TenantViewedHome, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners, tenantFavorites, tenantViewedHomes } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, lt, isNull, or, desc, count, inArray } from "drizzle-orm";
 import session from "express-session";
@@ -106,6 +106,16 @@ export interface IStorage {
   createPartner(partner: InsertPartner): Promise<Partner>;
   updatePartner(id: number, data: Partial<InsertPartner>): Promise<Partner | undefined>;
   deletePartner(id: number): Promise<void>;
+  
+  // Tenant Favorites
+  getTenantFavorites(tenantId: number): Promise<TenantFavorite[]>;
+  addTenantFavorite(tenantId: number, listingId: number): Promise<TenantFavorite>;
+  removeTenantFavorite(tenantId: number, listingId: number): Promise<void>;
+  isTenantFavorite(tenantId: number, listingId: number): Promise<boolean>;
+  
+  // Tenant Viewed Homes
+  getTenantViewedHomes(tenantId: number): Promise<TenantViewedHome[]>;
+  addTenantViewedHome(tenantId: number, listingId: number): Promise<TenantViewedHome>;
   
   sessionStore: session.Store;
 }
@@ -803,6 +813,56 @@ export class DatabaseStorage implements IStorage {
 
   async deletePartner(id: number): Promise<void> {
     await db.delete(partners).where(eq(partners.id, id));
+  }
+
+  // Tenant Favorites
+  async getTenantFavorites(tenantId: number): Promise<TenantFavorite[]> {
+    return await db.select().from(tenantFavorites).where(eq(tenantFavorites.tenantId, tenantId));
+  }
+
+  async addTenantFavorite(tenantId: number, listingId: number): Promise<TenantFavorite> {
+    const existing = await db.select().from(tenantFavorites).where(
+      and(eq(tenantFavorites.tenantId, tenantId), eq(tenantFavorites.listingId, listingId))
+    );
+    if (existing.length > 0) {
+      return existing[0];
+    }
+    const [favorite] = await db.insert(tenantFavorites).values({ tenantId, listingId }).returning();
+    return favorite;
+  }
+
+  async removeTenantFavorite(tenantId: number, listingId: number): Promise<void> {
+    await db.delete(tenantFavorites).where(
+      and(eq(tenantFavorites.tenantId, tenantId), eq(tenantFavorites.listingId, listingId))
+    );
+  }
+
+  async isTenantFavorite(tenantId: number, listingId: number): Promise<boolean> {
+    const [result] = await db.select().from(tenantFavorites).where(
+      and(eq(tenantFavorites.tenantId, tenantId), eq(tenantFavorites.listingId, listingId))
+    );
+    return !!result;
+  }
+
+  // Tenant Viewed Homes
+  async getTenantViewedHomes(tenantId: number): Promise<TenantViewedHome[]> {
+    return await db.select().from(tenantViewedHomes)
+      .where(eq(tenantViewedHomes.tenantId, tenantId))
+      .orderBy(desc(tenantViewedHomes.viewedAt));
+  }
+
+  async addTenantViewedHome(tenantId: number, listingId: number): Promise<TenantViewedHome> {
+    const existing = await db.select().from(tenantViewedHomes).where(
+      and(eq(tenantViewedHomes.tenantId, tenantId), eq(tenantViewedHomes.listingId, listingId))
+    );
+    if (existing.length > 0) {
+      await db.update(tenantViewedHomes)
+        .set({ viewedAt: new Date() })
+        .where(eq(tenantViewedHomes.id, existing[0].id));
+      return { ...existing[0], viewedAt: new Date() };
+    }
+    const [viewed] = await db.insert(tenantViewedHomes).values({ tenantId, listingId }).returning();
+    return viewed;
   }
 }
 

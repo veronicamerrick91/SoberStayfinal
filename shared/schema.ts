@@ -138,6 +138,20 @@ export const featuredListings = pgTable("featured_listings", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const tenantFavorites = pgTable("tenant_favorites", {
+  id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").notNull().references(() => users.id),
+  listingId: integer("listing_id").notNull().references(() => listings.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const tenantViewedHomes = pgTable("tenant_viewed_homes", {
+  id: serial("id").primaryKey(),
+  tenantId: integer("tenant_id").notNull().references(() => users.id),
+  listingId: integer("listing_id").notNull().references(() => listings.id),
+  viewedAt: timestamp("viewed_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   email: true,
@@ -244,3 +258,5 @@ export type FeaturedListing = typeof featuredListings.$inferSelect;
 export type InsertFeaturedListing = z.infer<typeof insertFeaturedListingSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+export type TenantFavorite = typeof tenantFavorites.$inferSelect;
+export type TenantViewedHome = typeof tenantViewedHomes.$inferSelect;
