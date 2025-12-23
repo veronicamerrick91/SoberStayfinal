@@ -226,6 +226,23 @@ export default function Browse() {
                   </div>
                 </div>
 
+                {/* Room Type */}
+                <div className="space-y-2 pt-4 border-t border-border">
+                  <Label className="text-white font-semibold">Room Type</Label>
+                  <div className="space-y-2">
+                    {["Private Room", "Shared Room"].map((roomType) => (
+                      <div key={roomType} className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={roomType} 
+                          checked={selectedRoomTypes.includes(roomType)}
+                          onCheckedChange={() => toggleFilter(roomType, selectedRoomTypes, setSelectedRoomTypes)}
+                        />
+                        <Label htmlFor={roomType} className="font-normal text-muted-foreground cursor-pointer">{roomType}</Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Other Filters */}
                 <div className="space-y-2 pt-4 border-t border-border">
                   <Label className="text-white font-semibold">Features & Support</Label>

@@ -37,6 +37,11 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
 
 
   const getReturnPath = (userRole: string) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnPath = urlParams.get('returnPath');
+    if (returnPath && returnPath.startsWith('/')) {
+      return returnPath;
+    }
     if (userRole === "admin") return "/admin-dashboard";
     if (userRole === "provider") return "/provider-dashboard";
     return "/tenant-dashboard";

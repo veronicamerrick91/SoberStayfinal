@@ -69,7 +69,7 @@ export function CreateListing() {
         const res = await fetch('/api/stripe/subscription', { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
-          setHasFeeWaiver(data.hasFeeWaiver === true);
+          setHasFeeWaiver(data.subscription?.hasFeeWaiver === true);
         }
       } catch (err) {
         console.error("Error checking fee waiver status:", err);
