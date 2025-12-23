@@ -164,10 +164,13 @@ export async function addViewedHome(propertyId: string): Promise<ViewedHome[]> {
         credentials: "include" 
       });
       const newEntry = { propertyId, viewedAt: new Date().toISOString() };
-      if (serverViewedHomes && !serverViewedHomes.find(v => v.propertyId === propertyId)) {
+      if (serverViewedHomes === null) {
+        serverViewedHomes = [];
+      }
+      if (!serverViewedHomes.find(v => v.propertyId === propertyId)) {
         serverViewedHomes.unshift(newEntry);
       }
-      return serverViewedHomes || [newEntry];
+      return serverViewedHomes;
     } catch (error) {
       console.error("Error adding viewed home:", error);
     }
@@ -181,6 +184,10 @@ export async function addViewedHome(propertyId: string): Promise<ViewedHome[]> {
     return viewed;
   }
   return [];
+}
+
+export function resetViewedHomesCache(): void {
+  serverViewedHomes = null;
 }
 
 const TOUR_REQUESTS_KEY = "tour_requests";

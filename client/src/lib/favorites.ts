@@ -3,22 +3,36 @@ import { getAuth } from "./auth";
 const FAVORITES_KEY = "soberStay_favorites";
 
 let serverFavorites: string[] | null = null;
+let fetchPromise: Promise<string[]> | null = null;
 
 export async function fetchServerFavorites(): Promise<string[]> {
   const user = getAuth();
   if (!user || user.role !== "tenant") {
+    serverFavorites = null;
     return [];
   }
-  try {
-    const res = await fetch("/api/tenant/favorites", { credentials: "include" });
-    if (res.ok) {
-      serverFavorites = await res.json();
-      return serverFavorites || [];
-    }
-  } catch (error) {
-    console.error("Error fetching favorites:", error);
+  
+  if (fetchPromise) {
+    return fetchPromise;
   }
-  return [];
+  
+  fetchPromise = (async () => {
+    try {
+      const res = await fetch("/api/tenant/favorites", { credentials: "include" });
+      if (res.ok) {
+        serverFavorites = await res.json();
+        return serverFavorites || [];
+      }
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+    }
+    serverFavorites = [];
+    return [];
+  })();
+  
+  const result = await fetchPromise;
+  fetchPromise = null;
+  return result;
 }
 
 function getLocalFavorites(): string[] {
@@ -46,7 +60,10 @@ export async function addFavorite(propertyId: string): Promise<void> {
         method: "POST", 
         credentials: "include" 
       });
-      if (serverFavorites && !serverFavorites.includes(propertyId)) {
+      if (serverFavorites === null) {
+        serverFavorites = [];
+      }
+      if (!serverFavorites.includes(propertyId)) {
         serverFavorites.push(propertyId);
       }
     } catch (error) {
@@ -69,7 +86,9 @@ export async function removeFavorite(propertyId: string): Promise<void> {
         method: "DELETE", 
         credentials: "include" 
       });
-      if (serverFavorites) {
+      if (serverFavorites === null) {
+        serverFavorites = [];
+      } else {
         serverFavorites = serverFavorites.filter(id => id !== propertyId);
       }
     } catch (error) {
@@ -87,6 +106,11 @@ export function isFavorite(propertyId: string): boolean {
 }
 
 export async function toggleFavorite(propertyId: string): Promise<boolean> {
+  const user = getAuth();
+  if (user && user.role === "tenant" && serverFavorites === null) {
+    await fetchServerFavorites();
+  }
+  
   if (isFavorite(propertyId)) {
     await removeFavorite(propertyId);
     return false;
@@ -94,4 +118,9 @@ export async function toggleFavorite(propertyId: string): Promise<boolean> {
     await addFavorite(propertyId);
     return true;
   }
+}
+
+export function resetFavoritesCache(): void {
+  serverFavorites = null;
+  fetchPromise = null;
 }
