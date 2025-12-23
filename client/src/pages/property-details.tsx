@@ -7,7 +7,7 @@ import {
   MapPin, ShieldCheck, Check, ArrowLeft, Share2, Heart, Flag,
   Wifi, Car, Utensils, Tv, Dumbbell, Calendar,
   Info, Mail, Phone, MessageSquare, Bus, ShoppingCart, Stethoscope, Users,
-  Video, Lock, Loader2, Home
+  Video, Lock, Loader2, Home, Briefcase
 } from "lucide-react";
 import { useRoute, Link, useLocation } from "wouter";
 import { isAuthenticated, getAuth } from "@/lib/auth";
@@ -287,9 +287,23 @@ export default function PropertyDetails() {
               <h3 className="text-lg font-bold text-white mb-6">Nearby Services & Support</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 {[
-                  { category: "Recovery Meetings", items: [{ name: "AA Meeting", distance: "0.5 mi" }, { name: "NA Meeting", distance: "0.7 mi" }] },
-                  { category: "Treatment Centers", items: [{ name: "Recovery Center", distance: "1.2 mi" }] },
-                  { category: "Therapy/IOP", items: [{ name: "Outpatient Program", distance: "0.8 mi" }] }
+                  { category: "Recovery Meetings", items: [
+                    { name: `${listing.city} Serenity Group AA`, distance: "0.3 mi" }, 
+                    { name: `${listing.city} Hope NA Meeting`, distance: "0.6 mi" },
+                    { name: `New Beginnings Al-Anon`, distance: "0.9 mi" }
+                  ]},
+                  { category: "Treatment Centers", items: [
+                    { name: `${listing.city} Recovery Center`, distance: "1.2 mi" },
+                    { name: `${listing.state} Behavioral Health`, distance: "2.4 mi" }
+                  ]},
+                  { category: "Therapy/IOP", items: [
+                    { name: `${listing.city} Counseling Services`, distance: "0.8 mi" },
+                    { name: `Pathways Outpatient Program`, distance: "1.5 mi" }
+                  ]},
+                  { category: "Employment Services", items: [
+                    { name: `${listing.state} Workforce Center`, distance: "1.8 mi" },
+                    { name: `${listing.city} Job Corps`, distance: "3.2 mi" }
+                  ]}
                 ].map((amenity, idx) => {
                   const getCategoryIcon = (category: string) => {
                     switch(category) {
@@ -298,7 +312,8 @@ export default function PropertyDetails() {
                       case "Groceries": return <ShoppingCart className="w-5 h-5" />;
                       case "Therapy/IOP": return <Stethoscope className="w-5 h-5" />;
                       case "Recovery Meetings": return <Users className="w-5 h-5" />;
-                      case "Treatment Centers": return <Users className="w-5 h-5" />;
+                      case "Treatment Centers": return <Stethoscope className="w-5 h-5" />;
+                      case "Employment Services": return <Briefcase className="w-5 h-5" />;
                       default: return <Check className="w-5 h-5" />;
                     }
                   };
