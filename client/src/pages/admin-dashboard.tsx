@@ -161,6 +161,9 @@ export function AdminDashboard() {
   const [composeEmailSubject, setComposeEmailSubject] = useState("");
   const [composeEmailBody, setComposeEmailBody] = useState("");
   const [sendingBulkEmail, setSendingBulkEmail] = useState(false);
+  const [sendingTestEmails, setSendingTestEmails] = useState(false);
+  const [showTestEmailModal, setShowTestEmailModal] = useState(false);
+  const [testEmailAddress, setTestEmailAddress] = useState("");
   const [showBlogEditor, setShowBlogEditor] = useState(false);
   const [blogTitle, setBlogTitle] = useState("");
   const [blogContent, setBlogContent] = useState("");
@@ -1035,6 +1038,53 @@ the actual document file stored on the server.
     link.href = url;
     link.download = `admin-export-${new Date().toISOString().split("T")[0]}.json`;
     link.click();
+  };
+
+  const handleSendTestEmails = async () => {
+    if (!testEmailAddress.trim()) {
+      toast({ 
+        title: "Missing Email", 
+        description: "Please enter an email address to send test emails to.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setSendingTestEmails(true);
+    
+    try {
+      const response = await fetch('/api/admin/send-test-emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: testEmailAddress })
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        toast({ 
+          title: "Test Emails Sent!", 
+          description: result.message || `Successfully sent ${result.sent} test emails.`
+        });
+        setShowTestEmailModal(false);
+        setTestEmailAddress("");
+      } else {
+        toast({ 
+          title: "Error", 
+          description: result.error || "Failed to send test emails.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({ 
+        title: "Error", 
+        description: "Failed to send test emails. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setSendingTestEmails(false);
+    }
   };
 
   const handleSendCampaign = async () => {
@@ -2912,9 +2962,14 @@ the actual document file stored on the server.
                   <CardTitle className="text-white flex items-center gap-2">
                     <Mail className="w-5 h-5" /> Email Campaigns
                   </CardTitle>
-                  <Button onClick={() => { setEmailSubject(""); setEmailBodyText(""); setShowEmailComposer(true); }} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
-                    <Plus className="w-4 h-4" /> Compose Email
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={() => setShowTestEmailModal(true)} variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 gap-2">
+                      <Eye className="w-4 h-4" /> Preview All Templates
+                    </Button>
+                    <Button onClick={() => { setEmailSubject(""); setEmailBodyText(""); setShowEmailComposer(true); }} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
+                      <Plus className="w-4 h-4" /> Compose Email
+                    </Button>
+                  </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">One-time emails sent to specific user groups.</p>
               </CardHeader>
@@ -4931,6 +4986,62 @@ Use the toolbar above for formatting, or write in Markdown:
               <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
                 <Button onClick={() => { setShowReplyModal(false); setReplyMessage(""); }} className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90">Send Reply</Button>
                 <Button onClick={() => { setShowReplyModal(false); setReplyMessage(""); }} variant="outline">Cancel</Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showTestEmailModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Preview All Email Templates</h2>
+                <p className="text-xs text-muted-foreground mt-1">Send 11 sample emails to see how all templates look</p>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Send Test Emails To</label>
+                  <input
+                    type="email"
+                    placeholder="Enter your email address..."
+                    value={testEmailAddress}
+                    onChange={(e) => setTestEmailAddress(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                    data-testid="input-test-email"
+                  />
+                </div>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p className="font-medium text-white mb-2">Templates that will be sent:</p>
+                  <ul className="grid grid-cols-2 gap-1 text-xs">
+                    <li>• Marketing/Newsletter</li>
+                    <li>• Password Reset</li>
+                    <li>• Subscription Renewal</li>
+                    <li>• Subscription Canceled</li>
+                    <li>• Listings Hidden</li>
+                    <li>• Application Received</li>
+                    <li>• New Application (Provider)</li>
+                    <li>• Application Approved</li>
+                    <li>• Application Denied</li>
+                    <li>• Payment Reminder</li>
+                    <li>• Admin Contact</li>
+                  </ul>
+                </div>
+              </div>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-2">
+                <Button 
+                  onClick={handleSendTestEmails} 
+                  disabled={sendingTestEmails || !testEmailAddress}
+                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                  data-testid="button-send-test-emails"
+                >
+                  {sendingTestEmails ? "Sending 11 Emails..." : "Send All Test Emails"}
+                </Button>
+                <Button 
+                  onClick={() => { setShowTestEmailModal(false); setTestEmailAddress(""); }} 
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
           </div>

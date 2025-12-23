@@ -8,7 +8,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
-import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml, sendApplicationReceivedEmail, sendNewApplicationNotification, sendApplicationApprovedEmail, sendApplicationDeniedEmail, sendPaymentReminderEmail, sendAdminContactEmail } from "./email";
+import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml, sendApplicationReceivedEmail, sendNewApplicationNotification, sendApplicationApprovedEmail, sendApplicationDeniedEmail, sendPaymentReminderEmail, sendAdminContactEmail, sendRenewalReminderEmail, sendSubscriptionCanceledEmail, sendListingsHiddenEmail } from "./email";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import { sql } from "drizzle-orm";
@@ -1123,6 +1123,89 @@ Disallow: /auth/
     } catch (error: any) {
       console.error("Send contact email error:", error);
       res.status(500).json({ error: error.message || "Failed to send contact email" });
+    }
+  });
+
+  // Admin: Send test emails showing all template styles
+  app.post("/api/admin/send-test-emails", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: "email is required" });
+    }
+
+    try {
+      const results: { template: string; success: boolean; error?: string }[] = [];
+      const testDate = new Date();
+      testDate.setDate(testDate.getDate() + 7);
+
+      // 1. Marketing/Newsletter Email Template
+      const marketingHtml = createMarketingEmailHtml(
+        "Welcome to Sober Stay Homes!",
+        "This is a sample marketing email template. It can be used for newsletters, announcements, and promotional content.\n\nKey features:\n- Clean, professional design\n- Mobile-responsive layout\n- Branded with Sober Stay colors\n\nThank you for being part of our community!"
+      );
+      const r1 = await sendEmail({ to: email, subject: "[TEST] Marketing/Newsletter Template", html: marketingHtml });
+      results.push({ template: "Marketing/Newsletter", success: r1.success, error: r1.error });
+
+      // 2. Password Reset Email
+      const r2Success = await sendPasswordResetEmail(email, "test-token", "https://www.soberstayhomes.com/reset-password?token=test");
+      results.push({ template: "Password Reset", success: r2Success });
+
+      // 3. Subscription Renewal Reminder
+      const r3Success = await sendRenewalReminderEmail(email, "Test Provider", testDate);
+      results.push({ template: "Subscription Renewal Reminder", success: r3Success });
+
+      // 4. Subscription Canceled / Grace Period
+      const r4Success = await sendSubscriptionCanceledEmail(email, "Test Provider", testDate);
+      results.push({ template: "Subscription Canceled (Grace Period)", success: r4Success });
+
+      // 5. Listings Hidden
+      const r5Success = await sendListingsHiddenEmail(email, "Test Provider");
+      results.push({ template: "Listings Hidden", success: r5Success });
+
+      // 6. Application Received (Tenant confirmation)
+      const r6Success = await sendApplicationReceivedEmail(email, "Test Tenant", "Serenity House", "Hope Recovery Homes");
+      results.push({ template: "Application Received (Tenant)", success: r6Success });
+
+      // 7. New Application Notification (Provider)
+      const r7Success = await sendNewApplicationNotification(email, "Test Provider", "John Smith", "Serenity House");
+      results.push({ template: "New Application (Provider)", success: r7Success });
+
+      // 8. Application Approved
+      const r8Success = await sendApplicationApprovedEmail(email, "Test Tenant", "Serenity House", "Hope Recovery Homes");
+      results.push({ template: "Application Approved", success: r8Success });
+
+      // 9. Application Denied
+      const r9Success = await sendApplicationDeniedEmail(email, "Test Tenant", "Serenity House", "Unfortunately, all beds are currently filled. We encourage you to apply again in the future.");
+      results.push({ template: "Application Denied", success: r9Success });
+
+      // 10. Payment Reminder
+      const r10Success = await sendPaymentReminderEmail(email, "Test Provider");
+      results.push({ template: "Payment Reminder", success: r10Success });
+
+      // 11. Admin Contact
+      const r11Success = await sendAdminContactEmail(email, "Test Provider", "This is a sample admin contact message. We wanted to reach out regarding your account status.");
+      results.push({ template: "Admin Contact", success: r11Success });
+
+      const sentCount = results.filter(r => r.success).length;
+      const failedCount = results.filter(r => !r.success).length;
+
+      res.json({ 
+        success: failedCount === 0, 
+        sent: sentCount,
+        failed: failedCount,
+        results,
+        message: `Sent ${sentCount} test emails to ${email}${failedCount > 0 ? `, ${failedCount} failed` : ''}`
+      });
+    } catch (error: any) {
+      console.error("Send test emails error:", error);
+      res.status(500).json({ error: error.message || "Failed to send test emails" });
     }
   });
 
