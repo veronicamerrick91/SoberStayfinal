@@ -1379,8 +1379,8 @@ function ProviderDashboardContent() {
                           <CheckCircle className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-white text-sm">Automatic Optimization</h4>
-                          <p className="text-xs text-muted-foreground mt-1">We optimize your listings for search terms like "sober living homes" and "recovery housing".</p>
+                          <h4 className="font-semibold text-white text-sm">SEO-Optimized Pages</h4>
+                          <p className="text-xs text-muted-foreground mt-1">Your listings appear on SEO-optimized pages targeting search terms like "sober living homes" and "recovery housing".</p>
                         </div>
                       </div>
                     </div>
@@ -1390,8 +1390,8 @@ function ProviderDashboardContent() {
                           <CheckCircle className="w-5 h-5" />
                         </div>
                         <div>
-                          <h4 className="font-semibold text-white text-sm">Location-Based Targeting</h4>
-                          <p className="text-xs text-muted-foreground mt-1">Your listings appear in local search results for your city and state.</p>
+                          <h4 className="font-semibold text-white text-sm">Location-Based Search</h4>
+                          <p className="text-xs text-muted-foreground mt-1">Tenants can search and filter by city and state to find your listings in their area.</p>
                         </div>
                       </div>
                     </div>

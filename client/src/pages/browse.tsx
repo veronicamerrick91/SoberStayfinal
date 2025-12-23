@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { Listing, FeaturedListing } from "@shared/schema";
 import { useDocumentMeta } from "@/lib/use-document-meta";
 import { isAuthenticated } from "@/lib/auth";
+import { trackListingClick, trackApplication } from "@/lib/analytics";
 
 import placeholderHome from "@assets/stock_images/modern_comfortable_l_a00ffa5e.jpg";
 
@@ -53,6 +54,7 @@ export default function Browse() {
   const handleApply = (e: React.MouseEvent, listingId: number) => {
     e.preventDefault();
     e.stopPropagation();
+    trackApplication(listingId);
     if (isAuthenticated()) {
       setLocation(`/apply/${listingId}`);
     } else {
@@ -371,7 +373,7 @@ export default function Browse() {
           {viewMode === "grid" && !isLoading && !error && filteredListings.length > 0 && (
             <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredListings.map((listing) => (
-                <Link key={listing.id} href={`/property/${listing.id}`}>
+                <Link key={listing.id} href={`/property/${listing.id}`} onClick={() => trackListingClick(listing.id)}>
                   <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] cursor-pointer h-full flex flex-col" data-testid={`card-listing-${listing.id}`}>
                     <div className="relative h-40 overflow-hidden shrink-0">
                       <img 
@@ -441,7 +443,7 @@ export default function Browse() {
           {viewMode === "list" && !isLoading && !error && filteredListings.length > 0 && (
             <div className="space-y-3">
               {filteredListings.map((listing) => (
-                <Link key={listing.id} href={`/property/${listing.id}`}>
+                <Link key={listing.id} href={`/property/${listing.id}`} onClick={() => trackListingClick(listing.id)}>
                   <Card className="group overflow-hidden bg-card border-border hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] cursor-pointer" data-testid={`card-listing-list-${listing.id}`}>
                     <div className="flex gap-4 p-4">
                       <div className="relative w-32 h-32 shrink-0 overflow-hidden rounded-lg">

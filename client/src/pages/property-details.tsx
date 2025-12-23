@@ -14,6 +14,7 @@ import { isAuthenticated, getAuth } from "@/lib/auth";
 import { useState, useEffect } from "react";
 import { isFavorite, toggleFavorite } from "@/lib/favorites";
 import { incrementStat, addViewedHome } from "@/lib/tenant-engagement";
+import { trackListingView, trackInquiry, trackApplication } from "@/lib/analytics";
 import { ReportModal } from "@/components/report-modal";
 import { TourScheduleModal } from "@/components/tour-schedule-modal";
 import {
@@ -58,19 +59,24 @@ export default function PropertyDetails() {
     if (listing?.id) {
       setIsFav(isFavorite(String(listing.id)));
       
-      const auth = getAuth();
-      if (auth?.role === "tenant") {
-        const viewedKey = `viewed_${listing.id}`;
-        if (!sessionStorage.getItem(viewedKey)) {
+      const viewedKey = `viewed_${listing.id}`;
+      if (!sessionStorage.getItem(viewedKey)) {
+        trackListingView(listing.id, listing.city, listing.state);
+        sessionStorage.setItem(viewedKey, "true");
+        
+        const auth = getAuth();
+        if (auth?.role === "tenant") {
           incrementStat("homesViewed");
           addViewedHome(String(listing.id));
-          sessionStorage.setItem(viewedKey, "true");
         }
       }
     }
-  }, [listing?.id]);
+  }, [listing?.id, listing?.city, listing?.state]);
 
   const handleApply = () => {
+    if (listing?.id) {
+      trackApplication(listing.id);
+    }
     if (!isAuthenticated()) {
       setLocation(`/login?returnPath=/apply/${listing?.id}`);
     } else {
@@ -343,7 +349,9 @@ export default function PropertyDetails() {
                   >
                     <Calendar className="w-4 h-4 mr-2" /> Schedule a Tour
                   </Button>
-                  <Link href={`/chat/${listing.id}`} className="block w-full">
+                  <Link href={`/chat/${listing.id}`} className="block w-full" onClick={() => {
+                    if (listing?.id) trackInquiry(listing.id);
+                  }}>
                     <Button variant="outline" className="w-full border-white/10 hover:bg-card h-10">
                       <MessageSquare className="w-4 h-4 mr-2" /> Message Provider
                     </Button>

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar, Clock, Video, MapPin, CheckCircle } from "lucide-react";
+import { trackTourRequest } from "@/lib/analytics";
 
 interface TourScheduleModalProps {
   open: boolean;
@@ -64,6 +65,9 @@ export function TourScheduleModal({ open, onClose, propertyName, propertyId, ten
 
     const existingRequests = JSON.parse(localStorage.getItem("tour_requests") || "[]") as TourRequest[];
     localStorage.setItem("tour_requests", JSON.stringify([...existingRequests, tourRequest]));
+    
+    // Track tour request on successful confirmation
+    trackTourRequest(parseInt(propertyId));
 
     setIsSubmitting(false);
     setStep("success");
