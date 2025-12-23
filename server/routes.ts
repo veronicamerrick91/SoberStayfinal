@@ -2045,6 +2045,115 @@ Disallow: /auth/
     }
   });
 
+  // Analytics endpoints
+
+  // Record analytics event (public, uses sendBeacon)
+  app.post("/api/analytics/events", async (req, res) => {
+    try {
+      const { listingId, eventType, city, state } = req.body;
+      
+      if (!listingId || !eventType) {
+        return res.status(400).json({ error: "listingId and eventType are required" });
+      }
+      
+      // Validate event type
+      const validEventTypes = ['view', 'click', 'inquiry', 'tour_request', 'application'];
+      if (!validEventTypes.includes(eventType)) {
+        return res.status(400).json({ error: "Invalid event type" });
+      }
+      
+      // Get the listing to find the provider ID
+      const listing = await storage.getListing(parseInt(listingId));
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      // Get tenant ID if logged in
+      const user = req.user as any;
+      const tenantId = user?.role === 'tenant' ? user.id : null;
+      
+      // Record the event asynchronously (don't block response)
+      setImmediate(async () => {
+        try {
+          await storage.recordAnalyticsEvent({
+            listingId: listing.id,
+            providerId: listing.providerId,
+            tenantId,
+            eventType,
+            city: city ? String(city).slice(0, 100) : null,
+            state: state ? String(state).slice(0, 50) : null
+          });
+        } catch (err) {
+          console.error("Error recording analytics event:", err);
+        }
+      });
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error in analytics event:", error);
+      res.status(500).json({ error: "Failed to record event" });
+    }
+  });
+
+  // Get provider analytics summary
+  app.get("/api/provider/analytics/summary", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { days = 30 } = req.query;
+      const numDays = Math.min(Math.max(parseInt(String(days)) || 30, 1), 365);
+      
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - numDays);
+      
+      const dailyData = await storage.getProviderAnalyticsSummary(user.id, startDate, endDate);
+      
+      // Calculate totals
+      const totals = dailyData.reduce((acc, day) => ({
+        views: acc.views + day.views,
+        clicks: acc.clicks + day.clicks,
+        inquiries: acc.inquiries + day.inquiries,
+        tourRequests: acc.tourRequests + day.tourRequests,
+        applications: acc.applications + day.applications
+      }), { views: 0, clicks: 0, inquiries: 0, tourRequests: 0, applications: 0 });
+      
+      res.json({
+        totals,
+        dailyData,
+        period: { startDate, endDate, days: numDays }
+      });
+    } catch (error) {
+      console.error("Error fetching analytics summary:", error);
+      res.status(500).json({ error: "Failed to fetch analytics" });
+    }
+  });
+
+  // Get top locations for provider
+  app.get("/api/provider/analytics/locations", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { days = 30 } = req.query;
+      const numDays = Math.min(Math.max(parseInt(String(days)) || 30, 1), 365);
+      
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - numDays);
+      
+      const locations = await storage.getProviderTopLocations(user.id, startDate, endDate);
+      
+      res.json({ locations });
+    } catch (error) {
+      console.error("Error fetching analytics locations:", error);
+      res.status(500).json({ error: "Failed to fetch locations" });
+    }
+  });
+
   // Blog Post Management endpoints
 
   // Get all blog posts (admin only)
