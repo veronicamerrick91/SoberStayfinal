@@ -20,17 +20,18 @@ async function getResendClient(): Promise<{ client: Resend; fromEmail: string }>
 const SUPPORT_EMAIL = 'support@soberstayhomes.com';
 const APP_NAME = 'Sober Stay Homes';
 const WEBSITE_URL = 'https://www.soberstayhomes.com';
-const LOGO_URL = 'https://www.soberstayhomes.com/logo-email.jpg';
+const LOGO_URL = 'https://www.soberstayhomes.com/favicon.jpg';
 
 // Base email template with Sober Stay branding
 function getEmailHeader(): string {
   return `
     <tr>
-      <td style="padding: 30px; text-align: center; border-bottom: 1px solid #1e3a5f;">
+      <td bgcolor="#0f172a" style="background-color: #0f172a; padding: 30px; text-align: center; border-bottom: 1px solid #1e3a5f;">
         <a href="${WEBSITE_URL}" style="text-decoration: none;">
-          <img src="${LOGO_URL}" alt="Sober Stay" style="max-width: 200px; height: auto; display: block; margin: 0 auto;" />
+          <img src="${LOGO_URL}" alt="Sober Stay" width="80" height="80" style="width: 80px; height: 80px; border-radius: 12px; display: block; margin: 0 auto;" />
         </a>
-        <p style="color: #94a3b8; font-size: 14px; margin: 12px 0 0; font-style: italic;">Where Healing Finds Home</p>
+        <h1 style="color: #10b981; font-size: 22px; font-weight: 700; margin: 16px 0 4px;">Sober Stay Homes</h1>
+        <p style="color: #94a3b8; font-size: 14px; margin: 0; font-style: italic;">Where Healing Finds Home</p>
       </td>
     </tr>
   `;
@@ -39,15 +40,15 @@ function getEmailHeader(): string {
 function getEmailFooter(): string {
   return `
     <tr>
-      <td style="padding: 24px 30px; border-top: 1px solid #1e3a5f; text-align: center;">
+      <td bgcolor="#0f172a" style="background-color: #0f172a; padding: 24px 30px; border-top: 1px solid #1e3a5f; text-align: center;">
         <p style="color: #64748b; font-size: 13px; margin: 0 0 8px;">
           You're receiving this email because you're a member of Sober Stay Homes.
         </p>
-        <p style="color: #475569; font-size: 12px; margin: 0 0 12px;">
+        <p style="color: #64748b; font-size: 12px; margin: 0 0 12px;">
           <a href="${WEBSITE_URL}" style="color: #10b981; text-decoration: none;">Visit our website</a> | 
           <a href="mailto:${SUPPORT_EMAIL}" style="color: #10b981; text-decoration: none;">Contact Support</a>
         </p>
-        <p style="color: #475569; font-size: 12px; margin: 0;">
+        <p style="color: #64748b; font-size: 12px; margin: 0;">
           © ${new Date().getFullYear()} Sober Stay Homes. All rights reserved.
         </p>
       </td>
@@ -64,12 +65,12 @@ function getEmailWrapper(content: string, previewText?: string): string {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="x-apple-disable-message-reformatting">
     </head>
-    <body style="margin: 0; padding: 0; background-color: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <body bgcolor="#0a1628" style="margin: 0; padding: 0; background-color: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
       ${previewText ? `<div style="display: none; max-height: 0; overflow: hidden;">${previewText}</div>` : ''}
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a1628; padding: 40px 20px;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#0a1628" style="background-color: #0a1628;">
         <tr>
-          <td align="center">
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #0f172a; border-radius: 12px; border: 1px solid #1e3a5f;">
+          <td align="center" bgcolor="#0a1628" style="background-color: #0a1628; padding: 40px 20px;">
+            <table role="presentation" width="600" cellspacing="0" cellpadding="0" bgcolor="#0f172a" style="max-width: 600px; background-color: #0f172a; border-radius: 12px; border: 1px solid #1e3a5f;">
               ${getEmailHeader()}
               ${content}
               ${getEmailFooter()}
@@ -137,7 +138,7 @@ export async function sendBulkEmails(emails: EmailOptions[]): Promise<{ success:
 export function createMarketingEmailHtml(subject: string, body: string, previewText?: string): string {
   const content = `
     <tr>
-      <td style="padding: 40px 30px;">
+      <td bgcolor="#0f172a" style="background-color: #0f172a; padding: 40px 30px;">
         <h2 style="color: #ffffff; font-size: 22px; font-weight: 600; margin: 0 0 20px;">${subject}</h2>
         <div style="color: #cbd5e1; font-size: 16px; line-height: 1.7;">
           ${body.replace(/\n/g, '<br>')}
