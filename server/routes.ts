@@ -2563,5 +2563,143 @@ Disallow: /auth/
     }
   });
 
+  // Email Workflow Routes (Admin only)
+  app.get("/api/admin/workflows", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const workflows = await storage.getAllEmailWorkflows();
+      // Get steps for each workflow
+      const workflowsWithSteps = await Promise.all(
+        workflows.map(async (workflow) => {
+          const steps = await storage.getWorkflowSteps(workflow.id);
+          return { ...workflow, steps };
+        })
+      );
+      res.json(workflowsWithSteps);
+    } catch (error) {
+      console.error("Error fetching workflows:", error);
+      res.status(500).json({ error: "Failed to fetch workflows" });
+    }
+  });
+
+  app.get("/api/admin/workflows/:id", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      const workflow = await storage.getEmailWorkflow(id);
+      if (!workflow) {
+        return res.status(404).json({ error: "Workflow not found" });
+      }
+      const steps = await storage.getWorkflowSteps(id);
+      res.json({ ...workflow, steps });
+    } catch (error) {
+      console.error("Error fetching workflow:", error);
+      res.status(500).json({ error: "Failed to fetch workflow" });
+    }
+  });
+
+  app.post("/api/admin/workflows", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { steps, ...workflowData } = req.body;
+      const workflow = await storage.createEmailWorkflow(workflowData);
+      
+      // Create steps if provided
+      if (steps && Array.isArray(steps)) {
+        for (const step of steps) {
+          await storage.createWorkflowStep({
+            ...step,
+            workflowId: workflow.id
+          });
+        }
+      }
+      
+      const createdSteps = await storage.getWorkflowSteps(workflow.id);
+      res.json({ ...workflow, steps: createdSteps });
+    } catch (error) {
+      console.error("Error creating workflow:", error);
+      res.status(500).json({ error: "Failed to create workflow" });
+    }
+  });
+
+  app.put("/api/admin/workflows/:id", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      const { steps, ...workflowData } = req.body;
+      
+      const workflow = await storage.updateEmailWorkflow(id, workflowData);
+      if (!workflow) {
+        return res.status(404).json({ error: "Workflow not found" });
+      }
+      
+      // Handle steps update - delete existing and recreate
+      if (steps && Array.isArray(steps)) {
+        const existingSteps = await storage.getWorkflowSteps(id);
+        for (const step of existingSteps) {
+          await storage.deleteWorkflowStep(step.id);
+        }
+        for (const step of steps) {
+          await storage.createWorkflowStep({
+            ...step,
+            workflowId: id
+          });
+        }
+      }
+      
+      const updatedSteps = await storage.getWorkflowSteps(id);
+      res.json({ ...workflow, steps: updatedSteps });
+    } catch (error) {
+      console.error("Error updating workflow:", error);
+      res.status(500).json({ error: "Failed to update workflow" });
+    }
+  });
+
+  app.delete("/api/admin/workflows/:id", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteEmailWorkflow(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting workflow:", error);
+      res.status(500).json({ error: "Failed to delete workflow" });
+    }
+  });
+
+  app.post("/api/admin/workflows/:id/toggle", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      const workflow = await storage.getEmailWorkflow(id);
+      if (!workflow) {
+        return res.status(404).json({ error: "Workflow not found" });
+      }
+      const updated = await storage.updateEmailWorkflow(id, { isActive: !workflow.isActive });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error toggling workflow:", error);
+      res.status(500).json({ error: "Failed to toggle workflow" });
+    }
+  });
+
   return httpServer;
 }
