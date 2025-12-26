@@ -73,6 +73,8 @@ export const tenantProfiles = pgTable("tenant_profiles", {
   applicationUrl: text("application_url"),
   applicationData: jsonb("application_data").$type<Record<string, any>>(),
   bio: text("bio"),
+  phone: text("phone"),
+  smsOptIn: boolean("sms_opt_in").default(false).notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -84,6 +86,7 @@ export const providerProfiles = pgTable("provider_profiles", {
   logoUrl: text("logo_url"),
   website: text("website"),
   phone: text("phone"),
+  smsOptIn: boolean("sms_opt_in").default(false).notNull(),
   description: text("description"),
   address: text("address"),
   city: text("city"),
@@ -263,6 +266,27 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
   updatedAt: true,
 });
 
+export const emailTemplates = pgTable("email_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  type: text("type").notNull().default("email"), // email, sms
+  trigger: text("trigger").notNull().default("none"), // none, on-signup, on-application-approved, on-application-denied, weekly, monthly, 7-days-before-renewal
+  audience: text("audience").notNull().default("all"), // all, tenants, providers
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  usageCount: integer("usage_count").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertEmailTemplateSchema = createInsertSchema(emailTemplates).omit({
+  id: true,
+  usageCount: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Listing = typeof listings.$inferSelect;
@@ -298,3 +322,5 @@ export type ListingAnalyticsEvent = typeof listingAnalyticsEvents.$inferSelect;
 export type InsertListingAnalyticsEvent = z.infer<typeof insertListingAnalyticsEventSchema>;
 export type ListingAnalyticsDaily = typeof listingAnalyticsDaily.$inferSelect;
 export type InsertListingAnalyticsDaily = z.infer<typeof insertListingAnalyticsDailySchema>;
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
+export type InsertEmailTemplate = z.infer<typeof insertEmailTemplateSchema>;
