@@ -96,6 +96,7 @@ export function AdminDashboard() {
   const [newWorkflowAudience, setNewWorkflowAudience] = useState("all");
   const [newWorkflowDelayDays, setNewWorkflowDelayDays] = useState(0);
   const [newWorkflowDelayHours, setNewWorkflowDelayHours] = useState(0);
+  const [viewingWorkflow, setViewingWorkflow] = useState<any | null>(null);
   const [incidentReports, setIncidentReports] = useState<any[]>([]);
   const [complianceIssues, setComplianceIssues] = useState<any[]>([]);
   const [viewingComplianceIssue, setViewingComplianceIssue] = useState<any | null>(null);
@@ -4024,6 +4025,14 @@ the actual document file stored on the server.
                             size="sm" 
                             variant="outline" 
                             className="h-8 text-xs"
+                            onClick={() => setViewingWorkflow(workflow)}
+                          >
+                            View
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-8 text-xs"
                             onClick={async () => {
                               try {
                                 await fetch(`/api/admin/workflows/${workflow.id}/toggle`, {
@@ -4478,6 +4487,67 @@ the actual document file stored on the server.
                   variant="outline"
                 >
                   Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {viewingWorkflow && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Mail className="w-5 h-5" /> {viewingWorkflow.name}
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Trigger: {viewingWorkflow.trigger} • Audience: {viewingWorkflow.audience} • 
+                    {viewingWorkflow.isActive ? <span className="text-green-400 ml-1">Active</span> : <span className="text-gray-400 ml-1">Draft</span>}
+                  </p>
+                </div>
+                <Button size="sm" variant="ghost" onClick={() => setViewingWorkflow(null)}>
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              <div className="p-6 space-y-4 overflow-y-auto flex-1">
+                <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Email Steps ({viewingWorkflow.steps?.length || 0})</h3>
+                
+                {viewingWorkflow.steps && viewingWorkflow.steps.length > 0 ? (
+                  <div className="space-y-4">
+                    {viewingWorkflow.steps.map((step: any, index: number) => (
+                      <div key={step.id || index} className="p-4 rounded-lg bg-white/5 border border-white/10">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                              {step.stepOrder || index + 1}
+                            </span>
+                            <span className="text-white font-medium">{step.subject}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {step.delayDays > 0 || step.delayHours > 0 
+                              ? `Delay: ${step.delayDays > 0 ? `${step.delayDays} day(s)` : ''} ${step.delayHours > 0 ? `${step.delayHours} hour(s)` : ''}`.trim()
+                              : 'Immediately'}
+                          </span>
+                        </div>
+                        <div className="bg-background/50 rounded-lg p-3 text-sm text-gray-300 whitespace-pre-wrap">
+                          {step.body}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Mail className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p>No email steps configured for this workflow</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex justify-end">
+                <Button onClick={() => setViewingWorkflow(null)} variant="outline">
+                  Close
                 </Button>
               </div>
             </div>
