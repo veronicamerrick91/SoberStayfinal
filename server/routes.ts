@@ -1345,9 +1345,11 @@ Disallow: /auth/
       return res.status(401).json({ error: "Unauthorized" });
     }
     try {
-      const { bio, applicationData } = req.body;
+      const { bio, phone, smsOptIn, applicationData } = req.body;
       const profile = await storage.createOrUpdateTenantProfile(user.id, {
         bio,
+        phone,
+        smsOptIn,
         applicationData,
       });
       res.json(profile);
@@ -1482,11 +1484,12 @@ Disallow: /auth/
       return res.status(401).json({ error: "Unauthorized" });
     }
     try {
-      const { companyName, website, phone, description, address, city, state, zip, foundedYear, totalBeds } = req.body;
+      const { companyName, website, phone, smsOptIn, description, address, city, state, zip, foundedYear, totalBeds } = req.body;
       const profile = await storage.createOrUpdateProviderProfile(user.id, {
         companyName,
         website,
         phone,
+        smsOptIn,
         description,
         address,
         city,

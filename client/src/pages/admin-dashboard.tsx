@@ -146,16 +146,7 @@ export function AdminDashboard() {
   const [newTemplateAudience, setNewTemplateAudience] = useState("all");
   const [newTemplateSubject, setNewTemplateSubject] = useState("");
   const [newTemplateBody, setNewTemplateBody] = useState("");
-  const [marketingTemplates, setMarketingTemplates] = useState([
-    { id: 1, name: "Welcome New Providers", type: "Email", uses: 24, trigger: "none", audience: "providers", subject: "Welcome to Sober Stay!", body: "Hi [name],\n\nWelcome to Sober Stay! We're excited to have you as a provider on our platform." },
-    { id: 2, name: "Recovery Success Stories", type: "Email", uses: 12, trigger: "none", audience: "all", subject: "Inspiring Recovery Stories This Month", body: "This month, we're sharing inspiring stories from our community..." },
-    { id: 3, name: "Available Listings Alert", type: "Email", uses: 156, trigger: "none", audience: "tenants", subject: "New Listings Available Near You", body: "Hi [name],\n\nWe found new sober living homes that match your preferences." },
-    { id: 4, name: "Testimonial Campaign", type: "Email", uses: 8, trigger: "none", audience: "all", subject: "Share Your Recovery Journey", body: "Hi [name],\n\nYour story could inspire others. Would you share your experience?" },
-    { id: 5, name: "Property Compliance Reminder", type: "Email", uses: 42, trigger: "monthly", audience: "providers", subject: "Monthly Compliance Check", body: "Hi [name],\n\nThis is your monthly reminder to review your property compliance documentation." },
-    { id: 6, name: "Tenant Application Approved", type: "Email", uses: 67, trigger: "on-application-approved", audience: "tenants", subject: "Great News - Your Application Was Approved!", body: "Hi [name],\n\nCongratulations! Your application for [property] has been approved." },
-    { id: 7, name: "Provider Subscription Renewal", type: "Email", uses: 89, trigger: "7-days-before-renewal", audience: "providers", subject: "Your Subscription Renews Soon", body: "Hi [name],\n\nYour subscription renews in 7 days. Review your plan details." },
-    { id: 8, name: "Resource Updates Newsletter", type: "Email", uses: 34, trigger: "weekly", audience: "all", subject: "Weekly Recovery Resources", body: "Hi [name],\n\nHere are this week's helpful resources for your recovery journey." },
-  ]);
+  const [marketingTemplates, setMarketingTemplates] = useState<{id: number; name: string; type: string; uses: number; trigger: string; audience: string; subject: string; body: string}[]>([]);
   const [emailSubscribers, setEmailSubscribers] = useState<any[]>([]);
   const [showComposeEmailModal, setShowComposeEmailModal] = useState(false);
   const [composeEmailSubject, setComposeEmailSubject] = useState("");
@@ -493,13 +484,14 @@ Thank you for being part of our recovery community!`
     // Fetch real data from database
     const fetchAdminData = async () => {
       try {
-        const [usersRes, listingsRes, promosRes, featuredRes, blogPostsRes, partnersRes] = await Promise.all([
+        const [usersRes, listingsRes, promosRes, featuredRes, blogPostsRes, partnersRes, emailTemplatesRes] = await Promise.all([
           fetch('/api/admin/users', { credentials: 'include' }),
           fetch('/api/admin/listings', { credentials: 'include' }),
           fetch('/api/admin/promos', { credentials: 'include' }),
           fetch('/api/admin/featured-listings', { credentials: 'include' }),
           fetch('/api/admin/blog-posts', { credentials: 'include' }),
-          fetch('/api/admin/partners', { credentials: 'include' })
+          fetch('/api/admin/partners', { credentials: 'include' }),
+          fetch('/api/admin/email-templates', { credentials: 'include' })
         ]);
         
         if (usersRes.ok) {
@@ -573,6 +565,21 @@ Thank you for being part of our recovery community!`
         if (partnersRes.ok) {
           const partnersData = await partnersRes.json();
           setPartners(partnersData);
+        }
+        
+        if (emailTemplatesRes.ok) {
+          const templatesData = await emailTemplatesRes.json();
+          const formattedTemplates = templatesData.map((t: any) => ({
+            id: t.id,
+            name: t.name,
+            type: t.type || 'Email',
+            uses: t.usageCount || 0,
+            trigger: t.trigger || 'none',
+            audience: t.audience || 'all',
+            subject: t.subject,
+            body: t.body
+          }));
+          setMarketingTemplates(formattedTemplates);
         }
         
         // Sample applications data
@@ -1363,39 +1370,57 @@ the actual document file stored on the server.
     });
   };
 
-  const handleUpdateTemplateTrigger = (templateId: number, newTrigger: string) => {
+  const handleUpdateTemplateTrigger = async (templateId: number, newTrigger: string) => {
     const template = marketingTemplates.find(t => t.id === templateId);
-    setMarketingTemplates(marketingTemplates.map(t =>
-      t.id === templateId ? { ...t, trigger: newTrigger } : t
-    ));
     
-    if (template) {
-      const triggerLabels: { [key: string]: string } = {
-        "none": "Manual Only",
-        "on-provider-signup": "On Provider Signup",
-        "on-tenant-signup": "On Tenant Signup",
-        "on-application-approved": "On Application Approved",
-        "on-application-submitted": "On Application Submitted",
-        "on-tour-scheduled": "On Tour Scheduled",
-        "on-tour-completed": "On Tour Completed",
-        "on-listing-approved": "On Listing Approved",
-        "7-days-before-renewal": "7 Days Before Renewal",
-        "weekly": "Weekly",
-        "monthly": "Monthly",
-        "daily": "Daily",
-      };
+    try {
+      const response = await fetch(`/api/admin/email-templates/${templateId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ trigger: newTrigger })
+      });
       
-      if (newTrigger === "none") {
-        toast({
-          title: "Trigger Deactivated",
-          description: `"${template.name}" will now only send manually`,
-        });
-      } else {
-        toast({
-          title: "Trigger Activated",
-          description: `"${template.name}" will now send ${triggerLabels[newTrigger] || newTrigger}`,
-        });
+      if (!response.ok) throw new Error('Failed to update template');
+      
+      setMarketingTemplates(marketingTemplates.map(t =>
+        t.id === templateId ? { ...t, trigger: newTrigger } : t
+      ));
+      
+      if (template) {
+        const triggerLabels: { [key: string]: string } = {
+          "none": "Manual Only",
+          "on-provider-signup": "On Provider Signup",
+          "on-tenant-signup": "On Tenant Signup",
+          "on-application-approved": "On Application Approved",
+          "on-application-submitted": "On Application Submitted",
+          "on-tour-scheduled": "On Tour Scheduled",
+          "on-tour-completed": "On Tour Completed",
+          "on-listing-approved": "On Listing Approved",
+          "7-days-before-renewal": "7 Days Before Renewal",
+          "weekly": "Weekly",
+          "monthly": "Monthly",
+          "daily": "Daily",
+        };
+        
+        if (newTrigger === "none") {
+          toast({
+            title: "Trigger Deactivated",
+            description: `"${template.name}" will now only send manually`,
+          });
+        } else {
+          toast({
+            title: "Trigger Activated",
+            description: `"${template.name}" will now send ${triggerLabels[newTrigger] || newTrigger}`,
+          });
+        }
       }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update template trigger",
+        variant: "destructive"
+      });
     }
   };
 
@@ -3617,20 +3642,47 @@ the actual document file stored on the server.
                       Cancel
                     </Button>
                     <Button 
-                      onClick={() => {
+                      onClick={async () => {
                         if (!newTemplateName.trim() || !newTemplateSubject.trim()) return;
-                        const newId = marketingTemplates.length + 1;
-                        setMarketingTemplates([...marketingTemplates, {
-                          id: newId,
-                          name: newTemplateName,
-                          type: newTemplateType,
-                          uses: 0,
-                          trigger: newTemplateTrigger,
-                          audience: newTemplateAudience,
-                          subject: newTemplateSubject,
-                          body: newTemplateBody
-                        }]);
-                        setShowNewTemplateModal(false);
+                        try {
+                          const response = await fetch('/api/admin/email-templates', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                              name: newTemplateName,
+                              type: newTemplateType.toLowerCase(),
+                              trigger: newTemplateTrigger,
+                              audience: newTemplateAudience,
+                              subject: newTemplateSubject,
+                              body: newTemplateBody,
+                              isActive: true
+                            })
+                          });
+                          if (!response.ok) throw new Error('Failed to create template');
+                          const created = await response.json();
+                          setMarketingTemplates([...marketingTemplates, {
+                            id: created.id,
+                            name: created.name,
+                            type: created.type || 'Email',
+                            uses: created.usageCount || 0,
+                            trigger: created.trigger || 'none',
+                            audience: created.audience || 'all',
+                            subject: created.subject,
+                            body: created.body
+                          }]);
+                          setShowNewTemplateModal(false);
+                          toast({
+                            title: "Template Created",
+                            description: `"${newTemplateName}" has been saved`
+                          });
+                        } catch (error) {
+                          toast({
+                            title: "Error",
+                            description: "Failed to create template",
+                            variant: "destructive"
+                          });
+                        }
                       }} 
                       className="bg-primary text-primary-foreground hover:bg-primary/90"
                       disabled={!newTemplateName.trim() || !newTemplateSubject.trim()}
