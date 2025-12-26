@@ -89,10 +89,13 @@ export function AdminDashboard() {
   const [workflows, setWorkflows] = useState<any[]>([]);
   const [showWorkflowModal, setShowWorkflowModal] = useState(false);
   const [newWorkflowName, setNewWorkflowName] = useState("");
-  const [newWorkflowTrigger, setNewWorkflowTrigger] = useState("onSignup");
+  const [newWorkflowTrigger, setNewWorkflowTrigger] = useState("on-tenant-signup");
   const [newWorkflowTemplate, setNewWorkflowTemplate] = useState("welcome");
   const [newWorkflowSubject, setNewWorkflowSubject] = useState("");
   const [newWorkflowBody, setNewWorkflowBody] = useState("");
+  const [newWorkflowAudience, setNewWorkflowAudience] = useState("all");
+  const [newWorkflowDelayDays, setNewWorkflowDelayDays] = useState(0);
+  const [newWorkflowDelayHours, setNewWorkflowDelayHours] = useState(0);
   const [incidentReports, setIncidentReports] = useState<any[]>([]);
   const [complianceIssues, setComplianceIssues] = useState<any[]>([]);
   const [viewingComplianceIssue, setViewingComplianceIssue] = useState<any | null>(null);
@@ -484,14 +487,15 @@ Thank you for being part of our recovery community!`
     // Fetch real data from database
     const fetchAdminData = async () => {
       try {
-        const [usersRes, listingsRes, promosRes, featuredRes, blogPostsRes, partnersRes, emailTemplatesRes] = await Promise.all([
+        const [usersRes, listingsRes, promosRes, featuredRes, blogPostsRes, partnersRes, emailTemplatesRes, workflowsRes] = await Promise.all([
           fetch('/api/admin/users', { credentials: 'include' }),
           fetch('/api/admin/listings', { credentials: 'include' }),
           fetch('/api/admin/promos', { credentials: 'include' }),
           fetch('/api/admin/featured-listings', { credentials: 'include' }),
           fetch('/api/admin/blog-posts', { credentials: 'include' }),
           fetch('/api/admin/partners', { credentials: 'include' }),
-          fetch('/api/admin/email-templates', { credentials: 'include' })
+          fetch('/api/admin/email-templates', { credentials: 'include' }),
+          fetch('/api/admin/workflows', { credentials: 'include' })
         ]);
         
         if (usersRes.ok) {
@@ -580,6 +584,11 @@ Thank you for being part of our recovery community!`
             body: t.body
           }));
           setMarketingTemplates(formattedTemplates);
+        }
+        
+        if (workflowsRes.ok) {
+          const workflowsData = await workflowsRes.json();
+          setWorkflows(workflowsData);
         }
         
         // Sample applications data
@@ -3995,15 +4004,67 @@ the actual document file stored on the server.
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {workflows.map((workflow, i) => (
-                      <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
+                    {workflows.map((workflow: any) => (
+                      <div key={workflow.id} className="p-4 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
                         <div>
-                          <p className="text-white font-medium">{workflow.name}</p>
-                          <p className="text-xs text-muted-foreground mt-1">Trigger: {workflow.trigger} • Template: {workflow.template} • Status: {workflow.status}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-white font-medium">{workflow.name}</p>
+                            {workflow.isActive ? (
+                              <Badge className="bg-green-500/20 text-green-400 text-xs">Active</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-xs">Draft</Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Trigger: {workflow.trigger} • {workflow.steps?.length || 0} step(s) • Audience: {workflow.audience}
+                          </p>
                         </div>
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="h-8 text-xs">Edit</Button>
-                          <Button size="sm" variant="ghost" className="h-8 text-xs text-red-500">Delete</Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-8 text-xs"
+                            onClick={async () => {
+                              try {
+                                await fetch(`/api/admin/workflows/${workflow.id}/toggle`, {
+                                  method: 'POST',
+                                  credentials: 'include'
+                                });
+                                setWorkflows(workflows.map((w: any) => 
+                                  w.id === workflow.id ? { ...w, isActive: !w.isActive } : w
+                                ));
+                                toast({ 
+                                  title: workflow.isActive ? "Workflow Paused" : "Workflow Activated",
+                                  description: workflow.isActive ? "Workflow is now paused" : "Workflow is now active"
+                                });
+                              } catch (error) {
+                                toast({ title: "Error", description: "Failed to toggle workflow", variant: "destructive" });
+                              }
+                            }}
+                          >
+                            {workflow.isActive ? "Pause" : "Activate"}
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-8 text-xs text-red-500"
+                            onClick={async () => {
+                              if (confirm("Are you sure you want to delete this workflow?")) {
+                                try {
+                                  await fetch(`/api/admin/workflows/${workflow.id}`, {
+                                    method: 'DELETE',
+                                    credentials: 'include'
+                                  });
+                                  setWorkflows(workflows.filter((w: any) => w.id !== workflow.id));
+                                  toast({ title: "Deleted", description: "Workflow deleted successfully" });
+                                } catch (error) {
+                                  toast({ title: "Error", description: "Failed to delete workflow", variant: "destructive" });
+                                }
+                              }
+                            }}
+                          >
+                            Delete
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -4185,12 +4246,11 @@ the actual document file stored on the server.
                       onChange={(e) => setNewWorkflowTrigger(e.target.value)}
                       className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
                     >
-                      <option value="onSignup">On User Signup</option>
-                      <option value="onApplicationApproved">Application Approved</option>
-                      <option value="onApplicationSubmitted">Application Submitted</option>
-                      <option value="onSubscriptionRenewal">Subscription Renewal</option>
-                      <option value="onInactivity">30 Days Inactive</option>
-                      <option value="manual">Manual Send</option>
+                      <option value="on-tenant-signup">Tenant Signs Up</option>
+                      <option value="on-provider-signup">Provider Signs Up</option>
+                      <option value="on-application-submitted">Application Submitted</option>
+                      <option value="on-application-approved">Application Approved</option>
+                      <option value="manual">Manual Trigger</option>
                     </select>
                   </div>
                 </div>
@@ -4224,29 +4284,33 @@ the actual document file stored on the server.
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Delay</label>
-                    <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors">
-                      <option>Immediately</option>
-                      <option>1 hour</option>
-                      <option>24 hours</option>
-                      <option>3 days</option>
-                      <option>7 days</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Priority</label>
-                    <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors">
-                      <option>Normal</option>
-                      <option>High</option>
-                      <option>Low</option>
+                    <select 
+                      value={`${newWorkflowDelayDays}-${newWorkflowDelayHours}`}
+                      onChange={(e) => {
+                        const [days, hours] = e.target.value.split('-').map(Number);
+                        setNewWorkflowDelayDays(days);
+                        setNewWorkflowDelayHours(hours);
+                      }}
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                    >
+                      <option value="0-0">Immediately</option>
+                      <option value="0-1">1 hour</option>
+                      <option value="1-0">1 day</option>
+                      <option value="3-0">3 days</option>
+                      <option value="7-0">7 days</option>
+                      <option value="14-0">14 days</option>
                     </select>
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Audience</label>
-                    <select className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors">
-                      <option>All Users</option>
-                      <option>Tenants</option>
-                      <option>Providers</option>
-                      <option>New Users</option>
+                    <select 
+                      value={newWorkflowAudience}
+                      onChange={(e) => setNewWorkflowAudience(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-sm transition-colors"
+                    >
+                      <option value="all">All Users</option>
+                      <option value="tenants">Tenants Only</option>
+                      <option value="providers">Providers Only</option>
                     </select>
                   </div>
                   <div>
@@ -4309,22 +4373,45 @@ the actual document file stored on the server.
 
               <div className="bg-background border-t border-primary/20 px-6 py-4 flex gap-3">
                 <Button 
-                  onClick={() => {
+                  onClick={async () => {
                     if (newWorkflowName.trim()) {
-                      setWorkflows([...workflows, { 
-                        name: newWorkflowName, 
-                        trigger: newWorkflowTrigger, 
-                        template: newWorkflowTemplate,
-                        subject: newWorkflowSubject,
-                        body: newWorkflowBody,
-                        status: "Draft",
-                        created: new Date().toLocaleDateString()
-                      }]);
-                      setShowWorkflowModal(false);
-                      setNewWorkflowName("");
-                      setNewWorkflowSubject("");
-                      setNewWorkflowBody("");
-                      toast({ title: "Draft Saved", description: "Workflow saved as draft" });
+                      try {
+                        const res = await fetch('/api/admin/workflows', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                          body: JSON.stringify({
+                            name: newWorkflowName,
+                            trigger: newWorkflowTrigger,
+                            audience: newWorkflowAudience,
+                            isActive: false,
+                            steps: newWorkflowSubject && newWorkflowBody ? [{
+                              stepOrder: 1,
+                              delayDays: newWorkflowDelayDays,
+                              delayHours: newWorkflowDelayHours,
+                              subject: newWorkflowSubject,
+                              body: newWorkflowBody,
+                              isActive: true
+                            }] : []
+                          })
+                        });
+                        if (res.ok) {
+                          const createdWorkflow = await res.json();
+                          setWorkflows([...workflows, createdWorkflow]);
+                          setShowWorkflowModal(false);
+                          setNewWorkflowName("");
+                          setNewWorkflowSubject("");
+                          setNewWorkflowBody("");
+                          setNewWorkflowAudience("all");
+                          setNewWorkflowDelayDays(0);
+                          setNewWorkflowDelayHours(0);
+                          toast({ title: "Draft Saved", description: "Workflow saved as draft" });
+                        } else {
+                          toast({ title: "Error", description: "Failed to save workflow", variant: "destructive" });
+                        }
+                      } catch (error) {
+                        toast({ title: "Error", description: "Failed to save workflow", variant: "destructive" });
+                      }
                     }
                   }} 
                   variant="outline"
@@ -4333,22 +4420,45 @@ the actual document file stored on the server.
                   <FileText className="w-4 h-4" /> Save Draft
                 </Button>
                 <Button 
-                  onClick={() => {
+                  onClick={async () => {
                     if (newWorkflowName.trim() && newWorkflowSubject.trim() && newWorkflowBody.trim()) {
-                      setWorkflows([...workflows, { 
-                        name: newWorkflowName, 
-                        trigger: newWorkflowTrigger, 
-                        template: newWorkflowTemplate,
-                        subject: newWorkflowSubject,
-                        body: newWorkflowBody,
-                        status: "Active",
-                        created: new Date().toLocaleDateString()
-                      }]);
-                      setShowWorkflowModal(false);
-                      setNewWorkflowName("");
-                      setNewWorkflowSubject("");
-                      setNewWorkflowBody("");
-                      toast({ title: "Workflow Activated", description: "Workflow is now active and will send emails automatically" });
+                      try {
+                        const res = await fetch('/api/admin/workflows', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                          body: JSON.stringify({
+                            name: newWorkflowName,
+                            trigger: newWorkflowTrigger,
+                            audience: newWorkflowAudience,
+                            isActive: true,
+                            steps: [{
+                              stepOrder: 1,
+                              delayDays: newWorkflowDelayDays,
+                              delayHours: newWorkflowDelayHours,
+                              subject: newWorkflowSubject,
+                              body: newWorkflowBody,
+                              isActive: true
+                            }]
+                          })
+                        });
+                        if (res.ok) {
+                          const createdWorkflow = await res.json();
+                          setWorkflows([...workflows, createdWorkflow]);
+                          setShowWorkflowModal(false);
+                          setNewWorkflowName("");
+                          setNewWorkflowSubject("");
+                          setNewWorkflowBody("");
+                          setNewWorkflowAudience("all");
+                          setNewWorkflowDelayDays(0);
+                          setNewWorkflowDelayHours(0);
+                          toast({ title: "Workflow Activated", description: "Workflow is now active and will send emails automatically" });
+                        } else {
+                          toast({ title: "Error", description: "Failed to create workflow", variant: "destructive" });
+                        }
+                      } catch (error) {
+                        toast({ title: "Error", description: "Failed to create workflow", variant: "destructive" });
+                      }
                     }
                   }} 
                   className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
@@ -4361,6 +4471,9 @@ the actual document file stored on the server.
                     setNewWorkflowName("");
                     setNewWorkflowSubject("");
                     setNewWorkflowBody("");
+                    setNewWorkflowAudience("all");
+                    setNewWorkflowDelayDays(0);
+                    setNewWorkflowDelayHours(0);
                   }} 
                   variant="outline"
                 >

@@ -141,7 +141,7 @@ Disallow: /auth/
 
       // Enroll user in relevant workflows based on role
       const workflowTrigger = role === "provider" ? "on-provider-signup" : "on-tenant-signup";
-      enrollUserInActiveWorkflows(user.id, workflowTrigger).catch(err => {
+      enrollUserInActiveWorkflows(user.id, workflowTrigger, role).catch(err => {
         console.error("Failed to enroll user in workflows:", err);
       });
 

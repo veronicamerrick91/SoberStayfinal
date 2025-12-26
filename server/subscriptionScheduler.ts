@@ -208,11 +208,30 @@ export async function processWorkflowEnrollments(): Promise<void> {
   }
 }
 
-export async function enrollUserInActiveWorkflows(userId: number, trigger: string): Promise<void> {
+export async function enrollUserInActiveWorkflows(userId: number, trigger: string, userRole?: string): Promise<void> {
   try {
     const workflows = await storage.getEmailWorkflowsByTrigger(trigger);
     
+    // If role not provided, look it up from database
+    let role = userRole;
+    if (!role) {
+      const user = await storage.getUser(userId);
+      role = user?.role;
+    }
+    
     for (const workflow of workflows) {
+      // Check if workflow audience matches user role
+      const audience = workflow.audience || 'all';
+      if (audience !== 'all') {
+        // Skip role-restricted workflows if role cannot be determined
+        if (!role) {
+          console.log(`[Scheduler] Skipping workflow "${workflow.name}" - cannot determine user role for audience "${audience}"`);
+          continue;
+        }
+        if (audience === 'tenants' && role !== 'tenant') continue;
+        if (audience === 'providers' && role !== 'provider') continue;
+      }
+      
       const alreadyEnrolled = await storage.isUserEnrolledInWorkflow(userId, workflow.id);
       if (alreadyEnrolled) continue;
       
@@ -224,7 +243,7 @@ export async function enrollUserInActiveWorkflows(userId: number, trigger: strin
       const nextStepAt = addHours(addDays(new Date(), firstStep.delayDays), firstStep.delayHours);
       
       await storage.enrollUserInWorkflow(userId, workflow.id, nextStepAt);
-      console.log(`[Scheduler] User ${userId} enrolled in workflow "${workflow.name}"`);
+      console.log(`[Scheduler] User ${userId} enrolled in workflow "${workflow.name}" (audience: ${audience})`);
     }
   } catch (error) {
     console.error('[Scheduler] Error enrolling user in workflows:', error);
