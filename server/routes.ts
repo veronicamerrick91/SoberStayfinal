@@ -1192,25 +1192,25 @@ Disallow: /auth/
       await delay(600);
 
       // 6. Application Received (Tenant confirmation) - Realistic names
-      const r6Success = await sendApplicationReceivedEmail(email, "Michael", "Serenity House - Phoenix", "Desert Hope Recovery");
+      const r6Success = await sendApplicationReceivedEmail(email, "Michael", "Serenity Men's Home - Phoenix", "Serenity Recovery Homes");
       results.push({ template: "Application Received (Tenant)", success: r6Success });
 
       await delay(600);
 
       // 7. New Application Notification (Provider) - Realistic applicant
-      const r7Success = await sendNewApplicationNotification(email, "Desert Hope Recovery", "Michael Johnson", "Serenity House - Phoenix");
+      const r7Success = await sendNewApplicationNotification(email, "Serenity Recovery Homes", "Michael Johnson", "Serenity Men's Home - Phoenix");
       results.push({ template: "New Application (Provider)", success: r7Success });
 
       await delay(600);
 
       // 8. Application Approved - Realistic scenario
-      const r8Success = await sendApplicationApprovedEmail(email, "Michael", "Serenity House - Phoenix", "Desert Hope Recovery");
+      const r8Success = await sendApplicationApprovedEmail(email, "Michael", "Serenity Men's Home - Phoenix", "Serenity Recovery Homes");
       results.push({ template: "Application Approved", success: r8Success });
 
       await delay(600);
 
       // 9. Application Denied - Realistic reason
-      const r9Success = await sendApplicationDeniedEmail(email, "Michael", "Serenity House - Phoenix", "Desert Hope Recovery", "We're currently at full capacity and cannot accept new residents at this time. We encourage you to explore other listings on Sober Stay Homes or check back with us in a few weeks.");
+      const r9Success = await sendApplicationDeniedEmail(email, "Michael", "Desert Hope Men's Residence", "Desert Hope Recovery", "We're currently at full capacity and cannot accept new residents at this time. We encourage you to explore other listings on Sober Stay Homes or check back with us in a few weeks.");
       results.push({ template: "Application Denied", success: r9Success });
 
       await delay(600);
