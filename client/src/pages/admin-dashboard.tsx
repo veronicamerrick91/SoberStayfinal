@@ -192,6 +192,152 @@ export function AdminDashboard() {
   const [sequenceEmailBody, setSequenceEmailBody] = useState("");
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [previewEmail, setPreviewEmail] = useState<{ subject: string; body: string } | null>(null);
+  const [showAllTemplatesPreview, setShowAllTemplatesPreview] = useState(false);
+  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
+  
+  const emailTemplatesData = [
+    {
+      name: "Password Reset",
+      trigger: "User clicks 'Forgot Password'",
+      subject: "Reset Your Password - Sober Stay Homes",
+      preview: `Hi there,
+
+We received a request to reset your password for your Sober Stay Homes account.
+
+Click the button in the email to create a new password.
+
+This link will expire in 30 minutes for security reasons.
+
+If you didn't request a password reset, you can safely ignore this email.`
+    },
+    {
+      name: "Application Received (Tenant)",
+      trigger: "Tenant submits application",
+      subject: "Application Received - Sober Stay Homes",
+      preview: `Hi [Tenant Name],
+
+Your application for [Property Name] has been successfully submitted to [Provider Name].
+
+The provider will review your application and get back to you soon. You can track your application status in your tenant dashboard.
+
+Thank you for using Sober Stay Homes!`
+    },
+    {
+      name: "New Application (Provider)",
+      trigger: "Provider receives new application",
+      subject: "New Application Received - Sober Stay Homes",
+      preview: `Hi [Provider Name],
+
+You've received a new application from [Tenant Name] for your property [Property Name].
+
+Log in to your Provider Dashboard to review the application and respond to the applicant.
+
+Quick responses help build trust with potential tenants!`
+    },
+    {
+      name: "Application Approved",
+      trigger: "Provider approves application",
+      subject: "Application Approved! - Sober Stay Homes",
+      preview: `Hi [Tenant Name],
+
+Congratulations!
+
+Great news! Your application for [Property Name] has been approved by [Provider Name].
+
+The provider will be reaching out to you soon with next steps. You can also message them directly through your tenant dashboard.
+
+We're excited to help you on your recovery journey!`
+    },
+    {
+      name: "Application Denied",
+      trigger: "Provider rejects application",
+      subject: "Application Update - Sober Stay Homes",
+      preview: `Hi [Tenant Name],
+
+We wanted to let you know that your application for [Property Name] was not selected by [Provider Name] at this time.
+
+[If reason provided: Provider's note will appear here]
+
+Don't be discouraged! There are many other great sober living homes on our platform. Keep searching and you'll find the right fit for your recovery journey.
+
+We're here to support you every step of the way.`
+    },
+    {
+      name: "Subscription Renewal Reminder",
+      trigger: "7 days before subscription renews (scheduler)",
+      subject: "Your Subscription Renews Soon - Sober Stay Homes",
+      preview: `Hi [Provider Name],
+
+Your Sober Stay Homes subscription will automatically renew on [Date]. You'll be charged $49 per active listing.
+
+If you'd like to update your payment method or make any changes, visit your Provider Dashboard.
+
+Thank you for helping people find sober housing!`
+    },
+    {
+      name: "Subscription Canceled",
+      trigger: "Stripe cancellation webhook",
+      subject: "Your Subscription Has Been Canceled - Sober Stay Homes",
+      preview: `Hi [Provider Name],
+
+Your Sober Stay Homes subscription has been canceled. Your listings will remain visible during a 7-day grace period until [Date].
+
+After this date, your listings will be hidden from public view. You can reactivate your subscription at any time to restore visibility.
+
+We hope to see you again soon!`
+    },
+    {
+      name: "Listings Hidden",
+      trigger: "Grace period expires (scheduler)",
+      subject: "Your Listings Have Been Hidden - Sober Stay Homes",
+      preview: `Hi [Provider Name],
+
+Your Sober Stay Homes subscription has expired, and your listings are now hidden from public view.
+
+Don't worry - your listings are still saved. Simply renew your subscription to make them visible again and continue connecting with potential tenants.
+
+We'd love to have you back!`
+    },
+    {
+      name: "Payment Reminder",
+      trigger: "Admin sends manually",
+      subject: "Action Required: Update Your Payment Method - Sober Stay Homes",
+      preview: `Hi [Provider Name],
+
+We noticed there was an issue with your recent payment. To keep your listings visible and continue reaching potential tenants, please update your payment information.
+
+Log in to your Provider Dashboard and go to Subscription to update your payment method.
+
+If you have any questions or need assistance, please don't hesitate to reach out.`
+    },
+    {
+      name: "Admin Contact",
+      trigger: "Admin sends manually",
+      subject: "Important Message from Sober Stay Homes",
+      preview: `Hi [Provider Name],
+
+[Custom message from admin appears here]
+
+This could include verification reminders, account status updates, or other important communications.
+
+If you have any questions, feel free to reply to this email.`
+    },
+    {
+      name: "Marketing/Newsletter",
+      trigger: "Admin sends campaign",
+      subject: "Updates from Sober Stay Homes",
+      preview: `[Custom subject and content from admin]
+
+This template is used for newsletters, announcements, and promotional content sent to subscribers.
+
+Features:
+- Clean, professional design
+- Mobile-responsive layout
+- Branded with Sober Stay colors
+
+Thank you for being part of our recovery community!`
+    }
+  ];
   const [partners, setPartners] = useState<any[]>([]);
   const [showPartnerModal, setShowPartnerModal] = useState(false);
   const [editingPartner, setEditingPartner] = useState<any | null>(null);
@@ -2963,8 +3109,11 @@ the actual document file stored on the server.
                     <Mail className="w-5 h-5" /> Email Campaigns
                   </CardTitle>
                   <div className="flex gap-2">
+                    <Button onClick={() => setShowAllTemplatesPreview(true)} variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 gap-2">
+                      <Eye className="w-4 h-4" /> Preview Templates
+                    </Button>
                     <Button onClick={() => setShowTestEmailModal(true)} variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 gap-2">
-                      <Eye className="w-4 h-4" /> Preview All Templates
+                      <Mail className="w-4 h-4" /> Send Test Emails
                     </Button>
                     <Button onClick={() => { setEmailSubject(""); setEmailBodyText(""); setShowEmailComposer(true); }} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
                       <Plus className="w-4 h-4" /> Compose Email
@@ -4991,12 +5140,121 @@ Use the toolbar above for formatting, or write in Markdown:
           </div>
         )}
 
+        {showAllTemplatesPreview && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4 flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-bold text-white">Email Templates Preview</h2>
+                  <p className="text-xs text-muted-foreground mt-1">View all {emailTemplatesData.length} email templates and when they're sent</p>
+                </div>
+                <Button 
+                  onClick={() => setShowAllTemplatesPreview(false)} 
+                  variant="ghost" 
+                  className="text-muted-foreground hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              <div className="flex flex-1 overflow-hidden">
+                <div className="w-64 border-r border-primary/20 overflow-y-auto bg-background/50">
+                  {emailTemplatesData.map((template, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedTemplateIndex(index)}
+                      className={`w-full text-left px-4 py-3 border-b border-primary/10 transition-colors ${
+                        selectedTemplateIndex === index 
+                          ? 'bg-primary/20 border-l-2 border-l-primary' 
+                          : 'hover:bg-primary/10'
+                      }`}
+                    >
+                      <p className={`text-sm font-medium ${selectedTemplateIndex === index ? 'text-white' : 'text-muted-foreground'}`}>
+                        {template.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">
+                        {template.trigger}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+                <div className="flex-1 overflow-y-auto p-6">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Template Name</p>
+                      <p className="text-lg font-bold text-white">{emailTemplatesData[selectedTemplateIndex].name}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Trigger</p>
+                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
+                        {emailTemplatesData[selectedTemplateIndex].trigger}
+                      </Badge>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Subject Line</p>
+                      <p className="text-white font-medium">{emailTemplatesData[selectedTemplateIndex].subject}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Email Content Preview</p>
+                      <div className="bg-slate-800 border border-primary/20 rounded-lg p-6">
+                        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-primary/20">
+                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+                            <span className="text-2xl">🏠</span>
+                          </div>
+                          <div>
+                            <p className="text-primary font-bold">Sober Stay Homes</p>
+                            <p className="text-xs text-muted-foreground">support@soberstayhomes.com</p>
+                          </div>
+                        </div>
+                        <div className="text-slate-300 text-sm whitespace-pre-line leading-relaxed">
+                          {emailTemplatesData[selectedTemplateIndex].preview}
+                        </div>
+                        <div className="mt-6 pt-4 border-t border-primary/20 text-center">
+                          <p className="text-xs text-muted-foreground">© 2025 Sober Stay Homes. All rights reserved.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-background border-t border-primary/20 px-6 py-4 flex justify-between items-center">
+                <p className="text-xs text-muted-foreground">
+                  Viewing template {selectedTemplateIndex + 1} of {emailTemplatesData.length}
+                </p>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => setSelectedTemplateIndex(Math.max(0, selectedTemplateIndex - 1))}
+                    disabled={selectedTemplateIndex === 0}
+                    variant="outline"
+                    className="border-primary/30"
+                  >
+                    Previous
+                  </Button>
+                  <Button 
+                    onClick={() => setSelectedTemplateIndex(Math.min(emailTemplatesData.length - 1, selectedTemplateIndex + 1))}
+                    disabled={selectedTemplateIndex === emailTemplatesData.length - 1}
+                    variant="outline"
+                    className="border-primary/30"
+                  >
+                    Next
+                  </Button>
+                  <Button 
+                    onClick={() => { setShowAllTemplatesPreview(false); setShowTestEmailModal(true); }}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    Send Test Emails
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {showTestEmailModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-gradient-to-b from-card to-background border border-primary/20 rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/20 px-6 py-4">
-                <h2 className="text-xl font-bold text-white">Preview All Email Templates</h2>
-                <p className="text-xs text-muted-foreground mt-1">Send 11 sample emails to see how all templates look</p>
+                <h2 className="text-xl font-bold text-white">Send Test Emails</h2>
+                <p className="text-xs text-muted-foreground mt-1">Send all 11 templates to your email to see exactly how they look</p>
               </div>
               <div className="p-6 space-y-4">
                 <div>
