@@ -1140,57 +1140,89 @@ Disallow: /auth/
       return res.status(400).json({ error: "email is required" });
     }
 
+    // Helper to add delay between emails to avoid rate limiting (Resend: 2/sec)
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
     try {
       const results: { template: string; success: boolean; error?: string }[] = [];
-      const testDate = new Date();
-      testDate.setDate(testDate.getDate() + 7);
+      const renewalDate = new Date();
+      renewalDate.setDate(renewalDate.getDate() + 7);
+      const gracePeriodEnd = new Date();
+      gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 7);
 
-      // 1. Marketing/Newsletter Email Template
+      // 1. Marketing/Newsletter Email - Realistic newsletter content
       const marketingHtml = createMarketingEmailHtml(
-        "Welcome to Sober Stay Homes!",
-        "This is a sample marketing email template. It can be used for newsletters, announcements, and promotional content.\n\nKey features:\n- Clean, professional design\n- Mobile-responsive layout\n- Branded with Sober Stay colors\n\nThank you for being part of our community!"
+        "New Features & Recovery Resources",
+        "We're excited to share some updates from Sober Stay Homes!\n\n" +
+        "What's New:\n" +
+        "• Enhanced search filters to find the perfect recovery home\n" +
+        "• New provider verification badges for added trust\n" +
+        "• Improved application tracking in your dashboard\n\n" +
+        "Recovery Tip of the Month:\n" +
+        "Building a strong support network is essential. Connect with local AA/NA meetings and consider reaching out to a sponsor.\n\n" +
+        "Thank you for being part of our recovery community. Your journey matters to us."
       );
-      const r1 = await sendEmail({ to: email, subject: "[TEST] Marketing/Newsletter Template", html: marketingHtml });
+      const r1 = await sendEmail({ to: email, subject: "[TEST] New Features & Recovery Resources - Sober Stay Homes", html: marketingHtml });
       results.push({ template: "Marketing/Newsletter", success: r1.success, error: r1.error });
 
+      await delay(600);
+
       // 2. Password Reset Email
-      const r2Success = await sendPasswordResetEmail(email, "test-token", "https://www.soberstayhomes.com/reset-password?token=test");
+      const r2Success = await sendPasswordResetEmail(email, "abc123xyz", "https://www.soberstayhomes.com/reset-password?token=abc123xyz");
       results.push({ template: "Password Reset", success: r2Success });
 
-      // 3. Subscription Renewal Reminder
-      const r3Success = await sendRenewalReminderEmail(email, "Test Provider", testDate);
+      await delay(600);
+
+      // 3. Subscription Renewal Reminder - Realistic provider name
+      const r3Success = await sendRenewalReminderEmail(email, "Hope Recovery Homes", renewalDate);
       results.push({ template: "Subscription Renewal Reminder", success: r3Success });
 
+      await delay(600);
+
       // 4. Subscription Canceled / Grace Period
-      const r4Success = await sendSubscriptionCanceledEmail(email, "Test Provider", testDate);
+      const r4Success = await sendSubscriptionCanceledEmail(email, "Hope Recovery Homes", gracePeriodEnd);
       results.push({ template: "Subscription Canceled (Grace Period)", success: r4Success });
 
+      await delay(600);
+
       // 5. Listings Hidden
-      const r5Success = await sendListingsHiddenEmail(email, "Test Provider");
+      const r5Success = await sendListingsHiddenEmail(email, "Hope Recovery Homes");
       results.push({ template: "Listings Hidden", success: r5Success });
 
-      // 6. Application Received (Tenant confirmation)
-      const r6Success = await sendApplicationReceivedEmail(email, "Test Tenant", "Serenity House", "Hope Recovery Homes");
+      await delay(600);
+
+      // 6. Application Received (Tenant confirmation) - Realistic names
+      const r6Success = await sendApplicationReceivedEmail(email, "Michael", "Serenity House - Phoenix", "Desert Hope Recovery");
       results.push({ template: "Application Received (Tenant)", success: r6Success });
 
-      // 7. New Application Notification (Provider)
-      const r7Success = await sendNewApplicationNotification(email, "Test Provider", "John Smith", "Serenity House");
+      await delay(600);
+
+      // 7. New Application Notification (Provider) - Realistic applicant
+      const r7Success = await sendNewApplicationNotification(email, "Desert Hope Recovery", "Michael Johnson", "Serenity House - Phoenix");
       results.push({ template: "New Application (Provider)", success: r7Success });
 
-      // 8. Application Approved
-      const r8Success = await sendApplicationApprovedEmail(email, "Test Tenant", "Serenity House", "Hope Recovery Homes");
+      await delay(600);
+
+      // 8. Application Approved - Realistic scenario
+      const r8Success = await sendApplicationApprovedEmail(email, "Michael", "Serenity House - Phoenix", "Desert Hope Recovery");
       results.push({ template: "Application Approved", success: r8Success });
 
-      // 9. Application Denied
-      const r9Success = await sendApplicationDeniedEmail(email, "Test Tenant", "Serenity House", "Unfortunately, all beds are currently filled. We encourage you to apply again in the future.");
+      await delay(600);
+
+      // 9. Application Denied - Realistic reason
+      const r9Success = await sendApplicationDeniedEmail(email, "Michael", "Serenity House - Phoenix", "We're currently at full capacity and cannot accept new residents at this time. We encourage you to explore other listings on Sober Stay Homes or check back with us in a few weeks.");
       results.push({ template: "Application Denied", success: r9Success });
 
+      await delay(600);
+
       // 10. Payment Reminder
-      const r10Success = await sendPaymentReminderEmail(email, "Test Provider");
+      const r10Success = await sendPaymentReminderEmail(email, "Hope Recovery Homes");
       results.push({ template: "Payment Reminder", success: r10Success });
 
-      // 11. Admin Contact
-      const r11Success = await sendAdminContactEmail(email, "Test Provider", "This is a sample admin contact message. We wanted to reach out regarding your account status.");
+      await delay(600);
+
+      // 11. Admin Contact - Realistic admin message
+      const r11Success = await sendAdminContactEmail(email, "Hope Recovery Homes", "We noticed your provider verification documents are still pending review. Please upload your business license and insurance documentation to complete your verification and unlock featured listing options. If you have any questions, feel free to reply to this email.");
       results.push({ template: "Admin Contact", success: r11Success });
 
       const sentCount = results.filter(r => r.success).length;
