@@ -43,6 +43,53 @@ export default function ApplicationForm() {
   const [emergencyContactRelationship, setEmergencyContactRelationship] = useState("");
   const [profileLoading, setProfileLoading] = useState(false);
   
+  // Additional pre-filled fields from tenant profile
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [gender, setGender] = useState("");
+  // Substance Use
+  const [primarySubstance, setPrimarySubstance] = useState("");
+  const [ageOfFirstUse, setAgeOfFirstUse] = useState("");
+  const [lastDateOfUse, setLastDateOfUse] = useState("");
+  const [lengthOfSobriety, setLengthOfSobriety] = useState("");
+  const [overdoseHistory, setOverdoseHistory] = useState("");
+  const [overdoseDate, setOverdoseDate] = useState("");
+  const [matHistory, setMatHistory] = useState("");
+  const [currentMat, setCurrentMat] = useState("");
+  // Medical
+  const [medicalConditions, setMedicalConditions] = useState("");
+  const [mentalHealthDiagnoses, setMentalHealthDiagnoses] = useState("");
+  const [currentMedications, setCurrentMedications] = useState("");
+  const [allergies, setAllergies] = useState("");
+  const [mobilityIssues, setMobilityIssues] = useState("");
+  const [seizureHistory, setSeizureHistory] = useState("");
+  const [isPregnant, setIsPregnant] = useState("");
+  // Legal
+  const [probationParole, setProbationParole] = useState("");
+  const [probationParoleDetails, setProbationParoleDetails] = useState("");
+  const [pendingCases, setPendingCases] = useState("");
+  const [restrainingOrders, setRestrainingOrders] = useState("");
+  const [violentOffenses, setViolentOffenses] = useState("");
+  // Employment
+  const [employmentStatus, setEmploymentStatus] = useState("");
+  const [incomeSources, setIncomeSources] = useState("");
+  const [canPayRent, setCanPayRent] = useState("");
+  const [lookingForEmployment, setLookingForEmployment] = useState("");
+  // Housing
+  const [reasonForLeaving, setReasonForLeaving] = useState("");
+  const [previousSoberLiving, setPreviousSoberLiving] = useState("");
+  const [previousEvictions, setPreviousEvictions] = useState("");
+  const [housingViolations, setHousingViolations] = useState("");
+  const [adaAccommodations, setAdaAccommodations] = useState("");
+  // Preferences
+  const [roomPreference, setRoomPreference] = useState("");
+  const [genderSpecificHousing, setGenderSpecificHousing] = useState("");
+  const [lgbtqAffirming, setLgbtqAffirming] = useState("");
+  const [petFriendly, setPetFriendly] = useState("");
+  const [smokingStatus, setSmokingStatus] = useState("");
+  const [transportationNeeds, setTransportationNeeds] = useState("");
+  const [emotionalSupportAnimal, setEmotionalSupportAnimal] = useState("");
+  const [moveInDate, setMoveInDate] = useState("");
+  
   // Submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -109,6 +156,53 @@ export default function ApplicationForm() {
           if (appData.emergencyContactName || profile.emergencyContactName) setEmergencyContactName(appData.emergencyContactName || profile.emergencyContactName || '');
           if (appData.emergencyContactPhone || profile.emergencyContactPhone) setEmergencyContactPhone(appData.emergencyContactPhone || profile.emergencyContactPhone || '');
           if (appData.emergencyContactRelationship || profile.emergencyContactRelationship) setEmergencyContactRelationship(appData.emergencyContactRelationship || profile.emergencyContactRelationship || '');
+          
+          // Additional fields from applicationData
+          if (appData.dateOfBirth) setDateOfBirth(appData.dateOfBirth);
+          if (appData.gender) setGender(appData.gender);
+          // Substance Use
+          if (appData.primarySubstance) setPrimarySubstance(appData.primarySubstance);
+          if (appData.ageOfFirstUse) setAgeOfFirstUse(appData.ageOfFirstUse);
+          if (appData.lastDateOfUse) setLastDateOfUse(appData.lastDateOfUse);
+          if (appData.lengthOfSobriety) setLengthOfSobriety(appData.lengthOfSobriety);
+          if (appData.overdoseHistory) setOverdoseHistory(appData.overdoseHistory);
+          if (appData.overdoseDate) setOverdoseDate(appData.overdoseDate);
+          if (appData.matHistory) setMatHistory(appData.matHistory);
+          if (appData.currentMat) setCurrentMat(appData.currentMat);
+          // Medical
+          if (appData.medicalConditions) setMedicalConditions(appData.medicalConditions);
+          if (appData.mentalHealthDiagnoses) setMentalHealthDiagnoses(appData.mentalHealthDiagnoses);
+          if (appData.currentMedications) setCurrentMedications(appData.currentMedications);
+          if (appData.allergies) setAllergies(appData.allergies);
+          if (appData.mobilityIssues) setMobilityIssues(appData.mobilityIssues);
+          if (appData.seizureHistory) setSeizureHistory(appData.seizureHistory);
+          if (appData.isPregnant) setIsPregnant(appData.isPregnant);
+          // Legal
+          if (appData.probationParole) setProbationParole(appData.probationParole);
+          if (appData.probationParoleDetails) setProbationParoleDetails(appData.probationParoleDetails);
+          if (appData.pendingCases) setPendingCases(appData.pendingCases);
+          if (appData.restrainingOrders) setRestrainingOrders(appData.restrainingOrders);
+          if (appData.violentOffenses) setViolentOffenses(appData.violentOffenses);
+          // Employment
+          if (appData.employmentStatus) setEmploymentStatus(appData.employmentStatus);
+          if (appData.incomeSources) setIncomeSources(appData.incomeSources);
+          if (appData.canPayRent) setCanPayRent(appData.canPayRent);
+          if (appData.lookingForEmployment) setLookingForEmployment(appData.lookingForEmployment);
+          // Housing
+          if (appData.reasonForLeaving) setReasonForLeaving(appData.reasonForLeaving);
+          if (appData.previousSoberLiving) setPreviousSoberLiving(appData.previousSoberLiving);
+          if (appData.previousEvictions) setPreviousEvictions(appData.previousEvictions);
+          if (appData.housingViolations) setHousingViolations(appData.housingViolations);
+          if (appData.adaAccommodations) setAdaAccommodations(appData.adaAccommodations);
+          // Preferences
+          if (appData.roomPreference) setRoomPreference(appData.roomPreference);
+          if (appData.genderSpecificHousing) setGenderSpecificHousing(appData.genderSpecificHousing);
+          if (appData.lgbtqAffirming) setLgbtqAffirming(appData.lgbtqAffirming);
+          if (appData.petFriendly) setPetFriendly(appData.petFriendly);
+          if (appData.smokingStatus) setSmokingStatus(appData.smokingStatus);
+          if (appData.transportationNeeds) setTransportationNeeds(appData.transportationNeeds);
+          if (appData.emotionalSupportAnimal) setEmotionalSupportAnimal(appData.emotionalSupportAnimal);
+          if (appData.moveInDate) setMoveInDate(appData.moveInDate);
         } else if (user) {
           // If no profile exists, still use user account data
           const userFirstName = user.firstName || (user.name ? user.name.split(' ')[0] : '');
@@ -194,7 +288,46 @@ export default function ApplicationForm() {
             currentAddress,
             emergencyContactName,
             emergencyContactPhone,
-            emergencyContactRelationship
+            emergencyContactRelationship,
+            dateOfBirth,
+            gender,
+            primarySubstance,
+            ageOfFirstUse,
+            lastDateOfUse,
+            lengthOfSobriety,
+            overdoseHistory,
+            overdoseDate,
+            matHistory,
+            currentMat,
+            medicalConditions,
+            mentalHealthDiagnoses,
+            currentMedications,
+            allergies,
+            mobilityIssues,
+            seizureHistory,
+            isPregnant,
+            probationParole,
+            probationParoleDetails,
+            pendingCases,
+            restrainingOrders,
+            violentOffenses,
+            employmentStatus,
+            incomeSources,
+            canPayRent,
+            lookingForEmployment,
+            reasonForLeaving,
+            previousSoberLiving,
+            previousEvictions,
+            housingViolations,
+            adaAccommodations,
+            roomPreference,
+            genderSpecificHousing,
+            lgbtqAffirming,
+            petFriendly,
+            smokingStatus,
+            transportationNeeds,
+            emotionalSupportAnimal,
+            moveInDate
           }
         })
       });
@@ -284,11 +417,11 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Date of Birth *</Label>
-                  <Input type="date" className="bg-background/50 border-border" required data-testid="input-dob" />
+                  <Input type="date" className="bg-background/50 border-border" required data-testid="input-dob" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Gender *</Label>
-                  <Select>
+                  <Select value={gender} onValueChange={setGender}>
                     <SelectTrigger className="bg-background/50 border-border" data-testid="select-gender">
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
@@ -410,23 +543,23 @@ export default function ApplicationForm() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Primary Substance(s) Used *</Label>
-                  <Input placeholder="e.g., Alcohol, Opioids, Both, Other" className="bg-background/50 border-border" required />
+                  <Input placeholder="e.g., Alcohol, Opioids, Both, Other" className="bg-background/50 border-border" required value={primarySubstance} onChange={(e) => setPrimarySubstance(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Age of First Use *</Label>
-                  <Input type="number" min="0" max="120" placeholder="Age" className="bg-background/50 border-border" required />
+                  <Input type="number" min="0" max="120" placeholder="Age" className="bg-background/50 border-border" required value={ageOfFirstUse} onChange={(e) => setAgeOfFirstUse(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Last Date of Use *</Label>
-                  <Input type="date" className="bg-background/50 border-border" required />
+                  <Input type="date" className="bg-background/50 border-border" required value={lastDateOfUse} onChange={(e) => setLastDateOfUse(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Length of Sobriety *</Label>
-                  <Input placeholder="e.g., 3 months, 1 year, 45 days" className="bg-background/50 border-border" required />
+                  <Input placeholder="e.g., 3 months, 1 year, 45 days" className="bg-background/50 border-border" required value={lengthOfSobriety} onChange={(e) => setLengthOfSobriety(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>History of Overdose?</Label>
-                  <Select>
+                  <Select value={overdoseHistory} onValueChange={setOverdoseHistory}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -438,11 +571,11 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>If Yes, Date (if comfortable sharing)</Label>
-                  <Input type="date" className="bg-background/50 border-border" />
+                  <Input type="date" className="bg-background/50 border-border" value={overdoseDate} onChange={(e) => setOverdoseDate(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Have You Ever Been on MAT? *</Label>
-                  <Select>
+                  <Select value={matHistory} onValueChange={setMatHistory}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -454,7 +587,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Current MAT Medications (if applicable)</Label>
-                  <Input placeholder="e.g., Suboxone, Methadone, Vivitrol, None" className="bg-background/50 border-border" />
+                  <Input placeholder="e.g., Suboxone, Methadone, Vivitrol, None" className="bg-background/50 border-border" value={currentMat} onChange={(e) => setCurrentMat(e.target.value)} />
                 </div>
               </CardContent>
             </Card>
@@ -520,23 +653,23 @@ export default function ApplicationForm() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Current Medical Conditions</Label>
-                  <Textarea placeholder="List any medical conditions (e.g., diabetes, hypertension)..." className="bg-background/50 border-border min-h-20" />
+                  <Textarea placeholder="List any medical conditions (e.g., diabetes, hypertension)..." className="bg-background/50 border-border min-h-20" value={medicalConditions} onChange={(e) => setMedicalConditions(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Mental Health Diagnoses (optional)</Label>
-                  <Textarea placeholder="e.g., Depression, Anxiety, BIPD..." className="bg-background/50 border-border min-h-20" />
+                  <Textarea placeholder="e.g., Depression, Anxiety, BIPD..." className="bg-background/50 border-border min-h-20" value={mentalHealthDiagnoses} onChange={(e) => setMentalHealthDiagnoses(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Current Medications (list all)</Label>
-                  <Textarea placeholder="Include prescription and over-the-counter medications..." className="bg-background/50 border-border min-h-20" />
+                  <Textarea placeholder="Include prescription and over-the-counter medications..." className="bg-background/50 border-border min-h-20" value={currentMedications} onChange={(e) => setCurrentMedications(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Allergies</Label>
-                  <Textarea placeholder="Food, medication, environmental allergies..." className="bg-background/50 border-border min-h-16" />
+                  <Textarea placeholder="Food, medication, environmental allergies..." className="bg-background/50 border-border min-h-16" value={allergies} onChange={(e) => setAllergies(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Any Mobility Issues or Disabilities?</Label>
-                  <Select>
+                  <Select value={mobilityIssues} onValueChange={setMobilityIssues}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -548,7 +681,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>History of Seizures or Medical Emergencies?</Label>
-                  <Select>
+                  <Select value={seizureHistory} onValueChange={setSeizureHistory}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -560,7 +693,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Are You Pregnant?</Label>
-                  <Select>
+                  <Select value={isPregnant} onValueChange={setIsPregnant}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -582,7 +715,7 @@ export default function ApplicationForm() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Are You on Probation or Parole? *</Label>
-                  <Select>
+                  <Select value={probationParole} onValueChange={setProbationParole}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -594,11 +727,11 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>If Yes, Details</Label>
-                  <Textarea placeholder="Type of supervision, officer contact..." className="bg-background/50 border-border min-h-16" />
+                  <Textarea placeholder="Type of supervision, officer contact..." className="bg-background/50 border-border min-h-16" value={probationParoleDetails} onChange={(e) => setProbationParoleDetails(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Any Pending Court Cases? *</Label>
-                  <Select>
+                  <Select value={pendingCases} onValueChange={setPendingCases}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -610,7 +743,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Any Restraining Orders? *</Label>
-                  <Select>
+                  <Select value={restrainingOrders} onValueChange={setRestrainingOrders}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -622,7 +755,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Any Violent or Sexual Offenses? *</Label>
-                  <Select>
+                  <Select value={violentOffenses} onValueChange={setViolentOffenses}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -643,7 +776,7 @@ export default function ApplicationForm() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Employment Status *</Label>
-                  <Select>
+                  <Select value={employmentStatus} onValueChange={setEmploymentStatus}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select employment status" />
                     </SelectTrigger>
@@ -658,11 +791,11 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Income Source(s) *</Label>
-                  <Textarea placeholder="e.g., Job, Family support, Disability benefits, Unemployment, Other..." className="bg-background/50 border-border min-h-16" />
+                  <Textarea placeholder="e.g., Job, Family support, Disability benefits, Unemployment, Other..." className="bg-background/50 border-border min-h-16" value={incomeSources} onChange={(e) => setIncomeSources(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Can You Pay Monthly Rent on Time? *</Label>
-                  <Select>
+                  <Select value={canPayRent} onValueChange={setCanPayRent}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -675,7 +808,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Are You Looking for Employment?</Label>
-                  <Select>
+                  <Select value={lookingForEmployment} onValueChange={setLookingForEmployment}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -709,11 +842,11 @@ export default function ApplicationForm() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Reason for Leaving Current Living Situation *</Label>
-                  <Textarea placeholder="Describe your current situation and why you're seeking this home..." className="bg-background/50 border-border min-h-24" required />
+                  <Textarea placeholder="Describe your current situation and why you're seeking this home..." className="bg-background/50 border-border min-h-24" required value={reasonForLeaving} onChange={(e) => setReasonForLeaving(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Have You Lived in Sober Living Before? *</Label>
-                  <Select>
+                  <Select value={previousSoberLiving} onValueChange={setPreviousSoberLiving}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -725,7 +858,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Previous Evictions from Sober Living?</Label>
-                  <Select>
+                  <Select value={previousEvictions} onValueChange={setPreviousEvictions}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -737,11 +870,11 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Any Housing Violations?</Label>
-                  <Textarea placeholder="Describe any previous housing-related issues..." className="bg-background/50 border-border min-h-16" />
+                  <Textarea placeholder="Describe any previous housing-related issues..." className="bg-background/50 border-border min-h-16" value={housingViolations} onChange={(e) => setHousingViolations(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Do You Need ADA Accommodations?</Label>
-                  <Select>
+                  <Select value={adaAccommodations} onValueChange={setAdaAccommodations}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -778,7 +911,7 @@ export default function ApplicationForm() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Room Preference</Label>
-                  <Select>
+                  <Select value={roomPreference} onValueChange={setRoomPreference}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select preference" />
                     </SelectTrigger>
@@ -791,7 +924,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Gender-Specific Housing Needed?</Label>
-                  <Select>
+                  <Select value={genderSpecificHousing} onValueChange={setGenderSpecificHousing}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -803,7 +936,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>LGBTQ+ Affirming Housing Required?</Label>
-                  <Select>
+                  <Select value={lgbtqAffirming} onValueChange={setLgbtqAffirming}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -815,7 +948,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Pet-Friendly Housing Needed?</Label>
-                  <Select>
+                  <Select value={petFriendly} onValueChange={setPetFriendly}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select answer" />
                     </SelectTrigger>
@@ -827,7 +960,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Smoking/Vaping Status</Label>
-                  <Select>
+                  <Select value={smokingStatus} onValueChange={setSmokingStatus}>
                     <SelectTrigger className="bg-background/50 border-border">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
@@ -841,15 +974,15 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Transportation Needs</Label>
-                  <Textarea placeholder="e.g., Reliable rides needed, Bus route access required, Own transportation..." className="bg-background/50 border-border min-h-16" />
+                  <Textarea placeholder="e.g., Reliable rides needed, Bus route access required, Own transportation..." className="bg-background/50 border-border min-h-16" value={transportationNeeds} onChange={(e) => setTransportationNeeds(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Emotional Support Animal (if applicable)</Label>
-                  <Input placeholder="Type and breed if applicable" className="bg-background/50 border-border" />
+                  <Input placeholder="Type and breed if applicable" className="bg-background/50 border-border" value={emotionalSupportAnimal} onChange={(e) => setEmotionalSupportAnimal(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Desired Move-In Date *</Label>
-                  <Input type="date" className="bg-background/50 border-border" required />
+                  <Input type="date" className="bg-background/50 border-border" required value={moveInDate} onChange={(e) => setMoveInDate(e.target.value)} />
                 </div>
                 
                 <div className="mt-4 pt-4 border-t border-border">
