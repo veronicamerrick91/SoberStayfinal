@@ -152,6 +152,9 @@ app.use((req, res, next) => {
   await initStripe();
   await registerRoutes(httpServer, app);
   
+  // Seed default email templates if none exist
+  await storage.seedDefaultEmailTemplates();
+  
   startSubscriptionScheduler();
 
   // SSR routes for search engine bots

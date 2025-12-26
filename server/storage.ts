@@ -132,6 +132,7 @@ export interface IStorage {
   updateEmailTemplate(id: number, data: Partial<InsertEmailTemplate>): Promise<EmailTemplate | undefined>;
   deleteEmailTemplate(id: number): Promise<void>;
   incrementEmailTemplateUsage(id: number): Promise<void>;
+  seedDefaultEmailTemplates(): Promise<void>;
   
   sessionStore: session.Store;
 }
@@ -1038,6 +1039,247 @@ export class DatabaseStorage implements IStorage {
     await db.update(emailTemplates)
       .set({ usageCount: sql`${emailTemplates.usageCount} + 1` })
       .where(eq(emailTemplates.id, id));
+  }
+
+  async seedDefaultEmailTemplates(): Promise<void> {
+    const existingTemplates = await db.select().from(emailTemplates);
+    if (existingTemplates.length > 0) return; // Don't seed if templates exist
+
+    const defaultTemplates: InsertEmailTemplate[] = [
+      {
+        name: 'Welcome New Providers',
+        type: 'email',
+        trigger: 'on-provider-signup',
+        audience: 'providers',
+        subject: 'Welcome to Sober Stay - Let\'s Get Started!',
+        body: `Hi [name],
+
+Welcome to Sober Stay! We're thrilled to have you join our network of trusted sober living providers.
+
+Your decision to offer recovery housing makes a real difference in people's lives. We're here to help you connect with individuals seeking a supportive environment for their recovery journey.
+
+HERE'S WHAT YOU CAN DO RIGHT NOW:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Complete your provider profile
+✓ Add your first property listing
+✓ Set your availability preferences
+
+WHAT HAPPENS NEXT:
+Our team will review your account within 24-48 hours. Once verified, your listings will be visible to tenants searching for recovery housing in your area.
+
+Warm regards,
+The Sober Stay Team`,
+        isActive: true
+      },
+      {
+        name: 'Tenant Welcome Series',
+        type: 'email',
+        trigger: 'on-tenant-signup',
+        audience: 'tenants',
+        subject: 'Welcome to Sober Stay - Your Recovery Journey Starts Here',
+        body: `Hi [name],
+
+Welcome to Sober Stay! We're honored to be part of your recovery journey.
+
+Finding the right sober living home is an important step, and we're here to make it easier.
+
+HERE'S HOW TO GET STARTED:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣ BROWSE LISTINGS - Use our search filters to find homes in your area
+2️⃣ SAVE YOUR FAVORITES - Click the heart icon on any listing
+3️⃣ ASK QUESTIONS - Message providers directly
+4️⃣ APPLY WHEN READY - Submit an application when you find the right fit
+
+Take your time. This is YOUR journey, and we're here to support you every step of the way.
+
+With hope,
+The Sober Stay Team`,
+        isActive: true
+      },
+      {
+        name: 'Recovery Stories Monthly',
+        type: 'email',
+        trigger: 'monthly',
+        audience: 'all',
+        subject: 'Inspiring Recovery Stories This Month - Sober Stay Community',
+        body: `Hi [name],
+
+This month, we're sharing inspiring stories from our recovery community.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FEATURED STORY: FINDING HOME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+"When I first started looking for sober living, I was terrified. Finding the right home through Sober Stay changed everything."
+- Community Member
+
+YOUR RECOVERY MATTERS TO US:
+Every step forward is worth celebrating. Whether you're on day 1 or year 10, you're part of something bigger.
+
+RECOVERY RESOURCES:
+• SAMHSA National Helpline: 1-800-662-4357
+• Crisis Text Line: Text HOME to 741741
+
+With hope,
+The Sober Stay Team`,
+        isActive: true
+      },
+      {
+        name: 'New Listings Weekly',
+        type: 'email',
+        trigger: 'weekly',
+        audience: 'tenants',
+        subject: 'New Sober Living Homes This Week - Sober Stay',
+        body: `Hi [name],
+
+Great news! We found new sober living homes this week.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NEW LISTINGS NEAR YOU
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Our providers have added fresh listings with:
+• Private and shared room options
+• Various price points to fit your budget
+• Homes for men, women, and co-ed living
+• Amenities like transportation, meals, and meeting attendance
+
+QUICK SEARCH TIPS:
+✓ Use filters to narrow by gender, price, and location
+✓ Save favorites by clicking the heart icon
+✓ Read house rules carefully before applying
+
+Best,
+The Sober Stay Team`,
+        isActive: true
+      },
+      {
+        name: 'Subscription Renewal 7 Days',
+        type: 'email',
+        trigger: '7-days-before-renewal',
+        audience: 'providers',
+        subject: 'Your Subscription Renews in 7 Days - Sober Stay',
+        body: `Hi [name],
+
+Just a friendly reminder that your Sober Stay provider subscription renews in 7 days.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+YOUR SUBSCRIPTION DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Plan: Provider Listing Subscription
+Renewal Date: [renewal_date]
+Amount: $49 per active listing
+
+No action needed if you want to continue - we'll automatically renew.
+
+NEED TO MAKE CHANGES?
+• Update payment method: Dashboard → Billing
+• Cancel subscription: Dashboard → Billing → Cancel
+
+Thank you for your partnership!
+The Sober Stay Team`,
+        isActive: true
+      },
+      {
+        name: 'Provider Compliance Monthly',
+        type: 'email',
+        trigger: 'monthly',
+        audience: 'providers',
+        subject: 'Monthly Provider Checklist - Sober Stay',
+        body: `Hi [name],
+
+This is your monthly reminder to review your property documentation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MONTHLY COMPLIANCE CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DOCUMENTATION:
+☐ House agreements current for all residents
+☐ Emergency contact information updated
+☐ Payment records organized
+☐ Insurance documents valid
+
+LISTING UPDATES:
+☐ Bed availability accurate
+☐ Pricing up to date
+☐ Photos current
+
+DID YOU KNOW?
+Providers who keep their listings updated receive 40% more applications.
+
+Best,
+The Sober Stay Team`,
+        isActive: true
+      },
+      {
+        name: 'Share Your Story',
+        type: 'email',
+        trigger: 'none',
+        audience: 'all',
+        subject: 'Your Recovery Story Could Inspire Someone',
+        body: `Hi [name],
+
+We have a request: Would you be willing to share your experience?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHY YOUR STORY MATTERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Your journey could help someone who's:
+• Scared to take the first step
+• Uncertain about what recovery looks like
+• On the fence about seeking help
+
+HOW TO SHARE:
+If you're open to sharing:
+• Reply to this email with your story
+• You can remain anonymous if you prefer
+• We'll only share with your explicit permission
+
+With appreciation,
+The Sober Stay Team`,
+        isActive: true
+      },
+      {
+        name: 'Inactive User Re-engagement',
+        type: 'email',
+        trigger: 'none',
+        audience: 'all',
+        subject: 'We Miss You! Still Looking for Recovery Housing?',
+        body: `Hi [name],
+
+It's been a while since we've seen you on Sober Stay.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHAT'S NEW SINCE YOUR LAST VISIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• New listings in your area
+• Updated search features
+• Fresh provider profiles
+• More amenity filters
+
+HOW CAN WE HELP?
+If you're still searching for the right sober living home, we're here.
+
+Recovery is a journey, not a destination. Wherever you are on that path, we're rooting for you.
+
+Come back anytime. We'll be here.
+
+With support,
+The Sober Stay Team`,
+        isActive: true
+      }
+    ];
+
+    for (const template of defaultTemplates) {
+      await db.insert(emailTemplates).values(template);
+    }
+    console.log('Seeded default email templates');
   }
 }
 

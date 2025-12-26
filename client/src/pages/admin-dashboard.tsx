@@ -580,23 +580,6 @@ Thank you for being part of our recovery community!`
             body: t.body
           }));
           setMarketingTemplates(formattedTemplates);
-          
-          // Derive automated campaigns from templates with triggers (not 'none')
-          const automatedFromTemplates = formattedTemplates
-            .filter((t: any) => t.trigger && t.trigger !== 'none')
-            .map((t: any, index: number) => ({
-              id: t.id,
-              name: t.name,
-              trigger: t.trigger.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-              audience: t.audience === 'providers' ? 'Providers' : t.audience === 'tenants' ? 'Tenants' : 'All Users',
-              emails: 1,
-              active: true,
-              lastRun: 'Active',
-              enrolled: t.uses || 0
-            }));
-          if (automatedFromTemplates.length > 0) {
-            setAutomatedCampaigns(automatedFromTemplates);
-          }
         }
         
         // Sample applications data
