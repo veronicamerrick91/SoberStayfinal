@@ -59,18 +59,27 @@ function getEmailFooter(): string {
 function getEmailWrapper(content: string, previewText?: string): string {
   return `
     <!DOCTYPE html>
-    <html>
+    <html lang="en" style="background-color: #0a1628;">
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <meta name="x-apple-disable-message-reformatting">
+      <meta name="color-scheme" content="dark">
+      <meta name="supported-color-schemes" content="dark">
+      <style>
+        body, html { background-color: #0a1628 !important; }
+        .email-bg { background-color: #0a1628 !important; }
+      </style>
     </head>
-    <body bgcolor="#0a1628" style="margin: 0; padding: 0; background-color: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <body bgcolor="#0a1628" style="margin: 0; padding: 0; background: #0a1628; background-color: #0a1628; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
       ${previewText ? `<div style="display: none; max-height: 0; overflow: hidden;">${previewText}</div>` : ''}
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" bgcolor="#0a1628" style="background-color: #0a1628;">
+      <!--[if mso]>
+      <table role="presentation" width="100%" bgcolor="#0a1628"><tr><td>
+      <![endif]-->
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#0a1628" class="email-bg" style="background: #0a1628; background-color: #0a1628; min-height: 100%;">
         <tr>
-          <td align="center" bgcolor="#0a1628" style="background-color: #0a1628; padding: 40px 20px;">
-            <table role="presentation" width="600" cellspacing="0" cellpadding="0" bgcolor="#0f172a" style="max-width: 600px; background-color: #0f172a; border-radius: 12px; border: 1px solid #1e3a5f;">
+          <td align="center" valign="top" bgcolor="#0a1628" style="background: #0a1628; background-color: #0a1628; padding: 40px 20px;">
+            <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" bgcolor="#0f172a" style="max-width: 600px; width: 100%; background-color: #0f172a; border-radius: 12px; border: 1px solid #1e3a5f;">
               ${getEmailHeader()}
               ${content}
               ${getEmailFooter()}
@@ -78,6 +87,9 @@ function getEmailWrapper(content: string, previewText?: string): string {
           </td>
         </tr>
       </table>
+      <!--[if mso]>
+      </td></tr></table>
+      <![endif]-->
     </body>
     </html>
   `;
