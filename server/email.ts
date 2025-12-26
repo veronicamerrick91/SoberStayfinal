@@ -2,8 +2,7 @@ import { Resend } from 'resend';
 
 // Email configuration - uses RESEND_API_KEY environment variable
 // Works in both Replit development and external hosting (Render, etc.)
-// Using send subdomain as verified in Resend
-const FROM_EMAIL = 'support@send.soberstayhomes.com';
+const FROM_EMAIL = 'support@soberstayhomes.com';
 
 async function getResendClient(): Promise<{ client: Resend; fromEmail: string }> {
   const apiKey = process.env.RESEND_API_KEY;
@@ -18,7 +17,7 @@ async function getResendClient(): Promise<{ client: Resend; fromEmail: string }>
   };
 }
 
-const SUPPORT_EMAIL = 'support@send.soberstayhomes.com';
+const SUPPORT_EMAIL = 'support@soberstayhomes.com';
 const APP_NAME = 'Sober Stay Homes';
 
 export interface EmailOptions {
