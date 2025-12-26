@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, type TenantFavorite, type TenantViewedHome, type ListingAnalyticsEvent, type InsertListingAnalyticsEvent, type ListingAnalyticsDaily, type EmailTemplate, type InsertEmailTemplate, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners, tenantFavorites, tenantViewedHomes, listingAnalyticsEvents, listingAnalyticsDaily, emailTemplates } from "@shared/schema";
+import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, type TenantFavorite, type TenantViewedHome, type ListingAnalyticsEvent, type InsertListingAnalyticsEvent, type ListingAnalyticsDaily, type EmailTemplate, type InsertEmailTemplate, type EmailWorkflow, type InsertEmailWorkflow, type WorkflowStep, type InsertWorkflowStep, type WorkflowEnrollment, type InsertWorkflowEnrollment, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners, tenantFavorites, tenantViewedHomes, listingAnalyticsEvents, listingAnalyticsDaily, emailTemplates, emailWorkflows, workflowSteps, workflowEnrollments } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, lt, isNull, or, desc, count, inArray, gte, lte, sql } from "drizzle-orm";
 import session from "express-session";
@@ -135,6 +135,29 @@ export interface IStorage {
   deleteEmailTemplate(id: number): Promise<void>;
   incrementEmailTemplateUsage(id: number): Promise<void>;
   seedDefaultEmailTemplates(): Promise<void>;
+  
+  // Email Workflows
+  getAllEmailWorkflows(): Promise<EmailWorkflow[]>;
+  getEmailWorkflow(id: number): Promise<EmailWorkflow | undefined>;
+  getEmailWorkflowsByTrigger(trigger: string): Promise<EmailWorkflow[]>;
+  createEmailWorkflow(workflow: InsertEmailWorkflow): Promise<EmailWorkflow>;
+  updateEmailWorkflow(id: number, data: Partial<InsertEmailWorkflow>): Promise<EmailWorkflow | undefined>;
+  deleteEmailWorkflow(id: number): Promise<void>;
+  
+  // Workflow Steps
+  getWorkflowSteps(workflowId: number): Promise<WorkflowStep[]>;
+  createWorkflowStep(step: InsertWorkflowStep): Promise<WorkflowStep>;
+  updateWorkflowStep(id: number, data: Partial<InsertWorkflowStep>): Promise<WorkflowStep | undefined>;
+  deleteWorkflowStep(id: number): Promise<void>;
+  
+  // Workflow Enrollments
+  getWorkflowEnrollment(id: number): Promise<WorkflowEnrollment | undefined>;
+  getActiveEnrollmentsByUser(userId: number): Promise<WorkflowEnrollment[]>;
+  getEnrollmentsReadyToProcess(): Promise<WorkflowEnrollment[]>;
+  enrollUserInWorkflow(userId: number, workflowId: number, nextStepAt: Date): Promise<WorkflowEnrollment>;
+  updateEnrollmentProgress(id: number, currentStep: number, nextStepAt: Date | null, status: string): Promise<WorkflowEnrollment | undefined>;
+  cancelEnrollment(id: number): Promise<void>;
+  isUserEnrolledInWorkflow(userId: number, workflowId: number): Promise<boolean>;
   
   sessionStore: session.Store;
 }
@@ -1368,6 +1391,127 @@ The Sober Stay Team`,
     if (inserted > 0 || updated > 0) {
       console.log(`Email templates: ${inserted} inserted, ${updated} updated`);
     }
+  }
+
+  // Email Workflow Methods
+  async getAllEmailWorkflows(): Promise<EmailWorkflow[]> {
+    return await db.select().from(emailWorkflows).orderBy(desc(emailWorkflows.createdAt));
+  }
+
+  async getEmailWorkflow(id: number): Promise<EmailWorkflow | undefined> {
+    const [workflow] = await db.select().from(emailWorkflows).where(eq(emailWorkflows.id, id));
+    return workflow;
+  }
+
+  async getEmailWorkflowsByTrigger(trigger: string): Promise<EmailWorkflow[]> {
+    return await db.select().from(emailWorkflows).where(
+      and(eq(emailWorkflows.trigger, trigger), eq(emailWorkflows.isActive, true))
+    );
+  }
+
+  async createEmailWorkflow(workflow: InsertEmailWorkflow): Promise<EmailWorkflow> {
+    const [created] = await db.insert(emailWorkflows).values(workflow).returning();
+    return created;
+  }
+
+  async updateEmailWorkflow(id: number, data: Partial<InsertEmailWorkflow>): Promise<EmailWorkflow | undefined> {
+    const [updated] = await db.update(emailWorkflows)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(emailWorkflows.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteEmailWorkflow(id: number): Promise<void> {
+    await db.delete(emailWorkflows).where(eq(emailWorkflows.id, id));
+  }
+
+  // Workflow Step Methods
+  async getWorkflowSteps(workflowId: number): Promise<WorkflowStep[]> {
+    return await db.select().from(workflowSteps)
+      .where(eq(workflowSteps.workflowId, workflowId))
+      .orderBy(workflowSteps.stepOrder);
+  }
+
+  async createWorkflowStep(step: InsertWorkflowStep): Promise<WorkflowStep> {
+    const [created] = await db.insert(workflowSteps).values(step).returning();
+    return created;
+  }
+
+  async updateWorkflowStep(id: number, data: Partial<InsertWorkflowStep>): Promise<WorkflowStep | undefined> {
+    const [updated] = await db.update(workflowSteps)
+      .set(data)
+      .where(eq(workflowSteps.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteWorkflowStep(id: number): Promise<void> {
+    await db.delete(workflowSteps).where(eq(workflowSteps.id, id));
+  }
+
+  // Workflow Enrollment Methods
+  async getWorkflowEnrollment(id: number): Promise<WorkflowEnrollment | undefined> {
+    const [enrollment] = await db.select().from(workflowEnrollments).where(eq(workflowEnrollments.id, id));
+    return enrollment;
+  }
+
+  async getActiveEnrollmentsByUser(userId: number): Promise<WorkflowEnrollment[]> {
+    return await db.select().from(workflowEnrollments).where(
+      and(eq(workflowEnrollments.userId, userId), eq(workflowEnrollments.status, "active"))
+    );
+  }
+
+  async getEnrollmentsReadyToProcess(): Promise<WorkflowEnrollment[]> {
+    return await db.select().from(workflowEnrollments).where(
+      and(
+        eq(workflowEnrollments.status, "active"),
+        lte(workflowEnrollments.nextStepAt, new Date())
+      )
+    );
+  }
+
+  async enrollUserInWorkflow(userId: number, workflowId: number, nextStepAt: Date): Promise<WorkflowEnrollment> {
+    const [enrollment] = await db.insert(workflowEnrollments).values({
+      userId,
+      workflowId,
+      currentStep: 0,
+      nextStepAt,
+      status: "active"
+    }).returning();
+    return enrollment;
+  }
+
+  async updateEnrollmentProgress(id: number, currentStep: number, nextStepAt: Date | null, status: string): Promise<WorkflowEnrollment | undefined> {
+    const updateData: any = { currentStep, status };
+    if (nextStepAt) {
+      updateData.nextStepAt = nextStepAt;
+    }
+    if (status === "completed") {
+      updateData.completedAt = new Date();
+    }
+    const [updated] = await db.update(workflowEnrollments)
+      .set(updateData)
+      .where(eq(workflowEnrollments.id, id))
+      .returning();
+    return updated;
+  }
+
+  async cancelEnrollment(id: number): Promise<void> {
+    await db.update(workflowEnrollments)
+      .set({ status: "cancelled" })
+      .where(eq(workflowEnrollments.id, id));
+  }
+
+  async isUserEnrolledInWorkflow(userId: number, workflowId: number): Promise<boolean> {
+    const [existing] = await db.select().from(workflowEnrollments).where(
+      and(
+        eq(workflowEnrollments.userId, userId),
+        eq(workflowEnrollments.workflowId, workflowId),
+        eq(workflowEnrollments.status, "active")
+      )
+    );
+    return !!existing;
   }
 }
 
