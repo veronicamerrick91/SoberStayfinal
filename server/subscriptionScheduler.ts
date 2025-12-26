@@ -1,6 +1,6 @@
 import { storage } from './storage';
-import { sendRenewalReminderEmail, sendListingsHiddenEmail, sendMoveInReminderEmail } from './email';
-import { format } from 'date-fns';
+import { sendRenewalReminderEmail, sendListingsHiddenEmail, sendMoveInReminderEmail, sendWorkflowStepEmail } from './email';
+import { format, addDays, addHours } from 'date-fns';
 
 const GRACE_PERIOD_DAYS = 7;
 const MOVE_IN_REMINDER_DAYS = 3;
@@ -135,6 +135,102 @@ export async function processMoveInReminders(): Promise<void> {
   }
 }
 
+export async function processWorkflowEnrollments(): Promise<void> {
+  console.log('[Scheduler] Processing workflow enrollments...');
+  
+  try {
+    const enrollmentsToProcess = await storage.getEnrollmentsReadyToProcess();
+    
+    for (const enrollment of enrollmentsToProcess) {
+      const workflow = await storage.getEmailWorkflow(enrollment.workflowId);
+      if (!workflow || !workflow.isActive) {
+        // Workflow deleted or deactivated, cancel enrollment
+        await storage.cancelEnrollment(enrollment.id);
+        continue;
+      }
+      
+      const user = await storage.getUser(enrollment.userId);
+      if (!user) {
+        await storage.cancelEnrollment(enrollment.id);
+        continue;
+      }
+      
+      const steps = await storage.getWorkflowSteps(enrollment.workflowId);
+      const nextStepIndex = enrollment.currentStep; // currentStep is 0-indexed for completed steps
+      
+      if (nextStepIndex >= steps.length) {
+        // All steps completed
+        await storage.updateEnrollmentProgress(enrollment.id, nextStepIndex, null, 'completed');
+        console.log(`[Scheduler] Workflow completed for user ${user.email}`);
+        continue;
+      }
+      
+      const step = steps[nextStepIndex];
+      if (!step.isActive) {
+        // Skip inactive step, move to next
+        const newStepIndex = nextStepIndex + 1;
+        if (newStepIndex >= steps.length) {
+          await storage.updateEnrollmentProgress(enrollment.id, newStepIndex, null, 'completed');
+        } else {
+          const nextStep = steps[newStepIndex];
+          const nextStepAt = addHours(addDays(new Date(), nextStep.delayDays), nextStep.delayHours);
+          await storage.updateEnrollmentProgress(enrollment.id, newStepIndex, nextStepAt, 'active');
+        }
+        continue;
+      }
+      
+      console.log(`[Scheduler] Sending workflow step ${step.stepOrder} to ${user.email}`);
+      
+      const sent = await sendWorkflowStepEmail(
+        user.email,
+        user.name || 'there',
+        step.subject,
+        step.body
+      );
+      
+      if (sent) {
+        const newStepIndex = nextStepIndex + 1;
+        if (newStepIndex >= steps.length) {
+          await storage.updateEnrollmentProgress(enrollment.id, newStepIndex, null, 'completed');
+          console.log(`[Scheduler] Workflow completed for user ${user.email}`);
+        } else {
+          const nextStep = steps[newStepIndex];
+          const nextStepAt = addHours(addDays(new Date(), nextStep.delayDays), nextStep.delayHours);
+          await storage.updateEnrollmentProgress(enrollment.id, newStepIndex, nextStepAt, 'active');
+          console.log(`[Scheduler] Next step scheduled for ${user.email} at ${nextStepAt}`);
+        }
+      }
+    }
+    
+    console.log(`[Scheduler] Processed ${enrollmentsToProcess.length} workflow enrollments`);
+  } catch (error) {
+    console.error('[Scheduler] Error processing workflow enrollments:', error);
+  }
+}
+
+export async function enrollUserInActiveWorkflows(userId: number, trigger: string): Promise<void> {
+  try {
+    const workflows = await storage.getEmailWorkflowsByTrigger(trigger);
+    
+    for (const workflow of workflows) {
+      const alreadyEnrolled = await storage.isUserEnrolledInWorkflow(userId, workflow.id);
+      if (alreadyEnrolled) continue;
+      
+      const steps = await storage.getWorkflowSteps(workflow.id);
+      if (steps.length === 0) continue;
+      
+      // Calculate when first step should fire
+      const firstStep = steps[0];
+      const nextStepAt = addHours(addDays(new Date(), firstStep.delayDays), firstStep.delayHours);
+      
+      await storage.enrollUserInWorkflow(userId, workflow.id, nextStepAt);
+      console.log(`[Scheduler] User ${userId} enrolled in workflow "${workflow.name}"`);
+    }
+  } catch (error) {
+    console.error('[Scheduler] Error enrolling user in workflows:', error);
+  }
+}
+
 export function startSubscriptionScheduler(): void {
   const CHECK_INTERVAL = 60 * 60 * 1000;
   
@@ -143,11 +239,13 @@ export function startSubscriptionScheduler(): void {
   processRenewalReminders();
   processExpiredGracePeriods();
   processMoveInReminders();
+  processWorkflowEnrollments();
   
   setInterval(async () => {
     await processRenewalReminders();
     await processExpiredGracePeriods();
     await processMoveInReminders();
+    await processWorkflowEnrollments();
   }, CHECK_INTERVAL);
   
   console.log('[Scheduler] Scheduler started, checking every hour');

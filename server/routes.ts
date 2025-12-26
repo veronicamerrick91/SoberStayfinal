@@ -9,6 +9,7 @@ import crypto from "crypto";
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
 import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml, sendApplicationReceivedEmail, sendNewApplicationNotification, sendApplicationApprovedEmail, sendApplicationDeniedEmail, sendPaymentReminderEmail, sendAdminContactEmail, sendRenewalReminderEmail, sendSubscriptionCanceledEmail, sendListingsHiddenEmail } from "./email";
+import { enrollUserInActiveWorkflows } from "./subscriptionScheduler";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import { sql } from "drizzle-orm";
@@ -136,6 +137,12 @@ Disallow: /auth/
         password: hashedPassword,
         name,
         role,
+      });
+
+      // Enroll user in relevant workflows based on role
+      const workflowTrigger = role === "provider" ? "on-provider-signup" : "on-tenant-signup";
+      enrollUserInActiveWorkflows(user.id, workflowTrigger).catch(err => {
+        console.error("Failed to enroll user in workflows:", err);
       });
 
       // Log the user in automatically
