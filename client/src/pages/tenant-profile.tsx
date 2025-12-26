@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, Check, Loader2, AlertCircle, Send, MapPin, Building } from "lucide-react";
+import { Upload, Check, Loader2, AlertCircle, Send, MapPin, Building, Phone } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { getAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
@@ -25,6 +26,8 @@ export function TenantProfile() {
   const [isLoading, setIsLoading] = useState(false);
   const [profile, setProfile] = useState<TenantProfile | null>(null);
   const [bio, setBio] = useState("");
+  const [phone, setPhone] = useState("");
+  const [smsOptIn, setSmsOptIn] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [idPhoto, setIdPhoto] = useState<string | null>(null);
   const [hasCompletedApplication, setHasCompletedApplication] = useState(false);
@@ -124,6 +127,8 @@ export function TenantProfile() {
         const data = await response.json();
         setProfile(data);
         setBio(data.bio || "");
+        setPhone(data.phone || "");
+        setSmsOptIn(data.smsOptIn || false);
         setProfilePhoto(data.profilePhotoUrl);
         setIdPhoto(data.idPhotoUrl);
         if (data.applicationData) {
@@ -200,7 +205,7 @@ export function TenantProfile() {
       const response = await fetch("/api/tenant/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bio, applicationData: formData }),
+        body: JSON.stringify({ bio, phone, smsOptIn, applicationData: formData }),
       });
       if (!response.ok) throw new Error("Failed to save profile");
       setHasCompletedApplication(true);
@@ -308,6 +313,31 @@ export function TenantProfile() {
                   onChange={(e) => setBio(e.target.value)}
                   className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary min-h-24"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  Phone Number for Notifications
+                </Label>
+                <Input
+                  type="tel"
+                  placeholder="(555) 123-4567"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
+                  data-testid="input-phone"
+                />
+                <div className="flex items-center space-x-2 mt-2">
+                  <Checkbox
+                    id="tenantSmsOptIn"
+                    checked={smsOptIn}
+                    onCheckedChange={(checked) => setSmsOptIn(checked === true)}
+                    data-testid="checkbox-sms-opt-in"
+                  />
+                  <Label htmlFor="tenantSmsOptIn" className="text-sm text-muted-foreground cursor-pointer">
+                    Receive SMS notifications for application updates
+                  </Label>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Upload, Check, Loader2, Building, MapPin, Phone, Globe, Calendar, Bed } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getAuth } from "@/lib/auth";
@@ -23,6 +24,7 @@ export function ProviderProfilePage() {
     companyName: "",
     website: "",
     phone: "",
+    smsOptIn: false,
     description: "",
     address: "",
     city: "",
@@ -53,6 +55,7 @@ export function ProviderProfilePage() {
           companyName: data.companyName || "",
           website: data.website || "",
           phone: data.phone || "",
+          smsOptIn: data.smsOptIn || false,
           description: data.description || "",
           address: data.address || "",
           city: data.city || "",
@@ -273,6 +276,17 @@ export function ProviderProfilePage() {
                     className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
                     data-testid="input-phone"
                   />
+                  <div className="flex items-center space-x-2 mt-2">
+                    <Checkbox
+                      id="smsOptIn"
+                      checked={formData.smsOptIn}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, smsOptIn: checked === true }))}
+                      data-testid="checkbox-sms-opt-in"
+                    />
+                    <Label htmlFor="smsOptIn" className="text-sm text-muted-foreground cursor-pointer">
+                      Receive SMS notifications for new applications and inquiries
+                    </Label>
+                  </div>
                 </div>
               </div>
 
