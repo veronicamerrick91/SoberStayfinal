@@ -324,3 +324,60 @@ export type ListingAnalyticsDaily = typeof listingAnalyticsDaily.$inferSelect;
 export type InsertListingAnalyticsDaily = z.infer<typeof insertListingAnalyticsDailySchema>;
 export type EmailTemplate = typeof emailTemplates.$inferSelect;
 export type InsertEmailTemplate = z.infer<typeof insertEmailTemplateSchema>;
+
+// Email Workflows - multi-step automated email sequences
+export const emailWorkflows = pgTable("email_workflows", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  trigger: text("trigger").notNull(), // on-provider-signup, on-tenant-signup, on-application-submitted, on-application-approved, manual
+  audience: text("audience").notNull().default("all"), // all, tenants, providers
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const workflowSteps = pgTable("workflow_steps", {
+  id: serial("id").primaryKey(),
+  workflowId: integer("workflow_id").notNull().references(() => emailWorkflows.id, { onDelete: "cascade" }),
+  stepOrder: integer("step_order").notNull(), // 1, 2, 3...
+  delayDays: integer("delay_days").notNull().default(0), // days to wait after previous step (or enrollment for step 1)
+  delayHours: integer("delay_hours").notNull().default(0), // additional hours to wait
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+});
+
+export const workflowEnrollments = pgTable("workflow_enrollments", {
+  id: serial("id").primaryKey(),
+  workflowId: integer("workflow_id").notNull().references(() => emailWorkflows.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  currentStep: integer("current_step").notNull().default(0), // 0 = just enrolled, 1 = completed step 1, etc.
+  nextStepAt: timestamp("next_step_at"), // when to process the next step
+  status: text("status").notNull().default("active"), // active, completed, paused, cancelled
+  enrolledAt: timestamp("enrolled_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertEmailWorkflowSchema = createInsertSchema(emailWorkflows).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertWorkflowStepSchema = createInsertSchema(workflowSteps).omit({
+  id: true,
+});
+
+export const insertWorkflowEnrollmentSchema = createInsertSchema(workflowEnrollments).omit({
+  id: true,
+  enrolledAt: true,
+  completedAt: true,
+});
+
+export type EmailWorkflow = typeof emailWorkflows.$inferSelect;
+export type InsertEmailWorkflow = z.infer<typeof insertEmailWorkflowSchema>;
+export type WorkflowStep = typeof workflowSteps.$inferSelect;
+export type InsertWorkflowStep = z.infer<typeof insertWorkflowStepSchema>;
+export type WorkflowEnrollment = typeof workflowEnrollments.$inferSelect;
+export type InsertWorkflowEnrollment = z.infer<typeof insertWorkflowEnrollmentSchema>;
