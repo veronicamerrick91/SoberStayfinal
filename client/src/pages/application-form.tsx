@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, CheckCircle2, Upload, Loader2, PartyPopper } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Upload, Loader2, PartyPopper, AlertCircle, Circle } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { useState, useEffect } from "react";
 import { isAuthenticated, getAuth } from "@/lib/auth";
 import { incrementStat } from "@/lib/tenant-engagement";
@@ -93,6 +94,24 @@ export default function ApplicationForm() {
   // Submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  
+  // Section completion tracking
+  const sectionStatus = {
+    personal: !!(firstName && lastName && email && phone && currentAddress && emergencyContactName && emergencyContactPhone && emergencyContactRelationship && dateOfBirth && gender),
+    id: idUploaded,
+    substance: !!(primarySubstance && ageOfFirstUse && lastDateOfUse && lengthOfSobriety && matHistory),
+    recovery: true, // Checkboxes validated on submit
+    medical: true, // Optional section
+    legal: !!(probationParole && pendingCases && restrainingOrders && violentOffenses),
+    employment: !!(employmentStatus && canPayRent),
+    housing: !!(reasonForLeaving && previousSoberLiving && previousEvictions && housingViolations),
+    preferences: !!(roomPreference && moveInDate),
+    consent: consentShareInfo && consentTerms
+  };
+  
+  const completedSections = Object.values(sectionStatus).filter(Boolean).length;
+  const totalSections = Object.keys(sectionStatus).length;
+  const progressPercent = Math.round((completedSections / totalSections) * 100);
   
   const isPreview = params?.id === "preview";
   
@@ -381,11 +400,57 @@ export default function ApplicationForm() {
             <p className="text-muted-foreground">Complete this comprehensive application. All fields marked * are required.</p>
           </div>
 
+          {/* Progress Indicator */}
+          <Card className="bg-card border-border mb-6">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-white">Application Progress</span>
+                <span className="text-sm text-primary font-bold">{progressPercent}% Complete</span>
+              </div>
+              <Progress value={progressPercent} className="h-3 mb-4" />
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                <div className={`flex items-center gap-1.5 ${sectionStatus.personal ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {sectionStatus.personal ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
+                  Personal
+                </div>
+                <div className={`flex items-center gap-1.5 ${sectionStatus.id ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {sectionStatus.id ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
+                  ID Upload
+                </div>
+                <div className={`flex items-center gap-1.5 ${sectionStatus.substance ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {sectionStatus.substance ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
+                  Substance
+                </div>
+                <div className={`flex items-center gap-1.5 ${sectionStatus.legal ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {sectionStatus.legal ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
+                  Legal
+                </div>
+                <div className={`flex items-center gap-1.5 ${sectionStatus.employment ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {sectionStatus.employment ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
+                  Employment
+                </div>
+                <div className={`flex items-center gap-1.5 ${sectionStatus.housing ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {sectionStatus.housing ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
+                  Housing
+                </div>
+                <div className={`flex items-center gap-1.5 ${sectionStatus.preferences ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {sectionStatus.preferences ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
+                  Preferences
+                </div>
+                <div className={`flex items-center gap-1.5 ${sectionStatus.consent ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {sectionStatus.consent ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Circle className="w-3.5 h-3.5" />}
+                  Consent
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* 1. Personal Information */}
-            <Card className="bg-card border-border">
+            <Card className={`bg-card border-border ${!sectionStatus.personal ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-primary'}`}>
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
+                  {sectionStatus.personal ? <CheckCircle2 className="w-5 h-5 text-primary" /> : <AlertCircle className="w-5 h-5 text-amber-500" />}
                   1. Personal Information
                   {profileLoading && <Loader2 className="w-4 h-4 animate-spin text-primary" />}
                 </CardTitle>
@@ -509,9 +574,12 @@ export default function ApplicationForm() {
             </Card>
 
             {/* 2. Identification Upload */}
-            <Card className="bg-card border-border">
+            <Card className={`bg-card border-border ${!sectionStatus.id ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-primary'}`}>
               <CardHeader>
-                <CardTitle className="text-white">2. Identification Upload *</CardTitle>
+                <CardTitle className="text-white flex items-center gap-2">
+                  {sectionStatus.id ? <CheckCircle2 className="w-5 h-5 text-primary" /> : <AlertCircle className="w-5 h-5 text-amber-500" />}
+                  2. Identification Upload *
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className={`bg-primary/5 border rounded-lg p-6 ${idUploaded ? 'border-primary/20' : 'border-destructive/30'}`}>
@@ -536,9 +604,12 @@ export default function ApplicationForm() {
             </Card>
 
             {/* 3. Substance Use Information */}
-            <Card className="bg-card border-border">
+            <Card className={`bg-card border-border ${!sectionStatus.substance ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-primary'}`}>
               <CardHeader>
-                <CardTitle className="text-white">3. Substance Use Information</CardTitle>
+                <CardTitle className="text-white flex items-center gap-2">
+                  {sectionStatus.substance ? <CheckCircle2 className="w-5 h-5 text-primary" /> : <AlertCircle className="w-5 h-5 text-amber-500" />}
+                  3. Substance Use Information
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -593,9 +664,12 @@ export default function ApplicationForm() {
             </Card>
 
             {/* 4. Recovery Program Requirements */}
-            <Card className="bg-card border-border">
+            <Card className={`bg-card border-border ${!sectionStatus.recovery ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-primary'}`}>
               <CardHeader>
-                <CardTitle className="text-white">4. Recovery Program Requirements</CardTitle>
+                <CardTitle className="text-white flex items-center gap-2">
+                  {sectionStatus.recovery ? <CheckCircle2 className="w-5 h-5 text-primary" /> : <AlertCircle className="w-5 h-5 text-amber-500" />}
+                  4. Recovery Program Requirements
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
@@ -646,9 +720,12 @@ export default function ApplicationForm() {
             </Card>
 
             {/* 5. Medical & Mental Health */}
-            <Card className="bg-card border-border">
+            <Card className={`bg-card border-border ${!sectionStatus.medical ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-primary'}`}>
               <CardHeader>
-                <CardTitle className="text-white">5. Medical & Mental Health</CardTitle>
+                <CardTitle className="text-white flex items-center gap-2">
+                  {sectionStatus.medical ? <CheckCircle2 className="w-5 h-5 text-primary" /> : <AlertCircle className="w-5 h-5 text-amber-500" />}
+                  5. Medical & Mental Health
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -708,9 +785,12 @@ export default function ApplicationForm() {
             </Card>
 
             {/* 6. Legal Information */}
-            <Card className="bg-card border-border">
+            <Card className={`bg-card border-border ${!sectionStatus.legal ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-primary'}`}>
               <CardHeader>
-                <CardTitle className="text-white">6. Legal Information</CardTitle>
+                <CardTitle className="text-white flex items-center gap-2">
+                  {sectionStatus.legal ? <CheckCircle2 className="w-5 h-5 text-primary" /> : <AlertCircle className="w-5 h-5 text-amber-500" />}
+                  6. Legal Information
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -769,9 +849,12 @@ export default function ApplicationForm() {
             </Card>
 
             {/* 7. Employment & Income */}
-            <Card className="bg-card border-border">
+            <Card className={`bg-card border-border ${!sectionStatus.employment ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-primary'}`}>
               <CardHeader>
-                <CardTitle className="text-white">7. Employment & Income</CardTitle>
+                <CardTitle className="text-white flex items-center gap-2">
+                  {sectionStatus.employment ? <CheckCircle2 className="w-5 h-5 text-primary" /> : <AlertCircle className="w-5 h-5 text-amber-500" />}
+                  7. Employment & Income
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -835,9 +918,12 @@ export default function ApplicationForm() {
             </Card>
 
             {/* 8. Housing Background */}
-            <Card className="bg-card border-border">
+            <Card className={`bg-card border-border ${!sectionStatus.housing ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-primary'}`}>
               <CardHeader>
-                <CardTitle className="text-white">8. Housing Background</CardTitle>
+                <CardTitle className="text-white flex items-center gap-2">
+                  {sectionStatus.housing ? <CheckCircle2 className="w-5 h-5 text-primary" /> : <AlertCircle className="w-5 h-5 text-amber-500" />}
+                  8. Housing Background
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -904,9 +990,12 @@ export default function ApplicationForm() {
             </Card>
 
             {/* 9. Personal Needs & Preferences */}
-            <Card className="bg-card border-border">
+            <Card className={`bg-card border-border ${!sectionStatus.preferences ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-primary'}`}>
               <CardHeader>
-                <CardTitle className="text-white">9. Personal Needs & Preferences</CardTitle>
+                <CardTitle className="text-white flex items-center gap-2">
+                  {sectionStatus.preferences ? <CheckCircle2 className="w-5 h-5 text-primary" /> : <AlertCircle className="w-5 h-5 text-amber-500" />}
+                  9. Personal Needs & Preferences
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -1070,9 +1159,12 @@ export default function ApplicationForm() {
             </Card>
 
             {/* 11. Consent & Acknowledgments */}
-            <Card className="bg-card border-border">
+            <Card className={`bg-card border-border ${!sectionStatus.consent ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-primary'}`}>
               <CardHeader>
-                <CardTitle className="text-white">11. Consent & Acknowledgments</CardTitle>
+                <CardTitle className="text-white flex items-center gap-2">
+                  {sectionStatus.consent ? <CheckCircle2 className="w-5 h-5 text-primary" /> : <AlertCircle className="w-5 h-5 text-amber-500" />}
+                  11. Consent & Acknowledgments
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3 bg-primary/5 border border-primary/20 rounded-lg p-4">
