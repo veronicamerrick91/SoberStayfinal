@@ -83,25 +83,39 @@ export default function ApplicationForm() {
     }
   }, [params?.id, setLocation, isPreview]);
   
-  // Pre-fill form from tenant profile applicationData (with fallback to top-level fields)
+  // Pre-fill form from tenant profile applicationData (with fallback to top-level fields and user account)
   useEffect(() => {
     const fetchTenantProfile = async () => {
       if (isPreview) return;
       setProfileLoading(true);
       try {
+        // Get current user info for fallback data (email, name)
+        const user = getAuth() as any;
+        
         const res = await fetch('/api/tenant/profile', { credentials: 'include' });
         if (res.ok) {
           const profile = await res.json();
           const appData = profile.applicationData || {};
-          // Check applicationData first, then fall back to top-level profile fields
-          if (appData.firstName || profile.firstName) setFirstName(appData.firstName || profile.firstName);
-          if (appData.lastName || profile.lastName) setLastName(appData.lastName || profile.lastName);
-          if (appData.email || profile.email) setEmail(appData.email || profile.email);
-          if (appData.phone || profile.phone) setPhone(appData.phone || profile.phone);
-          if (appData.currentAddress || profile.currentAddress) setCurrentAddress(appData.currentAddress || profile.currentAddress);
-          if (appData.emergencyContactName || profile.emergencyContactName) setEmergencyContactName(appData.emergencyContactName || profile.emergencyContactName);
-          if (appData.emergencyContactPhone || profile.emergencyContactPhone) setEmergencyContactPhone(appData.emergencyContactPhone || profile.emergencyContactPhone);
-          if (appData.emergencyContactRelationship || profile.emergencyContactRelationship) setEmergencyContactRelationship(appData.emergencyContactRelationship || profile.emergencyContactRelationship);
+          // Check applicationData first, then fall back to top-level profile fields, then user account
+          // Note: phoneNumber in applicationData maps to phone field
+          const userFirstName = user?.firstName || (user?.name ? user.name.split(' ')[0] : '');
+          const userLastName = user?.lastName || (user?.name ? user.name.split(' ').slice(1).join(' ') : '');
+          
+          if (appData.firstName || profile.firstName || userFirstName) setFirstName(appData.firstName || profile.firstName || userFirstName);
+          if (appData.lastName || profile.lastName || userLastName) setLastName(appData.lastName || profile.lastName || userLastName);
+          if (appData.email || profile.email || user?.email) setEmail(appData.email || profile.email || user?.email || '');
+          if (appData.phoneNumber || appData.phone || profile.phone) setPhone(appData.phoneNumber || appData.phone || profile.phone || '');
+          if (appData.currentAddress || profile.currentAddress) setCurrentAddress(appData.currentAddress || profile.currentAddress || '');
+          if (appData.emergencyContactName || profile.emergencyContactName) setEmergencyContactName(appData.emergencyContactName || profile.emergencyContactName || '');
+          if (appData.emergencyContactPhone || profile.emergencyContactPhone) setEmergencyContactPhone(appData.emergencyContactPhone || profile.emergencyContactPhone || '');
+          if (appData.emergencyContactRelationship || profile.emergencyContactRelationship) setEmergencyContactRelationship(appData.emergencyContactRelationship || profile.emergencyContactRelationship || '');
+        } else if (user) {
+          // If no profile exists, still use user account data
+          const userFirstName = user.firstName || (user.name ? user.name.split(' ')[0] : '');
+          const userLastName = user.lastName || (user.name ? user.name.split(' ').slice(1).join(' ') : '');
+          if (userFirstName) setFirstName(userFirstName);
+          if (userLastName) setLastName(userLastName);
+          if (user.email) setEmail(user.email);
         }
       } catch (err) {
         console.error("Error fetching tenant profile:", err);
