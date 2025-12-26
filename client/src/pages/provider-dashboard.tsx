@@ -423,19 +423,48 @@ function ProviderDashboardContent() {
     }
   };
 
-  const handleApproveApplication = (id: string) => {
-    setApplications(prev => prev.map(app => 
-      app.id === id ? { ...app, status: "Approved" } : app
-    ));
-    // In a real app, this would trigger a backend update and maybe an email
+  const handleApproveApplication = async (id: string, moveInDate?: string) => {
+    try {
+      const res = await fetch(`/api/provider/applications/${id}/status`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'approved', moveInDate })
+      });
+      if (res.ok) {
+        setApplications(prev => prev.map(app => 
+          app.id === id ? { ...app, status: "Approved" } : app
+        ));
+      } else {
+        const error = await res.json();
+        alert(error.error || "Failed to approve application");
+      }
+    } catch (err) {
+      console.error("Error approving application:", err);
+      alert("Failed to approve application");
+    }
   };
 
-  const handleDenyApplication = (id: string, reason: string) => {
-    setApplications(prev => prev.map(app => 
-      app.id === id ? { ...app, status: "Denied" } : app
-    ));
-    // In a real app, this would log the reason
-    console.log(`Application ${id} denied because: ${reason}`);
+  const handleDenyApplication = async (id: string, reason: string) => {
+    try {
+      const res = await fetch(`/api/provider/applications/${id}/status`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'rejected', reason })
+      });
+      if (res.ok) {
+        setApplications(prev => prev.map(app => 
+          app.id === id ? { ...app, status: "Denied" } : app
+        ));
+      } else {
+        const error = await res.json();
+        alert(error.error || "Failed to deny application");
+      }
+    } catch (err) {
+      console.error("Error denying application:", err);
+      alert("Failed to deny application");
+    }
   };
 
   // Two-Factor Authentication handlers

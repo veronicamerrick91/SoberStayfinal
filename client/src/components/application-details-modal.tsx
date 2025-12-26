@@ -45,7 +45,7 @@ interface ApplicationDetailsModalProps {
   open: boolean;
   onClose: () => void;
   application: ApplicationData | null;
-  onApprove: (id: string) => void;
+  onApprove: (id: string, moveInDate?: string) => void;
   onDeny: (id: string, reason: string) => void;
 }
 
@@ -65,6 +65,8 @@ const DENIAL_REASONS = [
 export function ApplicationDetailsModal({ open, onClose, application, onApprove, onDeny }: ApplicationDetailsModalProps) {
   const [denyReason, setDenyReason] = useState("");
   const [showDenyInput, setShowDenyInput] = useState(false);
+  const [showApproveInput, setShowApproveInput] = useState(false);
+  const [moveInDate, setMoveInDate] = useState("");
 
   if (!application) return null;
 
@@ -218,13 +220,34 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
                 <Button variant="destructive" disabled={!denyReason} onClick={handleDenyClick}>Confirm Denial</Button>
               </div>
             </div>
+          ) : showApproveInput ? (
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-muted-foreground mb-2 block">Move-In Date (optional)</label>
+                <input
+                  type="date"
+                  value={moveInDate}
+                  onChange={(e) => setMoveInDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
+                  data-testid="input-move-in-date"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Set move-in date to send a reminder email 3 days before</p>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="ghost" onClick={() => { setShowApproveInput(false); setMoveInDate(""); }}>Cancel</Button>
+                <Button onClick={() => { onApprove(application.id, moveInDate || undefined); setShowApproveInput(false); setMoveInDate(""); onClose(); }} className="bg-green-600 hover:bg-green-700">
+                  <CheckCircle className="w-4 h-4 mr-2" /> Confirm Approval
+                </Button>
+              </div>
+            </div>
           ) : (
             <div className="flex gap-3">
               <Button variant="outline" onClick={onClose} className="flex-1">Close</Button>
               <Button variant="outline" onClick={handleDenyClick} className="flex-1 border-red-500/30 text-red-500">
                 <XCircle className="w-4 h-4 mr-2" /> Deny
               </Button>
-              <Button onClick={() => { onApprove(application.id); onClose(); }} className="flex-1 bg-green-600 hover:bg-green-700">
+              <Button onClick={() => setShowApproveInput(true)} className="flex-1 bg-green-600 hover:bg-green-700">
                 <CheckCircle className="w-4 h-4 mr-2" /> Approve
               </Button>
             </div>

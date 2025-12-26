@@ -106,11 +106,11 @@ export const applications = pgTable("applications", {
   id: serial("id").primaryKey(),
   tenantId: integer("tenant_id").notNull().references(() => users.id),
   listingId: integer("listing_id").notNull().references(() => listings.id),
-  applicationData: jsonb("application_data").$type<Record<string, any>>(),
-  bio: text("bio"),
-  profilePhotoUrl: text("profile_photo_url"),
-  idPhotoUrl: text("id_photo_url"),
+  applicationData: jsonb("data").$type<Record<string, any>>(),
   status: text("status").default("pending").notNull(), // pending, approved, rejected
+  moveInDate: timestamp("move_in_date"),
+  moveInReminderSent: boolean("move_in_reminder_sent").default(false),
+  updatedAt: timestamp("updated_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

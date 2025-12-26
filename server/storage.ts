@@ -67,7 +67,9 @@ export interface IStorage {
   getApplicationsByTenant(tenantId: number): Promise<Application[]>;
   getApplicationsByListing(listingId: number): Promise<Application[]>;
   getApplicationsByProvider(providerId: number): Promise<Application[]>;
-  updateApplicationStatus(id: number, status: string): Promise<Application | undefined>;
+  updateApplicationStatus(id: number, status: string, moveInDate?: Date): Promise<Application | undefined>;
+  getUpcomingMoveIns(daysAhead: number): Promise<Application[]>;
+  markMoveInReminderSent(id: number): Promise<void>;
   
   // Promo Codes
   getAllPromoCodes(): Promise<PromoCode[]>;
@@ -580,13 +582,43 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(applications.createdAt));
   }
 
-  async updateApplicationStatus(id: number, status: string): Promise<Application | undefined> {
+  async updateApplicationStatus(id: number, status: string, moveInDate?: Date): Promise<Application | undefined> {
+    const updateData: any = { status };
+    if (moveInDate) {
+      updateData.moveInDate = moveInDate;
+      updateData.moveInReminderSent = false; // Reset reminder when date changes
+    }
     const [updated] = await db
       .update(applications)
-      .set({ status })
+      .set(updateData)
       .where(eq(applications.id, id))
       .returning();
     return updated;
+  }
+
+  async getUpcomingMoveIns(daysAhead: number): Promise<Application[]> {
+    const now = new Date();
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + daysAhead);
+    
+    return await db
+      .select()
+      .from(applications)
+      .where(
+        and(
+          eq(applications.status, 'approved'),
+          eq(applications.moveInReminderSent, false),
+          gte(applications.moveInDate, now),
+          lte(applications.moveInDate, futureDate)
+        )
+      );
+  }
+
+  async markMoveInReminderSent(id: number): Promise<void> {
+    await db
+      .update(applications)
+      .set({ moveInReminderSent: true })
+      .where(eq(applications.id, id));
   }
 
   // Promo Code methods
@@ -1272,6 +1304,40 @@ Recovery is a journey, not a destination. Wherever you are on that path, we're r
 Come back anytime. We'll be here.
 
 With support,
+The Sober Stay Team`,
+        isActive: true
+      },
+      {
+        name: 'Move-In Reminder',
+        type: 'email',
+        trigger: '3-days-before-move-in',
+        audience: 'tenants',
+        subject: 'Your Move-In is Coming Up! - Sober Stay',
+        body: `Hi [name],
+
+This is a friendly reminder that your move-in date is just 3 days away!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+YOUR UPCOMING MOVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📍 Property: [property_name]
+📅 Move-In Date: [move_in_date]
+
+BEFORE YOU ARRIVE:
+• Confirm move-in time with the provider
+• Prepare your personal belongings
+• Bring your ID and any required documents
+• Review house rules and expectations
+
+WHAT TO EXPECT:
+The first few days in a new environment can feel overwhelming, but you're taking an incredible step in your recovery journey.
+
+If you have any questions before move-in day, reach out to your provider directly.
+
+You've got this!
+
+With encouragement,
 The Sober Stay Team`,
         isActive: true
       }

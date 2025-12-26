@@ -19,6 +19,7 @@ async function getResendClient(): Promise<{ client: Resend; fromEmail: string }>
 
 const SUPPORT_EMAIL = 'support@soberstayhomes.com';
 const APP_NAME = 'Sober Stay Homes';
+const WEBSITE_URL = 'https://www.soberstayhomes.com';
 
 export interface EmailOptions {
   to: string | string[];
@@ -840,6 +841,97 @@ export async function sendAdminContactEmail(email: string, providerName: string,
     return true;
   } catch (error) {
     console.error('Error sending admin contact email:', error);
+    return false;
+  }
+}
+
+export async function sendMoveInReminderEmail(
+  email: string,
+  tenantName: string,
+  propertyName: string,
+  moveInDate: string
+): Promise<boolean> {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
+      to: email,
+      subject: 'Your Move-In is Coming Up! - Sober Stay',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0f172a; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+                  <tr>
+                    <td style="padding: 40px 30px; text-align: center;">
+                      <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 60px; height: 60px; border-radius: 12px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 28px;">🏠</span>
+                      </div>
+                      <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 16px;">Your Move-In is Coming Up!</h1>
+                      <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        Hi ${tenantName},
+                      </p>
+                      <p style="color: #cbd5e1; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                        This is a friendly reminder that your move-in date is just 3 days away!
+                      </p>
+                      <div style="background-color: #0f172a; padding: 20px; border-radius: 8px; margin: 0 0 24px; text-align: left;">
+                        <p style="color: #10b981; font-size: 14px; font-weight: 600; margin: 0 0 12px;">YOUR UPCOMING MOVE</p>
+                        <p style="color: #cbd5e1; font-size: 16px; margin: 0 0 8px;">
+                          📍 <strong>Property:</strong> ${propertyName}
+                        </p>
+                        <p style="color: #cbd5e1; font-size: 16px; margin: 0;">
+                          📅 <strong>Move-In Date:</strong> ${moveInDate}
+                        </p>
+                      </div>
+                      <div style="background-color: #0f172a; padding: 20px; border-radius: 8px; margin: 0 0 24px; text-align: left;">
+                        <p style="color: #10b981; font-size: 14px; font-weight: 600; margin: 0 0 12px;">BEFORE YOU ARRIVE</p>
+                        <ul style="color: #cbd5e1; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                          <li>Confirm move-in time with the provider</li>
+                          <li>Prepare your personal belongings</li>
+                          <li>Bring your ID and any required documents</li>
+                          <li>Review house rules and expectations</li>
+                        </ul>
+                      </div>
+                      <p style="color: #94a3b8; font-size: 14px; line-height: 1.6; margin: 0 0 24px;">
+                        The first few days in a new environment can feel overwhelming, but you're taking an incredible step in your recovery journey. You've got this!
+                      </p>
+                      <a href="${WEBSITE_URL}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+                        Visit Sober Stay
+                      </a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 24px 30px; border-top: 1px solid #334155; text-align: center;">
+                      <p style="color: #475569; font-size: 12px; margin: 0;">
+                        © ${new Date().getFullYear()} Sober Stay Homes. All rights reserved.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error('Failed to send move-in reminder email:', error);
+      return false;
+    }
+
+    console.log('Move-in reminder email sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Error sending move-in reminder email:', error);
     return false;
   }
 }

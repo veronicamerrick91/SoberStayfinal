@@ -1,7 +1,9 @@
 import { storage } from './storage';
-import { sendRenewalReminderEmail, sendListingsHiddenEmail } from './email';
+import { sendRenewalReminderEmail, sendListingsHiddenEmail, sendMoveInReminderEmail } from './email';
+import { format } from 'date-fns';
 
 const GRACE_PERIOD_DAYS = 7;
+const MOVE_IN_REMINDER_DAYS = 3;
 
 export async function processRenewalReminders(): Promise<void> {
   console.log('[Scheduler] Checking for subscriptions needing renewal reminders...');
@@ -100,6 +102,39 @@ export async function handleSubscriptionReactivated(providerId: number): Promise
   console.log(`[Subscription] Provider ${providerId} subscription reactivated, listings restored`);
 }
 
+export async function processMoveInReminders(): Promise<void> {
+  console.log('[Scheduler] Checking for upcoming move-ins...');
+  
+  try {
+    const upcomingMoveIns = await storage.getUpcomingMoveIns(MOVE_IN_REMINDER_DAYS);
+    
+    for (const application of upcomingMoveIns) {
+      const tenant = await storage.getUser(application.tenantId);
+      const listing = await storage.getListing(application.listingId);
+      
+      if (!tenant || !listing || !application.moveInDate) continue;
+      
+      console.log(`[Scheduler] Sending move-in reminder to ${tenant.email}`);
+      
+      const sent = await sendMoveInReminderEmail(
+        tenant.email,
+        tenant.name || 'Tenant',
+        listing.propertyName,
+        format(new Date(application.moveInDate), 'MMMM d, yyyy')
+      );
+      
+      if (sent) {
+        await storage.markMoveInReminderSent(application.id);
+        console.log(`[Scheduler] Move-in reminder sent to ${tenant.email}`);
+      }
+    }
+    
+    console.log(`[Scheduler] Processed ${upcomingMoveIns.length} move-in reminders`);
+  } catch (error) {
+    console.error('[Scheduler] Error processing move-in reminders:', error);
+  }
+}
+
 export function startSubscriptionScheduler(): void {
   const CHECK_INTERVAL = 60 * 60 * 1000;
   
@@ -107,10 +142,12 @@ export function startSubscriptionScheduler(): void {
   
   processRenewalReminders();
   processExpiredGracePeriods();
+  processMoveInReminders();
   
   setInterval(async () => {
     await processRenewalReminders();
     await processExpiredGracePeriods();
+    await processMoveInReminders();
   }, CHECK_INTERVAL);
   
   console.log('[Scheduler] Scheduler started, checking every hour');

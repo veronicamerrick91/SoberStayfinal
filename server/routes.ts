@@ -1675,9 +1675,18 @@ Disallow: /auth/
         return res.status(400).json({ error: "Invalid application ID" });
       }
       
-      const { status, reason } = req.body;
+      const { status, reason, moveInDate } = req.body;
       if (!status || !['approved', 'rejected', 'pending'].includes(status)) {
         return res.status(400).json({ error: "Invalid status" });
+      }
+      
+      // Parse move-in date if provided
+      let parsedMoveInDate: Date | undefined;
+      if (moveInDate) {
+        parsedMoveInDate = new Date(moveInDate);
+        if (isNaN(parsedMoveInDate.getTime())) {
+          return res.status(400).json({ error: "Invalid move-in date" });
+        }
       }
       
       // Verify the application belongs to one of the provider's listings
@@ -1691,8 +1700,8 @@ Disallow: /auth/
         return res.status(403).json({ error: "Not authorized to update this application" });
       }
       
-      // Update the status
-      const updated = await storage.updateApplicationStatus(appId, status);
+      // Update the status (and move-in date if approving)
+      const updated = await storage.updateApplicationStatus(appId, status, parsedMoveInDate);
       
       // Send email notification to tenant
       try {
