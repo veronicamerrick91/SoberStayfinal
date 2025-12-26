@@ -3994,7 +3994,7 @@ the actual document file stored on the server.
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-gray-300 mb-6">Automate email sequences and tenant/provider communications with intelligent workflows.</p>
+                <p className="text-sm text-gray-300 mb-6">These are your <strong>live automated emails</strong> that will be sent to tenants and providers based on trigger events. Click "View" to see the email content.</p>
                 
                 {workflows.length === 0 ? (
                   <div className="text-center py-12 rounded-lg bg-white/5 border border-white/10 border-dashed">
@@ -4084,7 +4084,8 @@ the actual document file stored on the server.
 
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-white">Workflow Templates</CardTitle>
+                <CardTitle className="text-white">Workflow Templates (Examples)</CardTitle>
+                <p className="text-xs text-muted-foreground">Reference examples for creating your own workflows. These are not active - use the Email Workflow Builder above for live automations.</p>
               </CardHeader>
               <CardContent className="space-y-3">
                 {emailSequences.map((seq) => (
@@ -4512,6 +4513,12 @@ the actual document file stored on the server.
               </div>
               
               <div className="p-6 space-y-4 overflow-y-auto flex-1">
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-blue-300">
+                    <strong>Recipients:</strong> {viewingWorkflow.audience === 'tenants' ? 'Tenants only' : viewingWorkflow.audience === 'providers' ? 'Providers only' : 'All users'} will receive these emails automatically when the trigger event occurs.
+                  </p>
+                </div>
+                
                 <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Email Steps ({viewingWorkflow.steps?.length || 0})</h3>
                 
                 {viewingWorkflow.steps && viewingWorkflow.steps.length > 0 ? (
@@ -4532,7 +4539,7 @@ the actual document file stored on the server.
                           </span>
                         </div>
                         <div className="bg-background/50 rounded-lg p-3 text-sm text-gray-300 whitespace-pre-wrap">
-                          {step.body}
+                          {step.body?.replace(/\\n/g, '\n')}
                         </div>
                       </div>
                     ))}
