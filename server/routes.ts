@@ -1210,7 +1210,7 @@ Disallow: /auth/
       await delay(600);
 
       // 9. Application Denied - Realistic reason
-      const r9Success = await sendApplicationDeniedEmail(email, "Michael", "Serenity House - Phoenix", "We're currently at full capacity and cannot accept new residents at this time. We encourage you to explore other listings on Sober Stay Homes or check back with us in a few weeks.");
+      const r9Success = await sendApplicationDeniedEmail(email, "Michael", "Serenity House - Phoenix", "Desert Hope Recovery", "We're currently at full capacity and cannot accept new residents at this time. We encourage you to explore other listings on Sober Stay Homes or check back with us in a few weeks.");
       results.push({ template: "Application Denied", success: r9Success });
 
       await delay(600);
