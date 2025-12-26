@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, type TenantFavorite, type TenantViewedHome, type ListingAnalyticsEvent, type InsertListingAnalyticsEvent, type ListingAnalyticsDaily, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners, tenantFavorites, tenantViewedHomes, listingAnalyticsEvents, listingAnalyticsDaily } from "@shared/schema";
+import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, type TenantFavorite, type TenantViewedHome, type ListingAnalyticsEvent, type InsertListingAnalyticsEvent, type ListingAnalyticsDaily, type EmailTemplate, type InsertEmailTemplate, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners, tenantFavorites, tenantViewedHomes, listingAnalyticsEvents, listingAnalyticsDaily, emailTemplates } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, lt, isNull, or, desc, count, inArray, gte, lte, sql } from "drizzle-orm";
 import session from "express-session";
@@ -123,6 +123,15 @@ export interface IStorage {
   getProviderAnalyticsByListing(providerId: number, listingId: number, startDate: Date, endDate: Date): Promise<ListingAnalyticsDaily[]>;
   getProviderTopLocations(providerId: number, startDate: Date, endDate: Date): Promise<{city: string; state: string; count: number}[]>;
   aggregateDailyAnalytics(): Promise<void>;
+  
+  // Email Templates
+  getAllEmailTemplates(): Promise<EmailTemplate[]>;
+  getEmailTemplate(id: number): Promise<EmailTemplate | undefined>;
+  getEmailTemplatesByTrigger(trigger: string): Promise<EmailTemplate[]>;
+  createEmailTemplate(template: InsertEmailTemplate): Promise<EmailTemplate>;
+  updateEmailTemplate(id: number, data: Partial<InsertEmailTemplate>): Promise<EmailTemplate | undefined>;
+  deleteEmailTemplate(id: number): Promise<void>;
+  incrementEmailTemplateUsage(id: number): Promise<void>;
   
   sessionStore: session.Store;
 }
@@ -990,6 +999,45 @@ export class DatabaseStorage implements IStorage {
         applications: agg.applications
       });
     }
+  }
+
+  // Email Templates
+  async getAllEmailTemplates(): Promise<EmailTemplate[]> {
+    return await db.select().from(emailTemplates).orderBy(desc(emailTemplates.createdAt));
+  }
+
+  async getEmailTemplate(id: number): Promise<EmailTemplate | undefined> {
+    const [template] = await db.select().from(emailTemplates).where(eq(emailTemplates.id, id));
+    return template;
+  }
+
+  async getEmailTemplatesByTrigger(trigger: string): Promise<EmailTemplate[]> {
+    return await db.select().from(emailTemplates).where(
+      and(eq(emailTemplates.trigger, trigger), eq(emailTemplates.isActive, true))
+    );
+  }
+
+  async createEmailTemplate(template: InsertEmailTemplate): Promise<EmailTemplate> {
+    const [created] = await db.insert(emailTemplates).values(template).returning();
+    return created;
+  }
+
+  async updateEmailTemplate(id: number, data: Partial<InsertEmailTemplate>): Promise<EmailTemplate | undefined> {
+    const [updated] = await db.update(emailTemplates)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(emailTemplates.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteEmailTemplate(id: number): Promise<void> {
+    await db.delete(emailTemplates).where(eq(emailTemplates.id, id));
+  }
+
+  async incrementEmailTemplateUsage(id: number): Promise<void> {
+    await db.update(emailTemplates)
+      .set({ usageCount: sql`${emailTemplates.usageCount} + 1` })
+      .where(eq(emailTemplates.id, id));
   }
 }
 

@@ -2489,5 +2489,67 @@ Disallow: /auth/
     }
   });
 
+  // Email Templates CRUD (admin only)
+  app.get("/api/admin/email-templates", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const templates = await storage.getAllEmailTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching email templates:", error);
+      res.status(500).json({ error: "Failed to fetch email templates" });
+    }
+  });
+
+  app.post("/api/admin/email-templates", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const template = await storage.createEmailTemplate(req.body);
+      res.json(template);
+    } catch (error) {
+      console.error("Error creating email template:", error);
+      res.status(500).json({ error: "Failed to create email template" });
+    }
+  });
+
+  app.put("/api/admin/email-templates/:id", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      const template = await storage.updateEmailTemplate(id, req.body);
+      if (!template) {
+        return res.status(404).json({ error: "Template not found" });
+      }
+      res.json(template);
+    } catch (error) {
+      console.error("Error updating email template:", error);
+      res.status(500).json({ error: "Failed to update email template" });
+    }
+  });
+
+  app.delete("/api/admin/email-templates/:id", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteEmailTemplate(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting email template:", error);
+      res.status(500).json({ error: "Failed to delete email template" });
+    }
+  });
+
   return httpServer;
 }
