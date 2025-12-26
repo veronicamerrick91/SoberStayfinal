@@ -1042,9 +1042,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async seedDefaultEmailTemplates(): Promise<void> {
+    // Upsert default templates - check if canonical templates exist by name and update or insert
     const existingTemplates = await db.select().from(emailTemplates);
-    if (existingTemplates.length > 0) return; // Don't seed if templates exist
-
+    const existingNames = new Set(existingTemplates.map(t => t.name));
+    
     const defaultTemplates: InsertEmailTemplate[] = [
       {
         name: 'Welcome New Providers',
@@ -1276,10 +1277,31 @@ The Sober Stay Team`,
       }
     ];
 
+    let inserted = 0;
+    let updated = 0;
     for (const template of defaultTemplates) {
-      await db.insert(emailTemplates).values(template);
+      if (existingNames.has(template.name)) {
+        // Update existing template with rich content
+        await db.update(emailTemplates)
+          .set({ 
+            subject: template.subject, 
+            body: template.body, 
+            trigger: template.trigger,
+            audience: template.audience,
+            type: template.type,
+            isActive: template.isActive,
+            updatedAt: new Date()
+          })
+          .where(eq(emailTemplates.name, template.name));
+        updated++;
+      } else {
+        await db.insert(emailTemplates).values(template);
+        inserted++;
+      }
     }
-    console.log('Seeded default email templates');
+    if (inserted > 0 || updated > 0) {
+      console.log(`Email templates: ${inserted} inserted, ${updated} updated`);
+    }
   }
 }
 
