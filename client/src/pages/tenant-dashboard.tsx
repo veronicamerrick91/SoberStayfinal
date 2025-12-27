@@ -450,7 +450,7 @@ function TenantDashboardContent() {
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Profile</p>
+                    <p className="text-sm font-medium text-muted-foreground">Tenant Profile</p>
                     <h3 className="text-3xl font-bold text-white">{calculateProfileCompletion()}%</h3>
                   </div>
                   <div className="p-2 bg-amber-500/10 rounded-lg">
@@ -1088,12 +1088,12 @@ function TenantDashboardContent() {
             {/* Profile Completion */}
             <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-white">Profile Completion</span>
+                <span className="text-sm font-medium text-white">Tenant Profile Completion</span>
                 <span className="text-sm font-bold text-primary">{calculateProfileCompletion()}%</span>
               </div>
               <Progress value={calculateProfileCompletion()} className="h-2" />
               <p className="text-xs text-muted-foreground mt-2">
-                Complete your profile to increase visibility to providers
+                Complete your Tenant Profile to increase visibility to providers
               </p>
             </div>
           </div>
