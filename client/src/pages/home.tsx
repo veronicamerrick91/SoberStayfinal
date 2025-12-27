@@ -222,7 +222,7 @@ export default function Home() {
           {/* Tenants Side */}
           <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full">
             <div className="absolute inset-0">
-              <img src={tenantBg} loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
+              <img src={tenantBg} loading="lazy" className="w-full h-full object-cover" alt="" />
               <div className="absolute inset-0 bg-blue-950/80 mix-blend-multiply" />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90" />
             </div>
@@ -258,7 +258,7 @@ export default function Home() {
           {/* Providers Side */}
           <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full border-t lg:border-t-0 lg:border-l border-white/10">
             <div className="absolute inset-0">
-              <img src={providerBg} loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
+              <img src={providerBg} loading="lazy" className="w-full h-full object-cover" alt="" />
               <div className="absolute inset-0 bg-emerald-950/80 mix-blend-multiply" />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90" />
             </div>
@@ -336,7 +336,7 @@ export default function Home() {
                         src={listing.photos?.[0] || placeholderHome} 
                         alt={listing.propertyName}
                         loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-90" />
                       

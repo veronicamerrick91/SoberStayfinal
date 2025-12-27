@@ -11,7 +11,7 @@ import {
   Search, MapPin, ShieldCheck, Filter, LayoutGrid, List,
   HelpCircle, Map, Home, Loader2, Zap
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
@@ -72,13 +72,24 @@ export default function Browse() {
     queryFn: fetchFeaturedListings,
   });
 
+  // Pre-compute featured listings map once for O(1) lookups
+  const featuredMap = useMemo(() => {
+    const now = Date.now();
+    const map: Record<number, { isFeatured: boolean; boostLevel: number }> = {};
+    for (const f of featuredListings) {
+      if (f.isActive && new Date(f.endDate).getTime() > now) {
+        map[f.listingId] = { isFeatured: true, boostLevel: f.boostLevel || 0 };
+      }
+    }
+    return map;
+  }, [featuredListings]);
+
   const isListingFeatured = (listingId: number) => {
-    return featuredListings.some(f => f.listingId === listingId && f.isActive && new Date(f.endDate) > new Date());
+    return featuredMap[listingId]?.isFeatured || false;
   };
 
   const getListingBoostLevel = (listingId: number) => {
-    const featured = featuredListings.find(f => f.listingId === listingId && f.isActive && new Date(f.endDate) > new Date());
-    return featured?.boostLevel || 0;
+    return featuredMap[listingId]?.boostLevel || 0;
   };
 
   useDocumentMeta({
@@ -95,42 +106,45 @@ export default function Browse() {
     }
   }, [location]);
 
-  const filteredListings = listings.filter((listing) => {
-    // Location search filter
-    if (searchLocation) {
-      const searchLower = searchLocation.toLowerCase();
-      const matchesSearch = (
-        listing.city.toLowerCase().includes(searchLower) ||
-        listing.state.toLowerCase().includes(searchLower) ||
-        listing.propertyName.toLowerCase().includes(searchLower)
-      );
-      if (!matchesSearch) return false;
-    }
+  const filteredListings = useMemo(() => {
+    const searchLower = searchLocation.toLowerCase();
     
-    // Price filter
-    if (listing.monthlyPrice > priceRange[0]) return false;
-    
-    // Gender filter
-    if (selectedGenders.length > 0 && !selectedGenders.includes(listing.gender || "")) return false;
-    
-    // Supervision filter
-    if (selectedSupervision.length > 0 && !selectedSupervision.includes(listing.supervisionType || "")) return false;
-    
-    // Room type filter
-    if (selectedRoomTypes.length > 0 && !selectedRoomTypes.includes(listing.roomType || "")) return false;
-    
-    // MAT friendly filter
-    if (showMatFriendly && !listing.isMatFriendly) return false;
-    
-    // Accepts couples filter
-    if (showAcceptsCouples && !listing.acceptsCouples) return false;
-    
-    return true;
-  }).sort((a, b) => {
-    const aBoost = getListingBoostLevel(a.id);
-    const bBoost = getListingBoostLevel(b.id);
-    return bBoost - aBoost;
-  });
+    return listings.filter((listing) => {
+      // Location search filter
+      if (searchLocation) {
+        const matchesSearch = (
+          listing.city.toLowerCase().includes(searchLower) ||
+          listing.state.toLowerCase().includes(searchLower) ||
+          listing.propertyName.toLowerCase().includes(searchLower)
+        );
+        if (!matchesSearch) return false;
+      }
+      
+      // Price filter
+      if (listing.monthlyPrice > priceRange[0]) return false;
+      
+      // Gender filter
+      if (selectedGenders.length > 0 && !selectedGenders.includes(listing.gender || "")) return false;
+      
+      // Supervision filter
+      if (selectedSupervision.length > 0 && !selectedSupervision.includes(listing.supervisionType || "")) return false;
+      
+      // Room type filter
+      if (selectedRoomTypes.length > 0 && !selectedRoomTypes.includes(listing.roomType || "")) return false;
+      
+      // MAT friendly filter
+      if (showMatFriendly && !listing.isMatFriendly) return false;
+      
+      // Accepts couples filter
+      if (showAcceptsCouples && !listing.acceptsCouples) return false;
+      
+      return true;
+    }).sort((a, b) => {
+      const aBoost = featuredMap[a.id]?.boostLevel || 0;
+      const bBoost = featuredMap[b.id]?.boostLevel || 0;
+      return bBoost - aBoost;
+    });
+  }, [listings, searchLocation, priceRange, selectedGenders, selectedSupervision, selectedRoomTypes, showMatFriendly, showAcceptsCouples, featuredMap]);
   
   const toggleFilter = (value: string, selected: string[], setSelected: React.Dispatch<React.SetStateAction<string[]>>) => {
     if (selected.includes(value)) {
@@ -380,7 +394,7 @@ export default function Browse() {
                         src={listing.photos?.[0] || placeholderHome} 
                         alt={listing.propertyName}
                         loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
                       
@@ -451,7 +465,7 @@ export default function Browse() {
                           src={listing.photos?.[0] || placeholderHome} 
                           alt={listing.propertyName}
                           loading="lazy"
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="w-full h-full object-cover"
                         />
                         <div className="absolute top-2 left-2 flex flex-col gap-1">
                           {isListingFeatured(listing.id) && (
