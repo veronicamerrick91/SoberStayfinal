@@ -90,6 +90,7 @@ function TenantDashboardContent() {
   const [viewedHomes, setViewedHomes] = useState<Listing[]>([]);
   const [tourRequests, setTourRequests] = useState<TourRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [serverApplicationData, setServerApplicationData] = useState<Record<string, any> | null>(null);
   
   const [profile, setProfile] = useState<TenantProfile>(() => {
     const saved = localStorage.getItem("tenant_profile");
@@ -147,6 +148,68 @@ function TenantDashboardContent() {
   };
 
   const calculateProfileCompletion = () => {
+    // If we have server application data, calculate based on the full profile
+    if (serverApplicationData) {
+      const data = serverApplicationData;
+      
+      // Define required fields grouped by importance
+      const coreFields = [
+        data.firstName, data.lastName, data.email, data.phone || data.phoneNumber,
+        data.dateOfBirth, data.gender
+      ];
+      
+      const emergencyFields = [
+        data.emergencyContactName, data.emergencyContactPhone, data.emergencyContactRelationship
+      ];
+      
+      const recoveryFields = [
+        data.primarySubstances, data.lengthOfSobriety, data.lastDateOfUse,
+        data.recoveryProgram, data.hasSponsor
+      ];
+      
+      const idFields = [
+        data.ssn || data.idVerified  // Either SSN or verified ID
+      ];
+      
+      const employmentFields = [
+        data.employmentStatus, data.incomeSource
+      ];
+      
+      const housingFields = [
+        data.moveInDate, data.preferredLocation
+      ];
+      
+      const consentFields = [
+        data.agreeShareInfo, data.agreeTerms
+      ];
+      
+      // Calculate filled fields with weights
+      const checkFilled = (fields: any[]) => fields.filter(f => {
+        if (typeof f === 'boolean') return f === true;
+        if (typeof f === 'string') return f && f.trim() !== '';
+        return f != null;
+      }).length;
+      
+      const coreWeight = 30;
+      const emergencyWeight = 15;
+      const recoveryWeight = 20;
+      const idWeight = 10;
+      const employmentWeight = 10;
+      const housingWeight = 10;
+      const consentWeight = 5;
+      
+      const coreScore = (checkFilled(coreFields) / coreFields.length) * coreWeight;
+      const emergencyScore = (checkFilled(emergencyFields) / emergencyFields.length) * emergencyWeight;
+      const recoveryScore = (checkFilled(recoveryFields) / recoveryFields.length) * recoveryWeight;
+      const idScore = (checkFilled(idFields) / idFields.length) * idWeight;
+      const employmentScore = (checkFilled(employmentFields) / employmentFields.length) * employmentWeight;
+      const housingScore = (checkFilled(housingFields) / housingFields.length) * housingWeight;
+      const consentScore = (checkFilled(consentFields) / consentFields.length) * consentWeight;
+      
+      return Math.round(coreScore + emergencyScore + recoveryScore + idScore + employmentScore + housingScore + consentScore);
+    }
+    
+    // Fallback to basic fields if no server data loaded yet
     const fields = [profile.name, profile.email, profile.phone, profile.sobrietyDate, profile.emergencyContactName, profile.emergencyContactPhone, profile.bio];
     const filled = fields.filter(f => f && f.trim() !== "").length;
     return Math.round((filled / fields.length) * 100);
@@ -205,6 +268,21 @@ function TenantDashboardContent() {
       }
     };
 
+    // Fetch tenant profile from API to get applicationData
+    const fetchTenantProfile = async () => {
+      try {
+        const res = await fetch('/api/tenant/profile', { credentials: 'include' });
+        if (res.ok) {
+          const profileData = await res.json();
+          if (profileData.applicationData) {
+            setServerApplicationData(profileData.applicationData);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching tenant profile:", err);
+      }
+    };
+
     // Fetch applications from API
     const fetchApplications = async () => {
       try {
@@ -253,7 +331,7 @@ function TenantDashboardContent() {
     const loadAllData = async () => {
       setIsLoading(true);
       try {
-        await Promise.all([loadData(), fetchApplications()]);
+        await Promise.all([loadData(), fetchApplications(), fetchTenantProfile()]);
       } finally {
         // Load tour requests
         setTourRequests(getTourRequests());
