@@ -264,7 +264,7 @@ export default function Chat() {
         </div>
 
         {/* Premium Input Footer */}
-        <div className="bg-gradient-to-t from-background via-background to-background/80 border-t border-primary/10 sticky bottom-0 backdrop-blur-sm">
+        <div className="bg-background border-t border-primary/10 sticky bottom-0">
           <div className="container mx-auto px-4 py-4 max-w-2xl">
             <form onSubmit={handleSend} className="flex gap-3 items-end">
               <div className="flex-1 relative">

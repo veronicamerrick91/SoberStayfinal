@@ -386,12 +386,12 @@ export default function Browse() {
                       
                       <div className="absolute top-2 left-2 flex gap-1">
                         {isListingFeatured(listing.id) && (
-                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md text-xs">
+                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none shadow-lg flex gap-1 items-center text-xs">
                             <Zap className="w-3 h-3" /> Featured
                           </Badge>
                         )}
                         {listing.status === "approved" && (
-                          <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md bg-opacity-90 text-xs">
+                          <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center text-xs">
                             <ShieldCheck className="w-3 h-3" /> Verified
                           </Badge>
                         )}
@@ -455,12 +455,12 @@ export default function Browse() {
                         />
                         <div className="absolute top-2 left-2 flex flex-col gap-1">
                           {isListingFeatured(listing.id) && (
-                            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md text-xs">
+                            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none shadow-lg flex gap-1 items-center text-xs">
                               <Zap className="w-3 h-3" /> Featured
                             </Badge>
                           )}
                           {listing.status === "approved" && (
-                            <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center backdrop-blur-md bg-opacity-90 text-xs">
+                            <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center text-xs">
                               <ShieldCheck className="w-3 h-3" /> Verified
                             </Badge>
                           )}

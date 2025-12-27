@@ -64,7 +64,7 @@ export default function Home() {
         
         <div className="container relative z-10 px-4 py-20 text-left">
           <div className="space-y-8 max-w-2xl animate-in slide-in-from-bottom-8 duration-700 fade-in">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium backdrop-blur-sm shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium shadow-[0_0_15px_rgba(16,185,129,0.2)]">
               <Heart className="w-4 h-4" />
               <span>Healing Starts At Home</span>
               <Heart className="w-4 h-4" />
@@ -89,7 +89,7 @@ export default function Home() {
                 </Button>
               </Link>
               <Link href="/quiz">
-                <Button size="lg" variant="outline" className="text-lg h-14 px-8 rounded-full border-primary/40 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary/60 backdrop-blur-sm">
+                <Button size="lg" variant="outline" className="text-lg h-14 px-8 rounded-full border-primary/40 text-primary hover:bg-primary/10 hover:text-primary hover:border-primary/60">
                   <Sparkles className="w-5 h-5 mr-2" /> Take Quiz
                 </Button>
               </Link>
@@ -97,14 +97,14 @@ export default function Home() {
 
             <div className="pt-2">
               <Link href="/create-listing">
-                <Button size="lg" variant="ghost" className="text-lg h-12 px-8 rounded-full text-emerald-300 hover:bg-emerald-500/10 hover:text-emerald-200 border border-emerald-500/30 hover:border-emerald-500/60 backdrop-blur-sm" data-testid="button-list-property">
+                <Button size="lg" variant="ghost" className="text-lg h-12 px-8 rounded-full text-emerald-300 hover:bg-emerald-500/10 hover:text-emerald-200 border border-emerald-500/30 hover:border-emerald-500/60" data-testid="button-list-property">
                   <Plus className="w-5 h-5 mr-2" /> List Your Property
                 </Button>
               </Link>
             </div>
 
             {/* Search Bar Widget */}
-            <div className="mt-8 p-4 bg-card/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl max-w-md hover:border-primary/30 transition-colors">
+            <div className="mt-8 p-4 bg-card border border-white/10 rounded-2xl shadow-2xl max-w-md hover:border-primary/30 transition-colors">
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -342,7 +342,7 @@ export default function Home() {
                       
                       <div className="absolute top-4 left-4 flex gap-2">
                         {listing.status === "approved" && (
-                          <Badge className="bg-emerald-500/90 backdrop-blur text-white border-none flex gap-1 items-center px-3 py-1 shadow-lg">
+                          <Badge className="bg-emerald-500 text-white border-none flex gap-1 items-center px-3 py-1 shadow-lg">
                             <ShieldCheck className="w-3 h-3" /> Verified
                           </Badge>
                         )}

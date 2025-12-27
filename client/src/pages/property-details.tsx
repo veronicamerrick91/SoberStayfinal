@@ -163,19 +163,19 @@ export default function PropertyDetails() {
               <img src={listing.photos?.[0] || placeholderHome} loading="lazy" className="w-full h-full object-cover" alt={listing.propertyName} />
               <div className="absolute top-4 left-4">
                 {listing.status === "approved" && (
-                  <Badge className="bg-emerald-500/90 backdrop-blur text-white border-none flex gap-1 items-center px-3 py-1.5 shadow-lg">
+                  <Badge className="bg-emerald-500 text-white border-none flex gap-1 items-center px-3 py-1.5 shadow-lg">
                     <ShieldCheck className="w-3 h-3" /> Verified Listing
                   </Badge>
                 )}
               </div>
               <div className="absolute bottom-4 right-4 flex gap-2">
-                 <Button onClick={handleShare} size="icon" variant="secondary" className="rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur" title="Share this listing">
+                 <Button onClick={handleShare} size="icon" variant="secondary" className="rounded-full bg-black/70 hover:bg-black/90 text-white" title="Share this listing">
                    <Share2 className="w-4 h-4" />
                  </Button>
-                 <Button onClick={handleFavorite} size="icon" variant="secondary" className={`rounded-full backdrop-blur ${isFav ? "bg-primary/90 hover:bg-primary text-white" : "bg-black/50 hover:bg-black/70 text-white"}`}>
+                 <Button onClick={handleFavorite} size="icon" variant="secondary" className={`rounded-full ${isFav ? "bg-primary/90 hover:bg-primary text-white" : "bg-black/70 hover:bg-black/90 text-white"}`}>
                    <Heart className={`w-4 h-4 ${isFav ? "fill-current" : ""}`} />
                  </Button>
-                 <Button onClick={() => setShowReportModal(true)} size="icon" variant="secondary" className="rounded-full bg-black/50 hover:bg-red-600 text-white backdrop-blur" title="Report this listing">
+                 <Button onClick={() => setShowReportModal(true)} size="icon" variant="secondary" className="rounded-full bg-black/70 hover:bg-red-600 text-white" title="Report this listing">
                    <Flag className="w-4 h-4" />
                  </Button>
               </div>
