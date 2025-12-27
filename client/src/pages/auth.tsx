@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShieldCheck, AlertCircle, Mail, CheckCircle2, Sparkles, Building, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
-import { saveAuth } from "@/lib/auth";
+import { saveAuth, clearAuth, isAuthenticated } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -30,10 +30,19 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [rememberMe, setRememberMe] = useState(false);
   const [requires2FA, setRequires2FA] = useState(false);
   const [twoFactorToken, setTwoFactorToken] = useState("");
+  const [accountExists, setAccountExists] = useState(false);
 
   useEffect(() => {
     setRole(defaultRole as any);
   }, [defaultRole]);
+
+  // Clear any stale auth state when landing on signup page
+  useEffect(() => {
+    if (type === "signup") {
+      // Clear local storage auth to prevent confusion
+      clearAuth();
+    }
+  }, [type]);
 
 
   const getReturnPath = (userRole: string) => {
@@ -87,7 +96,13 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
         const data = await response.json();
         
         if (!response.ok) {
-          setLoginError(data.error || "Registration failed");
+          // Check if it's an "account exists" error
+          if (data.error && data.error.toLowerCase().includes("already exists")) {
+            setAccountExists(true);
+            setLoginError("An account with this email already exists.");
+          } else {
+            setLoginError(data.error || "Registration failed");
+          }
           setIsSubmitting(false);
           return;
         }
@@ -266,9 +281,18 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
             {/* Admin login removed for security - use Google Auth or real credentials */}
             
             {loginError && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex gap-2">
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex gap-2 mb-4">
                 <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                <p className="text-sm text-red-300">{loginError}</p>
+                <div className="text-sm text-red-300">
+                  <p>{loginError}</p>
+                  {accountExists && (
+                    <Link href={`/auth/login/${role}`}>
+                      <span className="text-primary hover:underline cursor-pointer font-medium">
+                        Click here to log in instead →
+                      </span>
+                    </Link>
+                  )}
+                </div>
               </div>
             )}
             
@@ -288,7 +312,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
               
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" autoComplete="username" placeholder="m@example.com" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input id="email" name="email" type="email" autoComplete="username" placeholder="m@example.com" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={email} onChange={(e) => { setEmail(e.target.value); setAccountExists(false); setLoginError(""); }} />
               </div>
               
               <div className="space-y-2">
