@@ -1,35 +1,81 @@
 export interface ApplicationProfile {
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  gender: string;
-  phone: string;
-  email: string;
-  currentAddress: string;
-  emergencyContactName: string;
-  emergencyContactPhone: string;
-  emergencyContactRelationship: string;
-  primarySubstances: string;
-  ageOfFirstUse: string;
-  lastDateOfUse: string;
-  lengthOfSobriety: string;
-  overdoseHistory: string;
-  overdoseDate: string;
-  matHistory: string;
-  currentMatMedications: string;
-  hasSponsor: string;
-  medicalConditions: string;
-  mentalHealthDiagnoses: string;
-  currentMedications: string;
-  allergies: string;
-  mobilityIssues: string;
-  seizureHistory: string;
-  isPregnant: string;
-  onProbationParole: string;
-  probationDetails: string;
-  pendingCourtCases: string;
-  restrainingOrders: string;
-  violentOffenses: string;
+  // Personal Information
+  firstName?: string;
+  lastName?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  phone?: string;
+  phoneNumber?: string;
+  email?: string;
+  currentAddress?: string;
+  // Emergency Contact
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelationship?: string;
+  // Substance Use
+  primarySubstance?: string;
+  primarySubstances?: string;
+  ageOfFirstUse?: string;
+  lastDateOfUse?: string;
+  lengthOfSobriety?: string;
+  overdoseHistory?: string;
+  overdoseDate?: string;
+  matHistory?: string;
+  currentMat?: string;
+  currentMatMedications?: string;
+  hasSponsor?: string;
+  // Medical & Mental Health
+  medicalConditions?: string;
+  mentalHealthDiagnoses?: string;
+  currentMedications?: string;
+  allergies?: string;
+  mobilityIssues?: string;
+  seizureHistory?: string;
+  isPregnant?: string;
+  // Legal
+  probationParole?: string;
+  onProbationParole?: string;
+  probationParoleDetails?: string;
+  probationDetails?: string;
+  pendingCases?: string;
+  pendingCourtCases?: string;
+  restrainingOrders?: string;
+  violentOffenses?: string;
+  // Employment
+  employmentStatus?: string;
+  incomeSources?: string;
+  canPayRent?: string;
+  lookingForEmployment?: string;
+  employmentRequirements?: string;
+  // Housing Background
+  reasonForLeaving?: string;
+  previousSoberLiving?: string;
+  previousEvictions?: string;
+  housingViolations?: string;
+  adaAccommodations?: string;
+  // Personal Preferences
+  roomPreference?: string;
+  genderSpecificHousing?: string;
+  lgbtqAffirming?: string;
+  petFriendly?: string;
+  smokingStatus?: string;
+  transportationNeeds?: string;
+  emotionalSupportAnimal?: string;
+  moveInDate?: string;
+  // Agreements
+  agreeNoDrugs?: boolean;
+  agreeUAandBreathalyzer?: boolean;
+  agreeNoViolence?: boolean;
+  agreeNoTheft?: boolean;
+  agreeNoGuests?: boolean;
+  agreeCurfew?: boolean;
+  agreeMeetings?: boolean;
+  agreeRespect?: boolean;
+  agreeDischarge?: boolean;
+  agreeShareInfo?: boolean;
+  agreeTerms?: boolean;
+  // Allow for additional dynamic fields
+  [key: string]: string | boolean | undefined;
 }
 
 export interface SubmittedApplication {
@@ -102,39 +148,7 @@ export function getApplicationById(applicationId: string): SubmittedApplication 
 }
 
 export function getEmptyProfile(): ApplicationProfile {
-  return {
-    firstName: "",
-    lastName: "",
-    dateOfBirth: "",
-    gender: "",
-    phone: "",
-    email: "",
-    currentAddress: "",
-    emergencyContactName: "",
-    emergencyContactPhone: "",
-    emergencyContactRelationship: "",
-    primarySubstances: "",
-    ageOfFirstUse: "",
-    lastDateOfUse: "",
-    lengthOfSobriety: "",
-    overdoseHistory: "",
-    overdoseDate: "",
-    matHistory: "",
-    currentMatMedications: "",
-    hasSponsor: "",
-    medicalConditions: "",
-    mentalHealthDiagnoses: "",
-    currentMedications: "",
-    allergies: "",
-    mobilityIssues: "",
-    seizureHistory: "",
-    isPregnant: "",
-    onProbationParole: "",
-    probationDetails: "",
-    pendingCourtCases: "",
-    restrainingOrders: "",
-    violentOffenses: "",
-  };
+  return {};
 }
 
 export function initializeSampleApplications(): void {
