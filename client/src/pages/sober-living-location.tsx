@@ -67,7 +67,7 @@ function ComingSoonSection({ locationName }: { locationName: string }) {
           Coming Soon to {locationName}
         </h2>
         <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-          We're actively expanding our network of verified sober living homes in {locationName}. 
+          We're actively expanding our network of sober living homes in {locationName}. 
           Be the first to list your property or sign up to be notified when homes become available.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -128,7 +128,7 @@ export function SoberLivingLocation() {
   
   useDocumentMeta({
     title: location?.metaTitle || "Sober Living Homes | Sober Stay",
-    description: location?.metaDescription || "Find verified sober living homes near you."
+    description: location?.metaDescription || "Find sober living homes near you."
   });
   
   if (!location) {
@@ -214,7 +214,7 @@ export function SoberLivingLocation() {
           </h2>
           <p className="text-muted-foreground">
             {filteredListings.length > 0 
-              ? `Browse ${filteredListings.length} verified sober living ${filteredListings.length === 1 ? 'home' : 'homes'} in ${location.name}.`
+              ? `Browse ${filteredListings.length} sober living ${filteredListings.length === 1 ? 'home' : 'homes'} in ${location.name}.`
               : `We're expanding our network in ${location.name}. Providers can apply to list their homes.`}
           </p>
         </div>
@@ -309,9 +309,9 @@ export function SoberLivingLocation() {
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Shield className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="font-semibold text-white mb-2">Verified Providers</h3>
+                <h3 className="font-semibold text-white mb-2">Quality Providers</h3>
                 <p className="text-sm text-muted-foreground">
-                  All listings are from verified sober living operators committed to quality recovery housing.
+                  Connect with sober living operators committed to quality recovery housing.
                 </p>
               </div>
               <div className="text-center">
@@ -344,7 +344,7 @@ export function SoberLivingLocation() {
           </h2>
           <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
             List your recovery housing on Sober Stay to connect with individuals seeking quality sober living in {location.name}. 
-            Join our nationwide directory of verified providers.
+            Join our nationwide directory of providers.
           </p>
           <Link href="/create-listing">
             <Button size="lg" data-testid="button-provider-apply">

@@ -75,7 +75,7 @@ const locationData: Record<string, LocationData> = {
     ],
     faqs: [
       { question: "What makes San Diego good for sober living?", answer: "San Diego offers a perfect blend of beach lifestyle, outdoor activities, and a supportive recovery community. The city has numerous 12-step meetings, sober social events, and wellness activities that support long-term recovery." },
-      { question: "How do I find a sober living home in San Diego?", answer: "Use Sober Stay to search for verified sober living homes in San Diego. Filter by neighborhood, price, gender, and amenities to find the perfect fit. Popular areas include Pacific Beach, Ocean Beach, and North County." },
+      { question: "How do I find a sober living home in San Diego?", answer: "Use Sober Stay to search for sober living homes in San Diego. Filter by neighborhood, price, gender, and amenities to find the perfect fit. Popular areas include Pacific Beach, Ocean Beach, and North County." },
       { question: "Are there affordable sober living options in San Diego?", answer: "Yes, San Diego has sober living options ranging from $600 to $2,500+ per month. More affordable options are typically found in East County and North County areas, while beach communities tend to be pricier." }
     ]
   },
@@ -358,7 +358,7 @@ export function LocationLanding() {
       ? `Sober Living in ${location.name} | Recovery Housing | Sober Stay`
       : "Find Sober Living by Location | Sober Stay",
     description: location 
-      ? `Find verified sober living homes in ${location.name}. ${location.description.slice(0, 100)}...`
+      ? `Find sober living homes in ${location.name}. ${location.description.slice(0, 100)}...`
       : "Browse sober living homes by state and city. Find recovery housing in California, Florida, Texas, Arizona, and more."
   });
 
@@ -443,7 +443,7 @@ export function LocationLanding() {
                 Sober Living in {location.name}
               </h1>
               <p className="text-xl text-muted-foreground mb-8">
-                Find verified sober living homes in {location.name}{location.type === "city" ? `, ${location.state}` : ""}. 
+                Find sober living homes in {location.name}{location.type === "city" ? `, ${location.state}` : ""}. 
                 Browse recovery housing options that support your journey to lasting sobriety.
               </p>
               <Link href={`/browse?location=${encodeURIComponent(location.name)}`}>
@@ -488,7 +488,7 @@ export function LocationLanding() {
                 independent living situation.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-                Sober Stay makes it easy to compare options and find the perfect fit. Our verified listings 
+                Sober Stay makes it easy to compare options and find the perfect fit. Our listings 
                 include detailed information about amenities, house rules, costs, and photos so you can make 
                 an informed decision about your next home.
               </p>
@@ -589,7 +589,7 @@ export function LocationLanding() {
               Ready to Find Your Sober Living Home in {location.name}?
             </h2>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Browse verified sober living homes and take the next step toward lasting recovery.
+              Browse sober living homes and take the next step toward lasting recovery.
             </p>
             <Link href={`/browse?location=${encodeURIComponent(location.name)}`}>
               <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg h-14 px-8 rounded-full">
@@ -607,7 +607,7 @@ export function LocationLanding() {
               "@context": "https://schema.org",
               "@type": "WebPage",
               "name": `Sober Living in ${location.name}`,
-              "description": `Find sober living homes in ${location.name}. Browse verified recovery housing with Sober Stay.`,
+              "description": `Find sober living homes in ${location.name}. Browse recovery housing with Sober Stay.`,
               "url": `https://soberstay.com/${location.slug}-sober-living`,
               "mainEntity": {
                 "@type": "ItemList",

@@ -79,7 +79,7 @@ export default function Home() {
             </h2>
 
             <p className="text-lg text-gray-400 max-w-lg">
-              Sober Stay is a nationwide directory connecting individuals in recovery with safe, verified sober living homes.
+              Sober Stay is a nationwide directory connecting individuals in recovery with safe, supportive sober living homes.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -160,7 +160,7 @@ export default function Home() {
               through accountability, structure, and community.
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Sober Stay makes it easy to find verified sober living homes near you. 
+              Sober Stay makes it easy to find sober living homes near you. 
               Browse listings, review house rules, and apply directly through our platform.
             </p>
           </div>
@@ -411,7 +411,7 @@ export default function Home() {
             "name": "Sober Stay",
             "url": "https://soberstay.com",
             "logo": "https://soberstay.com/logo.png",
-            "description": "Sober Stay connects individuals seeking recovery housing with verified sober living providers.",
+            "description": "Sober Stay connects individuals seeking recovery housing with sober living providers.",
             "sameAs": [],
             "contactPoint": {
               "@type": "ContactPoint",

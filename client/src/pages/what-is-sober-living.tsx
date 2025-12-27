@@ -205,7 +205,7 @@ export function WhatIsSoberLiving() {
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold text-white mb-6">Find a Sober Living Home Today</h2>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Ready to take the next step? Browse verified sober living homes and find your path to lasting recovery.
+              Ready to take the next step? Browse sober living homes and find your path to lasting recovery.
             </p>
             <Link href="/browse">
               <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg h-14 px-8 rounded-full">

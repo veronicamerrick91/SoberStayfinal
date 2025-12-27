@@ -478,7 +478,7 @@ export default function Quiz() {
                     <Home className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
                     <h3 className="text-lg font-bold text-white mb-2">No Listings Available Yet</h3>
                     <p className="text-muted-foreground mb-4">
-                      We're building our network of verified sober living homes. Check back soon!
+                      We're building our network of sober living homes. Check back soon!
                     </p>
                     <Button onClick={() => setLocation("/browse")} className="bg-primary text-primary-foreground">
                       Browse All Homes

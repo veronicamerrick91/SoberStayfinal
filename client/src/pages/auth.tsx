@@ -228,7 +228,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
             
             <p className="text-xl text-muted-foreground leading-relaxed">
               {role === "provider"
-                ? "Join the largest network of verified sober living homes. Streamline your admissions and connect with qualified residents."
+                ? "Join a growing network of sober living homes. Streamline your admissions and connect with qualified residents."
                 : "Connect with supportive environments that understand your journey. We make finding recovery housing simple and secure."}
             </p>
 
@@ -239,7 +239,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                 "Digital resident files and document storage",
                 "Secure messaging and tour scheduling"
               ] : [
-                "Browse hundreds of verified sober living homes",
+                "Browse sober living homes nationwide",
                 "Secure applications, fast responses",
                 "Chat directly with housing providers",
                 "Secure your spot with online payments"

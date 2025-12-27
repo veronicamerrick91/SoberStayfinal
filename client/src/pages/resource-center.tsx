@@ -118,7 +118,7 @@ Once you've found the right home:
 4. Plan your move-in logistics
 5. Connect with your new community
 
-For more resources and to search verified sober living homes, visit SoberStay.com
+For more resources and to search sober living homes, visit SoberStay.com
 
 ---
 This guide was created by Sober Stay to help individuals find safe, supportive recovery housing.
@@ -927,7 +927,7 @@ export function ResourceCenter() {
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-2xl font-bold text-white mb-4">Ready to Find Your Sober Living Home?</h2>
             <p className="text-muted-foreground mb-6">
-              Browse verified sober living homes and start your search today.
+              Browse sober living homes and start your search today.
             </p>
             <Link href="/browse">
               <Button size="lg" className="bg-primary hover:bg-primary/90">

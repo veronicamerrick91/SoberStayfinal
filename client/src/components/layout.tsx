@@ -242,7 +242,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <img src={logo} alt="Sober Stay" className="h-20 w-auto" />
               </div>
               <p className="text-sm text-muted-foreground">
-                Connecting individuals in recovery with safe, supportive, and verified sober living environments.
+                Connecting individuals in recovery with safe, supportive sober living environments.
               </p>
             </div>
             

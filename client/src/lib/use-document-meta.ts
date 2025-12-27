@@ -6,7 +6,7 @@ interface DocumentMeta {
 }
 
 const DEFAULT_TITLE = "Sober Stay | Find Sober Living Homes Near You";
-const DEFAULT_DESCRIPTION = "Sober Stay helps people find safe, verified sober living homes. Browse recovery housing, learn the rules, and connect with providers.";
+const DEFAULT_DESCRIPTION = "Sober Stay helps people find safe, supportive sober living homes. Browse recovery housing, learn the rules, and connect with providers.";
 
 export function useDocumentMeta({ title, description }: DocumentMeta) {
   useEffect(() => {

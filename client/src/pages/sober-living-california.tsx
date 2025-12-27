@@ -218,7 +218,7 @@ export function SoberLivingCalifornia() {
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold text-white mb-6">Find Sober Living in California</h2>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Browse verified sober living homes across California and take the first step toward your new life.
+              Browse sober living homes across California and take the first step toward your new life.
             </p>
             <Link href="/browse?state=California">
               <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg h-14 px-8 rounded-full">

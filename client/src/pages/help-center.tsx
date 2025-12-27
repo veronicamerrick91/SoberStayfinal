@@ -62,7 +62,7 @@ export function HelpCenter() {
       items: [
         {
           q: "What is Sober Stay?",
-          a: "Sober Stay is a digital platform that connects individuals seeking recovery housing with verified sober living providers. We help you find community-based recovery housing options that support your path to long-term sobriety."
+          a: "Sober Stay is a digital platform that connects individuals seeking recovery housing with sober living providers. We help you find community-based recovery housing options that support your path to long-term sobriety."
         },
         {
           q: "Is Sober Stay a treatment provider?",

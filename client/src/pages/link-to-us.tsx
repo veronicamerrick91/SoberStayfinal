@@ -69,7 +69,7 @@ export function LinkToUs() {
 
   useDocumentMeta({
     title: "Link to Sober Stay | Badges, Widgets & Embed Codes",
-    description: "Add a Sober Stay badge or widget to your website. Help others find verified sober living homes while supporting our recovery housing directory."
+    description: "Add a Sober Stay badge or widget to your website. Help others find sober living homes while supporting our recovery housing directory."
   });
 
   const badges = useMemo(() => [
@@ -131,7 +131,7 @@ export function LinkToUs() {
       id: "text-resource",
       name: "Resource Link",
       description: "For resource pages and directories",
-      html: `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer">Sober Stay</a> - Find verified sober living homes and recovery housing nationwide.`
+      html: `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer">Sober Stay</a> - Find sober living homes and recovery housing nationwide.`
     },
     {
       id: "text-browse",

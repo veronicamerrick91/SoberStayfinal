@@ -688,7 +688,7 @@ Consider proximity to your support network, employment opportunities, recovery m
 
 ## Ready to Start Your Sober Living Journey?
 
-Sober living homes have transformed countless lives by providing the supportive environment needed for lasting recovery. If you're ready to take the next step in your recovery journey, [find a sober living home near you](/browse) on Sober Stay. Our nationwide directory connects you with verified recovery residences across the country.
+Sober living homes have transformed countless lives by providing the supportive environment needed for lasting recovery. If you're ready to take the next step in your recovery journey, [find a sober living home near you](/browse) on Sober Stay. Our nationwide directory connects you with recovery residences across the country.
 
 For sober living operators, [list your home on Sober Stay](/create-listing) to connect with individuals seeking quality recovery housing.
 
@@ -892,7 +892,7 @@ Most residents stay 6-12 months. Some houses have minimum stay requirements (oft
 ### Use Specialized Directories
 General housing sites like Craigslist or Facebook don't specialize in recovery housing. Instead, use dedicated platforms:
 
-- **Sober Stay** ([browse sober living homes](/browse)) - Nationwide directory of verified sober living homes
+- **Sober Stay** ([browse sober living homes](/browse)) - Nationwide directory of sober living homes
 - **NARR (National Alliance for Recovery Residences)** - Certified recovery residence listings
 - **State recovery residence associations** - State-specific directories
 
@@ -1016,7 +1016,7 @@ Once you've chosen a home:
 
 Sober Stay makes finding quality sober living simple. Our platform features:
 
-- **Verified listings** from sober living providers across the country
+- **Quality listings** from sober living providers across the country
 - **Detailed information** about rules, amenities, costs, and programs
 - **Location search** to find homes near you
 - **Direct contact** with providers for questions and tours

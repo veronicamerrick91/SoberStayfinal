@@ -94,7 +94,7 @@ export default function Browse() {
 
   useDocumentMeta({
     title: "Browse Sober Living Homes | Sober Stay",
-    description: "Search verified sober living homes across the US. Filter by location, price, amenities, and more. Find your recovery housing today."
+    description: "Search sober living homes across the US. Filter by location, price, amenities, and more. Find your recovery housing today."
   });
 
   useEffect(() => {
@@ -159,7 +159,7 @@ export default function Browse() {
       <div className="bg-card border-b border-border py-8">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl font-heading font-bold text-white mb-2">Browse Sober Homes</h1>
-          <p className="text-muted-foreground">Find safe, verified recovery housing that fits your needs.</p>
+          <p className="text-muted-foreground">Find safe, supportive recovery housing that fits your needs.</p>
         </div>
       </div>
 

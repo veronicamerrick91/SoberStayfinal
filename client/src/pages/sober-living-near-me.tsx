@@ -13,7 +13,7 @@ interface FAQItem {
 const faqs: FAQItem[] = [
   {
     question: "How do I find sober living homes near me?",
-    answer: "Use Sober Stay's search feature to browse verified sober living homes in your area. Simply enter your city, state, or zip code to see available options. You can filter by price, gender, amenities, and more to find the perfect fit for your recovery journey."
+    answer: "Use Sober Stay's search feature to browse sober living homes in your area. Simply enter your city, state, or zip code to see available options. You can filter by price, gender, amenities, and more to find the perfect fit for your recovery journey."
   },
   {
     question: "What should I look for in a sober living home?",
@@ -50,7 +50,7 @@ export function SoberLivingNearMe() {
                 Sober Living Near Me
               </h1>
               <p className="text-xl text-muted-foreground mb-8">
-                Find safe, verified sober living homes in your area. Start your search today and take the next step in your recovery journey.
+                Find safe, supportive sober living homes in your area. Start your search today and take the next step in your recovery journey.
               </p>
               <Link href="/browse">
                 <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg h-14 px-8 rounded-full">
@@ -67,7 +67,7 @@ export function SoberLivingNearMe() {
               <h2 className="text-3xl font-bold text-white mb-6">Finding the Right Sober Living Home in Your Area</h2>
               
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-                When you're searching for "sober living near me," you're taking an important step toward lasting recovery. Sober living homes provide a crucial bridge between intensive treatment and independent living, offering the structure and support you need while rebuilding your life. At Sober Stay, we make it easy to find verified, quality sober living homes in your community.
+                When you're searching for "sober living near me," you're taking an important step toward lasting recovery. Sober living homes provide a crucial bridge between intensive treatment and independent living, offering the structure and support you need while rebuilding your life. At Sober Stay, we make it easy to find quality sober living homes in your community.
               </p>
 
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
@@ -204,7 +204,7 @@ export function SoberLivingNearMe() {
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold text-white mb-6">Ready to Find Your Sober Living Home?</h2>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Browse verified sober living homes in your area and take the next step toward lasting recovery.
+              Browse sober living homes in your area and take the next step toward lasting recovery.
             </p>
             <Link href="/browse">
               <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg h-14 px-8 rounded-full">
