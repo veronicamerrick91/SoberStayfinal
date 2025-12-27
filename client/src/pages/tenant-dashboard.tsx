@@ -933,10 +933,10 @@ function TenantDashboardContent() {
           <DialogHeader>
             <DialogTitle className="text-2xl text-white flex items-center gap-2">
               <User className="w-6 h-6 text-primary" />
-              Edit Your Profile
+              Quick Settings
             </DialogTitle>
             <DialogDescription>
-              Complete your profile to help providers understand your needs and improve your housing matches.
+              Update your contact info and recovery details. For the full application, visit your Tenant Profile.
             </DialogDescription>
           </DialogHeader>
           

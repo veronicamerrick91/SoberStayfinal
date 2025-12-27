@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useLocation, useRoute } from "wouter";
 import { ArrowLeft, CheckCircle2, Upload, Loader2, PartyPopper, AlertCircle, Circle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
@@ -1169,28 +1170,24 @@ export default function ApplicationForm() {
               <CardContent className="space-y-4">
                 <div className="space-y-3 bg-primary/5 border border-primary/20 rounded-lg p-4">
                   <div className="flex items-start gap-3">
-                    <input 
-                      type="checkbox" 
+                    <Checkbox 
                       id="consent7" 
                       checked={consentShareInfo}
-                      onChange={(e) => setConsentShareInfo(e.target.checked)}
-                      className="mt-1" 
-                      required 
+                      onCheckedChange={(checked) => setConsentShareInfo(checked === true)}
+                      className="mt-0.5"
                     />
-                    <label htmlFor="consent7" className="text-sm text-gray-300">
+                    <label htmlFor="consent7" className="text-sm text-gray-300 cursor-pointer">
                       I consent to share my information with this provider for review *
                     </label>
                   </div>
                   <div className="flex items-start gap-3">
-                    <input 
-                      type="checkbox" 
+                    <Checkbox 
                       id="consent8" 
                       checked={consentTerms}
-                      onChange={(e) => setConsentTerms(e.target.checked)}
-                      className="mt-1" 
-                      required 
+                      onCheckedChange={(checked) => setConsentTerms(checked === true)}
+                      className="mt-0.5"
                     />
-                    <label htmlFor="consent8" className="text-sm text-gray-300">
+                    <label htmlFor="consent8" className="text-sm text-gray-300 cursor-pointer">
                       I agree to the Sober Stay Terms of Use and Privacy Policy *
                     </label>
                   </div>
