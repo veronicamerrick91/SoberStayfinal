@@ -1679,6 +1679,12 @@ Disallow: /auth/
         }
       }
 
+      // Return listing IDs for client-side tour request seeding
+      const listingsForTours = createdListings.slice(0, 2).map(l => ({
+        id: l.id,
+        propertyName: l.propertyName,
+      }));
+
       res.json({
         success: true,
         message: "Full test data seeded successfully",
@@ -1688,6 +1694,7 @@ Disallow: /auth/
           provider2: { email: "provider2@soberstay.com", password: "password123" },
         },
         results,
+        listingsForTours, // Use these to seed tour requests in localStorage
       });
     } catch (error: any) {
       console.error("Seed full test data error:", error);

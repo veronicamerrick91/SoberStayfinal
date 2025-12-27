@@ -332,10 +332,26 @@ function TenantDashboardContent() {
       setIsLoading(true);
       try {
         await Promise.all([loadData(), fetchApplications(), fetchTenantProfile()]);
-      } finally {
-        // Load tour requests
-        setTourRequests(getTourRequests());
         
+        // Fetch valid listing IDs to filter tour requests
+        try {
+          const listingsRes = await fetch("/api/listings", { credentials: "include" });
+          if (listingsRes.ok) {
+            const listings = await listingsRes.json();
+            const validIds = listings.map((l: any) => l.id);
+            // Filter tour requests to only show valid ones
+            const allTours = getTourRequests();
+            const validTours = allTours.filter(tour => 
+              validIds.includes(parseInt(tour.propertyId))
+            );
+            setTourRequests(validTours);
+          } else {
+            setTourRequests(getTourRequests());
+          }
+        } catch {
+          setTourRequests(getTourRequests());
+        }
+      } finally {
         // Load recovery badges based on profile sobriety date
         const savedProfile = localStorage.getItem("tenant_profile");
         if (savedProfile) {

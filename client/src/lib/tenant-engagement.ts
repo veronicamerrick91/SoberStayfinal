@@ -248,3 +248,63 @@ export function updateTourStatus(tourId: string, status: TourStatus, providerMes
   }
   return tours;
 }
+
+// Clear all tour requests (for testing/cleanup)
+export function clearTourRequests(): void {
+  localStorage.removeItem(TOUR_REQUESTS_KEY);
+}
+
+// Filter tour requests to only include those with valid property IDs
+export async function getValidTourRequests(validPropertyIds: number[]): Promise<TourRequest[]> {
+  const tours = getTourRequests();
+  const validIdStrings = validPropertyIds.map(id => String(id));
+  return tours.filter(tour => validIdStrings.includes(String(tour.propertyId)));
+}
+
+// Seed sample tour requests for testing
+export function seedTestTourRequests(listings: Array<{id: number, propertyName: string}>): TourRequest[] {
+  // Clear existing tour requests first
+  clearTourRequests();
+  
+  if (listings.length < 2) return [];
+  
+  const futureDate = new Date();
+  futureDate.setDate(futureDate.getDate() + 3);
+  const futureDateStr = futureDate.toISOString().split('T')[0];
+  
+  const pastDate = new Date();
+  pastDate.setDate(pastDate.getDate() - 2);
+  const pastDateStr = pastDate.toISOString().split('T')[0];
+  
+  const testTours: TourRequest[] = [
+    {
+      id: "tour_test_1",
+      propertyId: String(listings[0].id),
+      propertyName: listings[0].propertyName,
+      date: futureDateStr,
+      time: "10:00 AM",
+      status: "pending",
+      tourType: "in-person",
+      createdAt: new Date().toISOString(),
+      tenantName: "Jamie Rivera",
+      tenantEmail: "testtenant@soberstay.com",
+    },
+    {
+      id: "tour_test_2",
+      propertyId: String(listings[1].id),
+      propertyName: listings[1].propertyName,
+      date: pastDateStr,
+      time: "2:00 PM",
+      status: "approved",
+      tourType: "virtual",
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      responseDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+      providerMessage: "Looking forward to meeting you! Join via Zoom link we'll email.",
+      tenantName: "Jamie Rivera",
+      tenantEmail: "testtenant@soberstay.com",
+    }
+  ];
+  
+  localStorage.setItem(TOUR_REQUESTS_KEY, JSON.stringify(testTours));
+  return testTours;
+}
