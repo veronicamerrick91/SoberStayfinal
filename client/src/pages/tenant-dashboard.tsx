@@ -697,14 +697,47 @@ function TenantDashboardContent() {
                       {submittedApplications.map((app) => {
                         const getStatusDisplay = (status: string) => {
                           switch (status) {
-                            case "under_review": return { label: "Under Review", icon: "📋", variant: "default" as const, progress: 60 };
-                            case "action_required": return { label: "Action Required", icon: "⚠️", variant: "destructive" as const, progress: 40 };
-                            case "approved": return { label: "Approved", icon: "✅", variant: "default" as const, progress: 100 };
-                            case "denied": return { label: "Denied", icon: "❌", variant: "destructive" as const, progress: 100 };
-                            default: return { label: "Pending", icon: "✓", variant: "secondary" as const, progress: 20 };
+                            case "under_review": return { label: "Under Review", icon: "📋", variant: "default" as const };
+                            case "action_required": return { label: "Action Required", icon: "⚠️", variant: "destructive" as const };
+                            case "approved": return { label: "Approved", icon: "✅", variant: "default" as const };
+                            case "denied": return { label: "Denied", icon: "❌", variant: "destructive" as const };
+                            default: return { label: "Pending", icon: "✓", variant: "secondary" as const };
                           }
                         };
                         const statusInfo = getStatusDisplay(app.status);
+                        
+                        // Calculate application completion based on actual filled data
+                        const calcAppCompletion = () => {
+                          const data = app.applicationData || {};
+                          const checkFilled = (fields: any[]) => fields.filter(f => {
+                            if (typeof f === 'boolean') return f === true;
+                            if (typeof f === 'string') return f && f.trim() !== '';
+                            return f != null;
+                          }).length;
+                          
+                          const calculateScore = (fields: any[], weight: number) => {
+                            if (fields.length === 0) return weight;
+                            return (checkFilled(fields) / fields.length) * weight;
+                          };
+                          
+                          const coreFields = [data.firstName, data.lastName, data.email, data.phoneNumber, data.dateOfBirth, data.gender, data.currentAddress];
+                          const emergencyFields = [data.emergencyContactName, data.emergencyContactPhone, data.emergencyContactRelationship];
+                          const recoveryFields = [data.primarySubstance, data.lengthOfSobriety, data.lastDateOfUse];
+                          const employmentFields = [data.employmentStatus, data.incomeSources, data.canPayRent];
+                          const housingFields = [data.moveInDate, data.roomPreference];
+                          const consentFields = [data.agreeNoDrugs, data.agreeTerms];
+                          
+                          return Math.round(
+                            calculateScore(coreFields, 30) +
+                            calculateScore(emergencyFields, 15) +
+                            calculateScore(recoveryFields, 20) +
+                            calculateScore(employmentFields, 15) +
+                            calculateScore(housingFields, 10) +
+                            calculateScore(consentFields, 10)
+                          );
+                        };
+                        const appCompletionPercent = calcAppCompletion();
+                        
                         return (
                           <div 
                             key={app.id} 
@@ -729,8 +762,8 @@ function TenantDashboardContent() {
                                 </Badge>
                               </div>
                               <div className="flex items-center gap-2">
-                                <Progress value={statusInfo.progress} className="h-2 flex-1" />
-                                <span className="text-xs text-muted-foreground font-medium">{statusInfo.progress}%</span>
+                                <Progress value={appCompletionPercent} className="h-2 flex-1" />
+                                <span className="text-xs text-muted-foreground font-medium">{appCompletionPercent}%</span>
                               </div>
                             </div>
                             <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
