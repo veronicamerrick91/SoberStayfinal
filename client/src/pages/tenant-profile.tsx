@@ -901,14 +901,13 @@ export function TenantProfile() {
                     { id: "agreeDischarge", label: "Serious rule violations may result in immediate discharge" },
                   ].map(item => (
                     <div key={item.id} className="flex items-start gap-3">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         id={item.id}
                         checked={formData[item.id] || false}
-                        onChange={(e) => handleCheckboxChange(item.id, e.target.checked)}
-                        required
+                        onCheckedChange={(checked) => handleCheckboxChange(item.id, checked === true)}
+                        className="mt-0.5"
                       />
-                      <label htmlFor={item.id} className="text-sm text-gray-300">{item.label}</label>
+                      <label htmlFor={item.id} className="text-sm text-gray-300 cursor-pointer">{item.label}</label>
                     </div>
                   ))}
                 </div>
@@ -919,24 +918,22 @@ export function TenantProfile() {
                 <h3 className="font-bold text-white text-lg">9. Consent & Acknowledgments</h3>
                 <div className="space-y-3 bg-primary/5 border border-primary/20 rounded-lg p-4">
                   <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       id="agreeShareInfo"
                       checked={formData.agreeShareInfo || false}
-                      onChange={(e) => handleCheckboxChange("agreeShareInfo", e.target.checked)}
-                      required
+                      onCheckedChange={(checked) => handleCheckboxChange("agreeShareInfo", checked === true)}
+                      className="mt-0.5"
                     />
-                    <label htmlFor="agreeShareInfo" className="text-sm text-gray-300">I consent to share my information with providers for review *</label>
+                    <label htmlFor="agreeShareInfo" className="text-sm text-gray-300 cursor-pointer">I consent to share my information with providers for review *</label>
                   </div>
                   <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       id="agreeTerms"
                       checked={formData.agreeTerms || false}
-                      onChange={(e) => handleCheckboxChange("agreeTerms", e.target.checked)}
-                      required
+                      onCheckedChange={(checked) => handleCheckboxChange("agreeTerms", checked === true)}
+                      className="mt-0.5"
                     />
-                    <label htmlFor="agreeTerms" className="text-sm text-gray-300">I agree to the Sober Stay Terms of Use and Privacy Policy *</label>
+                    <label htmlFor="agreeTerms" className="text-sm text-gray-300 cursor-pointer">I agree to the Sober Stay Terms of Use and Privacy Policy *</label>
                   </div>
                 </div>
               </div>
