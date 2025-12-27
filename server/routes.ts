@@ -1328,6 +1328,373 @@ Disallow: /auth/
     }
   });
 
+  // Development: Seed comprehensive test data for portal testing
+  app.post("/api/dev/seed-full-test-data", async (req, res) => {
+    if (process.env.NODE_ENV !== "development") {
+      return res.status(403).json({ error: "This endpoint is only available in development" });
+    }
+
+    try {
+      const hashedPassword = await bcrypt.hash("password123", 10);
+      const results: any = { accounts: [], listings: [], applications: [], favorites: [], viewedHomes: [] };
+
+      // 1. Create test tenant with complete profile
+      let testTenant = await storage.getUserByEmail("testtenant@soberstay.com");
+      if (!testTenant) {
+        testTenant = await storage.createUser({
+          username: "testtenant" + Math.floor(Math.random() * 10000),
+          email: "testtenant@soberstay.com",
+          password: hashedPassword,
+          name: "Jamie Rivera",
+          role: "tenant",
+        });
+        results.accounts.push({ email: "testtenant@soberstay.com", password: "password123", role: "tenant", created: true });
+      } else {
+        results.accounts.push({ email: "testtenant@soberstay.com", password: "password123", role: "tenant", created: false, message: "Already exists" });
+      }
+
+      // Create complete tenant profile
+      const tenantProfileData = {
+        firstName: "Jamie",
+        lastName: "Rivera",
+        dateOfBirth: "1990-05-15",
+        gender: "Male",
+        phone: "(555) 123-4567",
+        email: "testtenant@soberstay.com",
+        currentAddress: "123 Recovery Lane",
+        currentCity: "Los Angeles",
+        currentState: "CA",
+        currentZip: "90001",
+        sobrietyDate: "2024-01-15",
+        primarySubstance: "Alcohol",
+        secondarySubstances: ["Prescription Opioids"],
+        isOnMat: true,
+        matMedication: "Suboxone",
+        hasCompletedTreatment: true,
+        treatmentFacility: "Serenity Treatment Center",
+        treatmentCompletionDate: "2024-06-01",
+        hasMentalHealthDiagnosis: true,
+        mentalHealthConditions: ["Anxiety", "Depression"],
+        isOnMentalHealthMedication: true,
+        emergencyContactName: "Maria Rivera",
+        emergencyContactPhone: "(555) 987-6543",
+        emergencyContactRelationship: "Mother",
+        hasIdentification: true,
+        identificationType: "Driver's License",
+        isCurrentlyEmployed: true,
+        employer: "Recovery Tech Solutions",
+        employmentType: "Full-time",
+        monthlyIncome: 4500,
+        incomeVerification: "pay_stubs",
+        hasPreviousEvictions: false,
+        hasCriminalRecord: false,
+        hasVehicle: true,
+        hasPets: false,
+        desiredMoveInDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        preferredLocation: "Los Angeles",
+        preferredGender: "Men",
+        budgetMin: 800,
+        budgetMax: 1500,
+        lengthOfStay: "6-12 months",
+        personalStatement: "I am committed to my recovery journey and looking for a supportive sober living environment. I have been sober since January 2024 and completed residential treatment at Serenity Treatment Center. I work full-time as a software developer and am looking to build a stable foundation for long-term recovery.",
+        consentToBackgroundCheck: true,
+        consentToReleaseInfo: true,
+        acknowledgePolicies: true,
+        electronicSignature: "Jamie Rivera",
+        signatureDate: new Date().toISOString().split('T')[0],
+      };
+      await storage.createOrUpdateTenantProfile(testTenant.id, {
+        bio: tenantProfileData.personalStatement,
+        phone: tenantProfileData.phone,
+        smsOptIn: true,
+        applicationData: tenantProfileData as Record<string, any>,
+      });
+
+      // 2. Create test providers with profiles
+      let testProvider1 = await storage.getUserByEmail("provider1@soberstay.com");
+      if (!testProvider1) {
+        testProvider1 = await storage.createUser({
+          username: "hopehouse" + Math.floor(Math.random() * 10000),
+          email: "provider1@soberstay.com",
+          password: hashedPassword,
+          name: "Sarah Mitchell",
+          role: "provider",
+        });
+        results.accounts.push({ email: "provider1@soberstay.com", password: "password123", role: "provider", created: true });
+      } else {
+        results.accounts.push({ email: "provider1@soberstay.com", password: "password123", role: "provider", created: false });
+      }
+
+      let testProvider2 = await storage.getUserByEmail("provider2@soberstay.com");
+      if (!testProvider2) {
+        testProvider2 = await storage.createUser({
+          username: "newbeginnings" + Math.floor(Math.random() * 10000),
+          email: "provider2@soberstay.com",
+          password: hashedPassword,
+          name: "Michael Chen",
+          role: "provider",
+        });
+        results.accounts.push({ email: "provider2@soberstay.com", password: "password123", role: "provider", created: true });
+      } else {
+        results.accounts.push({ email: "provider2@soberstay.com", password: "password123", role: "provider", created: false });
+      }
+
+      // Create provider profiles
+      await storage.createOrUpdateProviderProfile(testProvider1.id, {
+        companyName: "Hope House Recovery",
+        phone: "(555) 222-3333",
+        smsOptIn: true,
+        description: "We provide a supportive, structured environment for men in early recovery. Our program focuses on accountability, community, and building life skills for lasting sobriety.",
+        address: "456 Serenity Street",
+        city: "Los Angeles",
+        state: "CA",
+        zip: "90015",
+        foundedYear: 2018,
+        totalBeds: 24,
+        documentsVerified: true,
+        verifiedAt: new Date(),
+      });
+
+      await storage.createOrUpdateProviderProfile(testProvider2.id, {
+        companyName: "New Beginnings Sober Living",
+        phone: "(555) 444-5555",
+        smsOptIn: true,
+        description: "A welcoming environment for women seeking recovery. We offer comprehensive support including job placement assistance, therapy referrals, and life skills training.",
+        address: "789 Recovery Road",
+        city: "San Diego",
+        state: "CA",
+        zip: "92101",
+        foundedYear: 2020,
+        totalBeds: 16,
+        documentsVerified: true,
+        verifiedAt: new Date(),
+      });
+
+      // Create subscriptions for providers
+      const futureDate = new Date();
+      futureDate.setMonth(futureDate.getMonth() + 6);
+      
+      const existingSub1 = await storage.getSubscriptionByProvider(testProvider1.id);
+      if (!existingSub1) {
+        await storage.createSubscription({
+          providerId: testProvider1.id,
+          status: "active",
+          currentPeriodEnd: futureDate,
+          paymentMethod: "debit",
+          listingAllowance: 5,
+          hasFeeWaiver: false,
+        });
+      }
+
+      const existingSub2 = await storage.getSubscriptionByProvider(testProvider2.id);
+      if (!existingSub2) {
+        await storage.createSubscription({
+          providerId: testProvider2.id,
+          status: "active",
+          currentPeriodEnd: futureDate,
+          paymentMethod: "debit",
+          listingAllowance: 3,
+          hasFeeWaiver: true,
+        });
+      }
+
+      // 3. Create sample listings
+      const sampleListings = [
+        {
+          providerId: testProvider1.id,
+          propertyName: "Hope House - Downtown LA",
+          address: "456 Serenity Street",
+          city: "Los Angeles",
+          state: "CA",
+          monthlyPrice: 1200,
+          totalBeds: 8,
+          gender: "Men",
+          roomType: "Shared Room",
+          description: "Our flagship men's sober living home in the heart of Downtown LA. Walking distance to transit, AA meetings, and employment opportunities. We provide a structured environment with house meetings, chores, and curfews to support your recovery journey.",
+          amenities: ["WiFi", "Laundry", "Parking", "Kitchen Access", "Cable TV", "Air Conditioning", "Gym Access"],
+          inclusions: ["Utilities", "Weekly House Meetings", "Recovery Support", "Job Search Assistance"],
+          photos: [],
+          supervisionType: "House Manager",
+          isMatFriendly: true,
+          isPetFriendly: false,
+          isLgbtqFriendly: true,
+          isFaithBased: false,
+          acceptsCouples: false,
+          status: "approved",
+        },
+        {
+          providerId: testProvider1.id,
+          propertyName: "Hope House - Westside",
+          address: "123 Recovery Ave",
+          city: "Santa Monica",
+          state: "CA",
+          monthlyPrice: 1500,
+          totalBeds: 6,
+          gender: "Men",
+          roomType: "Private Room",
+          description: "Premium sober living near the beach. Private rooms, beautiful common areas, and a supportive community. Perfect for professionals in recovery who need a quiet, structured environment.",
+          amenities: ["WiFi", "Laundry", "Parking", "Kitchen Access", "Patio", "Air Conditioning", "Near Beach"],
+          inclusions: ["Utilities", "Weekly House Meetings", "Recovery Support"],
+          photos: [],
+          supervisionType: "Supervised",
+          isMatFriendly: true,
+          isPetFriendly: false,
+          isLgbtqFriendly: true,
+          isFaithBased: false,
+          acceptsCouples: false,
+          status: "approved",
+        },
+        {
+          providerId: testProvider2.id,
+          propertyName: "New Beginnings - Women's House",
+          address: "789 Recovery Road",
+          city: "San Diego",
+          state: "CA",
+          monthlyPrice: 1100,
+          totalBeds: 8,
+          gender: "Women",
+          roomType: "Shared Room",
+          description: "A safe, nurturing environment for women in recovery. Our all-female staff understands the unique challenges women face. We offer trauma-informed care, parenting support, and career counseling.",
+          amenities: ["WiFi", "Laundry", "Kitchen Access", "Garden", "Meditation Room", "Air Conditioning"],
+          inclusions: ["Utilities", "Weekly House Meetings", "Recovery Support", "Trauma-Informed Care", "Career Counseling"],
+          photos: [],
+          supervisionType: "House Manager",
+          isMatFriendly: true,
+          isPetFriendly: true,
+          isLgbtqFriendly: true,
+          isFaithBased: false,
+          acceptsCouples: false,
+          status: "approved",
+        },
+        {
+          providerId: testProvider2.id,
+          propertyName: "Serenity Couples House",
+          address: "555 Unity Lane",
+          city: "San Diego",
+          state: "CA",
+          monthlyPrice: 2000,
+          totalBeds: 4,
+          gender: "Co-Ed",
+          roomType: "Private Room",
+          description: "Unique sober living for couples in recovery. Support each other's journey while receiving structured care. Private suites with shared common areas. Couples counseling available.",
+          amenities: ["WiFi", "Laundry", "Parking", "Kitchen Access", "Private Bath", "Air Conditioning"],
+          inclusions: ["Utilities", "Weekly House Meetings", "Couples Counseling", "Recovery Support"],
+          photos: [],
+          supervisionType: "Supervised",
+          isMatFriendly: true,
+          isPetFriendly: false,
+          isLgbtqFriendly: true,
+          isFaithBased: false,
+          acceptsCouples: true,
+          status: "approved",
+        },
+        {
+          providerId: testProvider1.id,
+          propertyName: "Faith & Recovery House",
+          address: "777 Grace Street",
+          city: "Pasadena",
+          state: "CA",
+          monthlyPrice: 950,
+          totalBeds: 10,
+          gender: "Men",
+          roomType: "Shared Room",
+          description: "Faith-based recovery home for men seeking spiritual growth alongside sobriety. Daily devotionals, church attendance encouraged, and a brotherhood of support. All faiths welcome.",
+          amenities: ["WiFi", "Laundry", "Kitchen Access", "Chapel", "Garden"],
+          inclusions: ["Utilities", "Weekly House Meetings", "Spiritual Guidance", "Recovery Support"],
+          photos: [],
+          supervisionType: "House Manager",
+          isMatFriendly: false,
+          isPetFriendly: false,
+          isLgbtqFriendly: false,
+          isFaithBased: true,
+          acceptsCouples: false,
+          status: "approved",
+        },
+      ];
+
+      const createdListings: any[] = [];
+      for (const listingData of sampleListings) {
+        // Check if listing with same name exists
+        const allListings = await storage.getListingsByProvider(listingData.providerId);
+        const exists = allListings.find(l => l.propertyName === listingData.propertyName);
+        if (!exists) {
+          const listing = await storage.createListing(listingData);
+          createdListings.push(listing);
+          results.listings.push({ name: listingData.propertyName, created: true });
+        } else {
+          createdListings.push(exists);
+          results.listings.push({ name: listingData.propertyName, created: false, message: "Already exists" });
+        }
+      }
+
+      // 4. Create sample applications for tenant
+      const applicationStatuses = [
+        { status: "pending", listingIndex: 0, label: "Submitted Application" },
+        { status: "approved", listingIndex: 1, label: "Approved Application" },
+        { status: "rejected", listingIndex: 2, label: "Denied Application" },
+      ];
+
+      for (const appConfig of applicationStatuses) {
+        if (createdListings[appConfig.listingIndex]) {
+          const existingApps = await storage.getApplicationsByTenant(testTenant.id);
+          const alreadyApplied = existingApps.find(a => a.listingId === createdListings[appConfig.listingIndex].id);
+          if (!alreadyApplied) {
+            const moveInDate = new Date();
+            moveInDate.setDate(moveInDate.getDate() + 14);
+            await storage.createApplication({
+              tenantId: testTenant.id,
+              listingId: createdListings[appConfig.listingIndex].id,
+              applicationData: {
+                ...tenantProfileData,
+                appliedAt: new Date().toISOString(),
+                notes: appConfig.status === "rejected" ? "Unfortunately, we are at full capacity at this time." : undefined,
+              } as Record<string, any>,
+              status: appConfig.status,
+              moveInDate: appConfig.status === "approved" ? moveInDate : undefined,
+            });
+            results.applications.push({ label: appConfig.label, listing: createdListings[appConfig.listingIndex].propertyName, created: true });
+          } else {
+            results.applications.push({ label: appConfig.label, listing: createdListings[appConfig.listingIndex].propertyName, created: false });
+          }
+        }
+      }
+
+      // 5. Create favorites for tenant
+      for (let i = 0; i < Math.min(3, createdListings.length); i++) {
+        try {
+          await storage.addTenantFavorite(testTenant.id, createdListings[i].id);
+          results.favorites.push({ listing: createdListings[i].propertyName, created: true });
+        } catch {
+          results.favorites.push({ listing: createdListings[i].propertyName, created: false, message: "Already favorited" });
+        }
+      }
+
+      // 6. Create viewed homes for tenant
+      for (const listing of createdListings) {
+        try {
+          await storage.addTenantViewedHome(testTenant.id, listing.id);
+          results.viewedHomes.push({ listing: listing.propertyName, created: true });
+        } catch {
+          results.viewedHomes.push({ listing: listing.propertyName, created: false });
+        }
+      }
+
+      res.json({
+        success: true,
+        message: "Full test data seeded successfully",
+        testCredentials: {
+          tenant: { email: "testtenant@soberstay.com", password: "password123" },
+          provider1: { email: "provider1@soberstay.com", password: "password123" },
+          provider2: { email: "provider2@soberstay.com", password: "password123" },
+        },
+        results,
+      });
+    } catch (error: any) {
+      console.error("Seed full test data error:", error);
+      res.status(500).json({ error: error.message || "Failed to seed test data" });
+    }
+  });
+
   // Tenant Profile Routes
   app.get("/api/tenant/profile", async (req, res) => {
     const user = req.user as any;
@@ -1579,11 +1946,17 @@ Disallow: /auth/
         tenantId: user.id,
         listingId,
         applicationData,
-        bio,
-        profilePhotoUrl,
-        idPhotoUrl,
         status: "pending",
       });
+      
+      // Update tenant profile with photos if provided
+      if (bio || profilePhotoUrl || idPhotoUrl) {
+        await storage.createOrUpdateTenantProfile(user.id, {
+          ...(bio && { bio }),
+          ...(profilePhotoUrl && { profilePhotoUrl }),
+          ...(idPhotoUrl && { idPhotoUrl }),
+        });
+      }
       
       // Send email notifications (non-blocking)
       try {
