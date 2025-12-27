@@ -111,6 +111,7 @@ export function TenantProfile() {
   });
 
   const user = getAuth();
+  const userId = user?.id;
 
   useEffect(() => {
     if (!user || user.role !== "tenant") {
@@ -118,11 +119,12 @@ export function TenantProfile() {
       return;
     }
     loadProfile();
-  }, [user, setLocation]);
+    // Use userId instead of user object to prevent re-running on every render
+  }, [userId, setLocation]);
 
   const loadProfile = async () => {
     try {
-      const response = await fetch("/api/tenant/profile");
+      const response = await fetch("/api/tenant/profile", { credentials: "include" });
       if (response.ok) {
         const data = await response.json();
         setProfile(data);
@@ -157,6 +159,7 @@ export function TenantProfile() {
           const response = await fetch("/api/tenant/upload", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include",
             body: JSON.stringify({ type, fileUrl }),
           });
 
@@ -205,6 +208,7 @@ export function TenantProfile() {
       const response = await fetch("/api/tenant/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ bio, phone, smsOptIn, applicationData: formData }),
       });
       if (!response.ok) throw new Error("Failed to save profile");
