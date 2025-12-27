@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   Home, FileText, MessageSquare, Heart, Bell, Eye, CalendarCheck,
   Clock, CheckCircle, XCircle, ChevronRight, MapPin, Send, 
-  Zap, Settings, LogOut, User, Phone, Mail, Calendar, Shield, Loader2
+  Zap, Settings, LogOut, User, Phone, Mail, Calendar, Shield, Loader2, Briefcase
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Listing } from "@shared/schema";
@@ -152,10 +152,22 @@ function TenantDashboardContent() {
     if (serverApplicationData) {
       const data = serverApplicationData;
       
-      // Define required fields grouped by importance
+      // Calculate filled fields safely - guards against zero-length arrays
+      const checkFilled = (fields: any[]) => fields.filter(f => {
+        if (typeof f === 'boolean') return f === true;
+        if (typeof f === 'string') return f && f.trim() !== '';
+        return f != null;
+      }).length;
+      
+      const calculateScore = (fields: any[], weight: number) => {
+        if (fields.length === 0) return weight; // Full score if no fields (section optional)
+        return (checkFilled(fields) / fields.length) * weight;
+      };
+      
+      // Define required fields grouped by section - using ACTUAL field names from tenant-profile.tsx
       const coreFields = [
-        data.firstName, data.lastName, data.email, data.phone || data.phoneNumber,
-        data.dateOfBirth, data.gender
+        data.firstName, data.lastName, data.email, data.phoneNumber,
+        data.dateOfBirth, data.gender, data.currentAddress
       ];
       
       const emergencyFields = [
@@ -163,50 +175,44 @@ function TenantDashboardContent() {
       ];
       
       const recoveryFields = [
-        data.primarySubstances, data.lengthOfSobriety, data.lastDateOfUse,
-        data.recoveryProgram, data.hasSponsor
+        data.primarySubstance, data.lengthOfSobriety, data.lastDateOfUse,
+        data.overdoseHistory, data.matHistory
       ];
       
-      const idFields = [
-        data.ssn || data.idVerified  // Either SSN or verified ID
+      const medicalFields = [
+        data.medicalConditions, data.mentalHealthDiagnoses, data.currentMedications,
+        data.mobilityIssues, data.seizureHistory
+      ];
+      
+      const legalFields = [
+        data.probationParole, data.pendingCases, data.violentOffenses
       ];
       
       const employmentFields = [
-        data.employmentStatus, data.incomeSource
+        data.employmentStatus, data.incomeSources, data.canPayRent, data.lookingForEmployment
       ];
       
       const housingFields = [
-        data.moveInDate, data.preferredLocation
+        data.moveInDate, data.roomPreference, data.genderSpecificHousing,
+        data.reasonForLeaving, data.previousSoberLiving
       ];
       
       const consentFields = [
+        data.agreeNoDrugs, data.agreeUAandBreathalyzer, data.agreeNoViolence,
         data.agreeShareInfo, data.agreeTerms
       ];
       
-      // Calculate filled fields with weights
-      const checkFilled = (fields: any[]) => fields.filter(f => {
-        if (typeof f === 'boolean') return f === true;
-        if (typeof f === 'string') return f && f.trim() !== '';
-        return f != null;
-      }).length;
+      // Weighted scoring (totals 100%)
+      const coreScore = calculateScore(coreFields, 25);
+      const emergencyScore = calculateScore(emergencyFields, 12);
+      const recoveryScore = calculateScore(recoveryFields, 15);
+      const medicalScore = calculateScore(medicalFields, 8);
+      const legalScore = calculateScore(legalFields, 8);
+      const employmentScore = calculateScore(employmentFields, 12);
+      const housingScore = calculateScore(housingFields, 10);
+      const consentScore = calculateScore(consentFields, 10);
       
-      const coreWeight = 30;
-      const emergencyWeight = 15;
-      const recoveryWeight = 20;
-      const idWeight = 10;
-      const employmentWeight = 10;
-      const housingWeight = 10;
-      const consentWeight = 5;
-      
-      const coreScore = (checkFilled(coreFields) / coreFields.length) * coreWeight;
-      const emergencyScore = (checkFilled(emergencyFields) / emergencyFields.length) * emergencyWeight;
-      const recoveryScore = (checkFilled(recoveryFields) / recoveryFields.length) * recoveryWeight;
-      const idScore = (checkFilled(idFields) / idFields.length) * idWeight;
-      const employmentScore = (checkFilled(employmentFields) / employmentFields.length) * employmentWeight;
-      const housingScore = (checkFilled(housingFields) / housingFields.length) * housingWeight;
-      const consentScore = (checkFilled(consentFields) / consentFields.length) * consentWeight;
-      
-      return Math.round(coreScore + emergencyScore + recoveryScore + idScore + employmentScore + housingScore + consentScore);
+      return Math.round(coreScore + emergencyScore + recoveryScore + medicalScore + legalScore + employmentScore + housingScore + consentScore);
     }
     
     // Fallback to basic fields if no server data loaded yet
@@ -1206,7 +1212,7 @@ function TenantDashboardContent() {
                   </div>
                   <div className="p-3 rounded-lg bg-white/5">
                     <span className="text-muted-foreground block text-xs">Phone</span>
-                    <span className="text-white">{selectedApplication.applicationData.phone}</span>
+                    <span className="text-white">{selectedApplication.applicationData.phoneNumber || selectedApplication.applicationData.phone || "Not specified"}</span>
                   </div>
                   <div className="p-3 rounded-lg bg-white/5 col-span-2">
                     <span className="text-muted-foreground block text-xs">Email</span>
@@ -1249,27 +1255,61 @@ function TenantDashboardContent() {
                 </h4>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="p-3 rounded-lg bg-white/5">
-                    <span className="text-muted-foreground block text-xs">Primary Substance(s)</span>
-                    <span className="text-white">{selectedApplication.applicationData.primarySubstances}</span>
+                    <span className="text-muted-foreground block text-xs">Primary Substance</span>
+                    <span className="text-white">{selectedApplication.applicationData.primarySubstance || "Not specified"}</span>
                   </div>
                   <div className="p-3 rounded-lg bg-white/5">
                     <span className="text-muted-foreground block text-xs">Length of Sobriety</span>
-                    <span className="text-white">{selectedApplication.applicationData.lengthOfSobriety}</span>
+                    <span className="text-white">{selectedApplication.applicationData.lengthOfSobriety || "Not specified"}</span>
                   </div>
                   <div className="p-3 rounded-lg bg-white/5">
                     <span className="text-muted-foreground block text-xs">Last Date of Use</span>
-                    <span className="text-white">{selectedApplication.applicationData.lastDateOfUse}</span>
+                    <span className="text-white">{selectedApplication.applicationData.lastDateOfUse || "Not specified"}</span>
                   </div>
                   <div className="p-3 rounded-lg bg-white/5">
-                    <span className="text-muted-foreground block text-xs">Has Sponsor</span>
-                    <span className="text-white capitalize">{selectedApplication.applicationData.hasSponsor}</span>
+                    <span className="text-muted-foreground block text-xs">MAT History</span>
+                    <span className="text-white capitalize">{selectedApplication.applicationData.matHistory || "Not specified"}</span>
                   </div>
-                  {selectedApplication.applicationData.currentMatMedications && (
+                  {selectedApplication.applicationData.currentMat && (
                     <div className="p-3 rounded-lg bg-white/5 col-span-2">
-                      <span className="text-muted-foreground block text-xs">MAT Medications</span>
-                      <span className="text-white">{selectedApplication.applicationData.currentMatMedications}</span>
+                      <span className="text-muted-foreground block text-xs">Current MAT Medication</span>
+                      <span className="text-white">{selectedApplication.applicationData.currentMat}</span>
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Employment & Housing */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-white flex items-center gap-2 border-b border-border pb-2">
+                  <Briefcase className="w-4 h-4 text-primary" />
+                  Employment & Housing
+                </h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Employment Status</span>
+                    <span className="text-white">{selectedApplication.applicationData.employmentStatus || "Not specified"}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Income Sources</span>
+                    <span className="text-white">{selectedApplication.applicationData.incomeSources || "Not specified"}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Can Pay Rent</span>
+                    <span className="text-white">{selectedApplication.applicationData.canPayRent || "Not specified"}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Desired Move-in Date</span>
+                    <span className="text-white">{selectedApplication.applicationData.moveInDate || "Not specified"}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Room Preference</span>
+                    <span className="text-white">{selectedApplication.applicationData.roomPreference || "Not specified"}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/5">
+                    <span className="text-muted-foreground block text-xs">Housing Preference</span>
+                    <span className="text-white">{selectedApplication.applicationData.genderSpecificHousing || "Not specified"}</span>
+                  </div>
                 </div>
               </div>
 
@@ -1302,6 +1342,122 @@ function TenantDashboardContent() {
                   </div>
                 </div>
               )}
+
+              {/* Legal Information */}
+              {(selectedApplication.applicationData.probationParole || selectedApplication.applicationData.pendingCases || selectedApplication.applicationData.violentOffenses) && (
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-white flex items-center gap-2 border-b border-border pb-2">
+                    <FileText className="w-4 h-4 text-primary" />
+                    Legal Information
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    {selectedApplication.applicationData.probationParole && (
+                      <div className="p-3 rounded-lg bg-white/5">
+                        <span className="text-muted-foreground block text-xs">Probation/Parole</span>
+                        <span className="text-white">{selectedApplication.applicationData.probationParole}</span>
+                      </div>
+                    )}
+                    {selectedApplication.applicationData.pendingCases && (
+                      <div className="p-3 rounded-lg bg-white/5">
+                        <span className="text-muted-foreground block text-xs">Pending Cases</span>
+                        <span className="text-white">{selectedApplication.applicationData.pendingCases}</span>
+                      </div>
+                    )}
+                    {selectedApplication.applicationData.violentOffenses && (
+                      <div className="p-3 rounded-lg bg-white/5">
+                        <span className="text-muted-foreground block text-xs">Violent Offenses</span>
+                        <span className="text-white">{selectedApplication.applicationData.violentOffenses}</span>
+                      </div>
+                    )}
+                    {selectedApplication.applicationData.restrainingOrders && (
+                      <div className="p-3 rounded-lg bg-white/5">
+                        <span className="text-muted-foreground block text-xs">Restraining Orders</span>
+                        <span className="text-white">{selectedApplication.applicationData.restrainingOrders}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Housing Background */}
+              {(selectedApplication.applicationData.reasonForLeaving || selectedApplication.applicationData.previousSoberLiving) && (
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-white flex items-center gap-2 border-b border-border pb-2">
+                    <Home className="w-4 h-4 text-primary" />
+                    Housing Background
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    {selectedApplication.applicationData.reasonForLeaving && (
+                      <div className="p-3 rounded-lg bg-white/5 col-span-2">
+                        <span className="text-muted-foreground block text-xs">Reason for Leaving Current Housing</span>
+                        <span className="text-white">{selectedApplication.applicationData.reasonForLeaving}</span>
+                      </div>
+                    )}
+                    {selectedApplication.applicationData.previousSoberLiving && (
+                      <div className="p-3 rounded-lg bg-white/5">
+                        <span className="text-muted-foreground block text-xs">Previous Sober Living</span>
+                        <span className="text-white">{selectedApplication.applicationData.previousSoberLiving}</span>
+                      </div>
+                    )}
+                    {selectedApplication.applicationData.previousEvictions && (
+                      <div className="p-3 rounded-lg bg-white/5">
+                        <span className="text-muted-foreground block text-xs">Previous Evictions</span>
+                        <span className="text-white">{selectedApplication.applicationData.previousEvictions}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Agreements */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-white flex items-center gap-2 border-b border-border pb-2">
+                  <CheckCircle className="w-4 h-4 text-primary" />
+                  Agreements
+                </h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5">
+                    {selectedApplication.applicationData.agreeNoDrugs ? (
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-muted-foreground" />
+                    )}
+                    <span className="text-white text-xs">No Drugs/Alcohol</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5">
+                    {selectedApplication.applicationData.agreeUAandBreathalyzer ? (
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-muted-foreground" />
+                    )}
+                    <span className="text-white text-xs">UA/Breathalyzer</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5">
+                    {selectedApplication.applicationData.agreeNoViolence ? (
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-muted-foreground" />
+                    )}
+                    <span className="text-white text-xs">No Violence</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5">
+                    {selectedApplication.applicationData.agreeShareInfo ? (
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-muted-foreground" />
+                    )}
+                    <span className="text-white text-xs">Share Info</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5 col-span-2">
+                    {selectedApplication.applicationData.agreeTerms ? (
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-muted-foreground" />
+                    )}
+                    <span className="text-white text-xs">Agreed to Terms & Conditions</span>
+                  </div>
+                </div>
+              </div>
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4 border-t border-border">
