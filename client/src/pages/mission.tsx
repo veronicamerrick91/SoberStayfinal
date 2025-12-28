@@ -8,12 +8,12 @@ export function Mission() {
   return (
     <Layout>
       {/* Hero Section */}
-      <div className="relative bg-primary/5 py-20 md:py-32">
+      <div className="relative bg-primary/5 py-12 md:py-20">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight">
             Building a Path to <span className="text-primary">Lasting Recovery</span>
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Our mission is to remove the barriers to safe, supportive housing for everyone in recovery. 
             We believe that a stable home is the foundation of a new life.
           </p>
@@ -21,9 +21,9 @@ export function Mission() {
       </div>
 
       {/* Values Section */}
-      <div className="py-20 bg-background">
+      <div className="py-12 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
+          <div className="text-center mb-10">
             <h2 className="text-3xl font-bold mb-4">Our Core Values</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Every decision we make is guided by these principles to ensure we serve our community with integrity and care.
@@ -70,10 +70,10 @@ export function Mission() {
       </div>
 
       {/* Call to Action */}
-      <div className="py-20 bg-primary/90 text-primary-foreground">
+      <div className="py-12 bg-primary/90 text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">Join Us in Making a Difference</h2>
-          <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Join Us in Making a Difference</h2>
+          <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto mb-6">
             Whether you're looking for a home or providing one, you are part of the solution.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
