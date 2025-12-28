@@ -277,9 +277,6 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
               </TabsList>
             </Tabs>
 
-            
-            {/* Admin login removed for security - use Google Auth or real credentials */}
-            
             {loginError && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex gap-2 mb-4">
                 <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />

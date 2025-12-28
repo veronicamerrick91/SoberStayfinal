@@ -16,7 +16,7 @@ The frontend is built with React 18 and TypeScript, using Vite for fast developm
 
 ### Backend Architecture
 
-The backend utilizes Express.js on Node.js with TypeScript. It provides RESTful APIs with session-based authentication via `express-session` and Passport.js for Google OAuth. Protected endpoints enforce authentication. Data is managed using Drizzle ORM with PostgreSQL (Neon serverless driver), and Zod schemas ensure type-safe validation. Session data is persisted in the PostgreSQL database using `connect-pg-simple`. The build process uses esbuild for server bundling and Vite for the client, optimizing for cold start performance. A monorepo structure is employed for `client/`, `server/`, and `shared/` codebases, ensuring type sharing and reducing duplication.
+The backend utilizes Express.js on Node.js with TypeScript. It provides RESTful APIs with session-based authentication via `express-session` and Passport.js. Protected endpoints enforce authentication with login rate limiting (5 attempts, 15-minute lockout). Data is managed using Drizzle ORM with PostgreSQL (Neon serverless driver), and Zod schemas ensure type-safe validation. Session data is persisted in the PostgreSQL database using `connect-pg-simple`. The build process uses esbuild for server bundling and Vite for the client, optimizing for cold start performance. A monorepo structure is employed for `client/`, `server/`, and `shared/` codebases, ensuring type sharing and reducing duplication.
 
 ### Database Schema
 
@@ -45,9 +45,6 @@ The platform includes a comprehensive analytics tracking system for providers:
 
 ### Database & Infrastructure
 - **Neon Database**: Serverless PostgreSQL hosting.
-
-### Authentication Services
-- **Google OAuth 2.0**: Social login integration.
 
 ### Email Service
 - **Resend API**: Transactional email service for password resets, admin campaigns, and notifications.
