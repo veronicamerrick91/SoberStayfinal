@@ -385,6 +385,426 @@ const ADDITIONAL_STATES: StateMeetings[] = [
       { name: "Henderson Group", city: "Henderson", type: "AA Open Discussion", schedule: "Daily 7 PM" },
       { name: "Reno Recovery", city: "Reno", type: "NA Open", schedule: "Wednesdays 7:30 PM" }
     ]
+  },
+  {
+    stateSlug: "alabama",
+    stateName: "Alabama",
+    resources: [
+      { name: "AA Birmingham", type: "AA", url: "https://www.aabirmingham.org/meetings/", phone: "(205) 324-8788", description: "Birmingham area AA meetings" },
+      { name: "NA Alabama/NW Florida", type: "NA", url: "https://www.alnwflna.org/meetings/", description: "Alabama NA meeting finder" }
+    ],
+    sampleMeetings: [
+      { name: "Birmingham Central", city: "Birmingham", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Mobile Fellowship", city: "Mobile", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "alaska",
+    stateName: "Alaska",
+    resources: [
+      { name: "AA Anchorage", type: "AA", url: "https://www.prior.prior-it.com/prior/meetings/", phone: "(907) 272-2312", description: "Anchorage area AA meetings" },
+      { name: "NA Alaska", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Alaska NA meeting finder" }
+    ],
+    sampleMeetings: [
+      { name: "Anchorage Central", city: "Anchorage", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Fairbanks Group", city: "Fairbanks", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "arkansas",
+    stateName: "Arkansas",
+    resources: [
+      { name: "AA Arkansas", type: "AA", url: "https://www.arkansasaa.org/meetings/", phone: "(501) 664-7303", description: "Arkansas AA meeting directory" },
+      { name: "NA Arkansas", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Arkansas NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Little Rock Central", city: "Little Rock", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Fayetteville Group", city: "Fayetteville", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "connecticut",
+    stateName: "Connecticut",
+    resources: [
+      { name: "AA Connecticut", type: "AA", url: "https://www.ct-aa.org/meetings/", phone: "(866) 783-0159", description: "Connecticut AA meeting finder" },
+      { name: "NA Connecticut", type: "NA", url: "https://ctna.org/meetings/", description: "Connecticut NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Hartford Central", city: "Hartford", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "New Haven Group", city: "New Haven", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "delaware",
+    stateName: "Delaware",
+    resources: [
+      { name: "AA Delaware", type: "AA", url: "https://www.delawareaa.org/meetings/", phone: "(302) 655-5113", description: "Delaware AA meeting directory" },
+      { name: "NA Delaware", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Delaware NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Wilmington Central", city: "Wilmington", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Dover Group", city: "Dover", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "hawaii",
+    stateName: "Hawaii",
+    resources: [
+      { name: "AA Hawaii", type: "AA", url: "https://www.aahawaii.org/meetings/", phone: "(808) 946-1438", description: "Hawaii AA meeting finder" },
+      { name: "NA Hawaii", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Hawaii NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Honolulu Central", city: "Honolulu", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Maui Group", city: "Maui", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "idaho",
+    stateName: "Idaho",
+    resources: [
+      { name: "AA Idaho", type: "AA", url: "https://www.idahoarea18aa.org/meetings/", phone: "(208) 344-6611", description: "Idaho AA meeting directory" },
+      { name: "NA Idaho", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Idaho NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Boise Central", city: "Boise", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Idaho Falls Group", city: "Idaho Falls", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "indiana",
+    stateName: "Indiana",
+    resources: [
+      { name: "AA Indianapolis", type: "AA", url: "https://www.indyaa.org/meetings/", phone: "(317) 632-7864", description: "Indianapolis AA meeting finder" },
+      { name: "NA Indiana", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Indiana NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Indianapolis Central", city: "Indianapolis", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Fort Wayne Group", city: "Fort Wayne", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "iowa",
+    stateName: "Iowa",
+    resources: [
+      { name: "AA Iowa", type: "AA", url: "https://www.aa-iowa.org/meetings/", phone: "(515) 282-8550", description: "Iowa AA meeting directory" },
+      { name: "NA Iowa", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Iowa NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Des Moines Central", city: "Des Moines", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Cedar Rapids Group", city: "Cedar Rapids", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "kansas",
+    stateName: "Kansas",
+    resources: [
+      { name: "AA Kansas", type: "AA", url: "https://www.kansasaa.org/meetings/", phone: "(316) 684-9456", description: "Kansas AA meeting finder" },
+      { name: "NA Kansas", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Kansas NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Wichita Central", city: "Wichita", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Kansas City Group", city: "Kansas City", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "kentucky",
+    stateName: "Kentucky",
+    resources: [
+      { name: "AA Louisville", type: "AA", url: "https://www.louisvilleaa.org/meetings/", phone: "(502) 582-1849", description: "Louisville AA meeting directory" },
+      { name: "NA Kentucky", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Kentucky NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Louisville Central", city: "Louisville", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Lexington Group", city: "Lexington", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "louisiana",
+    stateName: "Louisiana",
+    resources: [
+      { name: "AA New Orleans", type: "AA", url: "https://www.aaneworleans.org/meetings/", phone: "(504) 838-3399", description: "New Orleans AA meeting finder" },
+      { name: "NA Louisiana", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Louisiana NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "New Orleans Central", city: "New Orleans", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Baton Rouge Group", city: "Baton Rouge", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "maine",
+    stateName: "Maine",
+    resources: [
+      { name: "AA Maine", type: "AA", url: "https://www.maineaa.org/meetings/", phone: "(800) 737-6237", description: "Maine AA meeting directory" },
+      { name: "NA Maine", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Maine NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Portland Central", city: "Portland", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Bangor Group", city: "Bangor", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "maryland",
+    stateName: "Maryland",
+    resources: [
+      { name: "AA Baltimore", type: "AA", url: "https://www.baltimoreaa.org/meetings/", phone: "(410) 663-1922", description: "Baltimore AA meeting finder" },
+      { name: "NA Maryland", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Maryland NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Baltimore Central", city: "Baltimore", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Annapolis Group", city: "Annapolis", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "michigan",
+    stateName: "Michigan",
+    resources: [
+      { name: "AA Detroit", type: "AA", url: "https://www.aadeasg.org/meetings/", phone: "(248) 541-6565", description: "Detroit area AA meeting directory" },
+      { name: "NA Michigan", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Michigan NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Detroit Central", city: "Detroit", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Grand Rapids Group", city: "Grand Rapids", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "minnesota",
+    stateName: "Minnesota",
+    resources: [
+      { name: "AA Minneapolis", type: "AA", url: "https://www.aaminneapolis.org/meetings/", phone: "(952) 922-0880", description: "Minneapolis AA meeting finder" },
+      { name: "NA Minnesota", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Minnesota NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Minneapolis Central", city: "Minneapolis", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "St. Paul Group", city: "St. Paul", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "mississippi",
+    stateName: "Mississippi",
+    resources: [
+      { name: "AA Mississippi", type: "AA", url: "https://www.msarea42.org/meetings/", phone: "(601) 982-0081", description: "Mississippi AA meeting directory" },
+      { name: "NA Mississippi", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Mississippi NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Jackson Central", city: "Jackson", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Biloxi Group", city: "Biloxi", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "missouri",
+    stateName: "Missouri",
+    resources: [
+      { name: "AA St. Louis", type: "AA", url: "https://www.aastl.org/meetings/", phone: "(314) 647-3677", description: "St. Louis AA meeting finder" },
+      { name: "NA Missouri", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Missouri NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "St. Louis Central", city: "St. Louis", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Kansas City Group", city: "Kansas City", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "montana",
+    stateName: "Montana",
+    resources: [
+      { name: "AA Montana", type: "AA", url: "https://www.aa-montana.org/meetings/", phone: "(406) 443-5020", description: "Montana AA meeting directory" },
+      { name: "NA Montana", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Montana NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Billings Central", city: "Billings", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Missoula Group", city: "Missoula", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "nebraska",
+    stateName: "Nebraska",
+    resources: [
+      { name: "AA Nebraska", type: "AA", url: "https://www.aaneb.org/meetings/", phone: "(402) 556-1880", description: "Nebraska AA meeting finder" },
+      { name: "NA Nebraska", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Nebraska NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Omaha Central", city: "Omaha", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Lincoln Group", city: "Lincoln", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "new-hampshire",
+    stateName: "New Hampshire",
+    resources: [
+      { name: "AA New Hampshire", type: "AA", url: "https://www.nhaa.net/meetings/", phone: "(800) 593-3330", description: "New Hampshire AA meeting directory" },
+      { name: "NA New Hampshire", type: "NA", url: "https://www.na.org/meetingsearch/", description: "New Hampshire NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Manchester Central", city: "Manchester", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Nashua Group", city: "Nashua", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "new-mexico",
+    stateName: "New Mexico",
+    resources: [
+      { name: "AA Albuquerque", type: "AA", url: "https://www.albuquerqueaa.org/meetings/", phone: "(505) 266-1900", description: "Albuquerque AA meeting finder" },
+      { name: "NA New Mexico", type: "NA", url: "https://www.na.org/meetingsearch/", description: "New Mexico NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Albuquerque Central", city: "Albuquerque", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Santa Fe Group", city: "Santa Fe", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "north-dakota",
+    stateName: "North Dakota",
+    resources: [
+      { name: "AA North Dakota", type: "AA", url: "https://www.area36.org/meetings/", phone: "(701) 235-7335", description: "North Dakota AA meeting directory" },
+      { name: "NA North Dakota", type: "NA", url: "https://www.na.org/meetingsearch/", description: "North Dakota NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Fargo Central", city: "Fargo", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Bismarck Group", city: "Bismarck", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "oklahoma",
+    stateName: "Oklahoma",
+    resources: [
+      { name: "AA Oklahoma City", type: "AA", url: "https://www.okcintergroup.org/meetings/", phone: "(405) 524-1100", description: "Oklahoma City AA meeting finder" },
+      { name: "NA Oklahoma", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Oklahoma NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Oklahoma City Central", city: "Oklahoma City", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Tulsa Group", city: "Tulsa", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "oregon",
+    stateName: "Oregon",
+    resources: [
+      { name: "AA Portland", type: "AA", url: "https://www.pdxaa.org/meetings/", phone: "(503) 223-8569", description: "Portland AA meeting directory" },
+      { name: "NA Oregon", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Oregon NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Portland Central", city: "Portland", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Eugene Group", city: "Eugene", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "rhode-island",
+    stateName: "Rhode Island",
+    resources: [
+      { name: "AA Rhode Island", type: "AA", url: "https://www.aari.org/meetings/", phone: "(401) 438-8860", description: "Rhode Island AA meeting finder" },
+      { name: "NA Rhode Island", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Rhode Island NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Providence Central", city: "Providence", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Newport Group", city: "Newport", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "south-carolina",
+    stateName: "South Carolina",
+    resources: [
+      { name: "AA South Carolina", type: "AA", url: "https://www.area62aa.org/meetings/", phone: "(843) 722-8265", description: "South Carolina AA meeting directory" },
+      { name: "NA South Carolina", type: "NA", url: "https://www.na.org/meetingsearch/", description: "South Carolina NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Charleston Central", city: "Charleston", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Columbia Group", city: "Columbia", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "south-dakota",
+    stateName: "South Dakota",
+    resources: [
+      { name: "AA South Dakota", type: "AA", url: "https://www.area63.org/meetings/", phone: "(605) 352-8958", description: "South Dakota AA meeting finder" },
+      { name: "NA South Dakota", type: "NA", url: "https://www.na.org/meetingsearch/", description: "South Dakota NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Sioux Falls Central", city: "Sioux Falls", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Rapid City Group", city: "Rapid City", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "tennessee",
+    stateName: "Tennessee",
+    resources: [
+      { name: "AA Nashville", type: "AA", url: "https://www.aanashville.org/meetings/", phone: "(615) 831-1050", description: "Nashville AA meeting directory" },
+      { name: "NA Tennessee", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Tennessee NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Nashville Central", city: "Nashville", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Memphis Group", city: "Memphis", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "utah",
+    stateName: "Utah",
+    resources: [
+      { name: "AA Salt Lake City", type: "AA", url: "https://www.slcintergroup.org/meetings/", phone: "(801) 484-7871", description: "Salt Lake City AA meeting finder" },
+      { name: "NA Utah", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Utah NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Salt Lake Central", city: "Salt Lake City", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Provo Group", city: "Provo", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "vermont",
+    stateName: "Vermont",
+    resources: [
+      { name: "AA Vermont", type: "AA", url: "https://www.aavt.org/meetings/", phone: "(802) 864-1212", description: "Vermont AA meeting directory" },
+      { name: "NA Vermont", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Vermont NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Burlington Central", city: "Burlington", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Montpelier Group", city: "Montpelier", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "virginia",
+    stateName: "Virginia",
+    resources: [
+      { name: "AA Virginia", type: "AA", url: "https://www.aavirginia.org/meetings/", phone: "(804) 355-1212", description: "Virginia AA meeting finder" },
+      { name: "NA Virginia", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Virginia NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Richmond Central", city: "Richmond", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Virginia Beach Group", city: "Virginia Beach", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "west-virginia",
+    stateName: "West Virginia",
+    resources: [
+      { name: "AA West Virginia", type: "AA", url: "https://www.aawv.org/meetings/", phone: "(304) 344-4852", description: "West Virginia AA meeting directory" },
+      { name: "NA West Virginia", type: "NA", url: "https://www.na.org/meetingsearch/", description: "West Virginia NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Charleston Central", city: "Charleston", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Huntington Group", city: "Huntington", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "wisconsin",
+    stateName: "Wisconsin",
+    resources: [
+      { name: "AA Milwaukee", type: "AA", url: "https://www.aamilwaukee.com/meetings/", phone: "(414) 771-9119", description: "Milwaukee AA meeting finder" },
+      { name: "NA Wisconsin", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Wisconsin NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Milwaukee Central", city: "Milwaukee", type: "AA Open", schedule: "Daily Multiple Times" },
+      { name: "Madison Group", city: "Madison", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
+  },
+  {
+    stateSlug: "wyoming",
+    stateName: "Wyoming",
+    resources: [
+      { name: "AA Wyoming", type: "AA", url: "https://www.wyomingaa.org/meetings/", phone: "(307) 265-4041", description: "Wyoming AA meeting directory" },
+      { name: "NA Wyoming", type: "NA", url: "https://www.na.org/meetingsearch/", description: "Wyoming NA meetings" }
+    ],
+    sampleMeetings: [
+      { name: "Cheyenne Central", city: "Cheyenne", type: "AA Open", schedule: "Daily 12 PM" },
+      { name: "Casper Group", city: "Casper", type: "AA Open Discussion", schedule: "Daily 7 PM" }
+    ]
   }
 ];
 
