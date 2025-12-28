@@ -951,26 +951,36 @@ function ProviderDashboardContent() {
                       <Users className="w-5 h-5 text-primary" />
                     </div>
                   </div>
-                  <div className="text-xs text-primary flex items-center gap-1">
-                    <span className="font-bold">+12%</span> from last month
+                  <div className="text-xs text-muted-foreground">
+                    {applications.length > 0 ? `${applications.filter(a => a.status === "New").length} new` : "No applications yet"}
                   </div>
                 </CardContent>
               </Card>
               
               <Card className="bg-card border-border">
                 <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Beds Filled</p>
-                      <h3 className="text-3xl font-bold text-white">18/24</h3>
-                    </div>
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Building className="w-5 h-5 text-primary" />
-                    </div>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    75% occupancy rate
-                  </div>
+                  {(() => {
+                    const totalBeds = listings.reduce((sum, l) => sum + (l.totalBeds || 0), 0);
+                    const totalAvailable = listings.reduce((sum, l) => sum + (bedsAvailable[l.id] ?? l.totalBeds ?? 0), 0);
+                    const filledBeds = totalBeds - totalAvailable;
+                    const occupancyRate = totalBeds > 0 ? Math.round((filledBeds / totalBeds) * 100) : 0;
+                    return (
+                      <>
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground">Beds Filled</p>
+                            <h3 className="text-3xl font-bold text-white">{filledBeds}/{totalBeds}</h3>
+                          </div>
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <Building className="w-5 h-5 text-primary" />
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {totalBeds > 0 ? `${occupancyRate}% occupancy rate` : "No listings yet"}
+                        </div>
+                      </>
+                    );
+                  })()}
                 </CardContent>
               </Card>
 
