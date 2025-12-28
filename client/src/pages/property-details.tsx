@@ -282,6 +282,34 @@ export default function PropertyDetails() {
               </div>
             )}
 
+            {/* Find Meetings Near This Home */}
+            <div className="bg-card/50 border border-border rounded-xl p-6">
+              <h3 className="text-lg font-bold text-white mb-2">Find Recovery Meetings Near This Home</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Search for AA and NA meetings within 15 miles of {listing.city}, {listing.state}
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={`https://www.aa.org/find-aa/north-america?city=${encodeURIComponent(listing.city)}&state=${encodeURIComponent(listing.state)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600/20 text-blue-300 border border-blue-500/30 hover:bg-blue-600/30 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Find AA Meetings
+                </a>
+                <a
+                  href={`https://www.na.org/meetingsearch/?city=${encodeURIComponent(listing.city)}&state=${encodeURIComponent(listing.state)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600/30 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Find NA Meetings
+                </a>
+              </div>
+            </div>
+
           </div>
 
           {/* Sidebar - Contact / Actions */}
