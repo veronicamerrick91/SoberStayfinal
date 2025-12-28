@@ -96,13 +96,13 @@ export default function ApplicationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   
-  // Section completion tracking
+  // Section completion tracking (for UI indicators)
   const sectionStatus = {
     personal: !!(firstName && lastName && email && phone && currentAddress && emergencyContactName && emergencyContactPhone && emergencyContactRelationship && dateOfBirth && gender),
     id: idUploaded,
     substance: !!(primarySubstance && ageOfFirstUse && lastDateOfUse && lengthOfSobriety && matHistory),
-    recovery: section8Confirmed, // Checkbox validated on submit
-    medical: !!(medicalConditions || mentalHealthDiagnoses || currentMedications || allergies || mobilityIssues || seizureHistory || isPregnant), // Optional but track if any filled
+    recovery: section8Confirmed,
+    medical: !!(medicalConditions || mentalHealthDiagnoses || currentMedications || allergies || mobilityIssues || seizureHistory || isPregnant),
     legal: !!(probationParole && pendingCases && restrainingOrders && violentOffenses),
     employment: !!(employmentStatus && canPayRent),
     housing: !!(reasonForLeaving && previousSoberLiving && previousEvictions && housingViolations),
@@ -110,9 +110,34 @@ export default function ApplicationForm() {
     consent: consentShareInfo && consentTerms
   };
   
-  const completedSections = Object.values(sectionStatus).filter(Boolean).length;
-  const totalSections = Object.keys(sectionStatus).length;
-  const progressPercent = Math.round((completedSections / totalSections) * 100);
+  // Calculate progress based on individual fields for accurate percentage
+  const countFilled = (values: (string | boolean)[]) => values.filter(v => {
+    if (typeof v === 'boolean') return v === true;
+    return v && String(v).trim() !== '';
+  }).length;
+  
+  const allFields = [
+    // Personal (10 fields)
+    firstName, lastName, email, phone, currentAddress, emergencyContactName, emergencyContactPhone, emergencyContactRelationship, dateOfBirth, gender,
+    // ID (1 field)
+    idUploaded,
+    // Substance (5 fields)
+    primarySubstance, ageOfFirstUse, lastDateOfUse, lengthOfSobriety, matHistory,
+    // Legal (4 fields)
+    probationParole, pendingCases, restrainingOrders, violentOffenses,
+    // Employment (2 fields)
+    employmentStatus, canPayRent,
+    // Housing (4 fields)
+    reasonForLeaving, previousSoberLiving, previousEvictions, housingViolations,
+    // Preferences (2 fields)
+    roomPreference, moveInDate,
+    // Consent (2 fields)
+    consentShareInfo, consentTerms
+  ];
+  
+  const filledCount = countFilled(allFields);
+  const totalFields = allFields.length; // 30 required fields
+  const progressPercent = Math.round((filledCount / totalFields) * 100);
   
   const isPreview = params?.id === "preview";
   
