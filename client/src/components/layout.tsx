@@ -250,6 +250,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <h3 className="font-bold mb-4">Platform</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/browse" className="hover:text-primary">Browse Homes</Link></li>
+                <li><Link href="/find-sober-living" className="hover:text-primary">Find Sober Living</Link></li>
                 <li><Link href="/for-tenants" className="hover:text-primary">For Tenants</Link></li>
                 <li><Link href="/for-providers" className="hover:text-primary">For Providers</Link></li>
                 <li><Link href="/blog" className="hover:text-primary">Blog</Link></li>
