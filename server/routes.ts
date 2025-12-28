@@ -161,6 +161,33 @@ Disallow: /auth/
 `);
   });
 
+  // 301 Redirects for old city URL format to new SEO-friendly format
+  const cityRedirects: Record<string, string> = {
+    "/sober-living-los-angeles": "/sober-living-homes/los-angeles",
+    "/sober-living-san-diego": "/sober-living-homes/san-diego",
+    "/sober-living-miami": "/sober-living-homes/miami",
+    "/sober-living-denver": "/sober-living-homes/denver",
+    "/sober-living-austin": "/sober-living-homes/austin",
+    "/sober-living-phoenix": "/sober-living-homes/phoenix",
+    "/sober-living-delray-beach": "/sober-living-homes/delray-beach",
+    "/sober-living-california": "/sober-living/california",
+    "/sober-living-florida": "/sober-living/florida",
+    "/sober-living-texas": "/sober-living/texas",
+    "/sober-living-arizona": "/sober-living/arizona",
+    "/sober-living-new-york": "/sober-living/new-york",
+    "/sober-living-chicago": "/sober-living/illinois",
+    "/sober-living-seattle": "/sober-living/washington",
+    "/sober-living-portland": "/sober-living/oregon",
+    "/sober-living-nashville": "/sober-living/tennessee",
+    "/sober-living-atlanta": "/sober-living/georgia",
+  };
+  
+  Object.entries(cityRedirects).forEach(([oldPath, newPath]) => {
+    app.get(oldPath, (req, res) => {
+      res.redirect(301, newPath);
+    });
+  });
+
   // User Registration
   app.post("/api/auth/register", async (req, res) => {
     try {
