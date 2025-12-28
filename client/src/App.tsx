@@ -43,6 +43,7 @@ import { ApplyForSoberLiving } from "@/pages/apply-for-sober-living";
 import { SoberLivingCalifornia } from "@/pages/sober-living-california";
 import { LocationLanding } from "@/pages/location-landing";
 import { SoberLivingLocation } from "@/pages/sober-living-location";
+import { SoberLivingCity } from "@/pages/sober-living-city";
 import { ForProviders } from "@/pages/for-providers";
 import { ResourceCenter } from "@/pages/resource-center";
 import { BlogHub } from "@/pages/blog-hub";
@@ -133,6 +134,7 @@ function Router() {
         <Route path="/what-is-sober-living" component={WhatIsSoberLiving} />
         <Route path="/apply-for-sober-living" component={ApplyForSoberLiving} />
         <Route path="/california-sober-living" component={SoberLivingCalifornia} />
+        <Route path="/sober-living-homes/:city" component={SoberLivingCity} />
         <Route path="/partners" component={PartnersDirectory} />
         <Route path="/link-to-us" component={LinkToUs} />
         <Route path="/resource-center" component={ResourceCenter} />
