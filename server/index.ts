@@ -21,6 +21,27 @@ function isBot(userAgent: string): boolean {
 }
 
 const app = express();
+
+// Canonical URL redirect: force all traffic to https://www.soberstayhomes.com
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const host = req.get('host') || '';
+  const proto = req.get('x-forwarded-proto') || req.protocol;
+  
+  // Only apply redirects in production
+  if (process.env.NODE_ENV === 'production' && host.includes('soberstayhomes.com')) {
+    const isHttps = proto === 'https';
+    const isWww = host.startsWith('www.');
+    
+    // Redirect if not https or not www
+    if (!isHttps || !isWww) {
+      const canonicalUrl = `https://www.soberstayhomes.com${req.originalUrl}`;
+      return res.redirect(301, canonicalUrl);
+    }
+  }
+  
+  next();
+});
+
 const httpServer = createServer(app);
 
 declare module "http" {
