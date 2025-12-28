@@ -7,7 +7,11 @@ import { useQuery } from "@tanstack/react-query";
 import type { Listing } from "@shared/schema";
 import { getLocationBySlug, US_STATES, US_CITIES, getCitiesByState, type LocationInfo } from "@shared/locationData";
 import { getCityData } from "@shared/cityData";
+import { getStateData, type StateData, type StateHighlight, type StateFAQ } from "@shared/stateData";
 import { useDocumentMeta } from "@/lib/use-document-meta";
+import { useState } from "react";
+import { Heart, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 import placeholderHome from "@assets/stock_images/modern_comfortable_l_a00ffa5e.jpg";
 
@@ -122,11 +126,22 @@ function LocationNotFound() {
   );
 }
 
+function getHighlightIcon(icon: string) {
+  switch (icon) {
+    case "users": return <Users className="w-6 h-6 text-primary" />;
+    case "building": return <Building className="w-6 h-6 text-primary" />;
+    case "heart": return <Heart className="w-6 h-6 text-primary" />;
+    case "shield": return <Shield className="w-6 h-6 text-primary" />;
+    default: return <CheckCircle className="w-6 h-6 text-primary" />;
+  }
+}
+
 export function SoberLivingLocation() {
   const params = useParams<{ slug: string }>();
   const slug = params.slug || "";
   
   const location = getLocationBySlug(slug);
+  const stateData = location?.type === "state" ? getStateData(slug) : null;
   
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["listings"],
@@ -134,8 +149,8 @@ export function SoberLivingLocation() {
   });
   
   useDocumentMeta({
-    title: location?.metaTitle || "Sober Living Homes | Sober Stay",
-    description: location?.metaDescription || "Find sober living homes near you."
+    title: stateData?.metaTitle || location?.metaTitle || "Sober Living Homes | Sober Stay",
+    description: stateData?.metaDescription || location?.metaDescription || "Find sober living homes near you."
   });
   
   if (!location) {
@@ -191,7 +206,7 @@ export function SoberLivingLocation() {
             </h1>
             
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
-              {location.description}
+              {stateData?.openingParagraph || location.description}
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">
@@ -244,10 +259,71 @@ export function SoberLivingLocation() {
               <ListingCard key={listing.id} listing={listing} />
             ))}
           </div>
-        ) : (
+        ) : !stateData ? (
           <ComingSoonSection locationName={location.name} />
-        )}
+        ) : null}
       </div>
+      
+      {/* State Highlights Section */}
+      {stateData && stateData.highlights.length > 0 && (
+        <div className="bg-card/50 border-t border-border py-12">
+          <div className="container mx-auto px-4">
+            <h2 className="text-2xl font-bold text-white mb-8 text-center">
+              Why Choose {stateData.name} for Recovery?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {stateData.highlights.map((highlight, index) => (
+                <Card key={index} className="bg-card border-border p-6 text-center">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    {getHighlightIcon(highlight.icon)}
+                  </div>
+                  <h3 className="font-semibold text-white mb-2">{highlight.title}</h3>
+                  <p className="text-sm text-muted-foreground">{highlight.description}</p>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Why This State Section */}
+      {stateData && stateData.whyThisState && (
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold text-white mb-6">
+              Why {stateData.name} for Your Recovery Journey
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              {stateData.whyThisState}
+            </p>
+          </div>
+        </div>
+      )}
+      
+      {/* State FAQs Section */}
+      {stateData && stateData.faqs.length > 0 && (
+        <div className="bg-card/30 border-t border-border py-12">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-2xl font-bold text-white mb-8 text-center">
+                Frequently Asked Questions About Sober Living in {stateData.name}
+              </h2>
+              <Accordion type="single" collapsible className="space-y-4">
+                {stateData.faqs.map((faq, index) => (
+                  <AccordionItem key={index} value={`faq-${index}`} className="bg-card border border-border rounded-lg px-6">
+                    <AccordionTrigger className="text-left text-white hover:text-primary py-4">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground pb-4">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+          </div>
+        </div>
+      )}
       
       {relatedCities.length > 0 && (
         <div className="bg-card/50 border-t border-border py-12">
