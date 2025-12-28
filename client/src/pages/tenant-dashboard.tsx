@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Home, FileText, MessageSquare, Heart, Bell, Eye, CalendarCheck,
   Clock, CheckCircle, XCircle, ChevronRight, MapPin, Send, 
@@ -50,6 +51,7 @@ interface TenantProfile {
   emergencyContactName: string;
   emergencyContactPhone: string;
   bio: string;
+  smsOptIn?: boolean;
 }
 
 
@@ -106,14 +108,29 @@ function TenantDashboardContent() {
       supportNeeds: "",
       emergencyContactName: "",
       emergencyContactPhone: "",
-      bio: ""
+      bio: "",
+      smsOptIn: false
     };
   });
 
-  const handleProfileSave = () => {
+  const handleProfileSave = async () => {
     localStorage.setItem("tenant_profile", JSON.stringify(profile));
     if (user) {
       saveAuth({ ...user, name: profile.name, email: profile.email });
+    }
+    
+    try {
+      await fetch('/api/tenant/profile', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          phone: profile.phone,
+          smsOptIn: profile.smsOptIn 
+        })
+      });
+    } catch (err) {
+      console.error("Failed to sync profile to server:", err);
     }
     
     const oldBadges = recoveryBadges;
@@ -130,7 +147,7 @@ function TenantDashboardContent() {
     if (newlyUnlocked.length > 0) {
       const badgeNames = newlyUnlocked.map(b => `${b.icon} ${b.name}`).join(", ");
       toast({
-        title: "🎉 Badge Unlocked!",
+        title: "Badge Unlocked!",
         description: `Congratulations! You've earned: ${badgeNames}`,
       });
     } else if (newDays > 0) {
@@ -1146,6 +1163,42 @@ function TenantDashboardContent() {
                   className="bg-background/50 min-h-[100px]"
                   data-testid="textarea-bio"
                 />
+              </div>
+            </div>
+
+            {/* SMS Notifications */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Phone className="w-5 h-5 text-primary" />
+                SMS Notifications
+              </h3>
+              <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/30">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white text-sm font-medium">Receive text message alerts</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Get notified by text when your application status changes or when providers message you
+                    </p>
+                    {profile.phone && (
+                      <p className="text-xs text-blue-400 mt-1">Messages will be sent to: {profile.phone}</p>
+                    )}
+                  </div>
+                  <Checkbox 
+                    className="h-5 w-5 border-blue-500/50" 
+                    checked={profile.smsOptIn || false}
+                    onCheckedChange={(checked) => {
+                      if (checked && !profile.phone) {
+                        alert("Please add a phone number above to enable SMS notifications.");
+                        return;
+                      }
+                      setProfile({...profile, smsOptIn: !!checked});
+                    }}
+                    data-testid="checkbox-sms-opt-in"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  By enabling SMS, you agree to our <a href="/privacy-policy" className="text-blue-400 underline">SMS notification policy</a>. Standard message rates may apply.
+                </p>
               </div>
             </div>
 
