@@ -97,11 +97,11 @@ export async function registerRoutes(
       "/insurance-info", "/crisis-resources", "/blog", "/contact",
       "/for-tenants", "/for-providers", "/resource-center", "/locations",
       "/sober-living-near-me", "/what-is-sober-living", "/apply-for-sober-living",
-      "/sober-living-california", "/sober-living-los-angeles", "/sober-living-san-diego",
-      "/sober-living-florida", "/sober-living-texas", "/sober-living-arizona",
-      "/sober-living-new-york", "/sober-living-denver", "/sober-living-chicago",
-      "/sober-living-miami", "/sober-living-seattle", "/sober-living-portland",
-      "/sober-living-austin", "/sober-living-nashville", "/sober-living-atlanta",
+      "/find-sober-living",
+      "/sober-living/california", "/sober-living/florida", "/sober-living/texas", "/sober-living/arizona",
+      "/sober-living-homes/los-angeles", "/sober-living-homes/san-diego", "/sober-living-homes/miami",
+      "/sober-living-homes/denver", "/sober-living-homes/austin", "/sober-living-homes/phoenix",
+      "/sober-living-homes/delray-beach",
       "/privacy-policy", "/terms-of-use", "/disclaimer", "/help-center"
     ];
     

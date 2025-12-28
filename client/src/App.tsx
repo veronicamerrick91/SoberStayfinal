@@ -52,6 +52,12 @@ import { PartnersDirectory } from "@/pages/partners-directory";
 import { LinkToUs } from "@/pages/link-to-us";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
+import { Redirect } from "wouter";
+
+// Redirect component for old URL format /sober-living-{city} to new format /sober-living-homes/{city}
+function CityRedirect({ city }: { city: string }) {
+  return <Redirect to={`/sober-living-homes/${city}`} />;
+}
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -144,6 +150,16 @@ function Router() {
         <Route path="/:slug-sober-living" component={LocationLanding} />
         <Route path="/locations" component={LocationLanding} />
         <Route path="/blog/:slug" component={BlogHub} />
+        
+        {/* Redirects for old city URL format to new SEO-friendly format */}
+        <Route path="/sober-living-los-angeles">{() => <CityRedirect city="los-angeles" />}</Route>
+        <Route path="/sober-living-san-diego">{() => <CityRedirect city="san-diego" />}</Route>
+        <Route path="/sober-living-miami">{() => <CityRedirect city="miami" />}</Route>
+        <Route path="/sober-living-denver">{() => <CityRedirect city="denver" />}</Route>
+        <Route path="/sober-living-austin">{() => <CityRedirect city="austin" />}</Route>
+        <Route path="/sober-living-phoenix">{() => <CityRedirect city="phoenix" />}</Route>
+        <Route path="/sober-living-delray-beach">{() => <CityRedirect city="delray-beach" />}</Route>
+        
         <Route component={NotFound} />
       </Switch>
     </>
