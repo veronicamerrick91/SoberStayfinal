@@ -58,6 +58,23 @@ The platform includes a comprehensive analytics tracking system for providers:
   - Tenant receives email when application is denied (with optional reason)
   - Endpoints: Application emails triggered automatically via POST /api/applications and PATCH /api/provider/applications/:id/status
 
+### SMS Notifications
+- **Twilio API**: SMS notification service for real-time alerts.
+- **SMS Service** (`server/sms-service.ts`): Centralized SMS functions with graceful degradation when not configured.
+- **Required Secrets**: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER (optional - service degrades gracefully if not set).
+- **SMS Notification Types**:
+  - New application notification (sent to providers)
+  - Application approved notification (sent to tenants)
+  - Application denied notification (sent to tenants)
+  - New message notification (sent to recipient)
+  - Tour request notification (sent to providers)
+  - 2FA verification codes (10-minute expiration)
+- **Opt-In Management**:
+  - Providers: Toggle in Settings > Notification Preferences
+  - Tenants: Toggle in Quick Settings modal (SMS Notifications section)
+  - Opt-in preference stored in provider_profiles and tenant_profiles tables (smsOptIn, phone fields)
+- **Privacy Policy**: Section 8 covers SMS notifications, message frequency, costs, and opt-out instructions
+
 ### Payment Processing
 - **Stripe**: For provider subscriptions, integrated via `stripe-replit-sync` for real credit card payments, checkout flows, and customer portal management.
 
