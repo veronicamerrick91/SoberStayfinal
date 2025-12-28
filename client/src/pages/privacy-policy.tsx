@@ -120,35 +120,63 @@ export function PrivacyPolicy() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-xl font-bold text-white">8. Cookies and Tracking</h2>
+              <h2 className="text-xl font-bold text-white">8. SMS/Text Message Notifications</h2>
+              <p>
+                By opting in to SMS notifications, you consent to receive text messages from Sober Stay at the phone number you provide. These messages may include:
+              </p>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>Application status updates (approved, denied, under review)</li>
+                <li>New application alerts (for providers)</li>
+                <li>New message notifications</li>
+                <li>Tour request notifications</li>
+                <li>Two-factor authentication codes</li>
+                <li>Important account security alerts</li>
+              </ul>
+              <p className="mt-4 font-bold text-white">Message Frequency & Costs:</p>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>Message frequency varies based on your activity and notification preferences</li>
+                <li>Message and data rates may apply based on your carrier plan</li>
+                <li>We do not charge for SMS messages, but your carrier may</li>
+              </ul>
+              <p className="mt-4 font-bold text-white">Opting Out:</p>
+              <p>
+                You can opt out of SMS notifications at any time by updating your notification preferences in your account settings. Reply STOP to any message to immediately unsubscribe. Reply HELP for assistance. Opting out of SMS will not affect your ability to use the platform.
+              </p>
+              <p className="mt-4 text-xs text-muted-foreground">
+                Carriers are not liable for delayed or undelivered messages. For questions about SMS notifications, contact support@soberstayhomes.com.
+              </p>
+            </section>
+
+            <section className="space-y-4">
+              <h2 className="text-xl font-bold text-white">9. Cookies and Tracking</h2>
               <p>
                 We use cookies to enhance user experience and track platform usage. You can control cookie preferences in your browser settings. Disabling cookies may limit platform functionality.
               </p>
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-xl font-bold text-white">9. Third-Party Links</h2>
+              <h2 className="text-xl font-bold text-white">10. Third-Party Links</h2>
               <p>
                 Sober Stay may contain links to third-party websites. We are not responsible for their privacy practices. Review their privacy policies before sharing information.
               </p>
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-xl font-bold text-white">10. Children's Privacy</h2>
+              <h2 className="text-xl font-bold text-white">11. Children's Privacy</h2>
               <p>
                 Sober Stay is not intended for users under 18. We do not knowingly collect information from minors. If we discover we've collected data from a minor, we will delete it immediately.
               </p>
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-xl font-bold text-white">11. Policy Changes</h2>
+              <h2 className="text-xl font-bold text-white">12. Policy Changes</h2>
               <p>
                 We may update this Privacy Policy periodically. Material changes will be communicated via email or prominent notification. Continued use of Sober Stay constitutes acceptance of updates.
               </p>
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-xl font-bold text-white">12. Contact Us</h2>
+              <h2 className="text-xl font-bold text-white">13. Contact Us</h2>
               <p>
                 For privacy questions or to exercise your rights:
               </p>

@@ -14,6 +14,9 @@ import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
+import { sendApplicationNotification as sendSmsApplicationNotification, sendApplicationApprovedNotification as sendSmsApproved, sendApplicationDeniedNotification as sendSmsDenied, sendNewMessageNotification as sendSmsMessage, send2FACode, generate2FACode, isTwilioConfigured, sendTourRequestNotification as sendSmsTourRequest } from "./sms-service";
+
+const pending2FACodes: Map<string, { code: string; expiresAt: Date; phone: string }> = new Map();
 
 // Registration schema with validation
 const registerSchema = z.object({
@@ -1965,7 +1968,7 @@ Disallow: /auth/
         });
       }
       
-      // Send email notifications (non-blocking)
+      // Send email and SMS notifications (non-blocking)
       try {
         const listing = await storage.getListing(listingId);
         const tenant = await storage.getUser(user.id);
@@ -1992,11 +1995,17 @@ Disallow: /auth/
               tenantName,
               listing.propertyName
             ).catch(err => console.error('Failed to send provider notification email:', err));
+            
+            // Send SMS to provider if opted in
+            if (providerProfile?.smsOptIn && providerProfile?.phone) {
+              sendSmsApplicationNotification(providerProfile.phone, tenantName, listing.propertyName)
+                .catch(err => console.error('Failed to send provider SMS notification:', err));
+            }
           }
         }
       } catch (emailError) {
-        console.error("Error sending application emails:", emailError);
-        // Don't fail the request if emails fail
+        console.error("Error sending application notifications:", emailError);
+        // Don't fail the request if notifications fail
       }
       
       res.status(201).json(application);
@@ -2090,11 +2099,12 @@ Disallow: /auth/
       // Update the status (and move-in date if approving)
       const updated = await storage.updateApplicationStatus(appId, status, parsedMoveInDate);
       
-      // Send email notification to tenant
+      // Send email and SMS notification to tenant
       try {
         const tenant = await storage.getUser(application.tenantId);
         const providerProfile = await storage.getProviderProfile(user.id);
         const provider = await storage.getUser(user.id);
+        const tenantProfile = await storage.getTenantProfile(application.tenantId);
         
         if (tenant) {
           const tenantName = tenant.name || 'Tenant';
@@ -2107,6 +2117,12 @@ Disallow: /auth/
               listing.propertyName,
               providerName
             ).catch(err => console.error('Failed to send approval email:', err));
+            
+            // Send SMS if tenant opted in
+            if (tenantProfile?.smsOptIn && tenantProfile?.phone) {
+              sendSmsApproved(tenantProfile.phone, listing.propertyName)
+                .catch(err => console.error('Failed to send approval SMS:', err));
+            }
           } else if (status === 'rejected') {
             sendApplicationDeniedEmail(
               tenant.email,
@@ -2115,10 +2131,16 @@ Disallow: /auth/
               providerName,
               reason
             ).catch(err => console.error('Failed to send rejection email:', err));
+            
+            // Send SMS if tenant opted in
+            if (tenantProfile?.smsOptIn && tenantProfile?.phone) {
+              sendSmsDenied(tenantProfile.phone, listing.propertyName)
+                .catch(err => console.error('Failed to send rejection SMS:', err));
+            }
           }
         }
       } catch (emailError) {
-        console.error("Error sending status update email:", emailError);
+        console.error("Error sending status update notification:", emailError);
       }
       
       res.json(updated);
@@ -2253,6 +2275,92 @@ Disallow: /auth/
       console.error("Error disabling 2FA:", error);
       res.status(500).json({ error: "Failed to disable 2FA" });
     }
+  });
+
+  // SMS 2FA - Send code
+  app.post("/api/provider/2fa/sms/send", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { phone } = req.body;
+      if (!phone || phone.length < 10) {
+        return res.status(400).json({ error: "Valid phone number is required" });
+      }
+      
+      if (!isTwilioConfigured()) {
+        return res.status(503).json({ error: "SMS service is not configured. Please use the authenticator app method." });
+      }
+      
+      const code = generate2FACode();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+      
+      // Store the pending code
+      pending2FACodes.set(user.id.toString(), { code, expiresAt, phone });
+      
+      // Send the SMS
+      const result = await send2FACode(phone, code);
+      
+      if (result.success) {
+        res.json({ success: true, message: "Verification code sent" });
+      } else {
+        res.status(500).json({ error: result.error || "Failed to send SMS" });
+      }
+    } catch (error) {
+      console.error("Error sending 2FA SMS:", error);
+      res.status(500).json({ error: "Failed to send verification code" });
+    }
+  });
+
+  // SMS 2FA - Verify code
+  app.post("/api/provider/2fa/sms/verify", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { token } = req.body;
+      if (!token) {
+        return res.status(400).json({ error: "Verification code is required" });
+      }
+      
+      const pending = pending2FACodes.get(user.id.toString());
+      if (!pending) {
+        return res.status(400).json({ error: "No pending verification. Please request a new code." });
+      }
+      
+      if (new Date() > pending.expiresAt) {
+        pending2FACodes.delete(user.id.toString());
+        return res.status(400).json({ error: "Verification code expired. Please request a new code." });
+      }
+      
+      if (token !== pending.code) {
+        return res.status(400).json({ error: "Invalid verification code" });
+      }
+      
+      // Code is valid - generate a TOTP secret for future logins
+      const secret = authenticator.generateSecret();
+      
+      await storage.createOrUpdateProviderProfile(user.id, {
+        twoFactorSecret: secret,
+        twoFactorEnabled: true,
+        phone: pending.phone,
+        smsOptIn: true
+      });
+      
+      pending2FACodes.delete(user.id.toString());
+      
+      res.json({ success: true, message: "Two-factor authentication enabled via SMS" });
+    } catch (error) {
+      console.error("Error verifying 2FA SMS:", error);
+      res.status(500).json({ error: "Failed to verify code" });
+    }
+  });
+
+  // Check if Twilio is configured
+  app.get("/api/sms/status", async (req, res) => {
+    res.json({ configured: isTwilioConfigured() });
   });
 
   // Admin Promo Code Management

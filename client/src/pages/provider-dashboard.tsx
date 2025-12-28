@@ -1966,6 +1966,48 @@ function ProviderDashboardContent() {
                         />
                       </div>
                     ))}
+                    
+                    <div className="border-t border-border pt-4 mt-4">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                        <div>
+                          <p className="text-white text-sm font-medium flex items-center gap-2">
+                            <Phone className="w-4 h-4 text-blue-400" /> SMS Text Notifications
+                          </p>
+                          <p className="text-xs text-muted-foreground">Receive text message alerts for new applications and urgent updates</p>
+                          {settingsPhone && (
+                            <p className="text-xs text-blue-400 mt-1">Messages will be sent to: {settingsPhone}</p>
+                          )}
+                        </div>
+                        <Checkbox 
+                          className="h-5 w-5 border-blue-500/50" 
+                          checked={notificationPrefs.smsNotifications || false}
+                          onCheckedChange={async (checked) => {
+                            if (checked && !settingsPhone) {
+                              alert("Please add a phone number in your profile settings to enable SMS notifications.");
+                              return;
+                            }
+                            const newPrefs = { ...notificationPrefs, smsNotifications: checked };
+                            setNotificationPrefs(newPrefs);
+                            localStorage.setItem("provider_notification_prefs", JSON.stringify(newPrefs));
+                            
+                            try {
+                              await fetch('/api/provider/profile', {
+                                method: 'PATCH',
+                                credentials: 'include',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ smsOptIn: checked })
+                              });
+                            } catch (err) {
+                              console.error("Failed to update SMS preference:", err);
+                            }
+                          }}
+                          data-testid="checkbox-notif-sms"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        By enabling SMS, you agree to our <a href="/privacy-policy" className="text-blue-400 underline">SMS notification policy</a>. Standard message rates may apply.
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -2379,48 +2421,178 @@ function ProviderDashboardContent() {
               </div>
               
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.):
-                </p>
-                
-                {twoFactorQRCode && (
-                  <div className="flex justify-center p-4 bg-white rounded-lg">
-                    <img src={twoFactorQRCode} alt="2FA QR Code" className="w-48 h-48" data-testid="img-2fa-qrcode" />
-                  </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant={twoFactorMethod === "app" ? "default" : "outline"}
+                    className={twoFactorMethod === "app" ? "bg-primary" : ""}
+                    onClick={() => setTwoFactorMethod("app")}
+                    data-testid="button-2fa-method-app"
+                  >
+                    <ToggleRight className="w-4 h-4 mr-2" />
+                    Authenticator App
+                  </Button>
+                  <Button
+                    variant={twoFactorMethod === "sms" ? "default" : "outline"}
+                    className={twoFactorMethod === "sms" ? "bg-primary" : ""}
+                    onClick={() => setTwoFactorMethod("sms")}
+                    data-testid="button-2fa-method-sms"
+                  >
+                    <Phone className="w-4 h-4 mr-2" />
+                    Text Message (SMS)
+                  </Button>
+                </div>
+
+                {twoFactorMethod === "app" ? (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.):
+                    </p>
+                    
+                    {twoFactorQRCode && (
+                      <div className="flex justify-center p-4 bg-white rounded-lg">
+                        <img src={twoFactorQRCode} alt="2FA QR Code" className="w-48 h-48" data-testid="img-2fa-qrcode" />
+                      </div>
+                    )}
+                    
+                    <div className="text-center">
+                      <p className="text-xs text-muted-foreground mb-1">Or enter this code manually:</p>
+                      <code className="text-sm bg-background px-2 py-1 rounded font-mono text-primary" data-testid="text-2fa-secret">
+                        {twoFactorSecret}
+                      </code>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label className="text-white text-sm">Enter the 6-digit code from your app:</Label>
+                      <Input
+                        type="text"
+                        maxLength={6}
+                        placeholder="000000"
+                        value={twoFactorToken}
+                        onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, ''))}
+                        className="bg-background/60 border-2 border-primary/40 text-center text-xl tracking-widest font-mono"
+                        data-testid="input-2fa-token"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      We'll send a verification code to your mobile phone via text message.
+                    </p>
+                    
+                    {!smsSent ? (
+                      <div className="space-y-3">
+                        <div className="space-y-2">
+                          <Label className="text-white text-sm">Mobile Phone Number</Label>
+                          <Input
+                            type="tel"
+                            placeholder="+1 (555) 000-0000"
+                            value={smsPhoneNumber}
+                            onChange={(e) => setSmsPhoneNumber(e.target.value)}
+                            className="bg-background/60 border-2 border-primary/40"
+                            data-testid="input-2fa-phone"
+                          />
+                        </div>
+                        <Button
+                          className="w-full bg-primary hover:bg-primary/80"
+                          onClick={async () => {
+                            if (smsPhoneNumber.length >= 10) {
+                              setTwoFactorLoading(true);
+                              setTwoFactorError("");
+                              try {
+                                const res = await fetch('/api/provider/2fa/sms/send', {
+                                  method: 'POST',
+                                  credentials: 'include',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ phone: smsPhoneNumber })
+                                });
+                                const data = await res.json();
+                                if (res.ok) {
+                                  setSmsSent(true);
+                                } else {
+                                  setTwoFactorError(data.error || "Failed to send code");
+                                }
+                              } catch (err) {
+                                setTwoFactorError("Failed to send verification code");
+                              } finally {
+                                setTwoFactorLoading(false);
+                              }
+                            } else {
+                              setTwoFactorError("Please enter a valid phone number");
+                            }
+                          }}
+                          disabled={smsPhoneNumber.length < 10 || twoFactorLoading}
+                          data-testid="button-send-sms-code"
+                        >
+                          {twoFactorLoading ? "Sending..." : "Send Verification Code"}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg text-center">
+                          <p className="text-sm text-primary">Code sent to {smsPhoneNumber}</p>
+                          <button 
+                            className="text-xs text-muted-foreground underline mt-1"
+                            onClick={() => setSmsSent(false)}
+                          >
+                            Change number
+                          </button>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-white text-sm">Enter the 6-digit code:</Label>
+                          <Input
+                            type="text"
+                            maxLength={6}
+                            placeholder="000000"
+                            value={twoFactorToken}
+                            onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, ''))}
+                            className="bg-background/60 border-2 border-primary/40 text-center text-xl tracking-widest font-mono"
+                            data-testid="input-2fa-sms-token"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
-                
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Or enter this code manually:</p>
-                  <code className="text-sm bg-background px-2 py-1 rounded font-mono text-primary" data-testid="text-2fa-secret">
-                    {twoFactorSecret}
-                  </code>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label className="text-white text-sm">Enter the 6-digit code from your app:</Label>
-                  <Input
-                    type="text"
-                    maxLength={6}
-                    placeholder="000000"
-                    value={twoFactorToken}
-                    onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, ''))}
-                    className="bg-background/60 border-2 border-primary/40 text-center text-xl tracking-widest font-mono"
-                    data-testid="input-2fa-token"
-                  />
-                </div>
                 
                 {twoFactorError && (
                   <p className="text-sm text-red-400 text-center" data-testid="text-2fa-error">{twoFactorError}</p>
                 )}
                 
-                <Button 
-                  className="w-full bg-primary hover:bg-primary/80"
-                  onClick={handleVerify2FA}
-                  disabled={twoFactorLoading || twoFactorToken.length !== 6}
-                  data-testid="button-verify-2fa"
-                >
-                  {twoFactorLoading ? "Verifying..." : "Verify and Enable 2FA"}
-                </Button>
+                {(twoFactorMethod === "app" || smsSent) && (
+                  <Button 
+                    className="w-full bg-primary hover:bg-primary/80"
+                    onClick={twoFactorMethod === "sms" ? async () => {
+                      setTwoFactorLoading(true);
+                      setTwoFactorError("");
+                      try {
+                        const res = await fetch('/api/provider/2fa/sms/verify', {
+                          method: 'POST',
+                          credentials: 'include',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ token: twoFactorToken })
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                          setShow2FASetupModal(false);
+                          setTwoFactorToken("");
+                          setSmsSent(false);
+                          alert("Two-factor authentication enabled successfully!");
+                        } else {
+                          setTwoFactorError(data.error || "Failed to verify code");
+                        }
+                      } catch (err) {
+                        setTwoFactorError("Failed to verify code");
+                      } finally {
+                        setTwoFactorLoading(false);
+                      }
+                    } : handleVerify2FA}
+                    disabled={twoFactorLoading || twoFactorToken.length !== 6}
+                    data-testid="button-verify-2fa"
+                  >
+                    {twoFactorLoading ? "Verifying..." : "Verify and Enable 2FA"}
+                  </Button>
+                )}
               </div>
             </div>
           </div>
