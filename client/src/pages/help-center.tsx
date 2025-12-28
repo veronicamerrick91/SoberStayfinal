@@ -172,7 +172,7 @@ export function HelpCenter() {
           <div className="grid md:grid-cols-3 gap-4">
             {[
               { icon: "📧", title: "Email", text: "support@soberstayhomes.com" },
-              { icon: "📱", title: "Phone", text: "1-800-SOBER-STAY" },
+              { icon: "📱", title: "Phone", text: "(877)56-SOBER" },
               { icon: "🎯", title: "Response Time", text: "Within 24 hours" }
             ].map((item, i) => (
               <Card key={i} className="bg-white/5 border-border text-center">

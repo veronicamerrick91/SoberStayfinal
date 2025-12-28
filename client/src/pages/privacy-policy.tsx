@@ -182,7 +182,7 @@ export function PrivacyPolicy() {
               </p>
               <p className="mt-2 text-white">
                 📧 Email: support@soberstayhomes.com<br />
-                📱 Phone: 1-800-SOBER-STAY<br />
+                📱 Phone: (877)56-SOBER<br />
                 💬 Help: support@soberstayhomes.com
               </p>
             </section>
