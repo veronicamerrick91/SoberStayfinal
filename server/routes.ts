@@ -14,7 +14,7 @@ import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
-import { sendApplicationNotification as sendSmsApplicationNotification, sendApplicationApprovedNotification as sendSmsApproved, sendApplicationDeniedNotification as sendSmsDenied, sendNewMessageNotification as sendSmsMessage, send2FACode, generate2FACode, isTwilioConfigured, sendTourRequestNotification as sendSmsTourRequest } from "./sms-service";
+import { sendApplicationNotification as sendSmsApplicationNotification, sendApplicationApprovedNotification as sendSmsApproved, sendApplicationDeniedNotification as sendSmsDenied, sendNewMessageNotification as sendSmsMessage, send2FACode, generate2FACode, isTwilioConfigured, sendTourRequestNotification as sendSmsTourRequest, isValidPhoneNumber } from "./sms-service";
 
 const pending2FACodes: Map<string, { code: string; expiresAt: Date; phone: string }> = new Map();
 
@@ -1743,6 +1743,27 @@ Disallow: /auth/
     }
   });
 
+  app.patch("/api/tenant/profile", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "tenant") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { bio, phone, smsOptIn, applicationData } = req.body;
+      const updateData: any = {};
+      if (bio !== undefined) updateData.bio = bio;
+      if (phone !== undefined) updateData.phone = phone;
+      if (smsOptIn !== undefined) updateData.smsOptIn = smsOptIn;
+      if (applicationData !== undefined) updateData.applicationData = applicationData;
+      
+      const profile = await storage.createOrUpdateTenantProfile(user.id, updateData);
+      res.json(profile);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      res.status(500).json({ error: "Failed to update profile" });
+    }
+  });
+
   app.post("/api/tenant/upload", async (req, res) => {
     const user = req.user as any;
     if (!req.isAuthenticated() || user?.role !== "tenant") {
@@ -2285,8 +2306,8 @@ Disallow: /auth/
     }
     try {
       const { phone } = req.body;
-      if (!phone || phone.length < 10) {
-        return res.status(400).json({ error: "Valid phone number is required" });
+      if (!phone || !isValidPhoneNumber(phone)) {
+        return res.status(400).json({ error: "Valid phone number is required (at least 10 digits)" });
       }
       
       if (!isTwilioConfigured()) {

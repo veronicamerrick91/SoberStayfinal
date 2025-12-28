@@ -33,6 +33,12 @@ export async function sendSms(to: string, body: string): Promise<SmsResult> {
 
   try {
     const formattedNumber = formatPhoneNumber(to);
+    
+    if (!formattedNumber) {
+      console.warn('SMS not sent - Invalid phone number:', to);
+      return { success: false, error: 'Invalid phone number' };
+    }
+    
     const message = await client.messages.create({
       body,
       from: fromNumber,
@@ -47,18 +53,35 @@ export async function sendSms(to: string, body: string): Promise<SmsResult> {
   }
 }
 
-function formatPhoneNumber(phone: string): string {
+function formatPhoneNumber(phone: string): string | null {
+  if (!phone || typeof phone !== 'string') {
+    return null;
+  }
+  
   const digits = phone.replace(/\D/g, '');
+  
+  if (digits.length < 10) {
+    return null;
+  }
+  
   if (digits.length === 10) {
     return `+1${digits}`;
   }
   if (digits.length === 11 && digits.startsWith('1')) {
     return `+${digits}`;
   }
-  if (phone.startsWith('+')) {
+  if (digits.length >= 11 && phone.startsWith('+')) {
     return phone;
   }
   return `+${digits}`;
+}
+
+export function isValidPhoneNumber(phone: string): boolean {
+  if (!phone || typeof phone !== 'string') {
+    return false;
+  }
+  const digits = phone.replace(/\D/g, '');
+  return digits.length >= 10;
 }
 
 export function generate2FACode(): string {
