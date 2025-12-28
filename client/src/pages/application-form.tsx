@@ -101,8 +101,8 @@ export default function ApplicationForm() {
     personal: !!(firstName && lastName && email && phone && currentAddress && emergencyContactName && emergencyContactPhone && emergencyContactRelationship && dateOfBirth && gender),
     id: idUploaded,
     substance: !!(primarySubstance && ageOfFirstUse && lastDateOfUse && lengthOfSobriety && matHistory),
-    recovery: true, // Checkboxes validated on submit
-    medical: true, // Optional section
+    recovery: section8Confirmed, // Checkbox validated on submit
+    medical: !!(medicalConditions || mentalHealthDiagnoses || currentMedications || allergies || mobilityIssues || seizureHistory || isPregnant), // Optional but track if any filled
     legal: !!(probationParole && pendingCases && restrainingOrders && violentOffenses),
     employment: !!(employmentStatus && canPayRent),
     housing: !!(reasonForLeaving && previousSoberLiving && previousEvictions && housingViolations),

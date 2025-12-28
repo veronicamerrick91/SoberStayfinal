@@ -2379,136 +2379,48 @@ function ProviderDashboardContent() {
               </div>
               
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    variant={twoFactorMethod === "app" ? "default" : "outline"}
-                    className={twoFactorMethod === "app" ? "bg-primary" : ""}
-                    onClick={() => setTwoFactorMethod("app")}
-                    data-testid="button-2fa-method-app"
-                  >
-                    <ToggleRight className="w-4 h-4 mr-2" />
-                    Authenticator App
-                  </Button>
-                  <Button
-                    variant={twoFactorMethod === "sms" ? "default" : "outline"}
-                    className={twoFactorMethod === "sms" ? "bg-primary" : ""}
-                    onClick={() => setTwoFactorMethod("sms")}
-                    data-testid="button-2fa-method-sms"
-                  >
-                    <Phone className="w-4 h-4 mr-2" />
-                    Text Message (SMS)
-                  </Button>
-                </div>
-
-                {twoFactorMethod === "app" ? (
-                  <>
-                    <p className="text-sm text-muted-foreground">
-                      Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.):
-                    </p>
-                    
-                    {twoFactorQRCode && (
-                      <div className="flex justify-center p-4 bg-white rounded-lg">
-                        <img src={twoFactorQRCode} alt="2FA QR Code" className="w-48 h-48" data-testid="img-2fa-qrcode" />
-                      </div>
-                    )}
-                    
-                    <div className="text-center">
-                      <p className="text-xs text-muted-foreground mb-1">Or enter this code manually:</p>
-                      <code className="text-sm bg-background px-2 py-1 rounded font-mono text-primary" data-testid="text-2fa-secret">
-                        {twoFactorSecret}
-                      </code>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label className="text-white text-sm">Enter the 6-digit code from your app:</Label>
-                      <Input
-                        type="text"
-                        maxLength={6}
-                        placeholder="000000"
-                        value={twoFactorToken}
-                        onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, ''))}
-                        className="bg-background/60 border-2 border-primary/40 text-center text-xl tracking-widest font-mono"
-                        data-testid="input-2fa-token"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm text-muted-foreground">
-                      We'll send a verification code to your mobile phone via text message.
-                    </p>
-                    
-                    {!smsSent ? (
-                      <div className="space-y-3">
-                        <div className="space-y-2">
-                          <Label className="text-white text-sm">Mobile Phone Number</Label>
-                          <Input
-                            type="tel"
-                            placeholder="+1 (555) 000-0000"
-                            value={smsPhoneNumber}
-                            onChange={(e) => setSmsPhoneNumber(e.target.value)}
-                            className="bg-background/60 border-2 border-primary/40"
-                            data-testid="input-2fa-phone"
-                          />
-                        </div>
-                        <Button
-                          className="w-full bg-primary hover:bg-primary/80"
-                          onClick={() => {
-                            if (smsPhoneNumber.length >= 10) {
-                              setSmsSent(true);
-                              setTwoFactorError("");
-                            } else {
-                              setTwoFactorError("Please enter a valid phone number");
-                            }
-                          }}
-                          disabled={smsPhoneNumber.length < 10}
-                          data-testid="button-send-sms-code"
-                        >
-                          Send Verification Code
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg text-center">
-                          <p className="text-sm text-primary">Code sent to {smsPhoneNumber}</p>
-                          <button 
-                            className="text-xs text-muted-foreground underline mt-1"
-                            onClick={() => setSmsSent(false)}
-                          >
-                            Change number
-                          </button>
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-white text-sm">Enter the 6-digit code:</Label>
-                          <Input
-                            type="text"
-                            maxLength={6}
-                            placeholder="000000"
-                            value={twoFactorToken}
-                            onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, ''))}
-                            className="bg-background/60 border-2 border-primary/40 text-center text-xl tracking-widest font-mono"
-                            data-testid="input-2fa-sms-token"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </>
+                <p className="text-sm text-muted-foreground">
+                  Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.):
+                </p>
+                
+                {twoFactorQRCode && (
+                  <div className="flex justify-center p-4 bg-white rounded-lg">
+                    <img src={twoFactorQRCode} alt="2FA QR Code" className="w-48 h-48" data-testid="img-2fa-qrcode" />
+                  </div>
                 )}
+                
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Or enter this code manually:</p>
+                  <code className="text-sm bg-background px-2 py-1 rounded font-mono text-primary" data-testid="text-2fa-secret">
+                    {twoFactorSecret}
+                  </code>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-white text-sm">Enter the 6-digit code from your app:</Label>
+                  <Input
+                    type="text"
+                    maxLength={6}
+                    placeholder="000000"
+                    value={twoFactorToken}
+                    onChange={(e) => setTwoFactorToken(e.target.value.replace(/\D/g, ''))}
+                    className="bg-background/60 border-2 border-primary/40 text-center text-xl tracking-widest font-mono"
+                    data-testid="input-2fa-token"
+                  />
+                </div>
                 
                 {twoFactorError && (
                   <p className="text-sm text-red-400 text-center" data-testid="text-2fa-error">{twoFactorError}</p>
                 )}
                 
-                {(twoFactorMethod === "app" || smsSent) && (
-                  <Button 
-                    className="w-full bg-primary hover:bg-primary/80"
-                    onClick={handleVerify2FA}
-                    disabled={twoFactorLoading || twoFactorToken.length !== 6}
-                    data-testid="button-verify-2fa"
-                  >
-                    {twoFactorLoading ? "Verifying..." : "Verify and Enable 2FA"}
-                  </Button>
-                )}
+                <Button 
+                  className="w-full bg-primary hover:bg-primary/80"
+                  onClick={handleVerify2FA}
+                  disabled={twoFactorLoading || twoFactorToken.length !== 6}
+                  data-testid="button-verify-2fa"
+                >
+                  {twoFactorLoading ? "Verifying..." : "Verify and Enable 2FA"}
+                </Button>
               </div>
             </div>
           </div>
