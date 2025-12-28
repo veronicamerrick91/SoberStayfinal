@@ -9,8 +9,6 @@ import {
   Info, Mail, Phone, MessageSquare, Bus, ShoppingCart, Stethoscope, Users,
   Video, Lock, Loader2, Home, ExternalLink
 } from "lucide-react";
-import { getMeetingDirectoriesForState } from "@/lib/meeting-directories";
-import { STATE_MEETINGS } from "@shared/meetingsData";
 import { useRoute, Link, useLocation } from "wouter";
 import { isAuthenticated, getAuth } from "@/lib/auth";
 import { useState, useEffect } from "react";
@@ -284,70 +282,6 @@ export default function PropertyDetails() {
               </div>
             )}
 
-            {/* Recovery Meeting Directories */}
-            <div>
-              <h3 className="text-lg font-bold text-white mb-4">Find Recovery Meetings in {listing.state}</h3>
-              <p className="text-sm text-muted-foreground mb-6">
-                Connect with local recovery support groups. Click any directory below to find meetings near this home.
-              </p>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {getMeetingDirectoriesForState(listing.state).map((directory, idx) => (
-                  <a
-                    key={idx}
-                    href={directory.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`rounded-lg border p-4 hover:border-primary/50 transition-all hover:-translate-y-1 ${directory.color}`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold text-lg">{directory.abbreviation}</span>
-                      <ExternalLink className="w-4 h-4 opacity-60" />
-                    </div>
-                    <div className="text-sm font-medium mb-1">{directory.name}</div>
-                    <div className="text-xs opacity-80">{directory.description}</div>
-                  </a>
-                ))}
-              </div>
-
-              {/* Sample Local Meetings */}
-              {(() => {
-                const stateMap: Record<string, string> = {
-                  "CA": "california", "California": "california",
-                  "FL": "florida", "Florida": "florida",
-                  "TX": "texas", "Texas": "texas",
-                  "AZ": "arizona", "Arizona": "arizona",
-                  "OH": "ohio", "Ohio": "ohio",
-                  "PA": "pennsylvania", "Pennsylvania": "pennsylvania",
-                  "MA": "massachusetts", "Massachusetts": "massachusetts",
-                  "CO": "colorado", "Colorado": "colorado"
-                };
-                const stateSlug = stateMap[listing.state] || null;
-                const stateMeetings = stateSlug ? STATE_MEETINGS.find(s => s.stateSlug === stateSlug) : null;
-                if (stateMeetings && stateMeetings.sampleMeetings.length > 0) {
-                  return (
-                    <div className="mt-8">
-                      <h4 className="text-md font-semibold text-white mb-4">Popular Meetings Near {listing.city}</h4>
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        {stateMeetings.sampleMeetings.slice(0, 4).map((meeting, idx) => (
-                          <div key={idx} className="p-4 rounded-lg bg-card/30 border border-border/50">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">{meeting.type}</Badge>
-                              <span className="text-xs text-muted-foreground">{meeting.city}</span>
-                            </div>
-                            <div className="font-medium text-white text-sm mb-1">{meeting.name}</div>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Calendar className="w-3 h-3" />
-                              {meeting.schedule}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-                return null;
-              })()}
-            </div>
           </div>
 
           {/* Sidebar - Contact / Actions */}
