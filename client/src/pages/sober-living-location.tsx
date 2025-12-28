@@ -6,8 +6,15 @@ import { MapPin, Search, Home, ArrowRight, Building, Users, Shield } from "lucid
 import { useQuery } from "@tanstack/react-query";
 import type { Listing } from "@shared/schema";
 import { getLocationBySlug, US_STATES, US_CITIES, getCitiesByState, type LocationInfo } from "@shared/locationData";
+import { getCityData } from "@shared/cityData";
 import { useDocumentMeta } from "@/lib/use-document-meta";
+
 import placeholderHome from "@assets/stock_images/modern_comfortable_l_a00ffa5e.jpg";
+
+function getCityUrl(citySlug: string): string {
+  const cityData = getCityData(citySlug);
+  return cityData ? `/sober-living-homes/${citySlug}` : `/sober-living/${citySlug}`;
+}
 
 async function fetchListings(): Promise<Listing[]> {
   const response = await fetch("/api/listings");
@@ -250,7 +257,7 @@ export function SoberLivingLocation() {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {relatedCities.map((city) => (
-                <Link key={city.slug} href={`/sober-living/${city.slug}`}>
+                <Link key={city.slug} href={getCityUrl(city.slug)} data-testid={`city-link-${city.slug}`}>
                   <div className="bg-card border border-border rounded-lg p-4 hover:border-primary/50 transition-all cursor-pointer group">
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-primary" />
@@ -274,7 +281,7 @@ export function SoberLivingLocation() {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {getCitiesByState(parentState.stateCode || "").filter(c => c.slug !== slug).map((city) => (
-                <Link key={city.slug} href={`/sober-living/${city.slug}`}>
+                <Link key={city.slug} href={getCityUrl(city.slug)} data-testid={`related-city-link-${city.slug}`}>
                   <div className="bg-card border border-border rounded-lg p-4 hover:border-primary/50 transition-all cursor-pointer group">
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-primary" />

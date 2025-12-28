@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "wouter";
 import { MapPin, Search, Building, Users, Heart, Shield, ArrowRight, CheckCircle } from "lucide-react";
 import { useDocumentMeta } from "@/lib/use-document-meta";
-import { getAllCities, type CityData } from "../../../shared/cityData";
+import { getAllCities, type CityData } from "@shared/cityData";
 
 interface StateInfo {
   name: string;

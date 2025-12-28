@@ -5,7 +5,7 @@ import { Link, useParams } from "wouter";
 import { MapPin, Search, Home, Users, Shield, Building, Heart, ChevronDown, ChevronUp, ArrowRight, CheckCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Listing } from "@shared/schema";
-import { getCityData, getRelatedCities, type CityData, type CityHighlight, type CityFAQ } from "../../../shared/cityData";
+import { getCityData, getRelatedCities, type CityData, type CityHighlight, type CityFAQ } from "@shared/cityData";
 import { useDocumentMeta } from "@/lib/use-document-meta";
 import { useState } from "react";
 import placeholderHome from "@assets/stock_images/modern_comfortable_l_a00ffa5e.jpg";
