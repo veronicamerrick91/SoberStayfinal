@@ -2559,58 +2559,11 @@ the actual document file stored on the server.
 
                   <div className="space-y-3">
                     <h3 className="text-white font-bold text-sm mb-3">Failed Payments & Issues</h3>
-                    {[
-                      { provider: "Serenity House", plan: "Premium", amount: "$49", failDate: "Dec 3, 2024", reason: "Card declined", contact: "info@serenityhouse.org", status: "Awaiting update" },
-                      { provider: "Pathway Recovery", plan: "Basic", amount: "$29", failDate: "Dec 1, 2024", reason: "Expired card", contact: "billing@pathwayrecovery.com", status: "Updated" },
-                      { provider: "New Beginnings", plan: "Premium", amount: "$49", failDate: "Nov 28, 2024", reason: "Insufficient funds", contact: "admin@newbeginnings.org", status: "Retry pending" },
-                    ].map((fail, i) => (
-                      <div key={i} className="p-4 rounded-lg bg-red-500/5 border border-red-500/20">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1">
-                            <p className="text-white font-medium text-sm">{fail.provider}</p>
-                            <p className="text-xs text-muted-foreground">{fail.contact}</p>
-                          </div>
-                          <Badge className="bg-red-500/80 text-xs">{fail.status}</Badge>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2 text-xs">
-                          <div>
-                            <p className="text-muted-foreground">Plan</p>
-                            <p className="text-white font-semibold">{fail.plan}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Amount</p>
-                            <p className="text-white font-semibold">{fail.amount}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Failure Date</p>
-                            <p className="text-white font-semibold">{fail.failDate}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Reason</p>
-                            <p className="text-red-400 font-semibold">{fail.reason}</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2 mt-3">
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleSendPaymentReminder(fail.provider, fail.contact)}
-                            className="h-7 text-xs bg-amber-500/20 text-amber-500 hover:bg-amber-500/30"
-                            data-testid={`button-send-reminder-${fail.provider.replace(/\s+/g, '_')}`}
-                          >
-                            Send Reminder
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleContactProvider(fail.provider, fail.contact)}
-                            variant="outline" 
-                            className="h-7 text-xs border-primary/30"
-                            data-testid={`button-contact-provider-${fail.provider.replace(/\s+/g, '_')}`}
-                          >
-                            Contact Provider
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                    <div className="p-4 rounded-lg bg-green-500/5 border border-green-500/20 text-center">
+                      <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                      <p className="text-white font-medium">No Payment Issues</p>
+                      <p className="text-xs text-muted-foreground mt-1">All provider payments are up to date. Failed payments from Stripe will appear here automatically.</p>
+                    </div>
                   </div>
                 </div>
               </CardContent>
