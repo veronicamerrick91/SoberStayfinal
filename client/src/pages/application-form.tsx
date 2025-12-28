@@ -369,7 +369,12 @@ export default function ApplicationForm() {
 
   const handleBack = () => {
     if (isPreview) {
-      window.history.back();
+      // If opened in a new tab, close it; otherwise go back
+      if (window.history.length <= 1) {
+        window.close();
+      } else {
+        window.history.back();
+      }
     } else {
       setLocation(`/property/${property.id}`);
     }
