@@ -1040,6 +1040,30 @@ function ProviderDashboardContent() {
               </Card>
             )}
 
+            <Card className="bg-blue-500/10 border-blue-500/30">
+              <CardContent className="pt-6">
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                  <div className="flex gap-3">
+                    <div className="p-2 bg-blue-500/20 rounded-lg h-fit">
+                      <Eye className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-1">Preview Tenant Applications</h3>
+                      <p className="text-sm text-muted-foreground">See exactly what tenants fill out when applying to your listings. Preview the full application form to understand the information you'll receive.</p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    onClick={() => window.open('/apply/preview', '_blank')}
+                    className="gap-2 border-blue-500/50 text-blue-400 hover:bg-blue-500/10 whitespace-nowrap"
+                    data-testid="button-preview-application"
+                  >
+                    <Eye className="w-4 h-4" /> Preview Application Form
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             <h3 className="text-xl font-bold text-white mt-8 mb-4">Recent Messages</h3>
             <Card className="bg-card border-border">
               <CardContent className="pt-6">

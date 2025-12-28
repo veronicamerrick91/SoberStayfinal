@@ -709,6 +709,15 @@ function TenantDashboardContent() {
                         // Calculate application completion based on actual filled data
                         const calcAppCompletion = () => {
                           const data = app.applicationData || {};
+                          // Check if data is empty/has no meaningful content
+                          const hasAnyData = Object.keys(data).some(key => {
+                            const val = data[key];
+                            if (typeof val === 'boolean') return val === true;
+                            if (typeof val === 'string') return val && val.trim() !== '';
+                            return val != null;
+                          });
+                          if (!hasAnyData) return 0;
+                          
                           const checkFilled = (fields: any[]) => fields.filter(f => {
                             if (typeof f === 'boolean') return f === true;
                             if (typeof f === 'string') return f && f.trim() !== '';
@@ -716,7 +725,7 @@ function TenantDashboardContent() {
                           }).length;
                           
                           const calculateScore = (fields: any[], weight: number) => {
-                            if (fields.length === 0) return weight;
+                            if (fields.length === 0) return 0;
                             return (checkFilled(fields) / fields.length) * weight;
                           };
                           
