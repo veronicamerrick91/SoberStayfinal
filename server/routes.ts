@@ -8,7 +8,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
-import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml, sendApplicationReceivedEmail, sendNewApplicationNotification, sendApplicationApprovedEmail, sendApplicationDeniedEmail, sendPaymentReminderEmail, sendAdminContactEmail, sendRenewalReminderEmail, sendSubscriptionCanceledEmail, sendListingsHiddenEmail } from "./email";
+import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml, sendApplicationReceivedEmail, sendNewApplicationNotification, sendApplicationApprovedEmail, sendApplicationDeniedEmail, sendPaymentReminderEmail, sendAdminContactEmail, sendRenewalReminderEmail, sendSubscriptionCanceledEmail, sendListingsHiddenEmail, sendAdminLoginNotification } from "./email";
 import { enrollUserInActiveWorkflows } from "./subscriptionScheduler";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
@@ -313,6 +313,15 @@ Disallow: /auth/
         if (err) {
           console.error("Login error:", err);
           return res.status(500).json({ error: "Login failed. Please try again." });
+        }
+        
+        // Send login notification for admin users
+        if (user.role === "admin") {
+          const ipAddress = req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'Unknown';
+          const userAgent = req.headers['user-agent'] || 'Unknown';
+          sendAdminLoginNotification(user.email, new Date(), ipAddress, userAgent).catch(err => {
+            console.error("Failed to send admin login notification:", err);
+          });
         }
         
         const { password: _, ...safeUser } = user;

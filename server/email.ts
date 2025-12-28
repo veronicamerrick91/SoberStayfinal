@@ -762,3 +762,83 @@ ${personalizedBody}
     return false;
   }
 }
+
+export async function sendAdminLoginNotification(
+  adminEmail: string,
+  loginTime: Date,
+  ipAddress?: string,
+  userAgent?: string
+): Promise<boolean> {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    
+    const formattedTime = loginTime.toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZoneName: 'short'
+    });
+
+    const content = `
+      <tr>
+        <td style="padding: 40px 30px; text-align: center;">
+          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 28px;">🔐</span>
+          </div>
+          <h2 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 12px;">Admin Login Detected</h2>
+          <p style="color: #94a3b8; font-size: 16px; margin: 0 0 24px;">
+            Your admin account was just accessed
+          </p>
+          <div style="background-color: #1e3a5f; padding: 20px; border-radius: 8px; margin: 0 0 24px; text-align: left;">
+            <p style="color: #10b981; font-size: 14px; font-weight: 600; margin: 0 0 12px;">LOGIN DETAILS</p>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Time:</td>
+                <td style="color: #cbd5e1; font-size: 14px; padding: 6px 0; text-align: right;">${formattedTime}</td>
+              </tr>
+              ${ipAddress ? `
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">IP Address:</td>
+                <td style="color: #cbd5e1; font-size: 14px; padding: 6px 0; text-align: right;">${ipAddress}</td>
+              </tr>
+              ` : ''}
+              ${userAgent ? `
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Device:</td>
+                <td style="color: #cbd5e1; font-size: 14px; padding: 6px 0; text-align: right; font-size: 12px; max-width: 200px; word-break: break-word;">${userAgent.substring(0, 100)}${userAgent.length > 100 ? '...' : ''}</td>
+              </tr>
+              ` : ''}
+            </table>
+          </div>
+          <p style="color: #94a3b8; font-size: 14px; line-height: 1.6; margin: 0 0 24px;">
+            If this was you, no action is needed. If you don't recognize this activity, please change your password immediately and contact support.
+          </p>
+          <a href="${WEBSITE_URL}/admin-dashboard" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);">
+            Go to Admin Dashboard
+          </a>
+        </td>
+      </tr>
+    `;
+    
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
+      to: adminEmail,
+      subject: '🔐 Admin Login Alert - Sober Stay',
+      html: getEmailWrapper(content, 'Your admin account was just accessed'),
+    });
+
+    if (error) {
+      console.error('Failed to send admin login notification:', error);
+      return false;
+    }
+
+    console.log('Admin login notification sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Error sending admin login notification:', error);
+    return false;
+  }
+}
