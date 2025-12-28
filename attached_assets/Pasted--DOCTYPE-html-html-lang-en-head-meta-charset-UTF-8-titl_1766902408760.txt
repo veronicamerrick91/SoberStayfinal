@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Find Sober Living Homes | Sober Stay</title>
+  <meta
+    name="description"
+    content="Find sober living homes across the United States. Sober Stay helps individuals and families explore safe, supportive recovery housing options."
+  />
+</head>
+
+<body>
+  <main>
+
+    <h1>Find Sober Living Homes</h1>
+
+    <p>
+      Finding the right sober living home is an important step in recovery.
+      Sober Stay helps individuals and families find safe, supportive sober
+      living homes across the United States. Our directory makes it easier to
+      explore recovery housing options, compare locations, and take the next
+      step toward a stable, substance-free living environment.
+    </p>
+
+    <p>
+      Whether you are transitioning from treatment, seeking structure and
+      accountability, or helping a loved one find sober housing, Sober Stay
+      provides a centralized place to begin your search.
+    </p>
+
+    <h2>Browse Sober Living by State</h2>
+
+    <ul>
+      <li>
+        <a href="/sober-living-california">Sober Living in California</a>
+      </li>
+      <li>
+        <a href="/sober-living-texas">Sober Living in Texas</a>
+      </li>
+      <li>
+        <a href="/sober-living-florida">Sober Living in Florida</a>
+      </li>
+      <li>
+        <a href="/sober-living-arizona">Sober Living in Arizona</a>
+      </li>
+    </ul>
+
+    <h2>Popular Cities for Sober Living</h2>
+
+    <ul>
+      <li>
+        <a href="/sober-living-los-angeles">Sober Living in Los Angeles, CA</a>
+      </li>
+      <li>
+        <a href="/sober-living-orange-county">Sober Living in Orange County, CA</a>
+      </li>
+      <li>
+        <a href="/sober-living-san-diego">Sober Living in San Diego, CA</a>
+      </li>
+      <li>
+        <a href="/sober-living-phoenix">Sober Living in Phoenix, AZ</a>
+      </li>
+      <li>
+        <a href="/sober-living-miami">Sober Living in Miami, FL</a>
+      </li>
+      <li>
+        <a href="/sober-living-dallas">Sober Living in Dallas, TX</a>
+      </li>
+    </ul>
+
+    <h2>How Sober Stay Helps</h2>
+
+    <ul>
+      <li>Centralized directory of sober living homes</li>
+      <li>Support for individuals, families, and referrals</li>
+      <li>Clear information to support informed decisions</li>
+      <li>Options across multiple states and cities</li>
+    </ul>
+
+    <p>
+      Sober Stay is designed to support recovery by making sober living options
+      easier to find and understand. We focus on clarity, accessibility, and
+      trust during an important transition.
+    </p>
+
+    <p>
+      Explore sober living homes by location and take the next step toward a
+      supportive recovery environment.
+    </p>
+
+  </main>
+</body>
+</html>
