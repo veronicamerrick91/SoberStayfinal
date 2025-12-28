@@ -8,9 +8,10 @@ import type { Listing } from "@shared/schema";
 import { getLocationBySlug, US_STATES, US_CITIES, getCitiesByState, type LocationInfo } from "@shared/locationData";
 import { getCityData } from "@shared/cityData";
 import { getStateData, type StateData, type StateHighlight, type StateFAQ } from "@shared/stateData";
+import { getStateMeetings, type StateMeetings, type MeetingResource } from "@shared/meetingsData";
 import { useDocumentMeta } from "@/lib/use-document-meta";
 import { useState } from "react";
-import { Heart, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
+import { Heart, ChevronDown, ChevronUp, CheckCircle, ExternalLink, Phone } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 import placeholderHome from "@assets/stock_images/modern_comfortable_l_a00ffa5e.jpg";
@@ -142,6 +143,7 @@ export function SoberLivingLocation() {
   
   const location = getLocationBySlug(slug);
   const stateData = location?.type === "state" ? getStateData(slug) : null;
+  const meetingsData = location?.type === "state" ? getStateMeetings(slug) : null;
   
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ["listings"],
@@ -320,6 +322,77 @@ export function SoberLivingLocation() {
                   </AccordionItem>
                 ))}
               </Accordion>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Nearby Meetings Section */}
+      {meetingsData && meetingsData.resources.length > 0 && (
+        <div className="bg-primary/5 border-t border-primary/20 py-12">
+          <div className="container mx-auto px-4">
+            <div className="max-w-5xl mx-auto">
+              <h2 className="text-2xl font-bold text-white mb-2 text-center">
+                Find Recovery Meetings in {meetingsData.stateName}
+              </h2>
+              <p className="text-muted-foreground text-center mb-8">
+                Connect with local AA and NA meetings to support your recovery journey
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                {meetingsData.resources.map((resource, index) => (
+                  <Card key={index} className="bg-card border-border hover:border-primary/50 transition-all">
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-2">
+                        <span className={`text-xs font-medium px-2 py-1 rounded ${
+                          resource.type === "AA" ? "bg-blue-500/20 text-blue-400" : 
+                          resource.type === "NA" ? "bg-purple-500/20 text-purple-400" : 
+                          "bg-primary/20 text-primary"
+                        }`}>
+                          {resource.type}
+                        </span>
+                        <a 
+                          href={resource.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-primary hover:text-primary/80"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      </div>
+                      <h3 className="font-semibold text-white mb-2">{resource.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-3">{resource.description}</p>
+                      {resource.phone && (
+                        <a 
+                          href={`tel:${resource.phone}`}
+                          className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                        >
+                          <Phone className="w-3 h-3" />
+                          {resource.phone}
+                        </a>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              {meetingsData.sampleMeetings.length > 0 && (
+                <div className="bg-card/50 rounded-lg p-6 border border-border">
+                  <h3 className="font-semibold text-white mb-4">Popular Meetings in {meetingsData.stateName}</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {meetingsData.sampleMeetings.map((meeting, index) => (
+                      <div key={index} className="flex items-start gap-3 p-3 bg-card rounded-lg border border-border/50">
+                        <CheckCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-white">{meeting.name}</p>
+                          <p className="text-xs text-muted-foreground">{meeting.city} • {meeting.type}</p>
+                          <p className="text-xs text-primary">{meeting.schedule}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
