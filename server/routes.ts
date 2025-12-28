@@ -18,6 +18,57 @@ import { sendApplicationNotification as sendSmsApplicationNotification, sendAppl
 
 const pending2FACodes: Map<string, { code: string; expiresAt: Date; phone: string }> = new Map();
 
+// Rate limiting for login attempts (in-memory, simple implementation)
+const loginAttempts: Map<string, { count: number; lastAttempt: Date; blockedUntil?: Date }> = new Map();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+const ATTEMPT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+function checkLoginRateLimit(email: string): { allowed: boolean; remainingAttempts?: number; blockedUntil?: Date } {
+  const now = new Date();
+  const attempt = loginAttempts.get(email.toLowerCase());
+  
+  if (!attempt) {
+    return { allowed: true, remainingAttempts: MAX_LOGIN_ATTEMPTS };
+  }
+  
+  // Check if blocked
+  if (attempt.blockedUntil && attempt.blockedUntil > now) {
+    return { allowed: false, blockedUntil: attempt.blockedUntil };
+  }
+  
+  // Reset if window has passed
+  if (now.getTime() - attempt.lastAttempt.getTime() > ATTEMPT_WINDOW_MS) {
+    loginAttempts.delete(email.toLowerCase());
+    return { allowed: true, remainingAttempts: MAX_LOGIN_ATTEMPTS };
+  }
+  
+  return { allowed: true, remainingAttempts: MAX_LOGIN_ATTEMPTS - attempt.count };
+}
+
+function recordFailedLogin(email: string): void {
+  const now = new Date();
+  const attempt = loginAttempts.get(email.toLowerCase());
+  
+  if (!attempt || now.getTime() - attempt.lastAttempt.getTime() > ATTEMPT_WINDOW_MS) {
+    loginAttempts.set(email.toLowerCase(), { count: 1, lastAttempt: now });
+    return;
+  }
+  
+  attempt.count++;
+  attempt.lastAttempt = now;
+  
+  if (attempt.count >= MAX_LOGIN_ATTEMPTS) {
+    attempt.blockedUntil = new Date(now.getTime() + LOCKOUT_DURATION_MS);
+  }
+  
+  loginAttempts.set(email.toLowerCase(), attempt);
+}
+
+function clearLoginAttempts(email: string): void {
+  loginAttempts.delete(email.toLowerCase());
+}
+
 // Registration schema with validation
 const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -173,16 +224,33 @@ Disallow: /auth/
         return res.status(400).json({ error: "Email and password are required" });
       }
 
+      // Check rate limiting
+      const rateLimit = checkLoginRateLimit(email);
+      if (!rateLimit.allowed) {
+        const minutesRemaining = rateLimit.blockedUntil 
+          ? Math.ceil((rateLimit.blockedUntil.getTime() - Date.now()) / 60000)
+          : 15;
+        return res.status(429).json({ 
+          error: `Too many login attempts. Please try again in ${minutesRemaining} minutes.`,
+          blockedUntil: rateLimit.blockedUntil
+        });
+      }
+
       const user = await storage.getUserByEmail(email);
       if (!user) {
+        recordFailedLogin(email);
         return res.status(401).json({ error: "Invalid email or password" });
       }
 
       // Verify password against hash
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
+        recordFailedLogin(email);
         return res.status(401).json({ error: "Invalid email or password" });
       }
+      
+      // Clear failed attempts on successful login
+      clearLoginAttempts(email);
 
       // Check if provider has 2FA enabled
       if (user.role === "provider") {
