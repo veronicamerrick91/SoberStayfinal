@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, type TenantFavorite, type TenantViewedHome, type ListingAnalyticsEvent, type InsertListingAnalyticsEvent, type ListingAnalyticsDaily, type EmailTemplate, type InsertEmailTemplate, type EmailWorkflow, type InsertEmailWorkflow, type WorkflowStep, type InsertWorkflowStep, type WorkflowEnrollment, type InsertWorkflowEnrollment, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners, tenantFavorites, tenantViewedHomes, listingAnalyticsEvents, listingAnalyticsDaily, emailTemplates, emailWorkflows, workflowSteps, workflowEnrollments } from "@shared/schema";
+import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, type TenantFavorite, type TenantViewedHome, type ListingAnalyticsEvent, type InsertListingAnalyticsEvent, type ListingAnalyticsDaily, type EmailTemplate, type InsertEmailTemplate, type EmailWorkflow, type InsertEmailWorkflow, type WorkflowStep, type InsertWorkflowStep, type WorkflowEnrollment, type InsertWorkflowEnrollment, type SiteVisit, type InsertSiteVisit, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners, tenantFavorites, tenantViewedHomes, listingAnalyticsEvents, listingAnalyticsDaily, emailTemplates, emailWorkflows, workflowSteps, workflowEnrollments, siteVisits } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, lt, isNull, or, desc, count, inArray, gte, lte, sql } from "drizzle-orm";
 import session from "express-session";
@@ -161,6 +161,15 @@ export interface IStorage {
   updateEnrollmentProgress(id: number, currentStep: number, nextStepAt: Date | null, status: string): Promise<WorkflowEnrollment | undefined>;
   cancelEnrollment(id: number): Promise<void>;
   isUserEnrolledInWorkflow(userId: number, workflowId: number): Promise<boolean>;
+  
+  // Site Visits
+  recordSiteVisit(visit: InsertSiteVisit): Promise<SiteVisit>;
+  getSiteVisitStats(startDate: Date, endDate: Date): Promise<{
+    totalVisits: number;
+    uniqueVisitors: number;
+    topPages: { page: string; count: number }[];
+    visitsByDay: { date: string; count: number }[];
+  }>;
   
   sessionStore: session.Store;
 }
@@ -1540,6 +1549,60 @@ The Sober Stay Team`,
       )
     );
     return !!existing;
+  }
+
+  // Site Visit Methods
+  async recordSiteVisit(visit: InsertSiteVisit): Promise<SiteVisit> {
+    const [created] = await db.insert(siteVisits).values(visit).returning();
+    return created;
+  }
+
+  async getSiteVisitStats(startDate: Date, endDate: Date): Promise<{
+    totalVisits: number;
+    uniqueVisitors: number;
+    topPages: { page: string; count: number }[];
+    visitsByDay: { date: string; count: number }[];
+  }> {
+    // Total visits in range
+    const [totalResult] = await db.select({ count: count() })
+      .from(siteVisits)
+      .where(and(gte(siteVisits.createdAt, startDate), lte(siteVisits.createdAt, endDate)));
+    const totalVisits = totalResult?.count || 0;
+
+    // Unique visitors by session or IP
+    const uniqueResult = await db.select({ 
+      sessionId: siteVisits.sessionId,
+      ip: siteVisits.ip 
+    })
+      .from(siteVisits)
+      .where(and(gte(siteVisits.createdAt, startDate), lte(siteVisits.createdAt, endDate)));
+    const uniqueSessions = new Set(uniqueResult.map(r => r.sessionId || r.ip));
+    const uniqueVisitors = uniqueSessions.size;
+
+    // Top pages
+    const topPagesResult = await db.select({
+      page: siteVisits.page,
+      count: count()
+    })
+      .from(siteVisits)
+      .where(and(gte(siteVisits.createdAt, startDate), lte(siteVisits.createdAt, endDate)))
+      .groupBy(siteVisits.page)
+      .orderBy(desc(count()))
+      .limit(10);
+    const topPages = topPagesResult.map(r => ({ page: r.page, count: r.count }));
+
+    // Visits by day
+    const visitsByDayResult = await db.select({
+      date: sql<string>`DATE(${siteVisits.createdAt})`,
+      count: count()
+    })
+      .from(siteVisits)
+      .where(and(gte(siteVisits.createdAt, startDate), lte(siteVisits.createdAt, endDate)))
+      .groupBy(sql`DATE(${siteVisits.createdAt})`)
+      .orderBy(sql`DATE(${siteVisits.createdAt})`);
+    const visitsByDay = visitsByDayResult.map(r => ({ date: r.date, count: r.count }));
+
+    return { totalVisits, uniqueVisitors, topPages, visitsByDay };
   }
 }
 

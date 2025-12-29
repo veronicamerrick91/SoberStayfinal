@@ -388,3 +388,25 @@ export type WorkflowStep = typeof workflowSteps.$inferSelect;
 export type InsertWorkflowStep = z.infer<typeof insertWorkflowStepSchema>;
 export type WorkflowEnrollment = typeof workflowEnrollments.$inferSelect;
 export type InsertWorkflowEnrollment = z.infer<typeof insertWorkflowEnrollmentSchema>;
+
+// Site visitor tracking for admin analytics
+export const siteVisits = pgTable("site_visits", {
+  id: serial("id").primaryKey(),
+  page: text("page").notNull(),
+  userAgent: text("user_agent"),
+  referrer: text("referrer"),
+  ip: text("ip"),
+  country: text("country"),
+  city: text("city"),
+  userId: integer("user_id").references(() => users.id),
+  sessionId: text("session_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertSiteVisitSchema = createInsertSchema(siteVisits).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type SiteVisit = typeof siteVisits.$inferSelect;
+export type InsertSiteVisit = z.infer<typeof insertSiteVisitSchema>;
