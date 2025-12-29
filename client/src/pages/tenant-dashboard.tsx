@@ -120,15 +120,30 @@ function TenantDashboardContent() {
     }
     
     try {
+      // Merge current profile data with existing applicationData to preserve all fields
+      const mergedApplicationData = {
+        ...(serverApplicationData ?? {}),
+        sobrietyDate: profile.sobrietyDate,
+        emergencyContactName: profile.emergencyContactName,
+        emergencyContactPhone: profile.emergencyContactPhone,
+        supportNeeds: profile.supportNeeds,
+        preferredContact: profile.preferredContact,
+      };
+      
       await fetch('/api/tenant/profile', {
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           phone: profile.phone,
-          smsOptIn: profile.smsOptIn 
+          smsOptIn: profile.smsOptIn,
+          bio: profile.bio,
+          applicationData: mergedApplicationData
         })
       });
+      
+      // Update local server data state
+      setServerApplicationData(mergedApplicationData);
     } catch (err) {
       console.error("Failed to sync profile to server:", err);
     }
@@ -310,6 +325,35 @@ function TenantDashboardContent() {
           const profileData = await res.json();
           if (profileData.applicationData) {
             setServerApplicationData(profileData.applicationData);
+            
+            // Restore profile settings from server data if available
+            const appData = profileData.applicationData;
+            const updatedProfile = {
+              name: user?.name || "",
+              email: user?.email || "",
+              phone: profileData.phone || "",
+              bio: profileData.bio || "",
+              smsOptIn: profileData.smsOptIn ?? false,
+              sobrietyDate: appData.sobrietyDate || appData.lastDateOfUse || "",
+              emergencyContactName: appData.emergencyContactName || "",
+              emergencyContactPhone: appData.emergencyContactPhone || "",
+              supportNeeds: appData.supportNeeds || "",
+              preferredContact: appData.preferredContact || "email",
+            };
+            setProfile(prev => {
+              const merged = { ...prev, ...updatedProfile };
+              // Sync to localStorage so recovery stats stay consistent
+              localStorage.setItem("tenant_profile", JSON.stringify(merged));
+              return merged;
+            });
+          } else if (profileData.phone || profileData.bio) {
+            // Still restore basic profile fields even without applicationData
+            setProfile(prev => ({
+              ...prev,
+              phone: profileData.phone || prev.phone,
+              bio: profileData.bio || prev.bio,
+              smsOptIn: profileData.smsOptIn ?? prev.smsOptIn,
+            }));
           }
         }
       } catch (err) {
