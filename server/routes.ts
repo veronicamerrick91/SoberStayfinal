@@ -2233,7 +2233,7 @@ Disallow: /auth/
     try {
       const { docType, fileUrl } = req.body;
       
-      const validDocTypes = ["business_license", "insurance", "owner_id", "property_certification"];
+      const validDocTypes = ["business_license", "insurance", "owner_id", "property_photos", "safety_certs"];
       if (!docType || !validDocTypes.includes(docType)) {
         return res.status(400).json({ error: "Invalid document type" });
       }
@@ -2272,7 +2272,7 @@ Disallow: /auth/
     try {
       const { docType } = req.body;
       
-      const validDocTypes = ["business_license", "insurance", "owner_id", "property_certification"];
+      const validDocTypes = ["business_license", "insurance", "owner_id", "property_photos", "safety_certs"];
       if (!docType || !validDocTypes.includes(docType)) {
         return res.status(400).json({ error: "Invalid document type" });
       }

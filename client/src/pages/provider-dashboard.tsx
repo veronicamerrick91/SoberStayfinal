@@ -382,12 +382,8 @@ function ProviderDashboardContent() {
     };
   });
   
-  // Verification document uploads
-  const [verificationDocs, setVerificationDocs] = useState<Record<string, boolean>>(() => {
-    const saved = localStorage.getItem("provider_verification_docs");
-    if (saved) return JSON.parse(saved);
-    return {};
-  });
+  // Verification document uploads (loaded from backend)
+  const [verificationDocs, setVerificationDocs] = useState<Record<string, string | null>>({});
 
   const user = getAuth();
 
@@ -695,6 +691,10 @@ function ProviderDashboardContent() {
           // Pre-fill settings from profile
           if (profile.phone) setSettingsPhone(profile.phone);
           if (profile.contactPhone) setSettingsPhone(profile.contactPhone);
+          // Load verification documents from backend
+          if (profile.verificationDocs && typeof profile.verificationDocs === 'object') {
+            setVerificationDocs(profile.verificationDocs);
+          }
         }
       } catch (err) {
         console.error("Error fetching verification status:", err);
@@ -1796,19 +1796,21 @@ function ProviderDashboardContent() {
                   
                   <div className="space-y-3">
                     {[
-                      { key: "businessLicense", name: "Business License", icon: "📄" },
-                      { key: "insuranceCert", name: "Insurance Certificate", icon: "📋" },
-                      { key: "propertyPhotos", name: "Property Photos", icon: "📸" },
-                      { key: "safetyCerts", name: "Safety Certifications", icon: "✓" }
+                      { key: "business_license", name: "Business License", icon: "📄", description: "Valid business license or registration" },
+                      { key: "insurance", name: "Insurance Certificate", icon: "📋", description: "Proof of general liability insurance" },
+                      { key: "owner_id", name: "Owner ID", icon: "🪪", description: "Government-issued ID of business owner" },
+                      { key: "property_photos", name: "Property Photos", icon: "📸", description: "Photos of your property interior and exterior" },
+                      { key: "safety_certs", name: "Safety Certifications", icon: "✓", description: "Fire safety or occupancy certification" }
                     ].map((doc) => {
-                      const isUploaded = verificationDocs[doc.key];
+                      const isUploaded = !!verificationDocs[doc.key];
                       return (
                         <div key={doc.key} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border hover:border-primary/50 transition-colors">
                           <div className="flex items-center gap-3">
                             <span className="text-2xl">{doc.icon}</span>
                             <div>
                               <p className="text-white font-medium">{doc.name}</p>
-                              <p className={`text-xs ${isUploaded ? 'text-primary' : 'text-muted-foreground'}`}>
+                              <p className="text-xs text-muted-foreground">{doc.description}</p>
+                              <p className={`text-xs mt-1 ${isUploaded ? 'text-primary' : 'text-muted-foreground'}`}>
                                 {isUploaded ? '✓ Uploaded' : 'Pending'}
                               </p>
                             </div>
@@ -1818,11 +1820,34 @@ function ProviderDashboardContent() {
                               type="file" 
                               accept=".pdf,.jpg,.jpeg,.png"
                               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              onChange={(e) => {
+                              onChange={async (e) => {
                                 if (e.target.files && e.target.files.length > 0) {
-                                  const newDocs = { ...verificationDocs, [doc.key]: true };
-                                  setVerificationDocs(newDocs);
-                                  localStorage.setItem("provider_verification_docs", JSON.stringify(newDocs));
+                                  const file = e.target.files[0];
+                                  if (file.size > 5 * 1024 * 1024) {
+                                    alert("File is too large. Maximum size is 5MB.");
+                                    return;
+                                  }
+                                  const reader = new FileReader();
+                                  reader.onload = async () => {
+                                    const fileUrl = reader.result as string;
+                                    try {
+                                      const res = await fetch('/api/provider/verification-doc', {
+                                        method: 'POST',
+                                        credentials: 'include',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ docType: doc.key, fileUrl })
+                                      });
+                                      if (res.ok) {
+                                        setVerificationDocs(prev => ({ ...prev, [doc.key]: fileUrl }));
+                                      } else {
+                                        alert("Failed to upload document");
+                                      }
+                                    } catch (err) {
+                                      console.error("Upload error:", err);
+                                      alert("Failed to upload document");
+                                    }
+                                  };
+                                  reader.readAsDataURL(file);
                                 }
                               }}
                               data-testid={`input-upload-${doc.key}`}

@@ -31,9 +31,10 @@ export function ProviderProfilePage() {
   
   const [verificationDocs, setVerificationDocs] = useState<VerificationDoc[]>([
     { type: "business_license", label: "Business License", description: "Valid business license or registration", url: null, uploading: false },
-    { type: "insurance", label: "Liability Insurance", description: "Proof of general liability insurance", url: null, uploading: false },
+    { type: "insurance", label: "Insurance Certificate", description: "Proof of general liability insurance", url: null, uploading: false },
     { type: "owner_id", label: "Owner ID", description: "Government-issued ID of business owner", url: null, uploading: false },
-    { type: "property_certification", label: "Property Certification", description: "Fire safety or occupancy certification", url: null, uploading: false },
+    { type: "property_photos", label: "Property Photos", description: "Photos of your property interior and exterior", url: null, uploading: false },
+    { type: "safety_certs", label: "Safety Certifications", description: "Fire safety or occupancy certification", url: null, uploading: false },
   ]);
   
   const [formData, setFormData] = useState({
