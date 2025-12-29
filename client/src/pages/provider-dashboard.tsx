@@ -1574,23 +1574,18 @@ function ProviderDashboardContent() {
                 <CardTitle className="text-white">Marketing Performance</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-primary mb-1">2,847</div>
-                    <p className="text-xs text-muted-foreground">Total Views This Month</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-emerald-400 mb-1">342</div>
-                    <p className="text-xs text-muted-foreground">New Clicks</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-400 mb-1">24</div>
-                    <p className="text-xs text-muted-foreground">Applications Generated</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-amber-400 mb-1">8.4%</div>
-                    <p className="text-xs text-muted-foreground">Conversion Rate</p>
-                  </div>
+                <div className="text-center py-6">
+                  <BarChart3 className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-muted-foreground">View your detailed performance metrics in the Analytics tab</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-4 border-primary/50 text-primary hover:bg-primary/10"
+                    onClick={() => setActiveTab("analytics")}
+                    data-testid="button-go-to-analytics"
+                  >
+                    <BarChart3 className="w-4 h-4 mr-2" /> View Analytics
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -2147,7 +2142,13 @@ function ProviderDashboardContent() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white">Verification Status</CardTitle>
-                  <Badge className="bg-amber-500/80">Pending Review</Badge>
+                  {isDocumentsVerified ? (
+                    <Badge className="bg-green-500/80">Verified</Badge>
+                  ) : Object.keys(verificationDocs).length > 0 ? (
+                    <Badge className="bg-amber-500/80">Pending Review</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-muted-foreground">Not Started</Badge>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
