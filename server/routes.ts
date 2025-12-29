@@ -2224,6 +2224,74 @@ Disallow: /auth/
     }
   });
 
+  // Upload verification document
+  app.post("/api/provider/verification-doc", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { docType, fileUrl } = req.body;
+      
+      const validDocTypes = ["business_license", "insurance", "owner_id", "property_certification"];
+      if (!docType || !validDocTypes.includes(docType)) {
+        return res.status(400).json({ error: "Invalid document type" });
+      }
+      
+      if (!fileUrl || typeof fileUrl !== "string") {
+        return res.status(400).json({ error: "File URL is required" });
+      }
+      
+      const maxSizeBytes = 5 * 1024 * 1024; // 5MB for documents
+      if (fileUrl.length > maxSizeBytes) {
+        return res.status(400).json({ error: "Document file is too large. Maximum size is 5MB." });
+      }
+      
+      // Store document URL in provider profile's verificationDocs JSON field
+      const profile = await storage.getProviderProfile(user.id);
+      const existingDocs = (profile?.verificationDocs as Record<string, string>) || {};
+      existingDocs[docType] = fileUrl;
+      
+      await storage.createOrUpdateProviderProfile(user.id, { 
+        verificationDocs: existingDocs as any 
+      });
+      
+      res.json({ success: true, docType });
+    } catch (error) {
+      console.error("Error uploading verification document:", error);
+      res.status(500).json({ error: "Failed to upload verification document" });
+    }
+  });
+
+  // Remove verification document
+  app.post("/api/provider/verification-doc/remove", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { docType } = req.body;
+      
+      const validDocTypes = ["business_license", "insurance", "owner_id", "property_certification"];
+      if (!docType || !validDocTypes.includes(docType)) {
+        return res.status(400).json({ error: "Invalid document type" });
+      }
+      
+      const profile = await storage.getProviderProfile(user.id);
+      const existingDocs = (profile?.verificationDocs as Record<string, string>) || {};
+      delete existingDocs[docType];
+      
+      await storage.createOrUpdateProviderProfile(user.id, { 
+        verificationDocs: existingDocs as any 
+      });
+      
+      res.json({ success: true, docType });
+    } catch (error) {
+      console.error("Error removing verification document:", error);
+      res.status(500).json({ error: "Failed to remove verification document" });
+    }
+  });
+
   // Submit application to a property
   app.post("/api/applications", async (req, res) => {
     const user = req.user as any;

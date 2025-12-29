@@ -99,6 +99,7 @@ export const providerProfiles = pgTable("provider_profiles", {
   totalBeds: integer("total_beds"),
   documentsVerified: boolean("documents_verified").default(false).notNull(),
   verifiedAt: timestamp("verified_at"),
+  verificationDocs: jsonb("verification_docs").$type<Record<string, string>>().default({}),
   twoFactorSecret: text("two_factor_secret"),
   twoFactorEnabled: boolean("two_factor_enabled").default(false).notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

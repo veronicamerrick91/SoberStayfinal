@@ -5,12 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Check, Loader2, Building, MapPin, Phone, Globe, Calendar, Bed } from "lucide-react";
+import { Upload, Check, Loader2, Building, MapPin, Phone, Globe, Calendar, Bed, Shield, FileText, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import type { ProviderProfile } from "@shared/schema";
+
+interface VerificationDoc {
+  type: string;
+  label: string;
+  description: string;
+  url: string | null;
+  uploading: boolean;
+}
 
 export function ProviderProfilePage() {
   const [location, setLocation] = useLocation();
@@ -19,6 +27,14 @@ export function ProviderProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState<ProviderProfile | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  
+  const [verificationDocs, setVerificationDocs] = useState<VerificationDoc[]>([
+    { type: "business_license", label: "Business License", description: "Valid business license or registration", url: null, uploading: false },
+    { type: "insurance", label: "Liability Insurance", description: "Proof of general liability insurance", url: null, uploading: false },
+    { type: "owner_id", label: "Owner ID", description: "Government-issued ID of business owner", url: null, uploading: false },
+    { type: "property_certification", label: "Property Certification", description: "Fire safety or occupancy certification", url: null, uploading: false },
+  ]);
   
   const [formData, setFormData] = useState({
     companyName: "",
@@ -41,8 +57,11 @@ export function ProviderProfilePage() {
       setLocation("/for-providers");
       return;
     }
-    loadProfile();
-  }, [user, setLocation]);
+    if (!hasLoaded) {
+      loadProfile();
+      setHasLoaded(true);
+    }
+  }, [user?.id]);
 
   const loadProfile = async () => {
     try {
@@ -64,6 +83,14 @@ export function ProviderProfilePage() {
           foundedYear: data.foundedYear ? String(data.foundedYear) : "",
           totalBeds: data.totalBeds ? String(data.totalBeds) : "",
         });
+        
+        // Hydrate verification documents from backend
+        if (data.verificationDocs && typeof data.verificationDocs === 'object') {
+          setVerificationDocs(prev => prev.map(doc => ({
+            ...doc,
+            url: data.verificationDocs[doc.type] || null
+          })));
+        }
       }
     } catch (error) {
       console.error("Failed to load profile", error);
@@ -144,6 +171,79 @@ export function ProviderProfilePage() {
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleVerificationDocUpload = async (docType: string, file: File) => {
+    setVerificationDocs(prev => prev.map(doc => 
+      doc.type === docType ? { ...doc, uploading: true } : doc
+    ));
+    
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const fileUrl = reader.result as string;
+          
+          const response = await fetch("/api/provider/verification-doc", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ docType, fileUrl }),
+          });
+          
+          if (!response.ok) throw new Error("Upload failed");
+          
+          setVerificationDocs(prev => prev.map(doc => 
+            doc.type === docType ? { ...doc, url: fileUrl, uploading: false } : doc
+          ));
+          
+          toast({
+            title: "Document Uploaded",
+            description: "Your verification document has been submitted for review.",
+          });
+        } catch (error) {
+          toast({
+            title: "Upload Failed",
+            description: "Failed to upload document. Please try again.",
+            variant: "destructive",
+          });
+          setVerificationDocs(prev => prev.map(doc => 
+            doc.type === docType ? { ...doc, uploading: false } : doc
+          ));
+        }
+      };
+      reader.onerror = () => {
+        toast({
+          title: "Error",
+          description: "Failed to read file",
+          variant: "destructive",
+        });
+        setVerificationDocs(prev => prev.map(doc => 
+          doc.type === docType ? { ...doc, uploading: false } : doc
+        ));
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      setVerificationDocs(prev => prev.map(doc => 
+        doc.type === docType ? { ...doc, uploading: false } : doc
+      ));
+    }
+  };
+
+  const handleRemoveVerificationDoc = async (docType: string) => {
+    setVerificationDocs(prev => prev.map(doc => 
+      doc.type === docType ? { ...doc, url: null } : doc
+    ));
+    
+    // Persist removal to backend
+    try {
+      await fetch("/api/provider/verification-doc/remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ docType }),
+      });
+    } catch (error) {
+      console.error("Failed to remove document from backend:", error);
     }
   };
 
@@ -375,6 +475,82 @@ export function ProviderProfilePage() {
                     data-testid="input-zip"
                   />
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border mb-6">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                Verification Documents
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground mb-4">
+                Upload the following documents to verify your business and unlock all features. Documents are reviewed within 1-2 business days.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-4">
+                {verificationDocs.map((doc) => (
+                  <div 
+                    key={doc.type} 
+                    className={`p-4 rounded-lg border-2 border-dashed transition-all ${
+                      doc.url 
+                        ? "border-green-500/50 bg-green-500/10" 
+                        : "border-primary/30 bg-background/40 hover:border-primary/50"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <FileText className={`w-5 h-5 ${doc.url ? "text-green-400" : "text-primary"}`} />
+                        <span className="font-medium text-white text-sm">{doc.label}</span>
+                      </div>
+                      {doc.url && (
+                        <button 
+                          onClick={() => handleRemoveVerificationDoc(doc.type)}
+                          className="text-gray-400 hover:text-red-400 transition-colors"
+                          data-testid={`button-remove-${doc.type}`}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-3">{doc.description}</p>
+                    {doc.url ? (
+                      <div className="flex items-center gap-2 text-green-400 text-xs">
+                        <Check className="w-4 h-4" />
+                        <span>Uploaded - Pending Review</span>
+                      </div>
+                    ) : (
+                      <label className="cursor-pointer">
+                        <div className="flex items-center justify-center gap-2 py-2 px-3 rounded bg-primary/20 hover:bg-primary/30 text-primary text-xs font-medium transition-colors">
+                          {doc.uploading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-4 h-4" />
+                              Upload Document
+                            </>
+                          )}
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleVerificationDocUpload(doc.type, file);
+                          }}
+                          className="hidden"
+                          disabled={doc.uploading}
+                          data-testid={`input-upload-${doc.type}`}
+                        />
+                      </label>
+                    )}
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>

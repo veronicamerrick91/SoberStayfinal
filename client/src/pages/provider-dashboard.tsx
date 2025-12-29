@@ -886,6 +886,14 @@ function ProviderDashboardContent() {
           </div>
           <div className="flex gap-2">
             <Button 
+              onClick={() => setLocation("/provider-profile")}
+              variant="outline"
+              className="gap-2 border-primary/50 text-primary hover:bg-primary/10"
+              data-testid="button-company-profile"
+            >
+              <Building className="w-4 h-4" /> Company Profile
+            </Button>
+            <Button 
               onClick={() => setLocation("/analytics")}
               variant="outline"
               className="gap-2 border-primary/50 text-primary hover:bg-primary/10"
