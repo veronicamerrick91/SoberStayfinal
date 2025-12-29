@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Home, FileText, MessageSquare, Heart, Bell, Eye, CalendarCheck,
   Clock, CheckCircle, XCircle, ChevronRight, MapPin, Send, 
-  Zap, Settings, LogOut, User, Phone, Mail, Calendar, Shield, Loader2, Briefcase
+  Zap, Settings, LogOut, User, Phone, Mail, Calendar, Shield, Loader2, Briefcase, Pencil
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Listing } from "@shared/schema";
@@ -166,8 +166,19 @@ function TenantDashboardContent() {
 
   const calculateProfileCompletion = () => {
     // If we have server application data, calculate based on the full profile
-    if (serverApplicationData) {
+    if (serverApplicationData && Object.keys(serverApplicationData).length > 0) {
       const data = serverApplicationData;
+      
+      // First check if there's any meaningful data at all
+      const hasAnyMeaningfulData = Object.values(data).some(val => {
+        if (typeof val === 'boolean') return val === true;
+        if (typeof val === 'string') return val && val.trim() !== '';
+        return val != null;
+      });
+      
+      if (!hasAnyMeaningfulData) {
+        return 0;
+      }
       
       // Calculate filled fields safely - guards against zero-length arrays
       const checkFilled = (fields: any[]) => fields.filter(f => {
@@ -177,7 +188,7 @@ function TenantDashboardContent() {
       }).length;
       
       const calculateScore = (fields: any[], weight: number) => {
-        if (fields.length === 0) return weight; // Full score if no fields (section optional)
+        if (fields.length === 0) return 0; // No score for empty sections
         return (checkFilled(fields) / fields.length) * weight;
       };
       
@@ -1555,25 +1566,36 @@ function TenantDashboardContent() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t border-border">
+              <div className="flex flex-wrap gap-3 pt-4 border-t border-border">
                 <Button 
                   variant="outline" 
                   onClick={() => setLocation(`/property/${selectedApplication.propertyId}`)} 
-                  className="flex-1"
+                  className="flex-1 min-w-[120px]"
                   data-testid="button-view-listing"
                 >
                   <Home className="w-4 h-4 mr-2" />
                   View Listing
                 </Button>
+                {selectedApplication.status !== 'approved' && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setShowApplicationModal(false);
+                      setLocation(`/apply/${selectedApplication.propertyId}`);
+                    }} 
+                    className="flex-1 min-w-[120px] border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+                    data-testid="button-edit-application"
+                  >
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Edit Application
+                  </Button>
+                )}
                 <Button 
                   onClick={() => {
                     setShowApplicationModal(false);
-                    toast({
-                      title: "Message Sent",
-                      description: "Your message to the provider has been sent.",
-                    });
+                    setLocation(`/chat/${selectedApplication.propertyId}`);
                   }} 
-                  className="flex-1 bg-primary text-primary-foreground"
+                  className="flex-1 min-w-[120px] bg-primary text-primary-foreground"
                   data-testid="button-message-provider"
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
