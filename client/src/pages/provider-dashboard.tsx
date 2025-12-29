@@ -1893,26 +1893,16 @@ function ProviderDashboardContent() {
                                         <span className="text-xs text-muted-foreground">({upload.date})</span>
                                       )}
                                     </div>
-                                    <div className="flex gap-1 flex-shrink-0">
-                                      <Button 
-                                        type="button"
-                                        size="sm" 
-                                        variant="ghost" 
-                                        className="text-primary hover:bg-primary/10 h-7 px-2"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          e.stopPropagation();
-                                          const dataUrl = upload.url || upload;
-                                          if (dataUrl) {
-                                            window.open(dataUrl, '_blank');
-                                          } else {
-                                            alert('No document URL found');
-                                          }
-                                        }}
+                                    <div className="flex gap-1 flex-shrink-0" style={{ position: 'relative', zIndex: 10 }}>
+                                      <a 
+                                        href={upload.url || upload}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center text-primary hover:bg-primary/10 h-7 px-2 rounded text-sm"
                                         data-testid={`button-view-${doc.key}-${idx}`}
                                       >
                                         <Eye className="w-3 h-3 mr-1" /> View
-                                      </Button>
+                                      </a>
                                       <Button 
                                         size="sm" 
                                         variant="ghost" 
@@ -1978,26 +1968,16 @@ function ProviderDashboardContent() {
                                   <p className="text-xs text-primary">✓ Uploaded</p>
                                 </div>
                               </div>
-                              <div className="flex gap-2">
-                                <Button 
-                                  type="button"
-                                  size="sm" 
-                                  variant="ghost" 
-                                  className="text-primary hover:bg-primary/10"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    const dataUrl = url as string;
-                                    if (dataUrl) {
-                                      window.open(dataUrl, '_blank');
-                                    } else {
-                                      alert('No document URL found');
-                                    }
-                                  }}
+                              <div className="flex gap-2" style={{ position: 'relative', zIndex: 10 }}>
+                                <a 
+                                  href={url as string}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center text-primary hover:bg-primary/10 px-2 py-1 rounded text-sm"
                                   data-testid={`button-view-${docKey}`}
                                 >
                                   <Eye className="w-3 h-3 mr-1" /> View
-                                </Button>
+                                </a>
                                 <Button 
                                   size="sm" 
                                   variant="ghost" 
