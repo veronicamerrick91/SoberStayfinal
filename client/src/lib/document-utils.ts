@@ -1,4 +1,4 @@
-export function downloadDocument(dataUrl: string, fileName: string): void {
+export function downloadDocument(dataUrl: string, _fileName: string): void {
   if (!dataUrl) {
     console.error('No data URL provided');
     return;
@@ -19,31 +19,17 @@ export function downloadDocument(dataUrl: string, fileName: string): void {
       const blob = new Blob([byteArray], { type: mimeType });
       
       const blobUrl = URL.createObjectURL(blob);
+      const newWindow = window.open(blobUrl, '_blank');
       
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-      
-      if (isIOS || isSafari) {
-        window.open(blobUrl, '_blank');
-      } else {
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = fileName;
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        
-        setTimeout(() => {
-          document.body.removeChild(link);
-          URL.revokeObjectURL(blobUrl);
-        }, 100);
+      if (!newWindow) {
+        window.location.href = blobUrl;
       }
     } else {
       window.open(dataUrl, '_blank');
     }
   } catch (error) {
-    console.error('Error downloading document:', error);
-    alert('Unable to download document. Please try again.');
+    console.error('Error opening document:', error);
+    alert('Unable to open document. Please try again.');
   }
 }
 

@@ -1905,7 +1905,7 @@ function ProviderDashboardContent() {
                                         }}
                                         data-testid={`button-view-${doc.key}-${idx}`}
                                       >
-                                        <Download className="w-3 h-3 mr-1" /> Download
+                                        <Eye className="w-3 h-3 mr-1" /> View
                                       </Button>
                                       <Button 
                                         size="sm" 
@@ -1984,7 +1984,7 @@ function ProviderDashboardContent() {
                                   }}
                                   data-testid={`button-view-${docKey}`}
                                 >
-                                  <Download className="w-3 h-3 mr-1" /> Download
+                                  <Eye className="w-3 h-3 mr-1" /> View
                                 </Button>
                                 <Button 
                                   size="sm" 
