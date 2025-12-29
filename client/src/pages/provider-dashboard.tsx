@@ -131,7 +131,7 @@ function AnalyticsDashboard() {
           Performance Analytics
         </h2>
         <div className="flex gap-2">
-          {[7, 30, 90].map(days => (
+          {[1, 7, 30, 90].map(days => (
             <Button
               key={days}
               variant={timeframe === days ? "default" : "outline"}
@@ -139,7 +139,7 @@ function AnalyticsDashboard() {
               onClick={() => setTimeframe(days)}
               data-testid={`button-timeframe-${days}`}
             >
-              {days}d
+              {days === 1 ? '24h' : `${days}d`}
             </Button>
           ))}
         </div>

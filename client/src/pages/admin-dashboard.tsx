@@ -2693,7 +2693,7 @@ the actual document file stored on the server.
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-white">Site Visitor Analytics</h2>
               <div className="flex gap-2">
-                {[7, 30, 90].map((days) => (
+                {[1, 7, 30, 90].map((days) => (
                   <Button
                     key={days}
                     variant={siteVisitDays === days ? "default" : "outline"}
@@ -2712,7 +2712,7 @@ the actual document file stored on the server.
                     }}
                     data-testid={`button-days-${days}`}
                   >
-                    {days}d
+                    {days === 1 ? '24h' : `${days}d`}
                   </Button>
                 ))}
               </div>
@@ -2722,14 +2722,14 @@ the actual document file stored on the server.
                 <CardContent className="pt-6">
                   <p className="text-xs font-bold text-primary mb-2 flex items-center gap-1"><Eye className="w-4 h-4" /> Total Page Views</p>
                   <p className="text-3xl font-bold text-white" data-testid="text-total-views">{siteVisitStats?.totalVisits?.toLocaleString() || '0'}</p>
-                  <p className="text-xs text-muted-foreground mt-2">Last {siteVisitDays} days</p>
+                  <p className="text-xs text-muted-foreground mt-2">{siteVisitDays === 1 ? 'Last 24 hours' : `Last ${siteVisitDays} days`}</p>
                 </CardContent>
               </Card>
               <Card className="bg-card border-border">
                 <CardContent className="pt-6">
                   <p className="text-xs font-bold text-primary mb-2 flex items-center gap-1"><Users className="w-4 h-4" /> Unique Visitors</p>
                   <p className="text-3xl font-bold text-white" data-testid="text-unique-visitors">{siteVisitStats?.uniqueVisitors?.toLocaleString() || '0'}</p>
-                  <p className="text-xs text-muted-foreground mt-2">Last {siteVisitDays} days</p>
+                  <p className="text-xs text-muted-foreground mt-2">{siteVisitDays === 1 ? 'Last 24 hours' : `Last ${siteVisitDays} days`}</p>
                 </CardContent>
               </Card>
               <Card className="bg-card border-border">
@@ -2740,7 +2740,7 @@ the actual document file stored on the server.
                       ? Math.round(siteVisitStats.totalVisits / siteVisitDays).toLocaleString() 
                       : '0'}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-2">Last {siteVisitDays} days</p>
+                  <p className="text-xs text-muted-foreground mt-2">{siteVisitDays === 1 ? 'Last 24 hours' : `Last ${siteVisitDays} days`}</p>
                 </CardContent>
               </Card>
             </div>
