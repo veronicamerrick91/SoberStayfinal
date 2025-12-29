@@ -767,6 +767,8 @@ function ProviderDashboardContent() {
               incomeSource: appData.incomeSource || 'Not provided',
               evictionHistory: appData.evictionHistory === true || appData.priorEvictions === 'yes',
               reasonForLeaving: appData.reasonForLeaving || appData.whySeekingSoberLiving || 'Not provided',
+              paymentStatus: app.paymentStatus || 'unpaid',
+              hasFeeWaiver: app.hasFeeWaiver === true,
             };
           });
           setApplications(mappedApplications);
