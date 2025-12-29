@@ -35,6 +35,9 @@ interface ListingDraft {
   isWaitlisted: boolean;
   inclusions: string[];
   photos: string[];
+  houseRules: string[];
+  customHouseRules: string;
+  nearbyServices: string[];
 }
 
 export function CreateListing() {
@@ -114,6 +117,9 @@ export function CreateListing() {
                 isWaitlisted: listing.isWaitlisted || false,
                 inclusions: listing.inclusions || [],
                 photos: listing.photos || [],
+                houseRules: listing.houseRules || [],
+                customHouseRules: listing.customHouseRules || "",
+                nearbyServices: listing.nearbyServices || [],
               });
             }
           }
@@ -147,6 +153,9 @@ export function CreateListing() {
     isWaitlisted: false,
     inclusions: [],
     photos: [],
+    houseRules: [],
+    customHouseRules: "",
+    nearbyServices: [],
   });
 
   const user = getAuth() as any;
@@ -170,6 +179,24 @@ export function CreateListing() {
       inclusions: prev.inclusions.includes(item)
         ? prev.inclusions.filter(i => i !== item)
         : [...prev.inclusions, item]
+    }));
+  };
+
+  const handleHouseRuleChange = (rule: string) => {
+    setListingDraft(prev => ({
+      ...prev,
+      houseRules: prev.houseRules.includes(rule)
+        ? prev.houseRules.filter(r => r !== rule)
+        : [...prev.houseRules, rule]
+    }));
+  };
+
+  const handleNearbyServiceChange = (service: string) => {
+    setListingDraft(prev => ({
+      ...prev,
+      nearbyServices: prev.nearbyServices.includes(service)
+        ? prev.nearbyServices.filter(s => s !== service)
+        : [...prev.nearbyServices, service]
     }));
   };
 
@@ -749,6 +776,81 @@ export function CreateListing() {
                           data-testid={`checkbox-${key}`}
                         />
                         <label className="text-sm text-gray-300 cursor-pointer">{label}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 space-y-3">
+                  <Label className="text-white text-sm font-semibold">House Rules & Residency Requirements</Label>
+                  <p className="text-xs text-muted-foreground mb-2">Select the rules and requirements residents must follow at your property.</p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {[
+                      "No alcohol on premises",
+                      "No drugs on premises",
+                      "Curfew enforced",
+                      "Required house meetings",
+                      "Chore responsibilities",
+                      "Mandatory drug testing",
+                      "Guest restrictions",
+                      "No overnight guests",
+                      "Employment/school required",
+                      "12-step meeting attendance",
+                      "Sponsor required",
+                      "No smoking indoors",
+                      "Quiet hours enforced",
+                      "Weekly room inspections",
+                      "Rent due on 1st of month",
+                      "30-day notice to leave"
+                    ].map((rule) => (
+                      <div key={rule} className="flex items-center gap-2">
+                        <Checkbox
+                          checked={listingDraft.houseRules.includes(rule)}
+                          onCheckedChange={() => handleHouseRuleChange(rule)}
+                          data-testid={`checkbox-rule-${rule.replace(/\s+/g, '-').toLowerCase()}`}
+                        />
+                        <label className="text-sm text-gray-300 cursor-pointer">{rule}</label>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="pt-3">
+                    <Label className="text-white text-sm">Additional House Rules</Label>
+                    <p className="text-xs text-muted-foreground mb-2">Add any other rules not listed above.</p>
+                    <Textarea
+                      placeholder="Enter any additional house rules or specific requirements..."
+                      value={listingDraft.customHouseRules}
+                      onChange={(e) => handleInputChange("customHouseRules", e.target.value)}
+                      className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary min-h-20"
+                      data-testid="textarea-custom-house-rules"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 space-y-3">
+                  <Label className="text-white text-sm font-semibold">Nearby Services & Locations</Label>
+                  <p className="text-xs text-muted-foreground mb-2">Select what services and amenities are conveniently located near your property.</p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {[
+                      "Grocery stores",
+                      "Public transportation",
+                      "Treatment centers",
+                      "Hospitals / Medical",
+                      "Shopping centers",
+                      "Employment opportunities",
+                      "AA/NA meeting locations",
+                      "Restaurants / Food",
+                      "Parks / Recreation",
+                      "Churches / Faith centers",
+                      "Gyms / Fitness",
+                      "Libraries"
+                    ].map((service) => (
+                      <div key={service} className="flex items-center gap-2">
+                        <Checkbox
+                          checked={listingDraft.nearbyServices.includes(service)}
+                          onCheckedChange={() => handleNearbyServiceChange(service)}
+                          data-testid={`checkbox-nearby-${service.replace(/\s+/g, '-').toLowerCase()}`}
+                        />
+                        <label className="text-sm text-gray-300 cursor-pointer">{service}</label>
                       </div>
                     ))}
                   </div>

@@ -747,7 +747,7 @@ Disallow: /auth/
       
       return {
         ...app,
-        tenantName: tenant ? `${tenant.firstName} ${tenant.lastName}` : "Unknown",
+        tenantName: tenant?.name || "Unknown",
         tenantEmail: tenant?.email || "",
         tenantPhone: tenantProfile?.phone || "",
         propertyName: listing?.propertyName || "Unknown Property",

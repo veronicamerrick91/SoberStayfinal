@@ -224,7 +224,7 @@ export class DatabaseStorage implements IStorage {
   async createListing(insertListing: InsertListing & { providerId: number }): Promise<Listing> {
     const [listing] = await db
       .insert(listings)
-      .values(insertListing)
+      .values(insertListing as any)
       .returning();
     return listing;
   }
@@ -249,7 +249,7 @@ export class DatabaseStorage implements IStorage {
   async updateListing(id: number, listingData: Partial<InsertListing>): Promise<Listing | undefined> {
     const [listing] = await db
       .update(listings)
-      .set(listingData)
+      .set(listingData as any)
       .where(eq(listings.id, id))
       .returning();
     return listing;

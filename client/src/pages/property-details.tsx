@@ -242,30 +242,40 @@ export default function PropertyDetails() {
             )}
 
             {/* House Rules */}
-            <div>
-              <h3 className="text-lg font-bold text-white mb-6">House Rules</h3>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {["No drugs or alcohol", "Curfew 11pm", "Weekly house meetings", "Chore rotation", "Guests must be approved"].map((rule, i) => (
-                  <div key={i} className="flex items-center gap-3 text-sm text-gray-300 p-3 rounded-lg bg-card/30 border border-border/50">
-                    <Check className="w-5 h-5 text-primary" />
-                    {rule}
+            {((listing.houseRules && listing.houseRules.length > 0) || listing.customHouseRules) && (
+              <div>
+                <h3 className="text-lg font-bold text-white mb-6">House Rules & Requirements</h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {listing.houseRules?.map((rule, i) => (
+                    <div key={i} className="flex items-center gap-3 text-sm text-gray-300 p-3 rounded-lg bg-card/30 border border-border/50">
+                      <Check className="w-5 h-5 text-primary" />
+                      {rule}
+                    </div>
+                  ))}
+                </div>
+                {listing.customHouseRules && (
+                  <div className="mt-4 p-4 rounded-lg bg-card/30 border border-border/50">
+                    <p className="text-sm font-medium text-white mb-2">Additional Rules</p>
+                    <p className="text-sm text-gray-300 whitespace-pre-wrap">{listing.customHouseRules}</p>
                   </div>
-                ))}
+                )}
               </div>
-            </div>
+            )}
 
-            {/* Residency Requirements */}
-            <div>
-              <h3 className="text-lg font-bold text-white mb-6">Residency Requirements</h3>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {["Minimum 30 days sober", "Valid ID required", "Employment or education", "6+ month commitment", "3 meetings per week"].map((req, i) => (
-                  <div key={i} className="flex items-center gap-3 text-sm text-gray-300 p-3 rounded-lg bg-card/30 border border-border/50">
-                    <Check className="w-5 h-5 text-primary" />
-                    {req}
-                  </div>
-                ))}
+            {/* Nearby Services */}
+            {listing.nearbyServices && listing.nearbyServices.length > 0 && (
+              <div>
+                <h3 className="text-lg font-bold text-white mb-6">Nearby Services & Locations</h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {listing.nearbyServices.map((service, i) => (
+                    <div key={i} className="flex items-center gap-3 text-sm text-gray-300 p-3 rounded-lg bg-card/30 border border-border/50">
+                      <Check className="w-5 h-5 text-primary" />
+                      {service}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Included in Monthly Price */}
             {listing.inclusions && listing.inclusions.length > 0 && (

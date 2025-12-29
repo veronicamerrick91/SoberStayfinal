@@ -540,15 +540,21 @@ Thank you for being part of our recovery community!`
             price: l.monthlyPrice,
             pricePeriod: 'month',
             bedsAvailable: l.totalBeds,
+            totalBeds: l.totalBeds,
             gender: l.gender,
             roomType: l.roomType,
             description: l.description,
             amenities: l.amenities || [],
+            inclusions: l.inclusions || [],
+            supervisionType: l.supervisionType,
+            houseRules: l.houseRules || [],
+            customHouseRules: l.customHouseRules || "",
+            nearbyServices: l.nearbyServices || [],
             status: l.status === 'approved' ? 'Approved' : l.status === 'pending' ? 'Pending' : l.status === 'draft' ? 'Draft' : l.status === 'rejected' ? 'Rejected' : l.status,
             providerId: l.providerId,
             createdAt: l.createdAt,
             isVerified: l.status === 'approved',
-            image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop'
+            image: l.photos?.[0] || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop'
           }));
           setListings(formattedListings);
         }
