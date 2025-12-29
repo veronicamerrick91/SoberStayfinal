@@ -981,9 +981,9 @@ function ProviderDashboardContent() {
             <TabsTrigger value="marketing" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Zap className="w-4 h-4" /> Marketing</TabsTrigger>
             <TabsTrigger value="files" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><FileArchive className="w-4 h-4" /> Resident Files</TabsTrigger>
             <TabsTrigger value="verification" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Shield className="w-4 h-4" /> Verify</TabsTrigger>
-            <TabsTrigger value="settings" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
             <TabsTrigger value="tours" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Calendar className="w-4 h-4" /> Tour Requests</TabsTrigger>
             <TabsTrigger value="billing" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><CreditCard className="w-4 h-4" /> Billing</TabsTrigger>
+            <TabsTrigger value="settings" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
           </TabsList>
 
           {/* OVERVIEW */}
@@ -1819,11 +1819,12 @@ function ProviderDashboardContent() {
                                   </p>
                                 </div>
                               </div>
-                              <div className="relative">
+                              <div className="relative inline-block" style={{ overflow: 'hidden' }}>
                                 <input 
                                   type="file" 
                                   accept=".pdf,.jpg,.jpeg,.png"
                                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                  style={{ zIndex: 1 }}
                                   onChange={async (e) => {
                                     if (e.target.files && e.target.files.length > 0) {
                                       const file = e.target.files[0];
@@ -1883,9 +1884,9 @@ function ProviderDashboardContent() {
                             </div>
                             
                             {isUploaded && (
-                              <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
+                              <div className="mt-3 pt-3 border-t border-border/50 space-y-2" style={{ position: 'relative', zIndex: 20, pointerEvents: 'auto' }}>
                                 {uploads.map((upload: any, idx: number) => (
-                                  <div key={idx} className="flex items-center justify-between text-sm bg-white/5 rounded px-3 py-2">
+                                  <div key={idx} className="flex items-center justify-between text-sm bg-white/5 rounded px-3 py-2" style={{ pointerEvents: 'auto' }}>
                                     <div className="flex items-center gap-2 text-gray-300 truncate flex-1">
                                       <FileText className="w-4 h-4 flex-shrink-0" />
                                       <span className="truncate">{upload.name || doc.name}</span>
@@ -1893,12 +1894,13 @@ function ProviderDashboardContent() {
                                         <span className="text-xs text-muted-foreground">({upload.date})</span>
                                       )}
                                     </div>
-                                    <div className="flex gap-1 flex-shrink-0" style={{ position: 'relative', zIndex: 10 }}>
+                                    <div className="flex gap-1 flex-shrink-0" style={{ position: 'relative', zIndex: 30, pointerEvents: 'auto' }}>
                                       <a 
                                         href={upload.url || upload}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center text-primary hover:bg-primary/10 h-7 px-2 rounded text-sm"
+                                        className="inline-flex items-center text-primary hover:bg-primary/10 h-7 px-2 rounded text-sm cursor-pointer"
+                                        style={{ pointerEvents: 'auto' }}
                                         data-testid={`button-view-${doc.key}-${idx}`}
                                       >
                                         <Eye className="w-3 h-3 mr-1" /> View
