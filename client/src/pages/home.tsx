@@ -150,11 +150,11 @@ export default function Home() {
       </section>
 
       {/* What Is Sober Living - SEO Content */}
-      <section className="py-20 bg-background">
+      <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h3 className="text-3xl md:text-4xl font-bold mb-6 text-white">What Is Sober Living?</h3>
-            <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
+            <h3 className="text-3xl md:text-4xl font-bold mb-4 text-white">What Is Sober Living?</h3>
+            <p className="text-lg text-muted-foreground mb-4 leading-relaxed">
               Sober living homes provide a safe, substance-free environment for individuals 
               transitioning from treatment to independent living. These homes support recovery 
               through accountability, structure, and community.
@@ -168,7 +168,7 @@ export default function Home() {
       </section>
 
       {/* How It Works - Redesigned */}
-      <section className="relative py-16 bg-background overflow-hidden">
+      <section className="relative py-12 bg-background overflow-hidden">
         {/* Background Path Visual */}
         <div className="absolute inset-0 opacity-20 pointer-events-none">
            <img src={pathBg} loading="lazy" className="w-full h-full object-cover" alt="" />
@@ -176,9 +176,9 @@ export default function Home() {
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <Badge variant="outline" className="mb-4 border-primary/50 text-primary px-4 py-1 text-sm uppercase tracking-widest">Simple Process</Badge>
-            <h3 className="text-4xl md:text-6xl font-bold mb-6 text-white tracking-tight">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <Badge variant="outline" className="mb-3 border-primary/50 text-primary px-4 py-1 text-sm uppercase tracking-widest">Simple Process</Badge>
+            <h3 className="text-4xl md:text-5xl font-bold mb-4 text-white tracking-tight">
               Your Journey to <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">Safe Living</span>
             </h3>
