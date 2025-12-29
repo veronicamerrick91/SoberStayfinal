@@ -65,7 +65,7 @@ export async function geocodeAddress(address: string): Promise<GeocodingResult |
       return { lat: location.lat, lng: location.lng };
     }
     
-    console.log("Geocoding failed:", data.status);
+    console.log("Geocoding failed:", data.status, data.error_message || "");
     return null;
   } catch (error) {
     console.error("Geocoding error:", error);
