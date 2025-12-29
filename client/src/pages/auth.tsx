@@ -309,7 +309,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
               
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" autoComplete="username" placeholder="m@example.com" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={email} onChange={(e) => { setEmail(e.target.value); setAccountExists(false); setLoginError(""); }} />
+                <Input id="email" name="email" type="email" autoComplete="email" placeholder="m@example.com" className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" value={email} onChange={(e) => { setEmail(e.target.value); setAccountExists(false); setLoginError(""); }} />
               </div>
               
               <div className="space-y-2">
@@ -328,7 +328,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                     id="password" 
                     name="password" 
                     type={showPassword ? "text" : "password"} 
-                    autoComplete="current-password" 
+                    autoComplete={type === "login" ? "current-password" : "new-password"} 
                     className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary pr-10" 
                     value={password} 
                     onChange={(e) => setPassword(e.target.value)}
