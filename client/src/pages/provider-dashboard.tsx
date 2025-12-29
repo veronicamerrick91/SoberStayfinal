@@ -1897,7 +1897,20 @@ function ProviderDashboardContent() {
                                         size="sm" 
                                         variant="ghost" 
                                         className="text-primary hover:bg-primary/10 h-7 px-2"
-                                        onClick={() => window.open(upload.url || upload, '_blank')}
+                                        onClick={() => {
+                                          const dataUrl = upload.url || upload;
+                                          if (dataUrl.startsWith('data:')) {
+                                            const link = document.createElement('a');
+                                            link.href = dataUrl;
+                                            link.download = upload.name || `${doc.name}.pdf`;
+                                            link.target = '_blank';
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                          } else {
+                                            window.open(dataUrl, '_blank');
+                                          }
+                                        }}
                                         data-testid={`button-view-${doc.key}-${idx}`}
                                       >
                                         <Eye className="w-3 h-3 mr-1" /> View
@@ -1972,7 +1985,20 @@ function ProviderDashboardContent() {
                                   size="sm" 
                                   variant="ghost" 
                                   className="text-primary hover:bg-primary/10"
-                                  onClick={() => window.open(url, '_blank')}
+                                  onClick={() => {
+                                    const dataUrl = url as string;
+                                    if (dataUrl.startsWith('data:')) {
+                                      const link = document.createElement('a');
+                                      link.href = dataUrl;
+                                      link.download = customName || 'document';
+                                      link.target = '_blank';
+                                      document.body.appendChild(link);
+                                      link.click();
+                                      document.body.removeChild(link);
+                                    } else {
+                                      window.open(dataUrl, '_blank');
+                                    }
+                                  }}
                                   data-testid={`button-view-${docKey}`}
                                 >
                                   View
