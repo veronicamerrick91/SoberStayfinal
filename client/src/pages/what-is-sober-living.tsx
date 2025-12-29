@@ -43,20 +43,20 @@ export function WhatIsSoberLiving() {
   return (
     <Layout>
       <div className="min-h-screen bg-background">
-        <section className="py-20 bg-gradient-to-b from-primary/10 to-background">
+        <section className="py-12 md:py-16 bg-gradient-to-b from-primary/10 to-background">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
                 What Is Sober Living?
               </h1>
-              <p className="text-xl text-muted-foreground mb-8">
+              <p className="text-lg text-muted-foreground">
                 Understanding sober living homes and how they support long-term recovery from addiction.
               </p>
             </div>
           </div>
         </section>
 
-        <section className="py-16">
+        <section className="py-10 md:py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto prose prose-invert">
               <h2 className="text-3xl font-bold text-white mb-6">Understanding Sober Living Homes</h2>
