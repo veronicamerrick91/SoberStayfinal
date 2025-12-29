@@ -12,7 +12,7 @@ import {
   CheckCircle, Bold, Italic, Underline, Strikethrough, 
   List, ListOrdered, Heading1, Heading2, Link2, Quote, 
   AlignLeft, AlignCenter, AlignRight, Undo, Redo, Type, Save,
-  ChevronRight, RotateCcw, Trash2
+  ChevronRight, RotateCcw, Trash2, CreditCard
 } from "lucide-react";
 import { getReports, updateReportStatus } from "@/lib/reports";
 import { UserEditModal } from "@/components/user-edit-modal";
@@ -639,12 +639,8 @@ Thank you for being part of our recovery community!`
           setApplications(formattedApplications);
         }
         
-        // Sample messages data  
-        setMessages([
-          { id: "msg-1", tenant: "John Doe", provider: "Recovery First LLC", preview: "Hi, I'm interested in your facility. Can I schedule a tour?", date: "Dec 5, 2024", flagged: false },
-          { id: "msg-2", tenant: "Sarah Miller", provider: "Hope House", preview: "What are your house rules regarding visitors?", date: "Dec 4, 2024", flagged: false },
-          { id: "msg-3", tenant: "Anonymous User", provider: "Serenity Living", preview: "This message contains inappropriate content...", date: "Dec 3, 2024", flagged: true, reason: "Inappropriate Content" },
-        ]);
+        // Messages will be populated from real data when messaging system is fully implemented
+        setMessages([]);
         
         if (siteVisitsRes.ok) {
           const siteVisitsData = await siteVisitsRes.json();
@@ -660,60 +656,8 @@ Thank you for being part of our recovery community!`
     
     fetchAdminData();
     
-    // Initialize mock verification documents
-    setDocuments([
-      {
-        id: "doc-1",
-        documentName: "Business License",
-        documentType: "License",
-        provider: "Recovery First LLC",
-        providerEmail: "admin@recoveryfirst.com",
-        uploadedDate: "2024-12-01",
-        status: "Pending Review",
-        fileSize: "2.4 MB"
-      },
-      {
-        id: "doc-2",
-        documentName: "Liability Insurance Certificate",
-        documentType: "Insurance",
-        provider: "Hope House",
-        providerEmail: "contact@hopehouse.org",
-        uploadedDate: "2024-12-02",
-        status: "Pending Review",
-        fileSize: "1.8 MB"
-      },
-      {
-        id: "doc-3",
-        documentName: "Staff Background Check - John Smith",
-        documentType: "Background Check",
-        provider: "Serenity Living",
-        providerEmail: "info@serenityliving.com",
-        uploadedDate: "2024-11-28",
-        status: "Approved",
-        fileSize: "856 KB"
-      },
-      {
-        id: "doc-4",
-        documentName: "Fire Safety Inspection Report",
-        documentType: "Safety Certification",
-        provider: "New Beginnings Home",
-        providerEmail: "office@newbeginnings.org",
-        uploadedDate: "2024-11-30",
-        status: "Pending Review",
-        fileSize: "3.1 MB"
-      },
-      {
-        id: "doc-5",
-        documentName: "Zoning Compliance Letter",
-        documentType: "Zoning",
-        provider: "Pathway Recovery",
-        providerEmail: "admin@pathwayrecovery.com",
-        uploadedDate: "2024-11-25",
-        status: "Rejected",
-        denialReason: "Document is expired. Please submit current zoning compliance letter dated within last 12 months.",
-        fileSize: "1.2 MB"
-      }
-    ]);
+    // Documents will be populated from real provider verification submissions
+    setDocuments([]);
   }, [setLocation]);
 
   const handleEditUser = (user: User) => {
@@ -2607,28 +2551,28 @@ the actual document file stored on the server.
                   <Card className="bg-white/5 border-border">
                     <CardContent className="pt-4">
                       <p className="text-xs font-bold text-primary mb-2">Monthly Revenue</p>
-                      <p className="text-2xl font-bold text-white">$12,450</p>
-                      <p className="text-xs text-green-500 mt-1">↑ 8% vs last month</p>
+                      <p className="text-2xl font-bold text-white">$0</p>
+                      <p className="text-xs text-muted-foreground mt-1">From Stripe</p>
                     </CardContent>
                   </Card>
                   <Card className="bg-white/5 border-border">
                     <CardContent className="pt-4">
                       <p className="text-xs font-bold text-primary mb-2">Active Subscriptions</p>
-                      <p className="text-2xl font-bold text-white">127</p>
+                      <p className="text-2xl font-bold text-white">0</p>
                       <p className="text-xs text-muted-foreground mt-1">All plans combined</p>
                     </CardContent>
                   </Card>
                   <Card className="bg-white/5 border-border">
                     <CardContent className="pt-4">
                       <p className="text-xs font-bold text-primary mb-2">Failed Payments</p>
-                      <p className="text-2xl font-bold text-red-500">3</p>
-                      <p className="text-xs text-red-500 mt-1">Action needed</p>
+                      <p className="text-2xl font-bold text-white">0</p>
+                      <p className="text-xs text-muted-foreground mt-1">None</p>
                     </CardContent>
                   </Card>
                   <Card className="bg-white/5 border-border">
                     <CardContent className="pt-4">
                       <p className="text-xs font-bold text-primary mb-2">Avg Revenue/Sub</p>
-                      <p className="text-2xl font-bold text-white">$42</p>
+                      <p className="text-2xl font-bold text-white">$0</p>
                       <p className="text-xs text-muted-foreground mt-1">Per provider</p>
                     </CardContent>
                   </Card>
@@ -2637,42 +2581,11 @@ the actual document file stored on the server.
                 <div className="space-y-6">
                   <div className="space-y-3">
                     <h3 className="text-white font-bold text-sm mb-3">Active Provider Subscriptions</h3>
-                    {[
-                      { provider: "Recovery First LLC", plan: "Premium", status: "Active", renewDate: "Dec 10, 2024", amount: "$49/mo", contact: "admin@recoveryfirst.com", startDate: "Sep 10, 2024", paymentMethod: "Visa ending in 4242" },
-                      { provider: "Hope House", plan: "Basic", status: "Active", renewDate: "Dec 22, 2024", amount: "$29/mo", contact: "contact@hopehouse.org", startDate: "Oct 22, 2024", paymentMethod: "Mastercard ending in 1234" },
-                      { provider: "New Path Recovery", plan: "Premium", status: "Active", renewDate: "Dec 5, 2024", amount: "$49/mo", contact: "info@newpath.org", startDate: "Sep 5, 2024", paymentMethod: "Visa ending in 5678" },
-                    ].map((sub, i) => (
-                      <div key={i} className="p-4 rounded-lg bg-white/5 border border-border/50">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <p className="text-white font-medium text-sm">{sub.provider}</p>
-                            <p className="text-xs text-muted-foreground">{sub.contact}</p>
-                          </div>
-                          <Badge className="bg-green-500/80 text-xs">{sub.status}</Badge>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3 text-xs">
-                          <div>
-                            <p className="text-muted-foreground">Plan</p>
-                            <p className="text-white font-semibold">{sub.plan}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Amount</p>
-                            <p className="text-white font-semibold">{sub.amount}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Started</p>
-                            <p className="text-white font-semibold">{sub.startDate}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground">Renews</p>
-                            <p className="text-white font-semibold">{sub.renewDate}</p>
-                          </div>
-                        </div>
-                        <div className="pt-2 border-t border-border/50">
-                          <p className="text-xs text-muted-foreground">Payment Method: <span className="text-white">{sub.paymentMethod}</span></p>
-                        </div>
-                      </div>
-                    ))}
+                    <div className="p-4 rounded-lg bg-white/5 border border-border/50 text-center">
+                      <CreditCard className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
+                      <p className="text-white font-medium">No Active Subscriptions</p>
+                      <p className="text-xs text-muted-foreground mt-1">Provider subscriptions managed via Stripe will appear here.</p>
+                    </div>
                   </div>
 
                   <div className="space-y-3">
