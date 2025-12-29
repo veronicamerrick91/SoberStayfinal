@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
-  CheckCircle, XCircle, Calendar, Mail, Phone, MapPin, 
-  Activity, AlertTriangle, ShieldCheck, Clock, Briefcase, Home, 
-  CreditCard, Gift
+  CheckCircle, XCircle, Calendar, Mail, Phone, MapPin,
+  Activity, ShieldCheck, Clock, Briefcase, Home
 } from "lucide-react";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
@@ -77,10 +76,7 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
 
   if (!application) return null;
 
-  // Check if actions are blocked due to unpaid status
-  const isPaid = application.paymentStatus === "paid";
-  const hasWaiver = application.hasFeeWaiver === true;
-  const canTakeAction = isPaid || hasWaiver;
+  // Providers with active subscriptions can always take action on applications
 
   const handleDenyClick = () => {
     if (showDenyInput) {
@@ -216,40 +212,6 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
         </div>
 
         <DialogFooter className="p-6 border-t bg-card flex-col gap-3">
-          {/* Payment Status Banner */}
-          {!canTakeAction && (
-            <div className="w-full p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 mb-2">
-              <div className="flex items-center gap-2 text-amber-400 text-sm">
-                <CreditCard className="w-4 h-4" />
-                <span className="font-medium">Payment Required</span>
-              </div>
-              <p className="text-xs text-amber-300/80 mt-1">
-                This application cannot be approved or denied until the application fee is paid or a fee waiver is granted.
-              </p>
-              {onGrantFeeWaiver && (
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => onGrantFeeWaiver(application.id)}
-                  className="mt-2 border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
-                  data-testid="button-grant-fee-waiver"
-                >
-                  <Gift className="w-3 h-3 mr-1" /> Grant Fee Waiver
-                </Button>
-              )}
-            </div>
-          )}
-
-          {/* Fee Waiver Granted Badge */}
-          {hasWaiver && (
-            <div className="w-full p-2 rounded-lg bg-green-500/10 border border-green-500/30 mb-2">
-              <div className="flex items-center gap-2 text-green-400 text-sm">
-                <Gift className="w-4 h-4" />
-                <span>Fee Waiver Granted</span>
-              </div>
-            </div>
-          )}
-
           {showDenyInput ? (
             <div className="space-y-3">
               <div>
@@ -293,16 +255,14 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
               <Button 
                 variant="outline" 
                 onClick={handleDenyClick} 
-                className="flex-1 border-red-500/30 text-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!canTakeAction}
+                className="flex-1 border-red-500/30 text-red-500"
                 data-testid="button-deny-application"
               >
                 <XCircle className="w-4 h-4 mr-2" /> Deny
               </Button>
               <Button 
                 onClick={() => setShowApproveInput(true)} 
-                className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!canTakeAction}
+                className="flex-1 bg-green-600 hover:bg-green-700"
                 data-testid="button-approve-application"
               >
                 <CheckCircle className="w-4 h-4 mr-2" /> Approve
