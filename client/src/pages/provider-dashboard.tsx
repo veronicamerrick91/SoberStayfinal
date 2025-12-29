@@ -744,29 +744,74 @@ function ProviderDashboardContent() {
               id: String(app.id),
               tenantId: String(app.tenantId || app.id),
               applicantName: app.tenantName || 'Unknown Applicant',
-              email: app.tenantEmail || '',
+              email: app.tenantEmail || appData.email || '',
               phone: appData.phone || appData.emergencyPhone || 'Not provided',
               property: app.propertyName || 'Unknown Property',
               submittedDate: app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'Unknown',
               status: app.status === 'approved' ? 'Approved' : app.status === 'rejected' ? 'Denied' : app.status === 'pending' ? 'New' : 'Screening',
               avatar: app.profilePhotoUrl || undefined,
               idPhotoUrl: app.idPhotoUrl || undefined,
+              
+              // Personal Information
               dob: appData.dateOfBirth || 'Not provided',
               gender: appData.gender || 'Not provided',
               currentAddress: appData.currentAddress || 'Not provided',
+              emergencyContactName: appData.emergencyContactName || undefined,
+              emergencyContactPhone: appData.emergencyContactPhone || undefined,
+              emergencyContactRelationship: appData.emergencyContactRelationship || undefined,
+              
+              // Substance Use History
               primarySubstance: appData.primarySubstance || 'Not disclosed',
-              soberDate: appData.sobrietyDate || 'Not provided',
-              soberLength: appData.sobrietyLength || 'Not provided',
-              matStatus: appData.matProgram === 'yes' || appData.matStatus === true,
-              matMeds: appData.matMedications || undefined,
-              probation: appData.legalStatus === 'probation' || appData.probation === true,
-              pendingCases: appData.pendingCases === true || appData.pendingLegalCases === 'yes',
+              ageOfFirstUse: appData.ageOfFirstUse || undefined,
+              lastDateOfUse: appData.lastDateOfUse || undefined,
+              soberDate: appData.lastDateOfUse || appData.sobrietyDate || 'Not provided',
+              soberLength: appData.lengthOfSobriety || appData.sobrietyLength || 'Not provided',
+              overdoseHistory: appData.overdoseHistory || undefined,
+              overdoseDate: appData.overdoseDate || undefined,
+              matHistory: appData.matHistory || undefined,
+              currentMat: appData.currentMat || appData.matMedications || undefined,
+              matStatus: appData.matHistory === 'yes' || appData.matProgram === 'yes' || appData.matStatus === true,
+              matMeds: appData.currentMat || appData.matMedications || undefined,
+              
+              // Medical Information
               medicalConditions: appData.medicalConditions || 'None',
+              mentalHealthDiagnoses: appData.mentalHealthDiagnoses || undefined,
               medications: appData.currentMedications || 'None',
+              allergies: appData.allergies || undefined,
+              mobilityIssues: appData.mobilityIssues || undefined,
+              seizureHistory: appData.seizureHistory || undefined,
+              isPregnant: appData.isPregnant || undefined,
+              
+              // Legal Status
+              probation: appData.probationParole === 'yes' || appData.legalStatus === 'probation' || appData.probation === true,
+              probationDetails: appData.probationParoleDetails || undefined,
+              pendingCases: appData.pendingCases === 'yes' || appData.pendingCases === true || appData.pendingLegalCases === 'yes',
+              restrainingOrders: appData.restrainingOrders || undefined,
+              violentOffenses: appData.violentOffenses || undefined,
+              
+              // Employment & Income
               employmentStatus: appData.employmentStatus || 'Not provided',
-              incomeSource: appData.incomeSource || 'Not provided',
-              evictionHistory: appData.evictionHistory === true || appData.priorEvictions === 'yes',
+              incomeSource: appData.incomeSources || appData.incomeSource || 'Not provided',
+              canPayRent: appData.canPayRent || undefined,
+              lookingForEmployment: appData.lookingForEmployment || undefined,
+              
+              // Housing Background
               reasonForLeaving: appData.reasonForLeaving || appData.whySeekingSoberLiving || 'Not provided',
+              previousSoberLiving: appData.previousSoberLiving || undefined,
+              evictionHistory: appData.previousEvictions === 'yes' || appData.evictionHistory === true || appData.priorEvictions === 'yes',
+              housingViolations: appData.housingViolations || undefined,
+              adaAccommodations: appData.adaAccommodations || undefined,
+              
+              // Preferences
+              roomPreference: appData.roomPreference || undefined,
+              genderSpecificHousing: appData.genderSpecificHousing || undefined,
+              lgbtqAffirming: appData.lgbtqAffirming || undefined,
+              petFriendly: appData.petFriendly || undefined,
+              smokingStatus: appData.smokingStatus || undefined,
+              transportationNeeds: appData.transportationNeeds || undefined,
+              emotionalSupportAnimal: appData.emotionalSupportAnimal || undefined,
+              moveInDate: appData.moveInDate || undefined,
+              
               paymentStatus: app.paymentStatus || 'unpaid',
               hasFeeWaiver: app.hasFeeWaiver === true,
             };

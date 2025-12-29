@@ -25,25 +25,65 @@ export interface ApplicationData {
   paymentStatus?: "paid" | "unpaid";
   hasFeeWaiver?: boolean;
   
+  // Personal Information
   dob: string;
   gender: string;
   currentAddress: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelationship?: string;
   
+  // Substance Use History
   primarySubstance: string;
+  ageOfFirstUse?: string;
+  lastDateOfUse?: string;
   soberDate: string;
   soberLength: string;
+  overdoseHistory?: string;
+  overdoseDate?: string;
+  matHistory?: string;
+  currentMat?: string;
   matStatus: boolean;
   matMeds?: string;
   
-  probation: boolean;
-  pendingCases: boolean;
+  // Medical Information
   medicalConditions: string;
+  mentalHealthDiagnoses?: string;
   medications: string;
+  allergies?: string;
+  mobilityIssues?: string;
+  seizureHistory?: string;
+  isPregnant?: string;
   
+  // Legal Status
+  probation: boolean;
+  probationDetails?: string;
+  pendingCases: boolean;
+  restrainingOrders?: string;
+  violentOffenses?: string;
+  
+  // Employment & Income
   employmentStatus: string;
   incomeSource: string;
-  evictionHistory: boolean;
+  canPayRent?: string;
+  lookingForEmployment?: string;
+  
+  // Housing Background
   reasonForLeaving: string;
+  previousSoberLiving?: string;
+  evictionHistory: boolean;
+  housingViolations?: string;
+  adaAccommodations?: string;
+  
+  // Preferences
+  roomPreference?: string;
+  genderSpecificHousing?: string;
+  lgbtqAffirming?: string;
+  petFriendly?: string;
+  smokingStatus?: string;
+  transportationNeeds?: string;
+  emotionalSupportAnimal?: string;
+  moveInDate?: string;
 }
 
 interface ApplicationDetailsModalProps {
@@ -112,14 +152,14 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
         </DialogHeader>
 
         <div className="px-6 overflow-y-auto flex-1">
-          {/* Risk Assessment */}
+          {/* Risk Assessment Summary */}
           <div className="grid grid-cols-3 gap-3 mb-6">
             <div className={`p-4 rounded border ${application.matStatus ? "bg-blue-500/10 border-blue-500/20" : "bg-white/5 border-border"}`}>
               <div className="flex items-center gap-2 mb-1 font-semibold text-white text-sm">
                 <Activity className="w-4 h-4 text-blue-500" /> MAT Status
               </div>
               <p className="text-sm text-gray-300">{application.matStatus ? "Active" : "None"}</p>
-              {application.matMeds && <p className="text-xs text-muted-foreground mt-1">{application.matMeds}</p>}
+              {application.currentMat && <p className="text-xs text-muted-foreground mt-1">{application.currentMat}</p>}
             </div>
             
             <div className={`p-4 rounded border ${application.probation || application.pendingCases ? "bg-amber-500/10 border-amber-500/20" : "bg-green-500/10 border-green-500/20"}`}>
@@ -139,20 +179,38 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
             </div>
           </div>
 
-          {/* Contact Info */}
+          {/* 1. Personal Information */}
           <div className="mb-6">
-            <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">Contact Information</h3>
+            <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">1. Personal Information</h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="flex items-center gap-2 text-gray-300"><Mail className="w-4 h-4" /> {application.email}</div>
               <div className="flex items-center gap-2 text-gray-300"><Phone className="w-4 h-4" /> {application.phone}</div>
               <div className="col-span-2 flex items-start gap-2 text-gray-300"><MapPin className="w-4 h-4 mt-0.5" /> {application.currentAddress}</div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Date of Birth</span>
+                <p className="text-gray-300">{application.dob}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Gender</span>
+                <p className="text-gray-300">{application.gender}</p>
+              </div>
             </div>
+            {(application.emergencyContactName || application.emergencyContactPhone) && (
+              <div className="mt-4 p-3 bg-white/5 rounded border border-border">
+                <p className="text-xs text-muted-foreground mb-2">Emergency Contact</p>
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <p className="text-gray-300">{application.emergencyContactName || "Not provided"}</p>
+                  <p className="text-gray-300">{application.emergencyContactPhone || "Not provided"}</p>
+                  <p className="text-gray-400">{application.emergencyContactRelationship || ""}</p>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* ID Document */}
+          {/* 2. ID Document */}
           {application.idPhotoUrl && (
             <div className="mb-6">
-              <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">Government ID</h3>
+              <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">2. Government ID</h3>
               <div className="bg-white/5 border border-border rounded-lg p-4">
                 <img 
                   src={application.idPhotoUrl} 
@@ -165,48 +223,209 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
             </div>
           )}
 
-          {/* Recovery & Health */}
+          {/* 3. Substance Use History */}
           <div className="mb-6">
-            <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">Recovery & Health</h3>
-            <div className="space-y-3 text-sm">
+            <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">3. Substance Use History</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground block mb-1">Primary Substance</span>
                 <p className="text-gray-300">{application.primarySubstance}</p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="text-muted-foreground block mb-1">Age of First Use</span>
+                <p className="text-gray-300">{application.ageOfFirstUse || "Not provided"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Last Date of Use</span>
+                <p className="text-gray-300">{application.lastDateOfUse || application.soberDate}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Length of Sobriety</span>
+                <p className="text-gray-300">{application.soberLength}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Overdose History</span>
+                <p className="text-gray-300">{application.overdoseHistory || "No"}</p>
+              </div>
+              {application.overdoseDate && (
                 <div>
-                  <span className="text-muted-foreground block mb-1">Medical Conditions</span>
-                  <p className="text-gray-300">{application.medicalConditions || "None"}</p>
+                  <span className="text-muted-foreground block mb-1">Last Overdose Date</span>
+                  <p className="text-gray-300">{application.overdoseDate}</p>
                 </div>
+              )}
+              <div>
+                <span className="text-muted-foreground block mb-1">MAT History</span>
+                <p className="text-gray-300">{application.matHistory || (application.matStatus ? "Yes" : "No")}</p>
+              </div>
+              {application.currentMat && (
                 <div>
-                  <span className="text-muted-foreground block mb-1">Medications</span>
-                  <p className="text-gray-300">{application.medications || "None"}</p>
+                  <span className="text-muted-foreground block mb-1">Current MAT Medication</span>
+                  <p className="text-gray-300">{application.currentMat}</p>
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* 4. Medical Information */}
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">4. Medical Information</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground block mb-1">Medical Conditions</span>
+                <p className="text-gray-300">{application.medicalConditions || "None"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Mental Health Diagnoses</span>
+                <p className="text-gray-300">{application.mentalHealthDiagnoses || "None"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Current Medications</span>
+                <p className="text-gray-300">{application.medications || "None"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Allergies</span>
+                <p className="text-gray-300">{application.allergies || "None"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Mobility Issues</span>
+                <p className="text-gray-300">{application.mobilityIssues || "None"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Seizure History</span>
+                <p className="text-gray-300">{application.seizureHistory || "No"}</p>
+              </div>
+              {application.isPregnant && (
+                <div>
+                  <span className="text-muted-foreground block mb-1">Pregnancy Status</span>
+                  <p className="text-gray-300">{application.isPregnant}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 5. Legal Status */}
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">5. Legal Status</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground block mb-1">On Probation/Parole</span>
+                <p className="text-gray-300">{application.probation ? "Yes" : "No"}</p>
+              </div>
+              {application.probationDetails && (
+                <div>
+                  <span className="text-muted-foreground block mb-1">Probation Details</span>
+                  <p className="text-gray-300">{application.probationDetails}</p>
+                </div>
+              )}
+              <div>
+                <span className="text-muted-foreground block mb-1">Pending Legal Cases</span>
+                <p className="text-gray-300">{application.pendingCases ? "Yes" : "No"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Restraining Orders</span>
+                <p className="text-gray-300">{application.restrainingOrders || "No"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">History of Violent Offenses</span>
+                <p className="text-gray-300">{application.violentOffenses || "No"}</p>
               </div>
             </div>
           </div>
 
-          {/* Employment & Housing */}
+          {/* 6. Employment & Income */}
           <div className="mb-6">
-            <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">Employment & Housing</h3>
+            <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">6. Employment & Income</h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <div className="flex items-center gap-2 mb-1 text-muted-foreground">
-                  <Briefcase className="w-4 h-4" /> Employment
+                  <Briefcase className="w-4 h-4" /> Employment Status
                 </div>
                 <p className="text-gray-300 font-medium">{application.employmentStatus}</p>
-                <p className="text-gray-400 text-xs mt-1">Source: {application.incomeSource}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Income Sources</span>
+                <p className="text-gray-300">{application.incomeSource}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Can Pay Rent at Move-In</span>
+                <p className="text-gray-300">{application.canPayRent || "Not specified"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Looking for Employment</span>
+                <p className="text-gray-300">{application.lookingForEmployment || "N/A"}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 7. Housing Background */}
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">7. Housing Background</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="col-span-2">
+                <span className="text-muted-foreground block mb-1">Reason for Leaving Current Situation</span>
+                <p className="text-gray-300 italic">"{application.reasonForLeaving}"</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Previous Sober Living Experience</span>
+                <p className="text-gray-300">{application.previousSoberLiving || "No"}</p>
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1 text-muted-foreground">
-                  <Home className="w-4 h-4" /> Housing History
+                  <Home className="w-4 h-4" /> Eviction History
                 </div>
-                <p className="text-gray-300">{application.evictionHistory ? "Has prior evictions" : "No eviction history"}</p>
+                <p className="text-gray-300">{application.evictionHistory ? "Yes" : "No"}</p>
               </div>
-              <div className="col-span-2">
-                <span className="text-muted-foreground block mb-1">Reason for Current Housing Need</span>
-                <p className="text-gray-300 italic">"{application.reasonForLeaving}"</p>
+              <div>
+                <span className="text-muted-foreground block mb-1">Housing Rule Violations</span>
+                <p className="text-gray-300">{application.housingViolations || "None"}</p>
               </div>
+              {application.adaAccommodations && (
+                <div>
+                  <span className="text-muted-foreground block mb-1">ADA Accommodations Needed</span>
+                  <p className="text-gray-300">{application.adaAccommodations}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 8. Preferences */}
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">8. Personal Needs & Preferences</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground block mb-1">Room Preference</span>
+                <p className="text-gray-300">{application.roomPreference || "No preference"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Requested Move-In Date</span>
+                <p className="text-gray-300">{application.moveInDate || "Flexible"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Gender-Specific Housing</span>
+                <p className="text-gray-300">{application.genderSpecificHousing || "No preference"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">LGBTQ+ Affirming</span>
+                <p className="text-gray-300">{application.lgbtqAffirming || "No preference"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Pet Friendly</span>
+                <p className="text-gray-300">{application.petFriendly || "No"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Smoking Status</span>
+                <p className="text-gray-300">{application.smokingStatus || "Not specified"}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground block mb-1">Transportation Needs</span>
+                <p className="text-gray-300">{application.transportationNeeds || "None"}</p>
+              </div>
+              {application.emotionalSupportAnimal && (
+                <div>
+                  <span className="text-muted-foreground block mb-1">Emotional Support Animal</span>
+                  <p className="text-gray-300">{application.emotionalSupportAnimal}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
