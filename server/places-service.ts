@@ -84,32 +84,58 @@ export async function getNearbyPlaces(lat: number, lng: number): Promise<NearbyP
   const seenNames = new Set<string>();
   const SEARCH_RADIUS = 24000;
 
-  const typesToSearch = ['hospital', 'pharmacy', 'gym', 'park', 'bus_station', 'grocery_or_supermarket', 'church', 'library'];
+  const typesToSearch = [
+    { type: 'hospital', label: 'Hospitals' },
+    { type: 'pharmacy', label: 'Pharmacies' },
+    { type: 'gym', label: 'Fitness Centers' },
+    { type: 'park', label: 'Parks' },
+    { type: 'transit_station', label: 'Public Transit' },
+    { type: 'supermarket', label: 'Grocery Stores' },
+    { type: 'church', label: 'Places of Worship' },
+    { type: 'library', label: 'Libraries' },
+  ];
 
-  for (const placeType of typesToSearch) {
+  for (const { type: placeType, label } of typesToSearch) {
     try {
-      const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${SEARCH_RADIUS}&type=${placeType}&key=${apiKey}`;
-      const response = await fetch(url);
+      const url = `https://places.googleapis.com/v1/places:searchNearby`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location',
+        },
+        body: JSON.stringify({
+          includedTypes: [placeType],
+          maxResultCount: 3,
+          locationRestriction: {
+            circle: {
+              center: { latitude: lat, longitude: lng },
+              radius: SEARCH_RADIUS,
+            },
+          },
+        }),
+      });
       const data = await response.json();
 
-      if (data.status === "OK" && data.results) {
-        const typeConfig = PLACE_TYPES.find(t => t.type === placeType);
-        const label = typeConfig?.label || placeType;
+      if (data.places && data.places.length > 0) {
+        for (const place of data.places.slice(0, 2)) {
+          const name = place.displayName?.text || 'Unknown';
+          if (seenNames.has(name)) continue;
+          seenNames.add(name);
 
-        for (const place of data.results.slice(0, 2)) {
-          if (seenNames.has(place.name)) continue;
-          seenNames.add(place.name);
-
-          const placeLat = place.geometry.location.lat;
-          const placeLng = place.geometry.location.lng;
+          const placeLat = place.location?.latitude;
+          const placeLng = place.location?.longitude;
+          if (!placeLat || !placeLng) continue;
+          
           const distanceMiles = calculateDistance(lat, lng, placeLat, placeLng);
 
           nearbyPlaces.push({
-            name: place.name,
+            name,
             type: label,
             distance: formatDistance(distanceMiles),
             distanceMiles,
-            address: place.vicinity,
+            address: place.formattedAddress,
           });
         }
       }
