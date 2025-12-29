@@ -12,6 +12,7 @@ import {
   Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video, Eye, CreditCard,
   ShieldCheck, Loader2, RotateCcw, CheckCircle, Download
 } from "lucide-react";
+import { downloadDocument } from "@/lib/document-utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
@@ -1900,33 +1901,7 @@ function ProviderDashboardContent() {
                                         onClick={() => {
                                           const dataUrl = upload.url || upload;
                                           const fileName = upload.name || `${doc.name}.pdf`;
-                                          if (dataUrl.startsWith('data:')) {
-                                            try {
-                                              const [header, base64] = dataUrl.split(',');
-                                              const mimeMatch = header.match(/data:([^;]+)/);
-                                              const mimeType = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
-                                              const byteString = atob(base64);
-                                              const ab = new ArrayBuffer(byteString.length);
-                                              const ia = new Uint8Array(ab);
-                                              for (let i = 0; i < byteString.length; i++) {
-                                                ia[i] = byteString.charCodeAt(i);
-                                              }
-                                              const blob = new Blob([ab], { type: mimeType });
-                                              const blobUrl = URL.createObjectURL(blob);
-                                              const link = document.createElement('a');
-                                              link.href = blobUrl;
-                                              link.download = fileName;
-                                              document.body.appendChild(link);
-                                              link.click();
-                                              document.body.removeChild(link);
-                                              setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-                                            } catch (e) {
-                                              console.error('Error downloading document:', e);
-                                              alert('Unable to download document.');
-                                            }
-                                          } else {
-                                            window.open(dataUrl, '_blank');
-                                          }
+                                          downloadDocument(dataUrl, fileName);
                                         }}
                                         data-testid={`button-view-${doc.key}-${idx}`}
                                       >
@@ -2005,33 +1980,7 @@ function ProviderDashboardContent() {
                                   onClick={() => {
                                     const dataUrl = url as string;
                                     const fileName = customName || 'document';
-                                    if (dataUrl.startsWith('data:')) {
-                                      try {
-                                        const [header, base64] = dataUrl.split(',');
-                                        const mimeMatch = header.match(/data:([^;]+)/);
-                                        const mimeType = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
-                                        const byteString = atob(base64);
-                                        const ab = new ArrayBuffer(byteString.length);
-                                        const ia = new Uint8Array(ab);
-                                        for (let i = 0; i < byteString.length; i++) {
-                                          ia[i] = byteString.charCodeAt(i);
-                                        }
-                                        const blob = new Blob([ab], { type: mimeType });
-                                        const blobUrl = URL.createObjectURL(blob);
-                                        const link = document.createElement('a');
-                                        link.href = blobUrl;
-                                        link.download = fileName;
-                                        document.body.appendChild(link);
-                                        link.click();
-                                        document.body.removeChild(link);
-                                        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-                                      } catch (e) {
-                                        console.error('Error downloading document:', e);
-                                        alert('Unable to download document.');
-                                      }
-                                    } else {
-                                      window.open(dataUrl, '_blank');
-                                    }
+                                    downloadDocument(dataUrl, fileName);
                                   }}
                                   data-testid={`button-view-${docKey}`}
                                 >
