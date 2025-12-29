@@ -729,6 +729,101 @@ Disallow: /auth/
     res.json({ success: true });
   });
 
+  // Admin: Get all applications with tenant and listing info
+  app.get("/api/admin/applications", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    const allApplications = await storage.getAllApplications();
+    
+    // Enrich with tenant and listing details
+    const enrichedApplications = await Promise.all(allApplications.map(async (app) => {
+      const tenant = await storage.getUser(app.tenantId);
+      const listing = await storage.getListing(app.listingId);
+      const tenantProfile = await storage.getTenantProfile(app.tenantId);
+      
+      return {
+        ...app,
+        tenantName: tenant ? `${tenant.firstName} ${tenant.lastName}` : "Unknown",
+        tenantEmail: tenant?.email || "",
+        tenantPhone: tenantProfile?.phone || "",
+        propertyName: listing?.propertyName || "Unknown Property",
+        listingCity: listing?.city || "",
+        listingState: listing?.state || "",
+      };
+    }));
+    
+    res.json(enrichedApplications);
+  });
+
+  // Admin: Grant fee waiver for an application
+  app.patch("/api/admin/applications/:id/fee-waiver", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid application ID" });
+    }
+    
+    const updated = await storage.grantApplicationFeeWaiver(id);
+    if (!updated) {
+      return res.status(404).json({ error: "Application not found" });
+    }
+    
+    res.json(updated);
+  });
+
+  // Admin: Update application status (with payment check)
+  app.patch("/api/admin/applications/:id/status", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid application ID" });
+    }
+    
+    const { status, moveInDate } = req.body;
+    const validStatuses = ["draft", "pending", "approved", "rejected"];
+    
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: "Invalid status value" });
+    }
+    
+    // Check if application exists and verify payment status for approve/reject
+    const application = await storage.getApplication(id);
+    if (!application) {
+      return res.status(404).json({ error: "Application not found" });
+    }
+    
+    // Block approve/reject if not paid and no fee waiver
+    if ((status === "approved" || status === "rejected") && 
+        application.paymentStatus !== "paid" && 
+        !application.hasFeeWaiver) {
+      return res.status(400).json({ 
+        error: "Cannot approve or deny application until payment is completed or fee waiver is granted" 
+      });
+    }
+    
+    const updated = await storage.updateApplicationStatus(
+      id, 
+      status, 
+      moveInDate ? new Date(moveInDate) : undefined
+    );
+    
+    res.json(updated);
+  });
+
   // Admin: Toggle fee waiver for a provider
   app.patch("/api/admin/providers/:id/fee-waiver", async (req, res) => {
     try {

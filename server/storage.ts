@@ -64,10 +64,13 @@ export interface IStorage {
   // Applications
   createApplication(application: InsertApplication): Promise<Application>;
   getApplication(id: number): Promise<Application | undefined>;
+  getAllApplications(): Promise<Application[]>;
   getApplicationsByTenant(tenantId: number): Promise<Application[]>;
   getApplicationsByListing(listingId: number): Promise<Application[]>;
   getApplicationsByProvider(providerId: number): Promise<Application[]>;
   updateApplicationStatus(id: number, status: string, moveInDate?: Date): Promise<Application | undefined>;
+  grantApplicationFeeWaiver(id: number): Promise<Application | undefined>;
+  updateApplicationPaymentStatus(id: number, paymentStatus: string): Promise<Application | undefined>;
   getUpcomingMoveIns(daysAhead: number): Promise<Application[]>;
   markMoveInReminderSent(id: number): Promise<void>;
   
@@ -614,6 +617,31 @@ export class DatabaseStorage implements IStorage {
     const [updated] = await db
       .update(applications)
       .set(updateData)
+      .where(eq(applications.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getAllApplications(): Promise<Application[]> {
+    return await db
+      .select()
+      .from(applications)
+      .orderBy(desc(applications.createdAt));
+  }
+
+  async grantApplicationFeeWaiver(id: number): Promise<Application | undefined> {
+    const [updated] = await db
+      .update(applications)
+      .set({ hasFeeWaiver: true })
+      .where(eq(applications.id, id))
+      .returning();
+    return updated;
+  }
+
+  async updateApplicationPaymentStatus(id: number, paymentStatus: string): Promise<Application | undefined> {
+    const [updated] = await db
+      .update(applications)
+      .set({ paymentStatus })
       .where(eq(applications.id, id))
       .returning();
     return updated;
