@@ -2419,6 +2419,77 @@ Disallow: /auth/
     }
   });
 
+  // Download/view a specific resident document file
+  app.get("/api/provider/resident-doc/download/:tenantId/:docKey/:uploadIndex?", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { tenantId, docKey, uploadIndex } = req.params;
+      
+      const profile = await storage.getProviderProfile(user.id);
+      const existingDocs = (profile?.residentDocuments as Record<string, Record<string, any>>) || {};
+      
+      if (!existingDocs[tenantId] || !existingDocs[tenantId][docKey]) {
+        return res.status(404).json({ error: "Document not found" });
+      }
+      
+      const docData = existingDocs[tenantId][docKey];
+      let dataUrl: string;
+      let fileName: string = docKey;
+      
+      if (Array.isArray(docData)) {
+        const idx = parseInt(uploadIndex || '0', 10);
+        if (idx >= docData.length) {
+          return res.status(404).json({ error: "Document index not found" });
+        }
+        dataUrl = docData[idx].url || docData[idx];
+        fileName = docData[idx].name || docKey;
+      } else if (typeof docData === 'object' && docData.url) {
+        dataUrl = docData.url;
+        fileName = docData.name || docKey;
+      } else {
+        dataUrl = docData;
+      }
+      
+      if (!dataUrl || !dataUrl.startsWith('data:')) {
+        return res.status(400).json({ error: "Invalid document data" });
+      }
+      
+      // Parse the data URL
+      const matches = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+      if (!matches) {
+        return res.status(400).json({ error: "Invalid data URL format" });
+      }
+      
+      const mimeType = matches[1];
+      const base64Data = matches[2];
+      const buffer = Buffer.from(base64Data, 'base64');
+      
+      // Determine file extension
+      const extMap: Record<string, string> = {
+        'application/pdf': '.pdf',
+        'image/png': '.png',
+        'image/jpeg': '.jpg',
+        'image/jpg': '.jpg',
+      };
+      const ext = extMap[mimeType] || '';
+      if (!fileName.includes('.')) {
+        fileName += ext;
+      }
+      
+      // Set headers for inline viewing (or download if browser can't display)
+      res.setHeader('Content-Type', mimeType);
+      res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
+      res.setHeader('Content-Length', buffer.length);
+      res.send(buffer);
+    } catch (error) {
+      console.error("Error downloading resident document:", error);
+      res.status(500).json({ error: "Failed to download document" });
+    }
+  });
+
   // Submit application to a property
   app.post("/api/applications", async (req, res) => {
     const user = req.user as any;

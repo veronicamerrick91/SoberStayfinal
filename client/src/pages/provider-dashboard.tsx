@@ -1903,43 +1903,15 @@ function ProviderDashboardContent() {
                                       )}
                                     </div>
                                     <div className="flex gap-1 flex-shrink-0">
-                                      <button 
-                                        type="button"
-                                        onClick={() => {
-                                          const dataUrl = upload.url || upload;
-                                          if (dataUrl && typeof dataUrl === 'string' && dataUrl.startsWith('data:')) {
-                                            try {
-                                              const [header, base64Data] = dataUrl.split(',');
-                                              const mimeMatch = header.match(/data:([^;]+)/);
-                                              const mimeType = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
-                                              const byteCharacters = atob(base64Data);
-                                              const byteNumbers = new Array(byteCharacters.length);
-                                              for (let i = 0; i < byteCharacters.length; i++) {
-                                                byteNumbers[i] = byteCharacters.charCodeAt(i);
-                                              }
-                                              const byteArray = new Uint8Array(byteNumbers);
-                                              const blob = new Blob([byteArray], { type: mimeType });
-                                              const blobUrl = URL.createObjectURL(blob);
-                                              const extension = mimeType.includes('pdf') ? '.pdf' : mimeType.includes('png') ? '.png' : mimeType.includes('jpeg') || mimeType.includes('jpg') ? '.jpg' : '';
-                                              const fileName = (upload.name || doc.name) + extension;
-                                              const link = document.createElement('a');
-                                              link.href = blobUrl;
-                                              link.download = fileName;
-                                              document.body.appendChild(link);
-                                              link.click();
-                                              document.body.removeChild(link);
-                                              setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-                                            } catch (e) {
-                                              console.error('Error downloading document:', e);
-                                              alert('Unable to download this document.');
-                                            }
-                                          }
-                                        }}
+                                      <a 
+                                        href={`/api/provider/resident-doc/download/${selectedTenantId}/${doc.key}/${idx}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                         className="inline-flex items-center text-primary hover:bg-primary/10 h-7 px-2 rounded text-sm cursor-pointer"
                                         data-testid={`button-view-${doc.key}-${idx}`}
                                       >
-                                        <Download className="w-3 h-3 mr-1" /> Download
-                                      </button>
+                                        <Eye className="w-3 h-3 mr-1" /> View
+                                      </a>
                                       <button 
                                         type="button"
                                         className="inline-flex items-center text-red-400 hover:bg-red-400/10 h-7 px-2 rounded"
