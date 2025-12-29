@@ -654,6 +654,35 @@ Disallow: /auth/
     res.json(updatedListing);
   });
 
+  // Site visitor tracking (public endpoint for frontend to record page views)
+  app.post("/api/track-visit", async (req, res) => {
+    try {
+      const { page, sessionId } = req.body;
+      if (!page) {
+        return res.status(400).json({ error: "Page is required" });
+      }
+      
+      const userAgent = req.headers['user-agent'] || null;
+      const referrer = req.headers['referer'] || null;
+      const ip = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.socket.remoteAddress || null;
+      const userId = req.isAuthenticated() ? (req.user as any).id : null;
+      
+      await storage.recordSiteVisit({
+        page,
+        userAgent,
+        referrer,
+        ip,
+        userId,
+        sessionId: sessionId || null,
+      });
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error tracking visit:", error);
+      res.status(500).json({ error: "Failed to track visit" });
+    }
+  });
+
   // Admin endpoints
   app.get("/api/admin/users", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
@@ -679,6 +708,29 @@ Disallow: /auth/
     }));
     
     res.json(usersWithExtendedInfo);
+  });
+
+  // Admin site visit stats endpoint
+  app.get("/api/admin/site-visits", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const { days = "7" } = req.query;
+      const daysNum = parseInt(days as string, 10) || 7;
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - daysNum);
+      
+      const stats = await storage.getSiteVisitStats(startDate, endDate);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching site visit stats:", error);
+      res.status(500).json({ error: "Failed to fetch site visit stats" });
+    }
   });
 
   app.get("/api/admin/listings", async (req, res) => {
