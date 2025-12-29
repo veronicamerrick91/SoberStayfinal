@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   CheckCircle, XCircle, Calendar, Mail, Phone, MapPin, 
-  Activity, AlertTriangle, ShieldCheck, Clock, Briefcase, Home
+  Activity, AlertTriangle, ShieldCheck, Clock, Briefcase, Home, 
+  CreditCard, Gift
 } from "lucide-react";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,9 +17,13 @@ export interface ApplicationData {
   phone: string;
   property: string;
   submittedDate: string;
-  status: "New" | "Screening" | "Approved" | "Denied";
+  status: "New" | "Screening" | "Approved" | "Denied" | "Draft" | "Pending";
   avatar?: string;
   idPhotoUrl?: string;
+  
+  // Payment fields
+  paymentStatus?: "paid" | "unpaid";
+  hasFeeWaiver?: boolean;
   
   dob: string;
   gender: string;
@@ -47,6 +52,7 @@ interface ApplicationDetailsModalProps {
   application: ApplicationData | null;
   onApprove: (id: string, moveInDate?: string) => void;
   onDeny: (id: string, reason: string) => void;
+  onGrantFeeWaiver?: (id: string) => void;
 }
 
 const DENIAL_REASONS = [
@@ -62,13 +68,18 @@ const DENIAL_REASONS = [
   "Other (specify in notes)"
 ];
 
-export function ApplicationDetailsModal({ open, onClose, application, onApprove, onDeny }: ApplicationDetailsModalProps) {
+export function ApplicationDetailsModal({ open, onClose, application, onApprove, onDeny, onGrantFeeWaiver }: ApplicationDetailsModalProps) {
   const [denyReason, setDenyReason] = useState("");
   const [showDenyInput, setShowDenyInput] = useState(false);
   const [showApproveInput, setShowApproveInput] = useState(false);
   const [moveInDate, setMoveInDate] = useState("");
 
   if (!application) return null;
+
+  // Check if actions are blocked due to unpaid status
+  const isPaid = application.paymentStatus === "paid";
+  const hasWaiver = application.hasFeeWaiver === true;
+  const canTakeAction = isPaid || hasWaiver;
 
   const handleDenyClick = () => {
     if (showDenyInput) {
@@ -204,6 +215,40 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
         </div>
 
         <DialogFooter className="p-6 border-t bg-card flex-col gap-3">
+          {/* Payment Status Banner */}
+          {!canTakeAction && (
+            <div className="w-full p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 mb-2">
+              <div className="flex items-center gap-2 text-amber-400 text-sm">
+                <CreditCard className="w-4 h-4" />
+                <span className="font-medium">Payment Required</span>
+              </div>
+              <p className="text-xs text-amber-300/80 mt-1">
+                This application cannot be approved or denied until the application fee is paid or a fee waiver is granted.
+              </p>
+              {onGrantFeeWaiver && (
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => onGrantFeeWaiver(application.id)}
+                  className="mt-2 border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+                  data-testid="button-grant-fee-waiver"
+                >
+                  <Gift className="w-3 h-3 mr-1" /> Grant Fee Waiver
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Fee Waiver Granted Badge */}
+          {hasWaiver && (
+            <div className="w-full p-2 rounded-lg bg-green-500/10 border border-green-500/30 mb-2">
+              <div className="flex items-center gap-2 text-green-400 text-sm">
+                <Gift className="w-4 h-4" />
+                <span>Fee Waiver Granted</span>
+              </div>
+            </div>
+          )}
+
           {showDenyInput ? (
             <div className="space-y-3">
               <div>
@@ -244,10 +289,21 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
           ) : (
             <div className="flex gap-3">
               <Button variant="outline" onClick={onClose} className="flex-1">Close</Button>
-              <Button variant="outline" onClick={handleDenyClick} className="flex-1 border-red-500/30 text-red-500">
+              <Button 
+                variant="outline" 
+                onClick={handleDenyClick} 
+                className="flex-1 border-red-500/30 text-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!canTakeAction}
+                data-testid="button-deny-application"
+              >
                 <XCircle className="w-4 h-4 mr-2" /> Deny
               </Button>
-              <Button onClick={() => setShowApproveInput(true)} className="flex-1 bg-green-600 hover:bg-green-700">
+              <Button 
+                onClick={() => setShowApproveInput(true)} 
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!canTakeAction}
+                data-testid="button-approve-application"
+              >
                 <CheckCircle className="w-4 h-4 mr-2" /> Approve
               </Button>
             </div>

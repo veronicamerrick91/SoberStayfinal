@@ -488,7 +488,7 @@ Thank you for being part of our recovery community!`
     // Fetch real data from database
     const fetchAdminData = async () => {
       try {
-        const [usersRes, listingsRes, promosRes, featuredRes, blogPostsRes, partnersRes, emailTemplatesRes, workflowsRes] = await Promise.all([
+        const [usersRes, listingsRes, promosRes, featuredRes, blogPostsRes, partnersRes, emailTemplatesRes, workflowsRes, applicationsRes] = await Promise.all([
           fetch('/api/admin/users', { credentials: 'include' }),
           fetch('/api/admin/listings', { credentials: 'include' }),
           fetch('/api/admin/promos', { credentials: 'include' }),
@@ -496,7 +496,8 @@ Thank you for being part of our recovery community!`
           fetch('/api/admin/blog-posts', { credentials: 'include' }),
           fetch('/api/admin/partners', { credentials: 'include' }),
           fetch('/api/admin/email-templates', { credentials: 'include' }),
-          fetch('/api/admin/workflows', { credentials: 'include' })
+          fetch('/api/admin/workflows', { credentials: 'include' }),
+          fetch('/api/admin/applications', { credentials: 'include' })
         ]);
         
         if (usersRes.ok) {
@@ -592,13 +593,38 @@ Thank you for being part of our recovery community!`
           setWorkflows(workflowsData);
         }
         
-        // Sample applications data
-        setApplications([
-          { id: "app-1", applicantName: "John Doe", tenantName: "John Doe", email: "john.doe@gmail.com", phone: "(555) 123-4567", propertyName: "Recovery First Residence", status: "Pending", submittedDate: "2024-12-05", completeness: 85, message: "I'm seeking a supportive environment for my recovery journey.", sobrietyDate: "2024-06-15", emergencyContact: "Jane Doe - (555) 987-6543" },
-          { id: "app-2", applicantName: "Sarah Miller", tenantName: "Sarah Miller", email: "sarah.miller@yahoo.com", phone: "(555) 234-5678", propertyName: "Hope House Women's Home", status: "Pending", submittedDate: "2024-12-04", completeness: 100, message: "Looking for a women-only home with a peaceful atmosphere.", sobrietyDate: "2024-03-20", emergencyContact: "Tom Miller - (555) 876-5432" },
-          { id: "app-3", applicantName: "Mike Johnson", tenantName: "Mike Johnson", email: "mike.johnson@outlook.com", phone: "(555) 345-6789", propertyName: "Serenity Living Co-Ed", status: "Approved", submittedDate: "2024-12-03", completeness: 100, message: "I need a place that supports my recovery goals.", sobrietyDate: "2024-01-10", emergencyContact: "Lisa Johnson - (555) 765-4321" },
-          { id: "app-4", applicantName: "Emily Wilson", tenantName: "Emily Wilson", email: "emily.wilson@gmail.com", phone: "(555) 456-7890", propertyName: "New Beginnings Faith Home", status: "Needs Info", submittedDate: "2024-12-02", completeness: 60, message: "Interested in faith-based recovery support.", sobrietyDate: "2024-09-01", emergencyContact: "David Wilson - (555) 654-3210" },
-        ]);
+        // Fetch real applications data
+        if (applicationsRes.ok) {
+          const applicationsData = await applicationsRes.json();
+          const formattedApplications = applicationsData.map((a: any) => {
+            // Calculate completeness based on filled fields
+            const appData = a.applicationData || {};
+            const filledFields = Object.values(appData).filter(v => v !== null && v !== undefined && v !== '').length;
+            const totalFields = Math.max(Object.keys(appData).length, 1);
+            const completeness = Math.round((filledFields / totalFields) * 100);
+            
+            return {
+              id: String(a.id),
+              applicantName: a.tenantName || "Unknown",
+              tenantName: a.tenantName || "Unknown",
+              email: a.tenantEmail || "",
+              phone: a.tenantPhone || "",
+              propertyName: a.propertyName || "Unknown Property",
+              status: a.status === 'draft' ? 'Draft' : 
+                      a.status === 'pending' ? 'Pending' : 
+                      a.status === 'approved' ? 'Approved' : 
+                      a.status === 'rejected' ? 'Denied' : a.status,
+              paymentStatus: a.paymentStatus || 'unpaid',
+              hasFeeWaiver: a.hasFeeWaiver || false,
+              submittedDate: a.createdAt,
+              completeness: completeness || 0,
+              applicationData: a.applicationData || {},
+              listingCity: a.listingCity,
+              listingState: a.listingState
+            };
+          });
+          setApplications(formattedApplications);
+        }
         
         // Sample messages data  
         setMessages([
@@ -953,14 +979,71 @@ Thank you for being part of our recovery community!`
     setShowApplicationModal(true);
   };
 
-  const handleApproveApplication = (appId: string) => {
-    setApplications(applications.map(a => a.id === appId ? { ...a, status: "Approved" } : a));
+  const handleApproveApplication = async (appId: string, moveInDate?: string) => {
+    try {
+      const res = await fetch(`/api/admin/applications/${appId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: 'approved', moveInDate })
+      });
+      
+      if (res.ok) {
+        setApplications(applications.map(a => a.id === appId ? { ...a, status: "Approved" } : a));
+        toast({ title: "Application Approved", description: "The application has been approved successfully." });
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to approve application", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to approve application", variant: "destructive" });
+    }
   };
 
-  const handleDenyApplication = (appId: string, reason: string) => {
-    setApplications(applications.map(a => a.id === appId ? { ...a, status: "Denied", denialReason: reason } : a));
-    setShowDenyApplicationModal(false);
-    setDenyApplicationReason("");
+  const handleDenyApplication = async (appId: string, reason: string) => {
+    try {
+      const res = await fetch(`/api/admin/applications/${appId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ status: 'rejected' })
+      });
+      
+      if (res.ok) {
+        setApplications(applications.map(a => a.id === appId ? { ...a, status: "Denied", denialReason: reason } : a));
+        toast({ title: "Application Denied", description: "The application has been denied." });
+        setShowDenyApplicationModal(false);
+        setDenyApplicationReason("");
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to deny application", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to deny application", variant: "destructive" });
+    }
+  };
+
+  const handleGrantFeeWaiver = async (appId: string) => {
+    try {
+      const res = await fetch(`/api/admin/applications/${appId}/fee-waiver`, {
+        method: 'PATCH',
+        credentials: 'include'
+      });
+      
+      if (res.ok) {
+        setApplications(applications.map(a => a.id === appId ? { ...a, hasFeeWaiver: true } : a));
+        // Also update the viewing application if it's the same one
+        if (viewingApplication && viewingApplication.id === appId) {
+          setViewingApplication({ ...viewingApplication, hasFeeWaiver: true });
+        }
+        toast({ title: "Fee Waiver Granted", description: "The application fee waiver has been granted. You can now approve or deny this application." });
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to grant fee waiver", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to grant fee waiver", variant: "destructive" });
+    }
   };
 
   const handleFlagListing = (listingId: string) => {
@@ -2111,6 +2194,12 @@ the actual document file stored on the server.
           <TabsContent value="applications" className="space-y-6">
             <div className="space-y-2">
               <h3 className="text-white font-semibold mb-3">Tenant Applications ({applications.length})</h3>
+              {applications.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <FileText className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                  <p>No applications submitted yet</p>
+                </div>
+              )}
               {applications.map((app) => (
                 <div key={app.id} className="p-3 rounded-lg cursor-pointer transition-all hover:bg-white/5 border-b border-border/50 last:border-0"
                 onClick={() => handleViewApplication(app)}>
@@ -2121,12 +2210,23 @@ the actual document file stored on the server.
                       <p className="text-xs text-muted-foreground">{app.email} • {app.phone}</p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                      <Badge className={
-                        app.status === "Approved" ? "bg-green-500/80" :
-                        app.status === "Denied" ? "bg-red-500/80" :
-                        app.status === "Needs Info" ? "bg-blue-500/80" :
-                        "bg-amber-500/80"
-                      }>{app.status}</Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge className={
+                          app.status === "Approved" ? "bg-green-500/80" :
+                          app.status === "Denied" ? "bg-red-500/80" :
+                          app.status === "Draft" ? "bg-gray-500/80" :
+                          app.status === "Needs Info" ? "bg-blue-500/80" :
+                          "bg-amber-500/80"
+                        }>{app.status}</Badge>
+                        {/* Payment Status Badge */}
+                        {app.hasFeeWaiver ? (
+                          <Badge className="bg-purple-500/20 text-purple-400 text-xs">Fee Waived</Badge>
+                        ) : app.paymentStatus === "paid" ? (
+                          <Badge className="bg-green-500/20 text-green-400 text-xs">Paid</Badge>
+                        ) : (
+                          <Badge className="bg-amber-500/20 text-amber-400 text-xs">Unpaid</Badge>
+                        )}
+                      </div>
                       <Badge variant="outline" className="text-xs border-primary/30 text-primary">{app.completeness}% Complete</Badge>
                     </div>
                   </div>
@@ -4543,6 +4643,7 @@ the actual document file stored on the server.
             application={viewingApplication}
             onApprove={handleApproveApplication}
             onDeny={handleDenyApplication}
+            onGrantFeeWaiver={handleGrantFeeWaiver}
           />
         )}
 
