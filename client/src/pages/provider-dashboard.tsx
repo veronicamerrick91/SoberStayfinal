@@ -1114,8 +1114,8 @@ function ProviderDashboardContent() {
 
             <h3 className="text-xl font-bold text-white mt-8 mb-4">Recent Applications</h3>
             <Card className="bg-card border-border overflow-hidden">
-              <div className="p-0">
-                <table className="w-full text-left text-sm">
+              <div className="p-0 overflow-x-auto">
+                <table className="w-full text-left text-sm min-w-[600px]">
                   <thead className="bg-white/5 text-muted-foreground border-b border-border">
                     <tr>
                       <th className="p-4 font-medium">Applicant</th>
@@ -1314,8 +1314,8 @@ function ProviderDashboardContent() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                   <div className="p-0 overflow-hidden rounded-md border border-border">
-                    <table className="w-full text-left text-sm">
+                   <div className="p-0 overflow-x-auto rounded-md border border-border">
+                    <table className="w-full text-left text-sm min-w-[700px]">
                       <thead className="bg-white/5 text-muted-foreground border-b border-border">
                         <tr>
                           <th className="p-4 font-medium">Applicant</th>
