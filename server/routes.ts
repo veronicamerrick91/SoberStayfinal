@@ -2299,7 +2299,7 @@ Disallow: /auth/
       return res.status(401).json({ error: "Unauthorized" });
     }
     try {
-      const { tenantId, docType, fileUrl, customName } = req.body;
+      const { tenantId, docType, fileUrl, customName, isMultiple, fileName } = req.body;
       
       const validDocTypes = [
         "intake_packet", "government_id", "insurance_card", "emergency_contacts",
@@ -2320,7 +2320,7 @@ Disallow: /auth/
       }
       
       const profile = await storage.getProviderProfile(user.id);
-      const existingDocs = (profile?.residentDocuments as Record<string, Record<string, string>>) || {};
+      const existingDocs = (profile?.residentDocuments as Record<string, Record<string, any>>) || {};
       
       if (!existingDocs[tenantId]) {
         existingDocs[tenantId] = {};
@@ -2328,7 +2328,19 @@ Disallow: /auth/
       
       // For custom documents, use customName as the key
       const docKey = docType === "custom" && customName ? `custom_${Date.now()}` : docType;
-      existingDocs[tenantId][docKey] = fileUrl;
+      
+      // Handle multiple upload types (drug_test_history, incident_reports)
+      if (isMultiple) {
+        const existingArray = Array.isArray(existingDocs[tenantId][docKey]) ? existingDocs[tenantId][docKey] : [];
+        const newEntry = { 
+          url: fileUrl, 
+          date: new Date().toLocaleDateString(), 
+          name: fileName || docType 
+        };
+        existingDocs[tenantId][docKey] = [...existingArray, newEntry];
+      } else {
+        existingDocs[tenantId][docKey] = fileUrl;
+      }
       
       // Store custom name in a separate metadata key if provided
       if (docType === "custom" && customName) {
@@ -2353,19 +2365,28 @@ Disallow: /auth/
       return res.status(401).json({ error: "Unauthorized" });
     }
     try {
-      const { tenantId, docType } = req.body;
+      const { tenantId, docType, index } = req.body;
       
       if (!tenantId || !docType) {
         return res.status(400).json({ error: "Tenant ID and document type are required" });
       }
       
       const profile = await storage.getProviderProfile(user.id);
-      const existingDocs = (profile?.residentDocuments as Record<string, Record<string, string>>) || {};
+      const existingDocs = (profile?.residentDocuments as Record<string, Record<string, any>>) || {};
       
       if (existingDocs[tenantId]) {
-        delete existingDocs[tenantId][docType];
-        // Also delete custom name if exists
-        delete existingDocs[tenantId][`${docType}_name`];
+        // Handle removal from array (for multiple upload types)
+        if (typeof index === 'number' && Array.isArray(existingDocs[tenantId][docType])) {
+          existingDocs[tenantId][docType] = existingDocs[tenantId][docType].filter((_: any, i: number) => i !== index);
+          // Clean up empty arrays
+          if (existingDocs[tenantId][docType].length === 0) {
+            delete existingDocs[tenantId][docType];
+          }
+        } else {
+          delete existingDocs[tenantId][docType];
+          // Also delete custom name if exists
+          delete existingDocs[tenantId][`${docType}_name`];
+        }
       }
       
       await storage.createOrUpdateProviderProfile(user.id, { 

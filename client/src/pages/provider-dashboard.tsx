@@ -386,7 +386,7 @@ function ProviderDashboardContent() {
   const [verificationDocs, setVerificationDocs] = useState<Record<string, string | null>>({});
   
   // Resident document uploads
-  const [residentDocs, setResidentDocs] = useState<Record<string, Record<string, string>>>({});
+  const [residentDocs, setResidentDocs] = useState<Record<string, Record<string, any>>>({});
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
   const [customDocName, setCustomDocName] = useState("");
   const [showCustomDocInput, setShowCustomDocInput] = useState(false);
@@ -1788,75 +1788,166 @@ function ProviderDashboardContent() {
                     
                     <div className="space-y-3">
                       {[
-                        { key: "intake_packet", name: "Intake Packet", icon: "📋", description: "Signed intake forms and agreements" },
-                        { key: "government_id", name: "Government ID", icon: "🪪", description: "Driver's license, state ID, or passport" },
-                        { key: "insurance_card", name: "Insurance Card", icon: "💳", description: "Health insurance information" },
-                        { key: "emergency_contacts", name: "Emergency Contacts", icon: "📞", description: "Emergency contact information form" },
-                        { key: "release_of_info", name: "Release of Information", icon: "📝", description: "Signed ROI authorization" },
-                        { key: "treatment_plan", name: "Treatment Plan", icon: "📊", description: "Recovery treatment plan documentation" },
-                        { key: "sobriety_agreement", name: "Sobriety Agreement", icon: "✍️", description: "Signed sobriety commitment agreement" },
-                        { key: "drug_test_history", name: "Drug Test History", icon: "🧪", description: "UA/drug screening records" },
-                        { key: "financial_agreement", name: "Financial Agreement", icon: "💰", description: "Payment plan and financial agreements" },
-                        { key: "incident_reports", name: "Incident Reports", icon: "⚠️", description: "Any incident documentation" }
+                        { key: "intake_packet", name: "Intake Packet", icon: "📋", description: "Signed intake forms and agreements", multiple: false },
+                        { key: "government_id", name: "Government ID", icon: "🪪", description: "Driver's license, state ID, or passport", multiple: false },
+                        { key: "insurance_card", name: "Insurance Card", icon: "💳", description: "Health insurance information", multiple: false },
+                        { key: "emergency_contacts", name: "Emergency Contacts", icon: "📞", description: "Emergency contact information form", multiple: false },
+                        { key: "release_of_info", name: "Release of Information", icon: "📝", description: "Signed ROI authorization", multiple: false },
+                        { key: "treatment_plan", name: "Treatment Plan", icon: "📊", description: "Recovery treatment plan documentation", multiple: false },
+                        { key: "sobriety_agreement", name: "Sobriety Agreement", icon: "✍️", description: "Signed sobriety commitment agreement", multiple: false },
+                        { key: "drug_test_history", name: "Drug Test History", icon: "🧪", description: "UA/drug screening records", multiple: true },
+                        { key: "financial_agreement", name: "Financial Agreement", icon: "💰", description: "Payment plan and financial agreements", multiple: false },
+                        { key: "incident_reports", name: "Incident Reports", icon: "⚠️", description: "Any incident documentation", multiple: true }
                       ].map((doc) => {
                         const tenantDocs = residentDocs[selectedTenantId] || {};
-                        const isUploaded = !!tenantDocs[doc.key];
+                        const docData = tenantDocs[doc.key];
+                        const isMultiple = doc.multiple;
+                        const uploads = isMultiple && Array.isArray(docData) ? docData : (docData ? [{ url: docData, date: 'Unknown' }] : []);
+                        const isUploaded = uploads.length > 0;
+                        
                         return (
-                          <div key={doc.key} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border hover:border-primary/50 transition-colors">
-                            <div className="flex items-center gap-3">
-                              <span className="text-2xl">{doc.icon}</span>
-                              <div>
-                                <p className="text-white font-medium">{doc.name}</p>
-                                <p className="text-xs text-muted-foreground">{doc.description}</p>
-                                <p className={`text-xs mt-1 ${isUploaded ? 'text-primary' : 'text-muted-foreground'}`}>
-                                  {isUploaded ? '✓ Uploaded' : 'Pending'}
-                                </p>
+                          <div key={doc.key} className="p-4 rounded-lg bg-white/5 border border-border hover:border-primary/50 transition-colors">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <span className="text-2xl">{doc.icon}</span>
+                                <div>
+                                  <p className="text-white font-medium">{doc.name}</p>
+                                  <p className="text-xs text-muted-foreground">{doc.description}</p>
+                                  <p className={`text-xs mt-1 ${isUploaded ? 'text-primary' : 'text-muted-foreground'}`}>
+                                    {isUploaded ? (isMultiple ? `${uploads.length} file(s) uploaded` : '✓ Uploaded') : 'Pending'}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                            <div className="relative">
-                              <input 
-                                type="file" 
-                                accept=".pdf,.jpg,.jpeg,.png"
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                onChange={async (e) => {
-                                  if (e.target.files && e.target.files.length > 0) {
-                                    const file = e.target.files[0];
-                                    if (file.size > 5 * 1024 * 1024) {
-                                      alert("File is too large. Maximum size is 5MB.");
-                                      return;
-                                    }
-                                    const reader = new FileReader();
-                                    reader.onload = async () => {
-                                      const fileUrl = reader.result as string;
-                                      try {
-                                        const res = await fetch('/api/provider/resident-doc', {
-                                          method: 'POST',
-                                          credentials: 'include',
-                                          headers: { 'Content-Type': 'application/json' },
-                                          body: JSON.stringify({ tenantId: selectedTenantId, docType: doc.key, fileUrl })
-                                        });
-                                        if (res.ok) {
-                                          setResidentDocs(prev => ({
-                                            ...prev,
-                                            [selectedTenantId]: { ...(prev[selectedTenantId] || {}), [doc.key]: fileUrl }
-                                          }));
-                                        } else {
+                              <div className="relative">
+                                <input 
+                                  type="file" 
+                                  accept=".pdf,.jpg,.jpeg,.png"
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                  onChange={async (e) => {
+                                    if (e.target.files && e.target.files.length > 0) {
+                                      const file = e.target.files[0];
+                                      if (file.size > 5 * 1024 * 1024) {
+                                        alert("File is too large. Maximum size is 5MB.");
+                                        return;
+                                      }
+                                      const reader = new FileReader();
+                                      reader.onload = async () => {
+                                        const fileUrl = reader.result as string;
+                                        try {
+                                          const res = await fetch('/api/provider/resident-doc', {
+                                            method: 'POST',
+                                            credentials: 'include',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ 
+                                              tenantId: selectedTenantId, 
+                                              docType: doc.key, 
+                                              fileUrl,
+                                              isMultiple: doc.multiple,
+                                              fileName: file.name
+                                            })
+                                          });
+                                          if (res.ok) {
+                                            if (doc.multiple) {
+                                              const newEntry = { url: fileUrl, date: new Date().toLocaleDateString(), name: file.name };
+                                              setResidentDocs(prev => ({
+                                                ...prev,
+                                                [selectedTenantId]: { 
+                                                  ...(prev[selectedTenantId] || {}), 
+                                                  [doc.key]: [...(Array.isArray(prev[selectedTenantId]?.[doc.key]) ? prev[selectedTenantId][doc.key] : []), newEntry]
+                                                }
+                                              }));
+                                            } else {
+                                              setResidentDocs(prev => ({
+                                                ...prev,
+                                                [selectedTenantId]: { ...(prev[selectedTenantId] || {}), [doc.key]: fileUrl }
+                                              }));
+                                            }
+                                          } else {
+                                            alert("Failed to upload document");
+                                          }
+                                        } catch (err) {
+                                          console.error("Upload error:", err);
                                           alert("Failed to upload document");
                                         }
-                                      } catch (err) {
-                                        console.error("Upload error:", err);
-                                        alert("Failed to upload document");
-                                      }
-                                    };
-                                    reader.readAsDataURL(file);
-                                  }
-                                }}
-                                data-testid={`input-upload-resident-${doc.key}`}
-                              />
-                              <Button size="sm" className="gap-2" variant={isUploaded ? "outline" : "default"}>
-                                <Upload className="w-4 h-4" /> {isUploaded ? "Update" : "Upload"}
-                              </Button>
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }
+                                  }}
+                                  data-testid={`input-upload-resident-${doc.key}`}
+                                />
+                                <Button size="sm" className="gap-2" variant={isUploaded && !isMultiple ? "outline" : "default"}>
+                                  <Upload className="w-4 h-4" /> {isMultiple ? "Add" : (isUploaded ? "Update" : "Upload")}
+                                </Button>
+                              </div>
                             </div>
+                            
+                            {isUploaded && (
+                              <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
+                                {uploads.map((upload: any, idx: number) => (
+                                  <div key={idx} className="flex items-center justify-between text-sm bg-white/5 rounded px-3 py-2">
+                                    <div className="flex items-center gap-2 text-gray-300 truncate flex-1">
+                                      <FileText className="w-4 h-4 flex-shrink-0" />
+                                      <span className="truncate">{upload.name || doc.name}</span>
+                                      {upload.date && upload.date !== 'Unknown' && (
+                                        <span className="text-xs text-muted-foreground">({upload.date})</span>
+                                      )}
+                                    </div>
+                                    <div className="flex gap-1 flex-shrink-0">
+                                      <Button 
+                                        size="sm" 
+                                        variant="ghost" 
+                                        className="text-primary hover:bg-primary/10 h-7 px-2"
+                                        onClick={() => window.open(upload.url || upload, '_blank')}
+                                        data-testid={`button-view-${doc.key}-${idx}`}
+                                      >
+                                        <Eye className="w-3 h-3 mr-1" /> View
+                                      </Button>
+                                      <Button 
+                                        size="sm" 
+                                        variant="ghost" 
+                                        className="text-red-400 hover:bg-red-400/10 h-7 px-2"
+                                        onClick={async () => {
+                                          try {
+                                            await fetch('/api/provider/resident-doc/remove', {
+                                              method: 'POST',
+                                              credentials: 'include',
+                                              headers: { 'Content-Type': 'application/json' },
+                                              body: JSON.stringify({ 
+                                                tenantId: selectedTenantId, 
+                                                docType: doc.key,
+                                                index: isMultiple ? idx : undefined
+                                              })
+                                            });
+                                            if (isMultiple) {
+                                              setResidentDocs(prev => {
+                                                const updated = { ...prev };
+                                                if (updated[selectedTenantId] && Array.isArray(updated[selectedTenantId][doc.key])) {
+                                                  updated[selectedTenantId][doc.key] = updated[selectedTenantId][doc.key].filter((_: any, i: number) => i !== idx);
+                                                }
+                                                return updated;
+                                              });
+                                            } else {
+                                              setResidentDocs(prev => {
+                                                const updated = { ...prev };
+                                                if (updated[selectedTenantId]) {
+                                                  delete updated[selectedTenantId][doc.key];
+                                                }
+                                                return updated;
+                                              });
+                                            }
+                                          } catch (err) {
+                                            console.error("Remove error:", err);
+                                          }
+                                        }}
+                                        data-testid={`button-remove-${doc.key}-${idx}`}
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         );
                       })}
