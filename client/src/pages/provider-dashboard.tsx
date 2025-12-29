@@ -10,7 +10,7 @@ import {
   Plus, Check, X, MoreHorizontal, Search, ChevronRight,
   Bed, FileText, Settings, Lock, Mail, Phone, Upload, Shield, ToggleRight,
   Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video, Eye, CreditCard,
-  ShieldCheck, Loader2, RotateCcw, CheckCircle
+  ShieldCheck, Loader2, RotateCcw, CheckCircle, Download
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -1899,6 +1899,7 @@ function ProviderDashboardContent() {
                                         className="text-primary hover:bg-primary/10 h-7 px-2"
                                         onClick={() => {
                                           const dataUrl = upload.url || upload;
+                                          const fileName = upload.name || `${doc.name}.pdf`;
                                           if (dataUrl.startsWith('data:')) {
                                             try {
                                               const [header, base64] = dataUrl.split(',');
@@ -1912,10 +1913,16 @@ function ProviderDashboardContent() {
                                               }
                                               const blob = new Blob([ab], { type: mimeType });
                                               const blobUrl = URL.createObjectURL(blob);
-                                              window.open(blobUrl, '_blank');
+                                              const link = document.createElement('a');
+                                              link.href = blobUrl;
+                                              link.download = fileName;
+                                              document.body.appendChild(link);
+                                              link.click();
+                                              document.body.removeChild(link);
+                                              setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
                                             } catch (e) {
-                                              console.error('Error opening document:', e);
-                                              alert('Unable to open document. Try downloading instead.');
+                                              console.error('Error downloading document:', e);
+                                              alert('Unable to download document.');
                                             }
                                           } else {
                                             window.open(dataUrl, '_blank');
@@ -1923,7 +1930,7 @@ function ProviderDashboardContent() {
                                         }}
                                         data-testid={`button-view-${doc.key}-${idx}`}
                                       >
-                                        <Eye className="w-3 h-3 mr-1" /> View
+                                        <Download className="w-3 h-3 mr-1" /> Download
                                       </Button>
                                       <Button 
                                         size="sm" 
@@ -1997,6 +2004,7 @@ function ProviderDashboardContent() {
                                   className="text-primary hover:bg-primary/10"
                                   onClick={() => {
                                     const dataUrl = url as string;
+                                    const fileName = customName || 'document';
                                     if (dataUrl.startsWith('data:')) {
                                       try {
                                         const [header, base64] = dataUrl.split(',');
@@ -2010,10 +2018,16 @@ function ProviderDashboardContent() {
                                         }
                                         const blob = new Blob([ab], { type: mimeType });
                                         const blobUrl = URL.createObjectURL(blob);
-                                        window.open(blobUrl, '_blank');
+                                        const link = document.createElement('a');
+                                        link.href = blobUrl;
+                                        link.download = fileName;
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                        setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
                                       } catch (e) {
-                                        console.error('Error opening document:', e);
-                                        alert('Unable to open document.');
+                                        console.error('Error downloading document:', e);
+                                        alert('Unable to download document.');
                                       }
                                     } else {
                                       window.open(dataUrl, '_blank');
@@ -2021,7 +2035,7 @@ function ProviderDashboardContent() {
                                   }}
                                   data-testid={`button-view-${docKey}`}
                                 >
-                                  View
+                                  <Download className="w-3 h-3 mr-1" /> Download
                                 </Button>
                                 <Button 
                                   size="sm" 
