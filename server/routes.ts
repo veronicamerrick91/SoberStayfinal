@@ -688,7 +688,44 @@ Disallow: /auth/
       return res.status(403).json({ error: "Admin access required" });
     }
     const listings = await storage.getAllListings();
-    res.json(listings);
+    
+    // Helper to normalize JSON fields that might be strings
+    const normalizeArray = (val: any): string[] => {
+      if (Array.isArray(val)) return val;
+      if (typeof val === 'string') {
+        try {
+          const parsed = JSON.parse(val);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+      return [];
+    };
+    
+    // Cache provider verification status to avoid repeated DB calls
+    const providerVerificationCache = new Map<number, boolean>();
+    
+    // Enrich listings with provider verification status and normalize data
+    const enrichedListings = await Promise.all(listings.map(async (listing) => {
+      let providerVerified = providerVerificationCache.get(listing.providerId);
+      if (providerVerified === undefined) {
+        const providerProfile = await storage.getProviderProfile(listing.providerId);
+        providerVerified = providerProfile?.documentsVerified || false;
+        providerVerificationCache.set(listing.providerId, providerVerified);
+      }
+      
+      return {
+        ...listing,
+        amenities: normalizeArray(listing.amenities),
+        inclusions: normalizeArray(listing.inclusions),
+        houseRules: normalizeArray(listing.houseRules),
+        photos: normalizeArray(listing.photos),
+        providerVerified
+      };
+    }));
+    
+    res.json(enrichedListings);
   });
 
   app.patch("/api/admin/listings/:id/status", async (req, res) => {
