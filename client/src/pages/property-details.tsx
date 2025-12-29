@@ -334,33 +334,50 @@ export default function PropertyDetails() {
             </div>
 
             {/* Nearby Services */}
-            {nearbyServices?.configured && nearbyServices.places.length > 0 && (
-              <div>
-                <h3 className="text-lg font-bold text-white mb-6">Nearby Services & Amenities</h3>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {nearbyServices.places.map((place, i) => (
-                    <div key={i} className="flex items-start gap-3 text-sm text-gray-300 p-3 rounded-lg bg-card/30 border border-border/50">
-                      <div className="mt-0.5">
-                        {place.type === 'Hospitals' && <Stethoscope className="w-5 h-5 text-red-400" />}
-                        {place.type === 'Pharmacies' && <Stethoscope className="w-5 h-5 text-green-400" />}
-                        {place.type === 'Fitness Centers' && <Dumbbell className="w-5 h-5 text-orange-400" />}
-                        {place.type === 'Parks' && <MapPin className="w-5 h-5 text-emerald-400" />}
-                        {place.type === 'Public Transit' && <Bus className="w-5 h-5 text-blue-400" />}
-                        {place.type === 'Grocery Stores' && <ShoppingCart className="w-5 h-5 text-yellow-400" />}
-                        {place.type === 'Places of Worship' && <Users className="w-5 h-5 text-purple-400" />}
-                        {place.type === 'Libraries' && <Home className="w-5 h-5 text-cyan-400" />}
-                        {place.type === 'Cafes' && <Utensils className="w-5 h-5 text-amber-400" />}
-                        {!['Hospitals', 'Pharmacies', 'Fitness Centers', 'Parks', 'Public Transit', 'Grocery Stores', 'Places of Worship', 'Libraries', 'Cafes'].includes(place.type) && <MapPin className="w-5 h-5 text-primary" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-white truncate">{place.name}</div>
-                        <div className="text-xs text-muted-foreground">{place.type} - {place.distance}</div>
-                      </div>
-                    </div>
-                  ))}
+            {nearbyServices?.configured && nearbyServices.places.length > 0 && (() => {
+              const grouped = nearbyServices.places.reduce((acc, place) => {
+                if (!acc[place.type]) acc[place.type] = [];
+                acc[place.type].push(place);
+                return acc;
+              }, {} as Record<string, typeof nearbyServices.places>);
+              
+              const typeIcons: Record<string, { icon: React.ReactNode; color: string }> = {
+                'Hospitals': { icon: <Stethoscope className="w-4 h-4" />, color: 'text-red-400' },
+                'Pharmacies': { icon: <Stethoscope className="w-4 h-4" />, color: 'text-green-400' },
+                'Fitness Centers': { icon: <Dumbbell className="w-4 h-4" />, color: 'text-orange-400' },
+                'Parks': { icon: <MapPin className="w-4 h-4" />, color: 'text-emerald-400' },
+                'Public Transit': { icon: <Bus className="w-4 h-4" />, color: 'text-blue-400' },
+                'Grocery Stores': { icon: <ShoppingCart className="w-4 h-4" />, color: 'text-yellow-400' },
+                'Places of Worship': { icon: <Users className="w-4 h-4" />, color: 'text-purple-400' },
+                'Libraries': { icon: <Home className="w-4 h-4" />, color: 'text-cyan-400' },
+              };
+
+              return (
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-4">Nearby Services & Amenities</h3>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(grouped).map(([type, places]) => {
+                      const iconConfig = typeIcons[type] || { icon: <MapPin className="w-4 h-4" />, color: 'text-primary' };
+                      return (
+                        <div key={type} className="p-3 rounded-lg bg-card/30 border border-border/50">
+                          <div className={`flex items-center gap-2 mb-2 ${iconConfig.color}`}>
+                            {iconConfig.icon}
+                            <span className="font-medium text-white text-sm">{type}</span>
+                          </div>
+                          <div className="space-y-1">
+                            {places.map((place, i) => (
+                              <div key={i} className="text-xs text-gray-400 truncate">
+                                {place.name} <span className="text-muted-foreground">({place.distance})</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
           </div>
 
