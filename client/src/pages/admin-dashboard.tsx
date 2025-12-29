@@ -3156,8 +3156,8 @@ the actual document file stored on the server.
                 <CardContent className="pt-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Active Campaigns</p>
-                      <h3 className="text-3xl font-bold text-white">3</h3>
+                      <p className="text-sm font-medium text-muted-foreground">Campaigns Sent</p>
+                      <h3 className="text-3xl font-bold text-white">{campaigns.length}</h3>
                     </div>
                     <div className="p-2 bg-primary/10 rounded-lg">
                       <Mail className="w-5 h-5 text-primary" />
@@ -3169,8 +3169,8 @@ the actual document file stored on the server.
                 <CardContent className="pt-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Email Open Rate</p>
-                      <h3 className="text-3xl font-bold text-white">34%</h3>
+                      <p className="text-sm font-medium text-muted-foreground">Total Recipients</p>
+                      <h3 className="text-3xl font-bold text-white">{campaigns.reduce((sum, c) => sum + (c.recipientCount || 0), 0)}</h3>
                     </div>
                     <div className="p-2 bg-green-500/10 rounded-lg">
                       <TrendingUp className="w-5 h-5 text-green-500" />
@@ -3182,8 +3182,8 @@ the actual document file stored on the server.
                 <CardContent className="pt-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Lead Conversion</p>
-                      <h3 className="text-3xl font-bold text-white">12.5%</h3>
+                      <p className="text-sm font-medium text-muted-foreground">Total Users</p>
+                      <h3 className="text-3xl font-bold text-white">{users.length}</h3>
                     </div>
                     <div className="p-2 bg-blue-500/10 rounded-lg">
                       <Users className="w-5 h-5 text-blue-500" />
