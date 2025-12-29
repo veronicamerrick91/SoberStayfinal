@@ -1903,15 +1903,22 @@ function ProviderDashboardContent() {
                                       )}
                                     </div>
                                     <div className="flex gap-1 flex-shrink-0">
-                                      <a 
-                                        href={upload.url || upload}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                      <button 
+                                        type="button"
+                                        onClick={() => {
+                                          const dataUrl = upload.url || upload;
+                                          if (dataUrl && typeof dataUrl === 'string') {
+                                            const newWindow = window.open();
+                                            if (newWindow) {
+                                              newWindow.document.write(`<html><body style="margin:0"><iframe src="${dataUrl}" style="width:100%;height:100vh;border:none"></iframe></body></html>`);
+                                            }
+                                          }
+                                        }}
                                         className="inline-flex items-center text-primary hover:bg-primary/10 h-7 px-2 rounded text-sm cursor-pointer"
                                         data-testid={`button-view-${doc.key}-${idx}`}
                                       >
                                         <Eye className="w-3 h-3 mr-1" /> View
-                                      </a>
+                                      </button>
                                       <button 
                                         type="button"
                                         className="inline-flex items-center text-red-400 hover:bg-red-400/10 h-7 px-2 rounded"
