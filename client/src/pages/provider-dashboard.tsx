@@ -1898,12 +1898,15 @@ function ProviderDashboardContent() {
                                         size="sm" 
                                         variant="ghost" 
                                         className="text-primary hover:bg-primary/10 h-7 px-2"
-                                        onClick={() => {
-                                          console.log('View button clicked', { upload, doc });
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
                                           const dataUrl = upload.url || upload;
-                                          const fileName = upload.name || `${doc.name}.pdf`;
-                                          console.log('Data URL type:', typeof dataUrl, 'length:', dataUrl?.length, 'starts with:', dataUrl?.substring(0, 50));
-                                          downloadDocument(dataUrl, fileName);
+                                          if (dataUrl) {
+                                            window.open(dataUrl, '_blank');
+                                          } else {
+                                            alert('No document URL found');
+                                          }
                                         }}
                                         data-testid={`button-view-${doc.key}-${idx}`}
                                       >
@@ -1979,10 +1982,15 @@ function ProviderDashboardContent() {
                                   size="sm" 
                                   variant="ghost" 
                                   className="text-primary hover:bg-primary/10"
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                     const dataUrl = url as string;
-                                    const fileName = customName || 'document';
-                                    downloadDocument(dataUrl, fileName);
+                                    if (dataUrl) {
+                                      window.open(dataUrl, '_blank');
+                                    } else {
+                                      alert('No document URL found');
+                                    }
                                   }}
                                   data-testid={`button-view-${docKey}`}
                                 >
