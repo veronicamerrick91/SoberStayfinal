@@ -2522,12 +2522,15 @@ Disallow: /auth/
       // Enrich with tenant and listing info
       const enrichedApplications = await Promise.all(applications.map(async (app) => {
         const tenant = await storage.getUser(app.tenantId);
+        const tenantProfile = await storage.getTenantProfile(app.tenantId);
         const listing = await storage.getListing(app.listingId);
         return {
           ...app,
           tenantName: tenant?.name || 'Unknown',
           tenantEmail: tenant?.email || '',
           propertyName: listing?.propertyName || 'Unknown Property',
+          profilePhotoUrl: tenantProfile?.profilePhotoUrl || undefined,
+          idPhotoUrl: tenantProfile?.idPhotoUrl || undefined,
         };
       }));
       
