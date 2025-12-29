@@ -107,7 +107,9 @@ export const applications = pgTable("applications", {
   tenantId: integer("tenant_id").notNull().references(() => users.id),
   listingId: integer("listing_id").notNull().references(() => listings.id),
   applicationData: jsonb("data").$type<Record<string, any>>(),
-  status: text("status").default("pending").notNull(), // pending, approved, rejected
+  status: text("status").default("draft").notNull(), // draft, pending, approved, rejected
+  paymentStatus: text("payment_status").default("unpaid").notNull(), // unpaid, paid
+  hasFeeWaiver: boolean("has_fee_waiver").default(false).notNull(),
   moveInDate: timestamp("move_in_date"),
   moveInReminderSent: boolean("move_in_reminder_sent").default(false),
   updatedAt: timestamp("updated_at").defaultNow(),
