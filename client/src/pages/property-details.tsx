@@ -342,35 +342,28 @@ export default function PropertyDetails() {
               }, {} as Record<string, typeof nearbyServices.places>);
               
               const typeIcons: Record<string, { icon: React.ReactNode; color: string }> = {
-                'Hospitals': { icon: <Stethoscope className="w-4 h-4" />, color: 'text-red-400' },
-                'Pharmacies': { icon: <Stethoscope className="w-4 h-4" />, color: 'text-green-400' },
-                'Fitness Centers': { icon: <Dumbbell className="w-4 h-4" />, color: 'text-orange-400' },
-                'Parks': { icon: <MapPin className="w-4 h-4" />, color: 'text-emerald-400' },
-                'Public Transit': { icon: <Bus className="w-4 h-4" />, color: 'text-blue-400' },
-                'Grocery Stores': { icon: <ShoppingCart className="w-4 h-4" />, color: 'text-yellow-400' },
-                'Places of Worship': { icon: <Users className="w-4 h-4" />, color: 'text-purple-400' },
-                'Libraries': { icon: <Home className="w-4 h-4" />, color: 'text-cyan-400' },
+                'Hospitals': { icon: <Stethoscope className="w-3 h-3" />, color: 'text-red-400 bg-red-400/10' },
+                'Pharmacies': { icon: <Stethoscope className="w-3 h-3" />, color: 'text-green-400 bg-green-400/10' },
+                'Fitness Centers': { icon: <Dumbbell className="w-3 h-3" />, color: 'text-orange-400 bg-orange-400/10' },
+                'Parks': { icon: <MapPin className="w-3 h-3" />, color: 'text-emerald-400 bg-emerald-400/10' },
+                'Public Transit': { icon: <Bus className="w-3 h-3" />, color: 'text-blue-400 bg-blue-400/10' },
+                'Grocery Stores': { icon: <ShoppingCart className="w-3 h-3" />, color: 'text-yellow-400 bg-yellow-400/10' },
+                'Places of Worship': { icon: <Users className="w-3 h-3" />, color: 'text-purple-400 bg-purple-400/10' },
+                'Libraries': { icon: <Home className="w-3 h-3" />, color: 'text-cyan-400 bg-cyan-400/10' },
               };
 
               return (
                 <div>
-                  <h3 className="text-lg font-bold text-white mb-4">Nearby Services & Amenities</h3>
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <h3 className="text-lg font-bold text-white mb-3">Nearby Services & Amenities</h3>
+                  <div className="flex flex-wrap gap-2">
                     {Object.entries(grouped).map(([type, places]) => {
-                      const iconConfig = typeIcons[type] || { icon: <MapPin className="w-4 h-4" />, color: 'text-primary' };
+                      const iconConfig = typeIcons[type] || { icon: <MapPin className="w-3 h-3" />, color: 'text-primary bg-primary/10' };
+                      const closestPlace = places[0];
                       return (
-                        <div key={type} className="p-3 rounded-lg bg-card/30 border border-border/50">
-                          <div className={`flex items-center gap-2 mb-2 ${iconConfig.color}`}>
-                            {iconConfig.icon}
-                            <span className="font-medium text-white text-sm">{type}</span>
-                          </div>
-                          <div className="space-y-1">
-                            {places.map((place, i) => (
-                              <div key={i} className="text-xs text-gray-400 truncate">
-                                {place.name} <span className="text-muted-foreground">({place.distance})</span>
-                              </div>
-                            ))}
-                          </div>
+                        <div key={type} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs ${iconConfig.color}`}>
+                          {iconConfig.icon}
+                          <span>{type}</span>
+                          <span className="opacity-60">({closestPlace.distance})</span>
                         </div>
                       );
                     })}
