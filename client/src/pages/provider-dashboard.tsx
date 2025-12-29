@@ -1900,13 +1900,23 @@ function ProviderDashboardContent() {
                                         onClick={() => {
                                           const dataUrl = upload.url || upload;
                                           if (dataUrl.startsWith('data:')) {
-                                            const link = document.createElement('a');
-                                            link.href = dataUrl;
-                                            link.download = upload.name || `${doc.name}.pdf`;
-                                            link.target = '_blank';
-                                            document.body.appendChild(link);
-                                            link.click();
-                                            document.body.removeChild(link);
+                                            try {
+                                              const [header, base64] = dataUrl.split(',');
+                                              const mimeMatch = header.match(/data:([^;]+)/);
+                                              const mimeType = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+                                              const byteString = atob(base64);
+                                              const ab = new ArrayBuffer(byteString.length);
+                                              const ia = new Uint8Array(ab);
+                                              for (let i = 0; i < byteString.length; i++) {
+                                                ia[i] = byteString.charCodeAt(i);
+                                              }
+                                              const blob = new Blob([ab], { type: mimeType });
+                                              const blobUrl = URL.createObjectURL(blob);
+                                              window.open(blobUrl, '_blank');
+                                            } catch (e) {
+                                              console.error('Error opening document:', e);
+                                              alert('Unable to open document. Try downloading instead.');
+                                            }
                                           } else {
                                             window.open(dataUrl, '_blank');
                                           }
@@ -1988,13 +1998,23 @@ function ProviderDashboardContent() {
                                   onClick={() => {
                                     const dataUrl = url as string;
                                     if (dataUrl.startsWith('data:')) {
-                                      const link = document.createElement('a');
-                                      link.href = dataUrl;
-                                      link.download = customName || 'document';
-                                      link.target = '_blank';
-                                      document.body.appendChild(link);
-                                      link.click();
-                                      document.body.removeChild(link);
+                                      try {
+                                        const [header, base64] = dataUrl.split(',');
+                                        const mimeMatch = header.match(/data:([^;]+)/);
+                                        const mimeType = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+                                        const byteString = atob(base64);
+                                        const ab = new ArrayBuffer(byteString.length);
+                                        const ia = new Uint8Array(ab);
+                                        for (let i = 0; i < byteString.length; i++) {
+                                          ia[i] = byteString.charCodeAt(i);
+                                        }
+                                        const blob = new Blob([ab], { type: mimeType });
+                                        const blobUrl = URL.createObjectURL(blob);
+                                        window.open(blobUrl, '_blank');
+                                      } catch (e) {
+                                        console.error('Error opening document:', e);
+                                        alert('Unable to open document.');
+                                      }
                                     } else {
                                       window.open(dataUrl, '_blank');
                                     }
