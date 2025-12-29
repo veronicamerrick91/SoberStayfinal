@@ -1,4 +1,6 @@
 export function downloadDocument(dataUrl: string, _fileName: string): void {
+  console.log('downloadDocument called with:', { dataUrl: dataUrl?.substring(0, 100), _fileName });
+  
   if (!dataUrl) {
     console.error('No data URL provided');
     return;
@@ -6,6 +8,7 @@ export function downloadDocument(dataUrl: string, _fileName: string): void {
 
   try {
     if (dataUrl.startsWith('data:')) {
+      console.log('Processing data URL...');
       const [header, base64] = dataUrl.split(',');
       const mimeMatch = header.match(/data:([^;]+)/);
       const mimeType = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
