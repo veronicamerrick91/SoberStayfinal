@@ -1907,10 +1907,23 @@ function ProviderDashboardContent() {
                                         type="button"
                                         onClick={() => {
                                           const dataUrl = upload.url || upload;
-                                          if (dataUrl && typeof dataUrl === 'string') {
-                                            const newWindow = window.open();
-                                            if (newWindow) {
-                                              newWindow.document.write(`<html><body style="margin:0"><iframe src="${dataUrl}" style="width:100%;height:100vh;border:none"></iframe></body></html>`);
+                                          if (dataUrl && typeof dataUrl === 'string' && dataUrl.startsWith('data:')) {
+                                            try {
+                                              const [header, base64Data] = dataUrl.split(',');
+                                              const mimeMatch = header.match(/data:([^;]+)/);
+                                              const mimeType = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+                                              const byteCharacters = atob(base64Data);
+                                              const byteNumbers = new Array(byteCharacters.length);
+                                              for (let i = 0; i < byteCharacters.length; i++) {
+                                                byteNumbers[i] = byteCharacters.charCodeAt(i);
+                                              }
+                                              const byteArray = new Uint8Array(byteNumbers);
+                                              const blob = new Blob([byteArray], { type: mimeType });
+                                              const blobUrl = URL.createObjectURL(blob);
+                                              window.open(blobUrl, '_blank');
+                                            } catch (e) {
+                                              console.error('Error opening document:', e);
+                                              alert('Unable to open this document. Please try downloading instead.');
                                             }
                                           }
                                         }}
