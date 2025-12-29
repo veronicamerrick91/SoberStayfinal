@@ -1920,17 +1920,25 @@ function ProviderDashboardContent() {
                                               const byteArray = new Uint8Array(byteNumbers);
                                               const blob = new Blob([byteArray], { type: mimeType });
                                               const blobUrl = URL.createObjectURL(blob);
-                                              window.open(blobUrl, '_blank');
+                                              const extension = mimeType.includes('pdf') ? '.pdf' : mimeType.includes('png') ? '.png' : mimeType.includes('jpeg') || mimeType.includes('jpg') ? '.jpg' : '';
+                                              const fileName = (upload.name || doc.name) + extension;
+                                              const link = document.createElement('a');
+                                              link.href = blobUrl;
+                                              link.download = fileName;
+                                              document.body.appendChild(link);
+                                              link.click();
+                                              document.body.removeChild(link);
+                                              setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
                                             } catch (e) {
-                                              console.error('Error opening document:', e);
-                                              alert('Unable to open this document. Please try downloading instead.');
+                                              console.error('Error downloading document:', e);
+                                              alert('Unable to download this document.');
                                             }
                                           }
                                         }}
                                         className="inline-flex items-center text-primary hover:bg-primary/10 h-7 px-2 rounded text-sm cursor-pointer"
                                         data-testid={`button-view-${doc.key}-${idx}`}
                                       >
-                                        <Eye className="w-3 h-3 mr-1" /> View
+                                        <Download className="w-3 h-3 mr-1" /> Download
                                       </button>
                                       <button 
                                         type="button"
