@@ -53,6 +53,7 @@ import { LinkToUs } from "@/pages/link-to-us";
 import { useEffect, useState } from "react";
 import { isAuthenticated, getAuth } from "./lib/auth";
 import { Redirect } from "wouter";
+import { trackPageView } from "./lib/analytics";
 
 // Redirect component for old URL format /sober-living-{city} to new format /sober-living-homes/{city}
 function CityRedirect({ city }: { city: string }) {
@@ -64,6 +65,8 @@ function ScrollToTop() {
   
   useEffect(() => {
     window.scrollTo(0, 0);
+    // Track page view for site analytics
+    trackPageView(location);
   }, [location]);
   
   return null;

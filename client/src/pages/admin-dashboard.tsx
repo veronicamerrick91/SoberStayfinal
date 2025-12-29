@@ -189,6 +189,13 @@ export function AdminDashboard() {
   const [previewEmail, setPreviewEmail] = useState<{ subject: string; body: string } | null>(null);
   const [showAllTemplatesPreview, setShowAllTemplatesPreview] = useState(false);
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
+  const [siteVisitStats, setSiteVisitStats] = useState<{
+    totalVisits: number;
+    uniqueVisitors: number;
+    topPages: { page: string; count: number }[];
+    visitsByDay: { date: string; count: number }[];
+  } | null>(null);
+  const [siteVisitDays, setSiteVisitDays] = useState(7);
   
   const emailTemplatesData = [
     {
@@ -488,7 +495,7 @@ Thank you for being part of our recovery community!`
     // Fetch real data from database
     const fetchAdminData = async () => {
       try {
-        const [usersRes, listingsRes, promosRes, featuredRes, blogPostsRes, partnersRes, emailTemplatesRes, workflowsRes, applicationsRes] = await Promise.all([
+        const [usersRes, listingsRes, promosRes, featuredRes, blogPostsRes, partnersRes, emailTemplatesRes, workflowsRes, applicationsRes, siteVisitsRes] = await Promise.all([
           fetch('/api/admin/users', { credentials: 'include' }),
           fetch('/api/admin/listings', { credentials: 'include' }),
           fetch('/api/admin/promos', { credentials: 'include' }),
@@ -497,7 +504,8 @@ Thank you for being part of our recovery community!`
           fetch('/api/admin/partners', { credentials: 'include' }),
           fetch('/api/admin/email-templates', { credentials: 'include' }),
           fetch('/api/admin/workflows', { credentials: 'include' }),
-          fetch('/api/admin/applications', { credentials: 'include' })
+          fetch('/api/admin/applications', { credentials: 'include' }),
+          fetch('/api/admin/site-visits?days=7', { credentials: 'include' })
         ]);
         
         if (usersRes.ok) {
@@ -637,6 +645,11 @@ Thank you for being part of our recovery community!`
           { id: "msg-2", tenant: "Sarah Miller", provider: "Hope House", preview: "What are your house rules regarding visitors?", date: "Dec 4, 2024", flagged: false },
           { id: "msg-3", tenant: "Anonymous User", provider: "Serenity Living", preview: "This message contains inappropriate content...", date: "Dec 3, 2024", flagged: true, reason: "Inappropriate Content" },
         ]);
+        
+        if (siteVisitsRes.ok) {
+          const siteVisitsData = await siteVisitsRes.json();
+          setSiteVisitStats(siteVisitsData);
+        }
         
       setIsLoading(false);
       } catch (error) {
@@ -2677,59 +2690,131 @@ the actual document file stored on the server.
 
           {/* ANALYTICS */}
           <TabsContent value="analytics" className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-white">Site Visitor Analytics</h2>
+              <div className="flex gap-2">
+                {[7, 30, 90].map((days) => (
+                  <Button
+                    key={days}
+                    variant={siteVisitDays === days ? "default" : "outline"}
+                    size="sm"
+                    onClick={async () => {
+                      setSiteVisitDays(days);
+                      try {
+                        const res = await fetch(`/api/admin/site-visits?days=${days}`, { credentials: 'include' });
+                        if (res.ok) {
+                          const data = await res.json();
+                          setSiteVisitStats(data);
+                        }
+                      } catch (err) {
+                        console.error('Failed to fetch site visits:', err);
+                      }
+                    }}
+                    data-testid={`button-days-${days}`}
+                  >
+                    {days}d
+                  </Button>
+                ))}
+              </div>
+            </div>
             <div className="grid md:grid-cols-3 gap-4">
               <Card className="bg-card border-border">
                 <CardContent className="pt-6">
-                  <p className="text-xs font-bold text-primary mb-2 flex items-center gap-1"><TrendingUp className="w-4 h-4" /> Conversion Rate</p>
-                  <p className="text-3xl font-bold text-white">24%</p>
-                  <p className="text-xs text-green-500 mt-2">↑ 3% vs last week</p>
+                  <p className="text-xs font-bold text-primary mb-2 flex items-center gap-1"><Eye className="w-4 h-4" /> Total Page Views</p>
+                  <p className="text-3xl font-bold text-white" data-testid="text-total-views">{siteVisitStats?.totalVisits?.toLocaleString() || '0'}</p>
+                  <p className="text-xs text-muted-foreground mt-2">Last {siteVisitDays} days</p>
                 </CardContent>
               </Card>
               <Card className="bg-card border-border">
                 <CardContent className="pt-6">
-                  <p className="text-xs font-bold text-primary mb-2">Avg. Response Time</p>
-                  <p className="text-3xl font-bold text-white">4.2h</p>
-                  <p className="text-xs text-muted-foreground mt-2">Provider to tenant</p>
+                  <p className="text-xs font-bold text-primary mb-2 flex items-center gap-1"><Users className="w-4 h-4" /> Unique Visitors</p>
+                  <p className="text-3xl font-bold text-white" data-testid="text-unique-visitors">{siteVisitStats?.uniqueVisitors?.toLocaleString() || '0'}</p>
+                  <p className="text-xs text-muted-foreground mt-2">Last {siteVisitDays} days</p>
                 </CardContent>
               </Card>
               <Card className="bg-card border-border">
                 <CardContent className="pt-6">
-                  <p className="text-xs font-bold text-primary mb-2">Platform Traffic</p>
-                  <p className="text-3xl font-bold text-white">8.5k</p>
-                  <p className="text-xs text-muted-foreground mt-2">Unique visitors this week</p>
+                  <p className="text-xs font-bold text-primary mb-2 flex items-center gap-1"><TrendingUp className="w-4 h-4" /> Avg Views/Day</p>
+                  <p className="text-3xl font-bold text-white" data-testid="text-avg-views">
+                    {siteVisitStats?.totalVisits && siteVisitDays 
+                      ? Math.round(siteVisitStats.totalVisits / siteVisitDays).toLocaleString() 
+                      : '0'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">Last {siteVisitDays} days</p>
                 </CardContent>
               </Card>
             </div>
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-white">Top Performing Listings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { rank: 1, listing: "Downtown Recovery Center", views: 2840, applications: 12, rating: 4.8 },
-                    { rank: 2, listing: "Hope House - Supportive Living", views: 2156, applications: 9, rating: 4.6 },
-                    { rank: 3, listing: "New Path Recovery Home", views: 1932, applications: 7, rating: 4.7 },
-                    { rank: 4, listing: "Serenity Sober Living", views: 1645, applications: 5, rating: 4.5 },
-                    { rank: 5, listing: "Fresh Start Recovery", views: 1289, applications: 4, rating: 4.4 },
-                  ].map((item) => (
-                    <div key={item.rank} className="p-3 rounded-lg bg-white/5 border border-border/50 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-bold text-primary">#{item.rank}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-white font-medium text-sm truncate">{item.listing}</p>
-                        <div className="flex gap-3 mt-1">
-                          <span className="text-xs text-muted-foreground">{item.views.toLocaleString()} views</span>
-                          <span className="text-xs text-primary">{item.applications} apps</span>
-                          <span className="text-xs text-amber-500">★ {item.rating}</span>
-                        </div>
-                      </div>
+            
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" /> Daily Visits
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {siteVisitStats?.visitsByDay && siteVisitStats.visitsByDay.length > 0 ? (
+                    <div className="space-y-2">
+                      {siteVisitStats.visitsByDay.slice(-14).map((day, idx) => {
+                        const maxCount = Math.max(...siteVisitStats.visitsByDay.map(d => d.count), 1);
+                        const percentage = (day.count / maxCount) * 100;
+                        return (
+                          <div key={idx} className="flex items-center gap-3">
+                            <span className="text-xs text-muted-foreground w-20 flex-shrink-0">
+                              {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </span>
+                            <div className="flex-1 bg-white/5 rounded-full h-4 overflow-hidden">
+                              <div 
+                                className="bg-primary h-full rounded-full transition-all" 
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-white font-medium w-12 text-right">{day.count}</span>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>No visit data yet</p>
+                      <p className="text-xs mt-1">Page visits will appear here as users browse the site</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <FileText className="w-5 h-5" /> Top Pages
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {siteVisitStats?.topPages && siteVisitStats.topPages.length > 0 ? (
+                    <div className="space-y-3">
+                      {siteVisitStats.topPages.map((page, idx) => (
+                        <div key={idx} className="p-3 rounded-lg bg-white/5 border border-border/50 flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-bold text-primary">#{idx + 1}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-medium text-sm truncate">{page.page || '/'}</p>
+                            <p className="text-xs text-muted-foreground">{page.count.toLocaleString()} views</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>No page data yet</p>
+                      <p className="text-xs mt-1">Popular pages will appear here</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* SUPPORT TICKETS */}

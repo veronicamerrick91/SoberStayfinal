@@ -65,3 +65,44 @@ export function trackTourRequest(listingId: number): void {
 export function trackApplication(listingId: number): void {
   trackEvent({ listingId, eventType: 'application' });
 }
+
+// Site-wide visitor tracking for admin analytics
+const siteViewDebounce = new Map<string, number>();
+const SITE_VIEW_DEBOUNCE_MS = 30000; // 30 seconds between same page views
+
+function getSessionId(): string {
+  let sessionId = sessionStorage.getItem('siteSessionId');
+  if (!sessionId) {
+    sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    sessionStorage.setItem('siteSessionId', sessionId);
+  }
+  return sessionId;
+}
+
+export function trackPageView(page: string): void {
+  const key = page;
+  const lastTime = siteViewDebounce.get(key);
+  const now = Date.now();
+  
+  if (lastTime && now - lastTime < SITE_VIEW_DEBOUNCE_MS) {
+    return;
+  }
+  
+  siteViewDebounce.set(key, now);
+  
+  const payload = JSON.stringify({
+    page,
+    sessionId: getSessionId()
+  });
+  
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon('/api/track-visit', new Blob([payload], { type: 'application/json' }));
+  } else {
+    fetch('/api/track-visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      keepalive: true
+    }).catch(() => {});
+  }
+}
