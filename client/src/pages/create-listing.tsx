@@ -37,7 +37,6 @@ interface ListingDraft {
   photos: string[];
   houseRules: string[];
   customHouseRules: string;
-  nearbyServices: string[];
 }
 
 export function CreateListing() {
@@ -119,7 +118,6 @@ export function CreateListing() {
                 photos: listing.photos || [],
                 houseRules: listing.houseRules || [],
                 customHouseRules: listing.customHouseRules || "",
-                nearbyServices: listing.nearbyServices || [],
               });
             }
           }
@@ -155,7 +153,6 @@ export function CreateListing() {
     photos: [],
     houseRules: [],
     customHouseRules: "",
-    nearbyServices: [],
   });
 
   const user = getAuth() as any;
@@ -191,14 +188,6 @@ export function CreateListing() {
     }));
   };
 
-  const handleNearbyServiceChange = (service: string) => {
-    setListingDraft(prev => ({
-      ...prev,
-      nearbyServices: prev.nearbyServices.includes(service)
-        ? prev.nearbyServices.filter(s => s !== service)
-        : [...prev.nearbyServices, service]
-    }));
-  };
 
   const handleCheckboxChange = (key: string, checked: boolean) => {
     setListingDraft(prev => ({ ...prev, [key]: checked }));
@@ -826,35 +815,6 @@ export function CreateListing() {
                   </div>
                 </div>
 
-                <div className="pt-4 space-y-3">
-                  <Label className="text-white text-sm font-semibold">Nearby Services & Locations</Label>
-                  <p className="text-xs text-muted-foreground mb-2">Select what services and amenities are conveniently located near your property.</p>
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {[
-                      "Grocery stores",
-                      "Public transportation",
-                      "Treatment centers",
-                      "Hospitals / Medical",
-                      "Shopping centers",
-                      "Employment opportunities",
-                      "AA/NA meeting locations",
-                      "Restaurants / Food",
-                      "Parks / Recreation",
-                      "Churches / Faith centers",
-                      "Gyms / Fitness",
-                      "Libraries"
-                    ].map((service) => (
-                      <div key={service} className="flex items-center gap-2">
-                        <Checkbox
-                          checked={listingDraft.nearbyServices.includes(service)}
-                          onCheckedChange={() => handleNearbyServiceChange(service)}
-                          data-testid={`checkbox-nearby-${service.replace(/\s+/g, '-').toLowerCase()}`}
-                        />
-                        <label className="text-sm text-gray-300 cursor-pointer">{service}</label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </CardContent>
             </Card>
 

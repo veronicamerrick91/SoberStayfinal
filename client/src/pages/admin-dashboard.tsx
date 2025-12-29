@@ -549,7 +549,6 @@ Thank you for being part of our recovery community!`
             supervisionType: l.supervisionType,
             houseRules: l.houseRules || [],
             customHouseRules: l.customHouseRules || "",
-            nearbyServices: l.nearbyServices || [],
             status: l.status === 'approved' ? 'Approved' : l.status === 'pending' ? 'Pending' : l.status === 'draft' ? 'Draft' : l.status === 'rejected' ? 'Rejected' : l.status,
             providerId: l.providerId,
             createdAt: l.createdAt,

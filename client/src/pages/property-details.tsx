@@ -262,20 +262,6 @@ export default function PropertyDetails() {
               </div>
             )}
 
-            {/* Nearby Services */}
-            {listing.nearbyServices && listing.nearbyServices.length > 0 && (
-              <div>
-                <h3 className="text-lg font-bold text-white mb-6">Nearby Services & Locations</h3>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {listing.nearbyServices.map((service, i) => (
-                    <div key={i} className="flex items-center gap-3 text-sm text-gray-300 p-3 rounded-lg bg-card/30 border border-border/50">
-                      <Check className="w-5 h-5 text-primary" />
-                      {service}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Included in Monthly Price */}
             {listing.inclusions && listing.inclusions.length > 0 && (
