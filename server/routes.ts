@@ -2292,6 +2292,112 @@ Disallow: /auth/
     }
   });
 
+  // Upload resident document
+  app.post("/api/provider/resident-doc", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { tenantId, docType, fileUrl, customName } = req.body;
+      
+      const validDocTypes = [
+        "intake_packet", "government_id", "insurance_card", "emergency_contacts",
+        "release_of_info", "treatment_plan", "sobriety_agreement", "drug_test_history",
+        "financial_agreement", "incident_reports", "custom"
+      ];
+      if (!docType || !validDocTypes.includes(docType)) {
+        return res.status(400).json({ error: "Invalid document type" });
+      }
+      
+      if (!tenantId || !fileUrl || typeof fileUrl !== "string") {
+        return res.status(400).json({ error: "Tenant ID and file URL are required" });
+      }
+      
+      const maxSizeBytes = 5 * 1024 * 1024; // 5MB for documents
+      if (fileUrl.length > maxSizeBytes) {
+        return res.status(400).json({ error: "Document file is too large. Maximum size is 5MB." });
+      }
+      
+      const profile = await storage.getProviderProfile(user.id);
+      const existingDocs = (profile?.residentDocuments as Record<string, Record<string, string>>) || {};
+      
+      if (!existingDocs[tenantId]) {
+        existingDocs[tenantId] = {};
+      }
+      
+      // For custom documents, use customName as the key
+      const docKey = docType === "custom" && customName ? `custom_${Date.now()}` : docType;
+      existingDocs[tenantId][docKey] = fileUrl;
+      
+      // Store custom name in a separate metadata key if provided
+      if (docType === "custom" && customName) {
+        existingDocs[tenantId][`${docKey}_name`] = customName;
+      }
+      
+      await storage.createOrUpdateProviderProfile(user.id, { 
+        residentDocuments: existingDocs as any 
+      });
+      
+      res.json({ success: true, docType: docKey, tenantId });
+    } catch (error) {
+      console.error("Error uploading resident document:", error);
+      res.status(500).json({ error: "Failed to upload resident document" });
+    }
+  });
+
+  // Remove resident document
+  app.post("/api/provider/resident-doc/remove", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { tenantId, docType } = req.body;
+      
+      if (!tenantId || !docType) {
+        return res.status(400).json({ error: "Tenant ID and document type are required" });
+      }
+      
+      const profile = await storage.getProviderProfile(user.id);
+      const existingDocs = (profile?.residentDocuments as Record<string, Record<string, string>>) || {};
+      
+      if (existingDocs[tenantId]) {
+        delete existingDocs[tenantId][docType];
+        // Also delete custom name if exists
+        delete existingDocs[tenantId][`${docType}_name`];
+      }
+      
+      await storage.createOrUpdateProviderProfile(user.id, { 
+        residentDocuments: existingDocs as any 
+      });
+      
+      res.json({ success: true, docType, tenantId });
+    } catch (error) {
+      console.error("Error removing resident document:", error);
+      res.status(500).json({ error: "Failed to remove resident document" });
+    }
+  });
+
+  // Get resident documents for a specific tenant
+  app.get("/api/provider/resident-docs/:tenantId", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { tenantId } = req.params;
+      
+      const profile = await storage.getProviderProfile(user.id);
+      const existingDocs = (profile?.residentDocuments as Record<string, Record<string, string>>) || {};
+      
+      res.json({ documents: existingDocs[tenantId] || {} });
+    } catch (error) {
+      console.error("Error fetching resident documents:", error);
+      res.status(500).json({ error: "Failed to fetch resident documents" });
+    }
+  });
+
   // Submit application to a property
   app.post("/api/applications", async (req, res) => {
     const user = req.user as any;

@@ -384,6 +384,12 @@ function ProviderDashboardContent() {
   
   // Verification document uploads (loaded from backend)
   const [verificationDocs, setVerificationDocs] = useState<Record<string, string | null>>({});
+  
+  // Resident document uploads
+  const [residentDocs, setResidentDocs] = useState<Record<string, Record<string, string>>>({});
+  const [selectedTenantId, setSelectedTenantId] = useState<string>("");
+  const [customDocName, setCustomDocName] = useState("");
+  const [showCustomDocInput, setShowCustomDocInput] = useState(false);
 
   const user = getAuth();
 
@@ -695,6 +701,10 @@ function ProviderDashboardContent() {
           if (profile.verificationDocs && typeof profile.verificationDocs === 'object') {
             setVerificationDocs(profile.verificationDocs);
           }
+          // Load resident documents from backend
+          if (profile.residentDocuments && typeof profile.residentDocuments === 'object') {
+            setResidentDocs(profile.residentDocuments);
+          }
         }
       } catch (err) {
         console.error("Error fetching verification status:", err);
@@ -732,6 +742,7 @@ function ProviderDashboardContent() {
             const appData = app.applicationData || {};
             return {
               id: String(app.id),
+              tenantId: String(app.tenantId || app.id),
               applicantName: app.tenantName || 'Unknown Applicant',
               email: app.tenantEmail || '',
               phone: appData.phone || appData.emergencyPhone || 'Not provided',
@@ -1707,65 +1718,268 @@ function ProviderDashboardContent() {
               <CardContent className="space-y-6">
                 <p className="text-sm text-muted-foreground">Securely store and manage all resident documents in one place. All files are encrypted and compliant with privacy regulations.</p>
                 
-                <div className="space-y-4">
-                  <div className="border border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer bg-white/5">
-                    <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Upload className="w-6 h-6 text-primary" />
-                    </div>
-                    <h3 className="font-semibold text-white mb-2">Upload New Files</h3>
-                    <p className="text-sm text-muted-foreground">Drag and drop or click to upload applications, background checks, references, and more.</p>
-                  </div>
+                {/* Tenant Selector */}
+                <div className="space-y-2">
+                  <Label className="text-white text-sm">Select Resident</Label>
+                  <select
+                    className="w-full p-3 rounded-lg bg-background/60 border-2 border-primary/40 text-white"
+                    value={selectedTenantId}
+                    onChange={(e) => setSelectedTenantId(e.target.value)}
+                    data-testid="select-resident"
+                  >
+                    <option value="">-- Select a resident --</option>
+                    {applications.filter(app => app.status === 'Approved').map((app) => (
+                      <option key={app.id} value={app.tenantId || app.id}>{app.applicantName}</option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-white">Recent Resident Files</h3>
-                  {[
-                    { name: "John Doe - Application + Background Check", size: "2.4 MB", date: "Today" },
-                    { name: "Sarah Jones - Reference Letters", size: "1.1 MB", date: "Yesterday" },
-                    { name: "Michael Smith - Employment Verification", size: "0.8 MB", date: "2 days ago" },
-                    { name: "Emma Wilson - Financial Records", size: "3.2 MB", date: "1 week ago" },
-                  ].map((file, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 bg-white/5 border border-border rounded-lg hover:border-primary/50 transition-colors">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="w-10 h-10 bg-primary/10 rounded flex items-center justify-center">
-                          <FileText className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-white">{file.name}</p>
-                          <p className="text-xs text-muted-foreground">{file.size} • {file.date}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="text-primary hover:bg-primary/10"
-                          onClick={() => window.open(`data:text/plain;base64,${btoa(file.name)}`, '_blank')}
-                          data-testid={`button-view-file-${i}`}
-                        >
-                          View
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="text-muted-foreground hover:bg-white/10"
-                          onClick={() => {
-                            const element = document.createElement("a");
-                            element.setAttribute("href", `data:text/plain;base64,${btoa(file.name)}`);
-                            element.setAttribute("download", file.name);
-                            element.style.display = "none";
-                            document.body.appendChild(element);
-                            element.click();
-                            document.body.removeChild(element);
-                          }}
-                          data-testid={`button-download-file-${i}`}
-                        >
-                          Download
-                        </Button>
+                {selectedTenantId ? (
+                  <div className="space-y-4">
+                    <h3 className="font-bold text-white">Upload Documents</h3>
+                    <p className="text-sm text-muted-foreground">Upload required documentation for this resident.</p>
+                    
+                    <div className="space-y-3">
+                      {[
+                        { key: "intake_packet", name: "Intake Packet", icon: "📋", description: "Signed intake forms and agreements" },
+                        { key: "government_id", name: "Government ID", icon: "🪪", description: "Driver's license, state ID, or passport" },
+                        { key: "insurance_card", name: "Insurance Card", icon: "💳", description: "Health insurance information" },
+                        { key: "emergency_contacts", name: "Emergency Contacts", icon: "📞", description: "Emergency contact information form" },
+                        { key: "release_of_info", name: "Release of Information", icon: "📝", description: "Signed ROI authorization" },
+                        { key: "treatment_plan", name: "Treatment Plan", icon: "📊", description: "Recovery treatment plan documentation" },
+                        { key: "sobriety_agreement", name: "Sobriety Agreement", icon: "✍️", description: "Signed sobriety commitment agreement" },
+                        { key: "drug_test_history", name: "Drug Test History", icon: "🧪", description: "UA/drug screening records" },
+                        { key: "financial_agreement", name: "Financial Agreement", icon: "💰", description: "Payment plan and financial agreements" },
+                        { key: "incident_reports", name: "Incident Reports", icon: "⚠️", description: "Any incident documentation" }
+                      ].map((doc) => {
+                        const tenantDocs = residentDocs[selectedTenantId] || {};
+                        const isUploaded = !!tenantDocs[doc.key];
+                        return (
+                          <div key={doc.key} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border hover:border-primary/50 transition-colors">
+                            <div className="flex items-center gap-3">
+                              <span className="text-2xl">{doc.icon}</span>
+                              <div>
+                                <p className="text-white font-medium">{doc.name}</p>
+                                <p className="text-xs text-muted-foreground">{doc.description}</p>
+                                <p className={`text-xs mt-1 ${isUploaded ? 'text-primary' : 'text-muted-foreground'}`}>
+                                  {isUploaded ? '✓ Uploaded' : 'Pending'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="relative">
+                              <input 
+                                type="file" 
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                onChange={async (e) => {
+                                  if (e.target.files && e.target.files.length > 0) {
+                                    const file = e.target.files[0];
+                                    if (file.size > 5 * 1024 * 1024) {
+                                      alert("File is too large. Maximum size is 5MB.");
+                                      return;
+                                    }
+                                    const reader = new FileReader();
+                                    reader.onload = async () => {
+                                      const fileUrl = reader.result as string;
+                                      try {
+                                        const res = await fetch('/api/provider/resident-doc', {
+                                          method: 'POST',
+                                          credentials: 'include',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ tenantId: selectedTenantId, docType: doc.key, fileUrl })
+                                        });
+                                        if (res.ok) {
+                                          setResidentDocs(prev => ({
+                                            ...prev,
+                                            [selectedTenantId]: { ...(prev[selectedTenantId] || {}), [doc.key]: fileUrl }
+                                          }));
+                                        } else {
+                                          alert("Failed to upload document");
+                                        }
+                                      } catch (err) {
+                                        console.error("Upload error:", err);
+                                        alert("Failed to upload document");
+                                      }
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                                data-testid={`input-upload-resident-${doc.key}`}
+                              />
+                              <Button size="sm" className="gap-2" variant={isUploaded ? "outline" : "default"}>
+                                <Upload className="w-4 h-4" /> {isUploaded ? "Update" : "Upload"}
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      
+                      {/* Custom Documents Section */}
+                      {Object.entries(residentDocs[selectedTenantId] || {})
+                        .filter(([key]) => key.startsWith('custom_') && !key.endsWith('_name'))
+                        .map(([docKey, url]) => {
+                          const tenantDocs = residentDocs[selectedTenantId] || {};
+                          const customName = tenantDocs[`${docKey}_name`] || 'Custom Document';
+                          return (
+                            <div key={docKey} className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-border hover:border-primary/50 transition-colors">
+                              <div className="flex items-center gap-3">
+                                <span className="text-2xl">📎</span>
+                                <div>
+                                  <p className="text-white font-medium">{customName}</p>
+                                  <p className="text-xs text-primary">✓ Uploaded</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="text-primary hover:bg-primary/10"
+                                  onClick={() => window.open(url, '_blank')}
+                                  data-testid={`button-view-${docKey}`}
+                                >
+                                  View
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="text-red-400 hover:bg-red-400/10"
+                                  onClick={async () => {
+                                    try {
+                                      await fetch('/api/provider/resident-doc/remove', {
+                                        method: 'POST',
+                                        credentials: 'include',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ tenantId: selectedTenantId, docType: docKey })
+                                      });
+                                      setResidentDocs(prev => {
+                                        const updated = { ...prev };
+                                        if (updated[selectedTenantId]) {
+                                          delete updated[selectedTenantId][docKey];
+                                          delete updated[selectedTenantId][`${docKey}_name`];
+                                        }
+                                        return updated;
+                                      });
+                                    } catch (err) {
+                                      console.error("Remove error:", err);
+                                    }
+                                  }}
+                                  data-testid={`button-remove-${docKey}`}
+                                >
+                                  Remove
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      
+                      {/* Add Custom Document */}
+                      <div className="pt-4 border-t border-border">
+                        {showCustomDocInput ? (
+                          <div className="space-y-3">
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Document name (e.g., Background Check)"
+                                value={customDocName}
+                                onChange={(e) => setCustomDocName(e.target.value)}
+                                className="flex-1 bg-background/60 border-2 border-primary/40"
+                                data-testid="input-custom-doc-name"
+                              />
+                              <Button
+                                variant="ghost"
+                                onClick={() => { setShowCustomDocInput(false); setCustomDocName(""); }}
+                                data-testid="button-cancel-custom-doc"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                            <div className="relative">
+                              <input 
+                                type="file" 
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                disabled={!customDocName.trim()}
+                                onChange={async (e) => {
+                                  if (!customDocName.trim()) {
+                                    alert("Please enter a document name first");
+                                    return;
+                                  }
+                                  if (e.target.files && e.target.files.length > 0) {
+                                    const file = e.target.files[0];
+                                    if (file.size > 5 * 1024 * 1024) {
+                                      alert("File is too large. Maximum size is 5MB.");
+                                      return;
+                                    }
+                                    const reader = new FileReader();
+                                    reader.onload = async () => {
+                                      const fileUrl = reader.result as string;
+                                      try {
+                                        const res = await fetch('/api/provider/resident-doc', {
+                                          method: 'POST',
+                                          credentials: 'include',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ 
+                                            tenantId: selectedTenantId, 
+                                            docType: 'custom', 
+                                            fileUrl,
+                                            customName: customDocName.trim()
+                                          })
+                                        });
+                                        if (res.ok) {
+                                          const data = await res.json();
+                                          setResidentDocs(prev => ({
+                                            ...prev,
+                                            [selectedTenantId]: { 
+                                              ...(prev[selectedTenantId] || {}), 
+                                              [data.docType]: fileUrl,
+                                              [`${data.docType}_name`]: customDocName.trim()
+                                            }
+                                          }));
+                                          setCustomDocName("");
+                                          setShowCustomDocInput(false);
+                                        } else {
+                                          alert("Failed to upload document");
+                                        }
+                                      } catch (err) {
+                                        console.error("Upload error:", err);
+                                        alert("Failed to upload document");
+                                      }
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                                data-testid="input-upload-custom-doc"
+                              />
+                              <Button 
+                                className="w-full gap-2" 
+                                variant="outline"
+                                disabled={!customDocName.trim()}
+                              >
+                                <Upload className="w-4 h-4" /> Upload Custom Document
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            className="w-full gap-2"
+                            onClick={() => setShowCustomDocInput(true)}
+                            data-testid="button-add-custom-doc"
+                          >
+                            <Plus className="w-4 h-4" /> Add Custom Document
+                          </Button>
+                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileArchive className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Select a resident above to manage their documents</p>
+                    {applications.filter(app => app.status === 'Approved').length === 0 && (
+                      <p className="text-sm mt-2">No approved residents yet. Documents can be uploaded once you approve an application.</p>
+                    )}
+                  </div>
+                )}
 
                 <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
                   <h4 className="font-semibold text-emerald-300 mb-2 flex items-center gap-2"><Shield className="w-4 h-4" /> Privacy & Security</h4>

@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 export interface ApplicationData {
   id: string;
+  tenantId?: string;
   applicantName: string;
   email: string;
   phone: string;
