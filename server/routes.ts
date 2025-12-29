@@ -15,6 +15,7 @@ import { getStripePublishableKey } from "./stripeClient";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
 import { sendApplicationNotification as sendSmsApplicationNotification, sendApplicationApprovedNotification as sendSmsApproved, sendApplicationDeniedNotification as sendSmsDenied, sendNewMessageNotification as sendSmsMessage, send2FACode, generate2FACode, isTwilioConfigured, sendTourRequestNotification as sendSmsTourRequest, isValidPhoneNumber } from "./sms-service";
+import { getNearbyServicesForAddress, isGoogleMapsConfigured } from "./places-service";
 
 const pending2FACodes: Map<string, { code: string; expiresAt: Date; phone: string }> = new Map();
 
@@ -579,6 +580,33 @@ Disallow: /auth/
     } catch (error) {
       console.error("Error fetching listing:", error);
       res.status(500).json({ error: "Failed to fetch listing" });
+    }
+  });
+
+  // Get nearby services for a listing
+  app.get("/api/listings/:id/nearby", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid listing ID" });
+      }
+      
+      if (!isGoogleMapsConfigured()) {
+        return res.json({ configured: false, places: [] });
+      }
+      
+      const listing = await storage.getListing(id);
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      
+      const fullAddress = `${listing.address}, ${listing.city}, ${listing.state}`;
+      const places = await getNearbyServicesForAddress(fullAddress);
+      
+      res.json({ configured: true, places });
+    } catch (error) {
+      console.error("Error fetching nearby services:", error);
+      res.status(500).json({ error: "Failed to fetch nearby services" });
     }
   });
 

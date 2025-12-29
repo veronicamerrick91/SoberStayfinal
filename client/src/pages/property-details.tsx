@@ -25,6 +25,26 @@ import {
 } from "@/components/ui/tooltip";
 import { useQuery } from "@tanstack/react-query";
 import type { Listing } from "@shared/schema";
+
+interface NearbyPlace {
+  name: string;
+  type: string;
+  distance: string;
+  address?: string;
+}
+
+interface NearbyResponse {
+  configured: boolean;
+  places: NearbyPlace[];
+}
+
+async function fetchNearbyServices(id: string): Promise<NearbyResponse> {
+  const response = await fetch(`/api/listings/${id}/nearby`);
+  if (!response.ok) {
+    return { configured: false, places: [] };
+  }
+  return response.json();
+}
 import { useDocumentMeta } from "@/lib/use-document-meta";
 import placeholderHome from "@assets/stock_images/modern_comfortable_l_a00ffa5e.jpg";
 
@@ -48,6 +68,13 @@ export default function PropertyDetails() {
     queryKey: ["listing", params?.id],
     queryFn: () => fetchListing(params?.id || ""),
     enabled: !!params?.id,
+  });
+
+  const { data: nearbyServices } = useQuery({
+    queryKey: ["nearbyServices", params?.id],
+    queryFn: () => fetchNearbyServices(params?.id || ""),
+    enabled: !!params?.id,
+    staleTime: 1000 * 60 * 60,
   });
 
   useDocumentMeta({
@@ -305,6 +332,35 @@ export default function PropertyDetails() {
                 </a>
               </div>
             </div>
+
+            {/* Nearby Services */}
+            {nearbyServices?.configured && nearbyServices.places.length > 0 && (
+              <div>
+                <h3 className="text-lg font-bold text-white mb-6">Nearby Services & Amenities</h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {nearbyServices.places.map((place, i) => (
+                    <div key={i} className="flex items-start gap-3 text-sm text-gray-300 p-3 rounded-lg bg-card/30 border border-border/50">
+                      <div className="mt-0.5">
+                        {place.type === 'Hospitals' && <Stethoscope className="w-5 h-5 text-red-400" />}
+                        {place.type === 'Pharmacies' && <Stethoscope className="w-5 h-5 text-green-400" />}
+                        {place.type === 'Fitness Centers' && <Dumbbell className="w-5 h-5 text-orange-400" />}
+                        {place.type === 'Parks' && <MapPin className="w-5 h-5 text-emerald-400" />}
+                        {place.type === 'Public Transit' && <Bus className="w-5 h-5 text-blue-400" />}
+                        {place.type === 'Grocery Stores' && <ShoppingCart className="w-5 h-5 text-yellow-400" />}
+                        {place.type === 'Places of Worship' && <Users className="w-5 h-5 text-purple-400" />}
+                        {place.type === 'Libraries' && <Home className="w-5 h-5 text-cyan-400" />}
+                        {place.type === 'Cafes' && <Utensils className="w-5 h-5 text-amber-400" />}
+                        {!['Hospitals', 'Pharmacies', 'Fitness Centers', 'Parks', 'Public Transit', 'Grocery Stores', 'Places of Worship', 'Libraries', 'Cafes'].includes(place.type) && <MapPin className="w-5 h-5 text-primary" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-white truncate">{place.name}</div>
+                        <div className="text-xs text-muted-foreground">{place.type} - {place.distance}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
           </div>
 
