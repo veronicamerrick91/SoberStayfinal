@@ -2379,8 +2379,8 @@ Disallow: /auth/
       
       // Send email to support
       const emailResult = await sendEmail({
-        to: "Support@soberstayhomes.com",
-        subject: `[Provider Feedback] ${typeLabels[type] || "Other"} from ${companyName}`,
+        to: "Veronicamerrick91@gmail.com",
+        subject: `[SOBER STAY ALERT] Provider ${typeLabels[type] || "Feedback"} - ${companyName}`,
         html: `
           <h2>Provider Feedback Submission</h2>
           <p><strong>Type:</strong> ${typeLabels[type] || type}</p>
