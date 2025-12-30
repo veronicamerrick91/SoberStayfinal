@@ -94,43 +94,43 @@ export async function registerRoutes(
     const approvedListings = listings.filter((l: any) => l.status === "approved");
     
     const staticPages = [
-      "", "/browse", "/quiz", "/mission", "/resources", "/how-to-choose",
-      "/insurance-info", "/crisis-resources", "/blog", "/contact",
-      "/for-tenants", "/for-providers", "/resource-center", "/locations",
-      "/sober-living-near-me", "/what-is-sober-living", "/apply-for-sober-living",
-      "/find-sober-living",
-      "/sober-living/california", "/sober-living/florida", "/sober-living/texas", "/sober-living/arizona",
-      "/sober-living-homes/los-angeles", "/sober-living-homes/san-diego", "/sober-living-homes/miami",
-      "/sober-living-homes/denver", "/sober-living-homes/austin", "/sober-living-homes/phoenix",
-      "/sober-living-homes/delray-beach",
-      "/privacy-policy", "/terms-of-use", "/disclaimer", "/help-center"
+      "/", "/browse/", "/quiz/", "/mission/", "/resources/", "/how-to-choose/",
+      "/insurance-info/", "/crisis-resources/", "/blog/", "/contact/",
+      "/for-tenants/", "/for-providers/", "/resource-center/", "/locations/",
+      "/sober-living-near-me/", "/what-is-sober-living/", "/apply-for-sober-living/",
+      "/find-sober-living/", "/sober-living-california/",
+      "/sober-living/california/", "/sober-living/florida/", "/sober-living/texas/", "/sober-living/arizona/",
+      "/sober-living-homes/los-angeles/", "/sober-living-homes/san-diego/", "/sober-living-homes/miami/",
+      "/sober-living-homes/denver/", "/sober-living-homes/austin/", "/sober-living-homes/phoenix/",
+      "/sober-living-homes/delray-beach/",
+      "/privacy-policy/", "/terms-of-use/", "/disclaimer/", "/help-center/"
     ];
     
     const blogPosts = [
-      "/blog/what-to-expect-first-month-sober-living",
-      "/blog/how-to-choose-right-sober-living-home",
-      "/blog/building-healthy-relationships-recovery",
-      "/blog/sober-living-vs-halfway-house-differences",
-      "/blog/employment-tips-sober-living"
+      "/blog/what-to-expect-first-month-sober-living/",
+      "/blog/how-to-choose-right-sober-living-home/",
+      "/blog/building-healthy-relationships-recovery/",
+      "/blog/sober-living-vs-halfway-house-differences/",
+      "/blog/employment-tips-sober-living/"
     ];
     
     let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 `;
     
-    // Add static pages
+    // Add static pages with trailing slashes
     for (const page of staticPages) {
       sitemap += `  <url><loc>${baseUrl}${page}</loc><changefreq>weekly</changefreq></url>\n`;
     }
     
-    // Add blog posts
+    // Add blog posts with trailing slashes
     for (const post of blogPosts) {
       sitemap += `  <url><loc>${baseUrl}${post}</loc><changefreq>monthly</changefreq></url>\n`;
     }
     
-    // Add dynamic property pages
+    // Add dynamic property pages with trailing slashes
     for (const listing of approvedListings) {
-      sitemap += `  <url><loc>${baseUrl}/property/${listing.id}</loc><changefreq>daily</changefreq></url>\n`;
+      sitemap += `  <url><loc>${baseUrl}/property/${listing.id}/</loc><changefreq>daily</changefreq></url>\n`;
     }
     
     sitemap += `</urlset>`;
