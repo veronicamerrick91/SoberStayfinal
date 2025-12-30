@@ -2354,6 +2354,56 @@ Disallow: /auth/
     }
   });
 
+  // Provider feedback/support form
+  app.post("/api/provider/feedback", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { type, message } = req.body;
+      
+      if (!message || typeof message !== "string" || message.trim().length === 0) {
+        return res.status(400).json({ error: "Message is required" });
+      }
+      
+      const typeLabels: Record<string, string> = {
+        bug: "Bug Report",
+        feature: "Feature Request",
+        question: "General Question",
+        other: "Other"
+      };
+      
+      const providerProfile = await storage.getProviderProfile(user.id);
+      const companyName = providerProfile?.companyName || "Unknown";
+      
+      // Send email to support
+      try {
+        await sendEmail({
+          to: "Support@soberstayhomes.com",
+          subject: `[Provider Feedback] ${typeLabels[type] || "Other"} from ${companyName}`,
+          html: `
+            <h2>Provider Feedback Submission</h2>
+            <p><strong>Type:</strong> ${typeLabels[type] || type}</p>
+            <p><strong>Provider:</strong> ${companyName}</p>
+            <p><strong>Email:</strong> ${user.email}</p>
+            <p><strong>Provider ID:</strong> ${user.id}</p>
+            <hr />
+            <p><strong>Message:</strong></p>
+            <p>${message.replace(/\n/g, '<br>')}</p>
+          `,
+        });
+      } catch (emailError) {
+        console.log("Email notification for feedback skipped:", emailError);
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error submitting provider feedback:", error);
+      res.status(500).json({ error: "Failed to submit feedback" });
+    }
+  });
+
   app.post("/api/provider/upload-logo", async (req, res) => {
     const user = req.user as any;
     if (!req.isAuthenticated() || user?.role !== "provider") {

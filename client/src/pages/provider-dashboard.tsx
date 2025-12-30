@@ -2446,6 +2446,77 @@ function ProviderDashboardContent() {
                 </CardContent>
               </Card>
 
+              {/* Feedback & Support */}
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2"><HelpCircle className="w-5 h-5 text-primary" /> Feedback & Support</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Report issues or request new features
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-white text-sm">Subject</Label>
+                    <select 
+                      className="w-full bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary rounded-md px-3 py-2 text-white"
+                      id="feedback-type"
+                      data-testid="select-feedback-type"
+                    >
+                      <option value="bug">Report a Bug / Issue</option>
+                      <option value="feature">Request a Feature</option>
+                      <option value="question">General Question</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white text-sm">Message</Label>
+                    <textarea 
+                      className="w-full bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary rounded-md px-3 py-2 text-white min-h-[120px] resize-none"
+                      placeholder="Describe the issue or feature you'd like to see..."
+                      id="feedback-message"
+                      data-testid="textarea-feedback-message"
+                    />
+                  </div>
+                  <Button 
+                    className="w-full bg-primary hover:bg-primary/80"
+                    onClick={async () => {
+                      const typeEl = document.getElementById('feedback-type') as HTMLSelectElement;
+                      const msgEl = document.getElementById('feedback-message') as HTMLTextAreaElement;
+                      const feedbackType = typeEl?.value || 'other';
+                      const feedbackMessage = msgEl?.value?.trim();
+                      
+                      if (!feedbackMessage) {
+                        alert("Please enter a message");
+                        return;
+                      }
+                      
+                      try {
+                        const res = await fetch('/api/provider/feedback', {
+                          method: 'POST',
+                          credentials: 'include',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ type: feedbackType, message: feedbackMessage })
+                        });
+                        
+                        if (res.ok) {
+                          alert("Thank you! Your feedback has been submitted.");
+                          msgEl.value = '';
+                        } else {
+                          const data = await res.json();
+                          alert(data.error || "Failed to submit feedback");
+                        }
+                      } catch (err) {
+                        console.error("Error submitting feedback:", err);
+                        alert("Failed to submit feedback. Please try again.");
+                      }
+                    }}
+                    data-testid="button-submit-feedback"
+                  >
+                    Submit Feedback
+                  </Button>
+                </CardContent>
+              </Card>
+
               {/* Notification Settings */}
               <Card className="bg-card border-border lg:col-span-2">
                 <CardHeader>
