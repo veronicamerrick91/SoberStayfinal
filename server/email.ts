@@ -842,3 +842,275 @@ export async function sendAdminLoginNotification(
     return false;
   }
 }
+
+// Admin Activity Notification Functions
+async function getAdminEmails(): Promise<string[]> {
+  // Import storage dynamically to avoid circular dependencies
+  const { storage } = await import('./storage');
+  const admins = await storage.getAdminUsers();
+  return admins.map(admin => admin.email);
+}
+
+export async function sendAdminNewUserNotification(
+  newUserName: string,
+  newUserEmail: string,
+  userRole: 'provider' | 'tenant'
+): Promise<boolean> {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    const adminEmails = await getAdminEmails();
+    
+    if (adminEmails.length === 0) {
+      console.log('No admin emails found, skipping notification');
+      return false;
+    }
+
+    const roleLabel = userRole === 'provider' ? 'Provider' : 'Tenant';
+    const roleColor = userRole === 'provider' ? '#8b5cf6' : '#3b82f6';
+    
+    const content = `
+      <tr>
+        <td style="padding: 40px 30px; text-align: center;">
+          <div style="background: linear-gradient(135deg, ${roleColor} 0%, ${roleColor}cc 100%); width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 28px;">👤</span>
+          </div>
+          <h2 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 12px;">New ${roleLabel} Registered</h2>
+          <p style="color: #94a3b8; font-size: 16px; margin: 0 0 24px;">
+            A new ${roleLabel.toLowerCase()} has joined Sober Stay Homes
+          </p>
+          <div style="background-color: #1e3a5f; padding: 20px; border-radius: 8px; margin: 0 0 24px; text-align: left;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Name:</td>
+                <td style="color: #cbd5e1; font-size: 14px; padding: 6px 0; text-align: right;">${newUserName}</td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Email:</td>
+                <td style="color: #cbd5e1; font-size: 14px; padding: 6px 0; text-align: right;">${newUserEmail}</td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Role:</td>
+                <td style="color: ${roleColor}; font-size: 14px; padding: 6px 0; text-align: right; font-weight: 600;">${roleLabel}</td>
+              </tr>
+            </table>
+          </div>
+          <a href="${WEBSITE_URL}/admin-dashboard" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);">
+            View in Dashboard
+          </a>
+        </td>
+      </tr>
+    `;
+    
+    // Send to all admins
+    for (const adminEmail of adminEmails) {
+      await client.emails.send({
+        from: `${APP_NAME} <${fromEmail}>`,
+        to: adminEmail,
+        subject: `👤 New ${roleLabel} Signup: ${newUserName}`,
+        html: getEmailWrapper(content, `New ${roleLabel} registered on Sober Stay`),
+      });
+    }
+
+    console.log(`Admin notification sent for new ${roleLabel}:`, newUserName);
+    return true;
+  } catch (error) {
+    console.error('Error sending admin new user notification:', error);
+    return false;
+  }
+}
+
+export async function sendAdminNewListingNotification(
+  providerName: string,
+  propertyName: string,
+  city: string,
+  state: string
+): Promise<boolean> {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    const adminEmails = await getAdminEmails();
+    
+    if (adminEmails.length === 0) return false;
+
+    const content = `
+      <tr>
+        <td style="padding: 40px 30px; text-align: center;">
+          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 28px;">🏠</span>
+          </div>
+          <h2 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 12px;">New Listing Submitted</h2>
+          <p style="color: #94a3b8; font-size: 16px; margin: 0 0 24px;">
+            A new property listing requires approval
+          </p>
+          <div style="background-color: #1e3a5f; padding: 20px; border-radius: 8px; margin: 0 0 24px; text-align: left;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Property:</td>
+                <td style="color: #cbd5e1; font-size: 14px; padding: 6px 0; text-align: right;">${propertyName}</td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Location:</td>
+                <td style="color: #cbd5e1; font-size: 14px; padding: 6px 0; text-align: right;">${city}, ${state}</td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Provider:</td>
+                <td style="color: #8b5cf6; font-size: 14px; padding: 6px 0; text-align: right; font-weight: 600;">${providerName}</td>
+              </tr>
+            </table>
+          </div>
+          <a href="${WEBSITE_URL}/admin-dashboard" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);">
+            Review Listing
+          </a>
+        </td>
+      </tr>
+    `;
+    
+    for (const adminEmail of adminEmails) {
+      await client.emails.send({
+        from: `${APP_NAME} <${fromEmail}>`,
+        to: adminEmail,
+        subject: `🏠 New Listing: ${propertyName} - Needs Approval`,
+        html: getEmailWrapper(content, 'New listing submitted for approval'),
+      });
+    }
+
+    console.log('Admin notification sent for new listing:', propertyName);
+    return true;
+  } catch (error) {
+    console.error('Error sending admin new listing notification:', error);
+    return false;
+  }
+}
+
+export async function sendAdminNewApplicationNotification(
+  tenantName: string,
+  propertyName: string,
+  providerName: string
+): Promise<boolean> {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    const adminEmails = await getAdminEmails();
+    
+    if (adminEmails.length === 0) return false;
+
+    const content = `
+      <tr>
+        <td style="padding: 40px 30px; text-align: center;">
+          <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 28px;">📋</span>
+          </div>
+          <h2 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 12px;">New Application Submitted</h2>
+          <p style="color: #94a3b8; font-size: 16px; margin: 0 0 24px;">
+            A tenant has applied for housing
+          </p>
+          <div style="background-color: #1e3a5f; padding: 20px; border-radius: 8px; margin: 0 0 24px; text-align: left;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Applicant:</td>
+                <td style="color: #3b82f6; font-size: 14px; padding: 6px 0; text-align: right; font-weight: 600;">${tenantName}</td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Property:</td>
+                <td style="color: #cbd5e1; font-size: 14px; padding: 6px 0; text-align: right;">${propertyName}</td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Provider:</td>
+                <td style="color: #8b5cf6; font-size: 14px; padding: 6px 0; text-align: right;">${providerName}</td>
+              </tr>
+            </table>
+          </div>
+          <a href="${WEBSITE_URL}/admin-dashboard" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);">
+            View in Dashboard
+          </a>
+        </td>
+      </tr>
+    `;
+    
+    for (const adminEmail of adminEmails) {
+      await client.emails.send({
+        from: `${APP_NAME} <${fromEmail}>`,
+        to: adminEmail,
+        subject: `📋 New Application: ${tenantName} → ${propertyName}`,
+        html: getEmailWrapper(content, 'New application submitted'),
+      });
+    }
+
+    console.log('Admin notification sent for new application');
+    return true;
+  } catch (error) {
+    console.error('Error sending admin new application notification:', error);
+    return false;
+  }
+}
+
+export async function sendAdminSubscriptionNotification(
+  providerName: string,
+  providerEmail: string,
+  action: 'started' | 'canceled',
+  planName?: string
+): Promise<boolean> {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    const adminEmails = await getAdminEmails();
+    
+    if (adminEmails.length === 0) return false;
+
+    const isStarted = action === 'started';
+    const actionColor = isStarted ? '#10b981' : '#ef4444';
+    const actionLabel = isStarted ? 'Started' : 'Canceled';
+    const emoji = isStarted ? '💳' : '❌';
+
+    const content = `
+      <tr>
+        <td style="padding: 40px 30px; text-align: center;">
+          <div style="background: linear-gradient(135deg, ${actionColor} 0%, ${actionColor}cc 100%); width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 28px;">${emoji}</span>
+          </div>
+          <h2 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 12px;">Subscription ${actionLabel}</h2>
+          <p style="color: #94a3b8; font-size: 16px; margin: 0 0 24px;">
+            A provider has ${isStarted ? 'started' : 'canceled'} their subscription
+          </p>
+          <div style="background-color: #1e3a5f; padding: 20px; border-radius: 8px; margin: 0 0 24px; text-align: left;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Provider:</td>
+                <td style="color: #8b5cf6; font-size: 14px; padding: 6px 0; text-align: right; font-weight: 600;">${providerName}</td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Email:</td>
+                <td style="color: #cbd5e1; font-size: 14px; padding: 6px 0; text-align: right;">${providerEmail}</td>
+              </tr>
+              ${planName ? `
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Plan:</td>
+                <td style="color: #cbd5e1; font-size: 14px; padding: 6px 0; text-align: right;">${planName}</td>
+              </tr>
+              ` : ''}
+              <tr>
+                <td style="color: #64748b; font-size: 14px; padding: 6px 0;">Status:</td>
+                <td style="color: ${actionColor}; font-size: 14px; padding: 6px 0; text-align: right; font-weight: 600;">${actionLabel}</td>
+              </tr>
+            </table>
+          </div>
+          <a href="${WEBSITE_URL}/admin-dashboard" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);">
+            View in Dashboard
+          </a>
+        </td>
+      </tr>
+    `;
+    
+    for (const adminEmail of adminEmails) {
+      await client.emails.send({
+        from: `${APP_NAME} <${fromEmail}>`,
+        to: adminEmail,
+        subject: `${emoji} Subscription ${actionLabel}: ${providerName}`,
+        html: getEmailWrapper(content, `Provider subscription ${action}`),
+      });
+    }
+
+    console.log(`Admin notification sent for subscription ${action}:`, providerName);
+    return true;
+  } catch (error) {
+    console.error('Error sending admin subscription notification:', error);
+    return false;
+  }
+}

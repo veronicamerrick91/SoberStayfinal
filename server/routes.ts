@@ -8,7 +8,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
-import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml, sendApplicationReceivedEmail, sendNewApplicationNotification, sendApplicationApprovedEmail, sendApplicationDeniedEmail, sendPaymentReminderEmail, sendAdminContactEmail, sendRenewalReminderEmail, sendSubscriptionCanceledEmail, sendListingsHiddenEmail, sendAdminLoginNotification } from "./email";
+import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml, sendApplicationReceivedEmail, sendNewApplicationNotification, sendApplicationApprovedEmail, sendApplicationDeniedEmail, sendPaymentReminderEmail, sendAdminContactEmail, sendRenewalReminderEmail, sendSubscriptionCanceledEmail, sendListingsHiddenEmail, sendAdminLoginNotification, sendAdminNewUserNotification, sendAdminNewListingNotification, sendAdminNewApplicationNotification, sendAdminSubscriptionNotification } from "./email";
 import { enrollUserInActiveWorkflows } from "./subscriptionScheduler";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
@@ -225,6 +225,11 @@ Disallow: /auth/
       const workflowTrigger = role === "provider" ? "on-provider-signup" : "on-tenant-signup";
       enrollUserInActiveWorkflows(user.id, workflowTrigger, role).catch(err => {
         console.error("Failed to enroll user in workflows:", err);
+      });
+
+      // Notify admins of new user signup (non-blocking)
+      sendAdminNewUserNotification(name, email, role as 'provider' | 'tenant').catch(err => {
+        console.error("Failed to send admin new user notification:", err);
       });
 
       // Log the user in automatically
@@ -499,6 +504,19 @@ Disallow: /auth/
       ...parsed.data,
       providerId,
     });
+
+    // Notify admins when a listing is submitted (not draft) for approval
+    if (!isDraft) {
+      const providerProfile = await storage.getProviderProfile(providerId);
+      const providerName = providerProfile?.companyName || user?.name || 'Provider';
+      sendAdminNewListingNotification(
+        providerName,
+        listing.propertyName,
+        listing.city,
+        listing.state
+      ).catch(err => console.error("Failed to send admin new listing notification:", err));
+    }
+
     res.status(201).json(listing);
   });
 
@@ -2672,6 +2690,10 @@ Disallow: /auth/
                 .catch(err => console.error('Failed to send provider SMS notification:', err));
             }
           }
+
+          // Notify admins of new application
+          sendAdminNewApplicationNotification(tenantName, listing.propertyName, providerName)
+            .catch(err => console.error('Failed to send admin application notification:', err));
         }
       } catch (emailError) {
         console.error("Error sending application notifications:", emailError);

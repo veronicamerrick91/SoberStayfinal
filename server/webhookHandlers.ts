@@ -1,7 +1,7 @@
 import { getStripeSync, getUncachableStripeClient } from './stripeClient';
 import { storage } from './storage';
 import { handleSubscriptionCanceled, handleSubscriptionReactivated } from './subscriptionScheduler';
-import { sendSubscriptionCanceledEmail } from './email';
+import { sendSubscriptionCanceledEmail, sendAdminSubscriptionNotification } from './email';
 
 const GRACE_PERIOD_DAYS = 7;
 
@@ -67,6 +67,11 @@ export class WebhookHandlers {
           
           await handleSubscriptionCanceled(provider.id);
           await sendSubscriptionCanceledEmail(provider.email, provider.name, gracePeriodEndsAt);
+          
+          // Notify admins of subscription cancellation
+          sendAdminSubscriptionNotification(provider.name || 'Provider', provider.email, 'canceled')
+            .catch(err => console.error('[Webhook] Failed to send admin subscription notification:', err));
+          
           console.log(`[Webhook] Provider ${provider.id} entered grace period`);
         }
         // Handle reactivation
@@ -74,6 +79,11 @@ export class WebhookHandlers {
           const subscription = await storage.getSubscriptionByProvider(provider.id);
           if (subscription?.status === 'grace_period' || subscription?.status === 'canceled') {
             await handleSubscriptionReactivated(provider.id);
+            
+            // Notify admins of subscription reactivation
+            sendAdminSubscriptionNotification(provider.name || 'Provider', provider.email, 'started')
+              .catch(err => console.error('[Webhook] Failed to send admin subscription notification:', err));
+            
             console.log(`[Webhook] Provider ${provider.id} subscription reactivated`);
           }
         }
@@ -100,6 +110,11 @@ export class WebhookHandlers {
         
         if (provider) {
           console.log(`[Webhook] Payment succeeded for provider ${provider.id}`);
+          
+          // Check if this is a new subscription (no existing active subscription)
+          const existingSubscription = await storage.getSubscriptionByProvider(provider.id);
+          const isNewSubscription = !existingSubscription || existingSubscription.status !== 'active';
+          
           // Reset renewal reminder flag for next cycle
           await storage.updateSubscription(provider.id, { 
             status: 'active',
@@ -109,6 +124,12 @@ export class WebhookHandlers {
           // Increment listing allowance by 1 for each $49 payment (metered billing)
           await storage.incrementListingAllowance(provider.id, 1);
           console.log(`[Webhook] Listing allowance incremented for provider ${provider.id}`);
+          
+          // Notify admins of new subscription (only for first payment)
+          if (isNewSubscription) {
+            sendAdminSubscriptionNotification(provider.name || 'Provider', provider.email, 'started')
+              .catch(err => console.error('[Webhook] Failed to send admin subscription notification:', err));
+          }
         }
         break;
       }
