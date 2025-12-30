@@ -338,6 +338,47 @@ function ProviderDashboardContent() {
   // Tab state
   const [activeTab, setActiveTab] = useState("overview");
   
+  // Notification tracking - track when provider last viewed each tab
+  const [lastSeenTimes, setLastSeenTimes] = useState<Record<string, number>>(() => {
+    const saved = localStorage.getItem("provider_last_seen_tabs");
+    return saved ? JSON.parse(saved) : {};
+  });
+  
+  // Track when items were created for "unseen" comparison
+  const getUnseenApplicationsCount = () => {
+    const lastSeen = lastSeenTimes.applications || 0;
+    return applications.filter(app => {
+      const createdTime = new Date(app.submittedDate).getTime();
+      return app.status === "New" && createdTime > lastSeen;
+    }).length;
+  };
+  
+  const getUnseenMessagesCount = () => {
+    const lastSeen = lastSeenTimes.messages || 0;
+    return conversations.filter(c => c.unreadCount > 0).length; // Messages always show unread
+  };
+  
+  const getUnseenToursCount = () => {
+    const lastSeen = lastSeenTimes.tours || 0;
+    return tourRequests.filter(t => {
+      const createdTime = new Date(t.createdAt).getTime();
+      return t.status === "pending" && createdTime > lastSeen;
+    }).length;
+  };
+  
+  // Mark tab as seen when provider visits it
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    
+    // Mark certain tabs as "seen" to clear notification badges
+    if (["inbox", "messages", "tours"].includes(tab)) {
+      const tabKey = tab === "inbox" ? "applications" : tab;
+      const newLastSeen = { ...lastSeenTimes, [tabKey]: Date.now() };
+      setLastSeenTimes(newLastSeen);
+      localStorage.setItem("provider_last_seen_tabs", JSON.stringify(newLastSeen));
+    }
+  };
+  
   // Featured Listings state
   const [featuredListings, setFeaturedListings] = useState<any[]>([]);
   const [showBoostModal, setShowBoostModal] = useState(false);
@@ -970,17 +1011,17 @@ function ProviderDashboardContent() {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-8">
           <TabsList className="bg-gradient-to-r from-card via-card to-card border border-border/50 p-2 flex flex-wrap gap-2 h-auto justify-start rounded-lg shadow-sm">
             <TabsTrigger value="overview" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><BarChart3 className="w-4 h-4" /> Overview</TabsTrigger>
-            <TabsTrigger value="properties" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Building className="w-4 h-4" /> Listings {listings.length > 0 && <Badge className="bg-primary text-white ml-1">{listings.length}</Badge>}</TabsTrigger>
+            <TabsTrigger value="properties" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Building className="w-4 h-4" /> Listings</TabsTrigger>
             <TabsTrigger value="messages" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
               <MessageSquare className="w-4 h-4" />
-              Messages {conversations.filter(c => c.unreadCount > 0).length > 0 && <Badge className="bg-primary text-white ml-1">{conversations.filter(c => c.unreadCount > 0).length}</Badge>}
+              Messages {getUnseenMessagesCount() > 0 && <Badge className="bg-primary text-white ml-1">{getUnseenMessagesCount()}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="inbox" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
               <Users className="w-4 h-4" />
-              Applications {applications.filter(a => a.status === "New").length > 0 && <Badge className="bg-red-500 text-white ml-1">{applications.filter(a => a.status === "New").length}</Badge>}
+              Applications {getUnseenApplicationsCount() > 0 && <Badge className="bg-red-500 text-white ml-1">{getUnseenApplicationsCount()}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="beds" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Bed className="w-4 h-4" /> Beds</TabsTrigger>
             <TabsTrigger value="analytics" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><BarChart3 className="w-4 h-4" /> Analytics</TabsTrigger>
@@ -988,7 +1029,7 @@ function ProviderDashboardContent() {
             <TabsTrigger value="files" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><FileArchive className="w-4 h-4" /> Resident Files</TabsTrigger>
             <TabsTrigger value="verification" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Shield className="w-4 h-4" /> Verify</TabsTrigger>
             <TabsTrigger value="tours" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all">
-              <Calendar className="w-4 h-4" /> Tour Requests {tourRequests.filter(t => t.status === "pending").length > 0 && <Badge className="bg-amber-500 text-white ml-1">{tourRequests.filter(t => t.status === "pending").length}</Badge>}
+              <Calendar className="w-4 h-4" /> Tour Requests {getUnseenToursCount() > 0 && <Badge className="bg-amber-500 text-white ml-1">{getUnseenToursCount()}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="billing" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><CreditCard className="w-4 h-4" /> Billing</TabsTrigger>
             <TabsTrigger value="settings" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
