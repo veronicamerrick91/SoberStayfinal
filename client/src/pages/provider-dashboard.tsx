@@ -2346,7 +2346,7 @@ function ProviderDashboardContent() {
                 <div className="pt-4 border-t border-border">
                   <h3 className="font-bold text-white mb-3">Verification Benefits</h3>
                   <ul className="space-y-2">
-                    <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Featured listing placement</li>
+                    <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Unlock featured listing placement</li>
                     <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Verified badge on all properties</li>
                     <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Priority support</li>
                     <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Higher tenant trust</li>
