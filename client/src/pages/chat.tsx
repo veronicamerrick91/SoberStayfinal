@@ -12,6 +12,7 @@ import type { Listing } from "@shared/schema";
 interface Message {
   id: string;
   sender: "tenant" | "provider";
+  senderId?: number;
   senderName: string;
   text: string;
   timestamp: Date;
@@ -107,10 +108,15 @@ export default function Chat() {
     e.preventDefault();
     if (!input.trim()) return;
 
+    // Determine sender role based on current user
+    const senderRole = user?.role === "provider" ? "provider" : "tenant";
+    const senderName = user?.name || "You";
+
     const newMessage: Message = {
       id: Date.now().toString(),
-      sender: "tenant",
-      senderName: "You",
+      sender: senderRole,
+      senderId: user?.id,
+      senderName: senderName,
       text: input.trim(),
       timestamp: new Date(),
       avatarUrl: tenantAvatar || undefined,
@@ -118,6 +124,16 @@ export default function Chat() {
 
     setMessages([...messages, newMessage]);
     setInput("");
+  };
+
+  // Helper to determine if a message was sent by the current user
+  const isCurrentUserMessage = (msg: Message) => {
+    // If senderId is set, compare with current user
+    if (msg.senderId && user?.id) {
+      return msg.senderId === user.id;
+    }
+    // Fallback: compare roles (for legacy messages)
+    return msg.sender === user?.role;
   };
 
   const formatTime = (date: Date) => {
@@ -209,26 +225,34 @@ export default function Chat() {
                 </div>
 
                 {/* Messages */}
-                {group.messages.map((msg: Message) => (
-                  <div key={msg.id} className={`flex ${msg.sender === "tenant" ? "justify-end" : "justify-start"} gap-3 animate-in slide-in-from-bottom-2 fade-in duration-300`}>
-                    {/* Provider Avatar (Left) */}
-                    {msg.sender === "provider" && msg.avatarUrl && (
-                      <img
-                        src={msg.avatarUrl}
-                        alt="Property"
-                        className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-primary/30"
-                      />
-                    )}
-                    {msg.sender === "provider" && !msg.avatarUrl && (
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 border border-primary/30">
-                        <MessageCircle className="w-4 h-4 text-primary" />
+                {group.messages.map((msg: Message) => {
+                  const isSelf = isCurrentUserMessage(msg);
+                  return (
+                  <div key={msg.id} className={`flex ${isSelf ? "justify-end" : "justify-start"} gap-3 animate-in slide-in-from-bottom-2 fade-in duration-300`}>
+                    {/* Other User's Avatar (Left) */}
+                    {!isSelf && (
+                      <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                        {msg.avatarUrl ? (
+                          <img
+                            src={msg.avatarUrl}
+                            alt={msg.senderName}
+                            className="w-8 h-8 rounded-full object-cover border border-primary/30"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+                            <MessageCircle className="w-4 h-4 text-primary" />
+                          </div>
+                        )}
+                        <span className="text-[10px] text-muted-foreground max-w-[60px] truncate">
+                          {msg.senderName}
+                        </span>
                       </div>
                     )}
 
-                    <div className={`flex flex-col ${msg.sender === "tenant" ? "items-end" : "items-start"} gap-1 max-w-sm`}>
+                    <div className={`flex flex-col ${isSelf ? "items-end" : "items-start"} gap-1 max-w-sm`}>
                       <div
                         className={`px-5 py-3 rounded-2xl transition-all ${
-                          msg.sender === "tenant"
+                          isSelf
                             ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-br-none shadow-lg shadow-primary/20"
                             : "bg-card border border-border/50 text-foreground rounded-bl-none hover:border-primary/30 shadow-md"
                         }`}
@@ -237,26 +261,33 @@ export default function Chat() {
                           {msg.text}
                         </p>
                       </div>
-                      <span className={`text-xs font-medium px-1 ${msg.sender === "tenant" ? "text-muted-foreground mr-2" : "text-muted-foreground ml-2"}`}>
+                      <span className={`text-xs font-medium px-1 ${isSelf ? "text-muted-foreground mr-2" : "text-muted-foreground ml-2"}`}>
                         {formatTime(msg.timestamp)}
                       </span>
                     </div>
 
-                    {/* Tenant Avatar (Right) */}
-                    {msg.sender === "tenant" && msg.avatarUrl && (
-                      <img
-                        src={msg.avatarUrl}
-                        alt="Profile"
-                        className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-primary/30 order-first"
-                      />
-                    )}
-                    {msg.sender === "tenant" && !msg.avatarUrl && (
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 border border-primary/30 order-first">
-                        <MessageCircle className="w-4 h-4 text-primary" />
+                    {/* Current User's Avatar (Right) */}
+                    {isSelf && (
+                      <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                        {msg.avatarUrl ? (
+                          <img
+                            src={msg.avatarUrl}
+                            alt={msg.senderName}
+                            className="w-8 h-8 rounded-full object-cover border border-primary/30"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+                            <MessageCircle className="w-4 h-4 text-primary" />
+                          </div>
+                        )}
+                        <span className="text-[10px] text-muted-foreground max-w-[60px] truncate">
+                          {msg.senderName}
+                        </span>
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             ))}
             <div ref={messagesEndRef} />
