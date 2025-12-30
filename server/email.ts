@@ -1258,11 +1258,8 @@ export async function sendProviderFeedbackEmail(
             <p style="color: #cbd5e1; font-size: 16px; margin: 0 0 8px;">
               <strong>Provider:</strong> ${companyName}
             </p>
-            <p style="color: #cbd5e1; font-size: 16px; margin: 0 0 8px;">
-              <strong>Email:</strong> ${providerEmail}
-            </p>
             <p style="color: #cbd5e1; font-size: 16px; margin: 0;">
-              <strong>Provider ID:</strong> ${providerId}
+              <strong>Email:</strong> ${providerEmail}
             </p>
           </div>
           <div style="background-color: #1e293b; padding: 20px; border-radius: 8px; margin: 0 0 24px; text-align: left;">
