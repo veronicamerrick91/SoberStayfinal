@@ -1038,6 +1038,7 @@ function ProviderDashboardContent() {
             </TabsTrigger>
             <TabsTrigger value="billing" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><CreditCard className="w-4 h-4" /> Billing</TabsTrigger>
             <TabsTrigger value="settings" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
+            <TabsTrigger value="support" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><HelpCircle className="w-4 h-4" /> Support</TabsTrigger>
           </TabsList>
 
           {/* OVERVIEW */}
@@ -2446,77 +2447,6 @@ function ProviderDashboardContent() {
                 </CardContent>
               </Card>
 
-              {/* Feedback & Support */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2"><HelpCircle className="w-5 h-5 text-primary" /> Feedback & Support</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Report issues or request new features
-                  </p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-white text-sm">Subject</Label>
-                    <select 
-                      className="w-full bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary rounded-md px-3 py-2 text-white"
-                      id="feedback-type"
-                      data-testid="select-feedback-type"
-                    >
-                      <option value="bug">Report a Bug / Issue</option>
-                      <option value="feature">Request a Feature</option>
-                      <option value="question">General Question</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-white text-sm">Message</Label>
-                    <textarea 
-                      className="w-full bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary rounded-md px-3 py-2 text-white min-h-[120px] resize-none"
-                      placeholder="Describe the issue or feature you'd like to see..."
-                      id="feedback-message"
-                      data-testid="textarea-feedback-message"
-                    />
-                  </div>
-                  <Button 
-                    className="w-full bg-primary hover:bg-primary/80"
-                    onClick={async () => {
-                      const typeEl = document.getElementById('feedback-type') as HTMLSelectElement;
-                      const msgEl = document.getElementById('feedback-message') as HTMLTextAreaElement;
-                      const feedbackType = typeEl?.value || 'other';
-                      const feedbackMessage = msgEl?.value?.trim();
-                      
-                      if (!feedbackMessage) {
-                        alert("Please enter a message");
-                        return;
-                      }
-                      
-                      try {
-                        const res = await fetch('/api/provider/feedback', {
-                          method: 'POST',
-                          credentials: 'include',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ type: feedbackType, message: feedbackMessage })
-                        });
-                        
-                        if (res.ok) {
-                          alert("Thank you! Your feedback has been submitted.");
-                          msgEl.value = '';
-                        } else {
-                          const data = await res.json();
-                          alert(data.error || "Failed to submit feedback");
-                        }
-                      } catch (err) {
-                        console.error("Error submitting feedback:", err);
-                        alert("Failed to submit feedback. Please try again.");
-                      }
-                    }}
-                    data-testid="button-submit-feedback"
-                  >
-                    Submit Feedback
-                  </Button>
-                </CardContent>
-              </Card>
-
               {/* Notification Settings */}
               <Card className="bg-card border-border lg:col-span-2">
                 <CardHeader>
@@ -2878,6 +2808,103 @@ function ProviderDashboardContent() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* SUPPORT TAB */}
+          <TabsContent value="support" className="space-y-6">
+            <div className="max-w-2xl">
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <HelpCircle className="w-5 h-5 text-primary" /> Feedback & Support
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Report issues, request new features, or ask questions. We typically respond within 24-48 hours.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-white text-sm">Subject</Label>
+                    <select 
+                      className="w-full bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary rounded-md px-3 py-2 text-white"
+                      id="feedback-type"
+                      data-testid="select-feedback-type"
+                    >
+                      <option value="bug">Report a Bug / Issue</option>
+                      <option value="feature">Request a Feature</option>
+                      <option value="question">General Question</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-white text-sm">Message</Label>
+                    <textarea 
+                      className="w-full bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary rounded-md px-3 py-2 text-white min-h-[150px] resize-none"
+                      placeholder="Describe the issue or feature you'd like to see..."
+                      id="feedback-message"
+                      data-testid="textarea-feedback-message"
+                    />
+                  </div>
+                  <Button 
+                    className="w-full bg-primary hover:bg-primary/80"
+                    onClick={async () => {
+                      const typeEl = document.getElementById('feedback-type') as HTMLSelectElement;
+                      const msgEl = document.getElementById('feedback-message') as HTMLTextAreaElement;
+                      const feedbackType = typeEl?.value || 'other';
+                      const feedbackMessage = msgEl?.value?.trim();
+                      
+                      if (!feedbackMessage) {
+                        alert("Please enter a message");
+                        return;
+                      }
+                      
+                      try {
+                        const res = await fetch('/api/provider/feedback', {
+                          method: 'POST',
+                          credentials: 'include',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ type: feedbackType, message: feedbackMessage })
+                        });
+                        
+                        if (res.ok) {
+                          alert("Thank you! Your feedback has been submitted.");
+                          msgEl.value = '';
+                        } else {
+                          const data = await res.json();
+                          alert(data.error || "Failed to submit feedback");
+                        }
+                      } catch (err) {
+                        console.error("Error submitting feedback:", err);
+                        alert("Failed to submit feedback. Please try again.");
+                      }
+                    }}
+                    data-testid="button-submit-feedback"
+                  >
+                    Submit Feedback
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-card border-border mt-6">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Mail className="w-5 h-5 text-primary" /> Contact Us Directly
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    For urgent matters or detailed inquiries, you can also reach us via email:
+                  </p>
+                  <a 
+                    href="mailto:Support@soberstayhomes.com" 
+                    className="inline-flex items-center gap-2 text-primary hover:underline"
+                  >
+                    <Mail className="w-4 h-4" />
+                    Support@soberstayhomes.com
+                  </a>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
 
