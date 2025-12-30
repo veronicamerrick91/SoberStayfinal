@@ -144,6 +144,7 @@ function Router() {
         <Route path="/sober-living-near-me" component={SoberLivingNearMe} />
         <Route path="/what-is-sober-living" component={WhatIsSoberLiving} />
         <Route path="/apply-for-sober-living" component={ApplyForSoberLiving} />
+        <Route path="/sober-living-california" component={SoberLivingCalifornia} />
         <Route path="/california-sober-living" component={SoberLivingCalifornia} />
         <Route path="/sober-living-homes/:city" component={SoberLivingCity} />
         <Route path="/partners" component={PartnersDirectory} />
