@@ -37,6 +37,18 @@ async function fetchTenantProfile() {
   return null;
 }
 
+async function fetchProviderProfileByListing(listingId: string) {
+  try {
+    const response = await fetch(`/api/listings/${listingId}/provider-profile`);
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (error) {
+    console.error("Failed to fetch provider profile:", error);
+  }
+  return null;
+}
+
 export default function Chat() {
   const [match, params] = useRoute("/chat/:propertyId");
   const [location, setLocation] = useLocation();
@@ -45,6 +57,8 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [tenantAvatar, setTenantAvatar] = useState<string | null>(null);
+  const [providerAvatar, setProviderAvatar] = useState<string | null>(null);
+  const [providerName, setProviderName] = useState<string>("Listing Manager");
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const user = getAuth();
   
@@ -65,6 +79,20 @@ export default function Chat() {
     }
   }, [user?.id, user?.role]);
 
+  // Load provider profile (for logo)
+  useEffect(() => {
+    if (params?.propertyId) {
+      fetchProviderProfileByListing(params.propertyId).then((profile) => {
+        if (profile?.logoUrl) {
+          setProviderAvatar(profile.logoUrl);
+        }
+        if (profile?.companyName) {
+          setProviderName(profile.companyName);
+        }
+      });
+    }
+  }, [params?.propertyId]);
+
   // Load messages from localStorage
   useEffect(() => {
     if (!property?.id) return;
@@ -74,19 +102,18 @@ export default function Chat() {
       const parsed = JSON.parse(stored);
       setMessages(parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })));
     } else {
-      // Initialize with welcome message from provider (with listing logo)
-      const providerAvatar = property.photos && property.photos[0] ? property.photos[0] : undefined;
+      // Initialize with welcome message from provider (with company logo)
       const welcome: Message = {
         id: "welcome",
         sender: "provider",
-        senderName: "Listing Manager",
+        senderName: providerName,
         text: `Hi! Thanks for your interest in ${property?.propertyName}. We'd be happy to answer any questions about our home. What would you like to know?`,
         timestamp: new Date(),
-        avatarUrl: providerAvatar,
+        avatarUrl: providerAvatar || undefined,
       };
       setMessages([welcome]);
     }
-  }, [property?.id, property?.propertyName, property?.photos]);
+  }, [property?.id, property?.propertyName, providerAvatar, providerName]);
 
   // Save messages to localStorage and scroll to bottom only for new messages
   useEffect(() => {
@@ -110,7 +137,8 @@ export default function Chat() {
 
     // Determine sender role based on current user
     const senderRole = user?.role === "provider" ? "provider" : "tenant";
-    const senderName = user?.name || "You";
+    const senderName = user?.role === "provider" ? providerName : (user?.name || "You");
+    const senderAvatar = user?.role === "provider" ? providerAvatar : tenantAvatar;
 
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -119,7 +147,7 @@ export default function Chat() {
       senderName: senderName,
       text: input.trim(),
       timestamp: new Date(),
-      avatarUrl: tenantAvatar || undefined,
+      avatarUrl: senderAvatar || undefined,
     };
 
     setMessages([...messages, newMessage]);

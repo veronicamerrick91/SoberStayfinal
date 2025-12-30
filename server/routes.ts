@@ -628,6 +628,28 @@ Disallow: /auth/
     }
   });
 
+  // Get provider profile for a listing (public - for chat avatars)
+  app.get("/api/listings/:id/provider-profile", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid listing ID" });
+      }
+      const listing = await storage.getListing(id);
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      const profile = await storage.getProviderProfile(listing.providerId);
+      if (!profile) {
+        return res.json({ companyName: null, logoUrl: null });
+      }
+      res.json({ companyName: profile.companyName, logoUrl: profile.logoUrl });
+    } catch (error) {
+      console.error("Error fetching provider profile for listing:", error);
+      res.status(500).json({ error: "Failed to fetch provider profile" });
+    }
+  });
+
   // Update listing (PUT)
   app.put("/api/listings/:id", async (req, res) => {
     if (!req.isAuthenticated()) {
