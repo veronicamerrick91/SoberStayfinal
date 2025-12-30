@@ -8,7 +8,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { authenticator } from "otplib";
 import QRCode from "qrcode";
-import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml, sendApplicationReceivedEmail, sendNewApplicationNotification, sendApplicationApprovedEmail, sendApplicationDeniedEmail, sendPaymentReminderEmail, sendAdminContactEmail, sendRenewalReminderEmail, sendSubscriptionCanceledEmail, sendListingsHiddenEmail, sendAdminLoginNotification, sendAdminNewUserNotification, sendAdminNewListingNotification, sendAdminNewApplicationNotification, sendAdminSubscriptionNotification } from "./email";
+import { sendPasswordResetEmail, sendEmail, sendBulkEmails, createMarketingEmailHtml, sendApplicationReceivedEmail, sendNewApplicationNotification, sendApplicationApprovedEmail, sendApplicationDeniedEmail, sendPaymentReminderEmail, sendAdminContactEmail, sendRenewalReminderEmail, sendSubscriptionCanceledEmail, sendListingsHiddenEmail, sendAdminLoginNotification, sendAdminNewUserNotification, sendAdminNewListingNotification, sendAdminNewApplicationNotification, sendAdminSubscriptionNotification, sendProviderFeedbackEmail } from "./email";
 import { enrollUserInActiveWorkflows } from "./subscriptionScheduler";
 import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
@@ -2377,25 +2377,19 @@ Disallow: /auth/
       const providerProfile = await storage.getProviderProfile(user.id);
       const companyName = providerProfile?.companyName || "Unknown";
       
-      // Send email to support
-      const emailResult = await sendEmail({
-        to: "Veronicamerrick91@gmail.com",
-        subject: `[SOBER STAY ALERT] Provider ${typeLabels[type] || "Feedback"} - ${companyName}`,
-        html: `
-          <h2>Provider Feedback Submission</h2>
-          <p><strong>Type:</strong> ${typeLabels[type] || type}</p>
-          <p><strong>Provider:</strong> ${companyName}</p>
-          <p><strong>Email:</strong> ${user.email}</p>
-          <p><strong>Provider ID:</strong> ${user.id}</p>
-          <hr />
-          <p><strong>Message:</strong></p>
-          <p>${message.replace(/\n/g, '<br>')}</p>
-        `,
-      });
+      // Send feedback email using the proper email template
+      const emailResult = await sendProviderFeedbackEmail(
+        "Veronicamerrick91@gmail.com",
+        typeLabels[type] || "Feedback",
+        companyName,
+        user.email,
+        user.id,
+        message
+      );
       
       if (!emailResult.success) {
         console.error("Failed to send feedback email:", emailResult.error);
-        return res.status(500).json({ error: "Failed to send feedback. Please try again or email Support@soberstayhomes.com directly." });
+        return res.status(500).json({ error: "Failed to send feedback. Please try again or email Veronicamerrick91@gmail.com directly." });
       }
       
       console.log("Feedback email sent successfully:", emailResult.messageId);

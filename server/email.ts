@@ -1235,3 +1235,61 @@ export async function sendProviderTourRequestNotification(
     return false;
   }
 }
+
+export async function sendProviderFeedbackEmail(
+  toEmail: string,
+  feedbackType: string,
+  companyName: string,
+  providerEmail: string,
+  providerId: number,
+  message: string
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    const content = `
+      <tr>
+        <td style="padding: 40px 30px; text-align: center;">
+          <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 16px;">Provider Feedback Received</h1>
+          <div style="background-color: #1e3a5f; padding: 20px; border-radius: 8px; margin: 0 0 24px; text-align: left;">
+            <p style="color: #10b981; font-size: 14px; font-weight: 600; margin: 0 0 12px;">FEEDBACK DETAILS</p>
+            <p style="color: #cbd5e1; font-size: 16px; margin: 0 0 8px;">
+              <strong>Type:</strong> ${feedbackType}
+            </p>
+            <p style="color: #cbd5e1; font-size: 16px; margin: 0 0 8px;">
+              <strong>Provider:</strong> ${companyName}
+            </p>
+            <p style="color: #cbd5e1; font-size: 16px; margin: 0 0 8px;">
+              <strong>Email:</strong> ${providerEmail}
+            </p>
+            <p style="color: #cbd5e1; font-size: 16px; margin: 0;">
+              <strong>Provider ID:</strong> ${providerId}
+            </p>
+          </div>
+          <div style="background-color: #1e293b; padding: 20px; border-radius: 8px; margin: 0 0 24px; text-align: left;">
+            <p style="color: #10b981; font-size: 14px; font-weight: 600; margin: 0 0 12px;">MESSAGE</p>
+            <p style="color: #cbd5e1; font-size: 16px; line-height: 1.7; margin: 0;">
+              ${message.replace(/\n/g, '<br>')}
+            </p>
+          </div>
+        </td>
+      </tr>
+    `;
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
+      to: toEmail,
+      subject: `[SOBER STAY ALERT] Provider ${feedbackType} - ${companyName}`,
+      html: getEmailWrapper(content, `Provider feedback: ${feedbackType}`),
+    });
+
+    if (error) {
+      console.error('Failed to send provider feedback email:', error);
+      return { success: false, error: error.message };
+    }
+
+    console.log('Provider feedback email sent successfully:', data?.id);
+    return { success: true, messageId: data?.id };
+  } catch (error: any) {
+    console.error('Error sending provider feedback email:', error);
+    return { success: false, error: error.message || 'Failed to send email' };
+  }
+}
