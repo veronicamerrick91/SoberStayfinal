@@ -1045,6 +1045,21 @@ Disallow: /auth/
         })
       });
       
+      // If provider has an active Stripe subscription, apply/remove the founding member discount
+      if (provider.stripeSubscriptionId) {
+        try {
+          if (isFoundingMember) {
+            await stripeService.applyFoundingMemberDiscount(provider.stripeSubscriptionId);
+            console.log(`[Founding Member] Applied 50% discount to subscription ${provider.stripeSubscriptionId}`);
+          } else {
+            await stripeService.removeFoundingMemberDiscount(provider.stripeSubscriptionId);
+            console.log(`[Founding Member] Removed discount from subscription ${provider.stripeSubscriptionId}`);
+          }
+        } catch (stripeError) {
+          console.error("[Founding Member] Stripe discount error (continuing anyway):", stripeError);
+        }
+      }
+      
       res.json({ success: true, profile: updatedProfile });
     } catch (error) {
       console.error("[Founding Member] Error:", error);
@@ -1181,14 +1196,19 @@ Disallow: /auth/
         customerId = customer.id;
       }
 
-      // Create checkout session
+      // Check if provider is a founding member for discount
+      const providerProfile = await storage.getProviderProfile(user.id);
+      const isFoundingMember = providerProfile?.isFoundingMember || false;
+
+      // Create checkout session (with founding member discount if applicable)
       const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
       const session = await stripeService.createCheckoutSession(
         customerId,
         priceId,
         `${baseUrl}/provider-dashboard`,
         `${baseUrl}/provider-dashboard`,
-        { providerId: String(user.id) }
+        { providerId: String(user.id) },
+        isFoundingMember
       );
 
       res.json({ url: session.url });
