@@ -2400,8 +2400,37 @@ Disallow: /auth/
     }
   });
 
-  // Remove verification document
+  // Remove verification document (POST for legacy support)
   app.post("/api/provider/verification-doc/remove", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { docType } = req.body;
+      
+      const validDocTypes = ["business_license", "insurance", "owner_id", "property_photos", "safety_certs"];
+      if (!docType || !validDocTypes.includes(docType)) {
+        return res.status(400).json({ error: "Invalid document type" });
+      }
+      
+      const profile = await storage.getProviderProfile(user.id);
+      const existingDocs = (profile?.verificationDocs as Record<string, string>) || {};
+      delete existingDocs[docType];
+      
+      await storage.createOrUpdateProviderProfile(user.id, { 
+        verificationDocs: existingDocs as any 
+      });
+      
+      res.json({ success: true, docType });
+    } catch (error) {
+      console.error("Error removing verification document:", error);
+      res.status(500).json({ error: "Failed to remove verification document" });
+    }
+  });
+  
+  // Remove verification document (DELETE for REST compliance)
+  app.delete("/api/provider/verification-doc", async (req, res) => {
     const user = req.user as any;
     if (!req.isAuthenticated() || user?.role !== "provider") {
       return res.status(401).json({ error: "Unauthorized" });

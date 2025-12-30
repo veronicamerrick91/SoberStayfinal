@@ -10,7 +10,7 @@ import {
   Plus, Check, X, MoreHorizontal, Search, ChevronRight,
   Bed, FileText, Settings, Lock, Mail, Phone, Upload, Shield, ToggleRight,
   Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video, Eye, CreditCard,
-  ShieldCheck, Loader2, RotateCcw, CheckCircle, Download
+  ShieldCheck, Loader2, RotateCcw, CheckCircle, Download, Trash2
 } from "lucide-react";
 import { downloadDocument } from "@/lib/document-utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -2208,46 +2208,98 @@ function ProviderDashboardContent() {
                               </p>
                             </div>
                           </div>
-                          <div className="relative">
-                            <input 
-                              type="file" 
-                              accept=".pdf,.jpg,.jpeg,.png"
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                              onChange={async (e) => {
-                                if (e.target.files && e.target.files.length > 0) {
-                                  const file = e.target.files[0];
-                                  if (file.size > 5 * 1024 * 1024) {
-                                    alert("File is too large. Maximum size is 5MB.");
-                                    return;
-                                  }
-                                  const reader = new FileReader();
-                                  reader.onload = async () => {
-                                    const fileUrl = reader.result as string;
-                                    try {
-                                      const res = await fetch('/api/provider/verification-doc', {
-                                        method: 'POST',
-                                        credentials: 'include',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ docType: doc.key, fileUrl })
-                                      });
-                                      if (res.ok) {
-                                        setVerificationDocs(prev => ({ ...prev, [doc.key]: fileUrl }));
-                                      } else {
+                          <div className="flex items-center gap-2">
+                            {isUploaded && (
+                              <>
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="gap-1 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                                  onClick={() => {
+                                    const docUrl = verificationDocs[doc.key];
+                                    if (docUrl) {
+                                      window.open(docUrl, '_blank');
+                                    }
+                                  }}
+                                  data-testid={`button-view-${doc.key}`}
+                                >
+                                  <Eye className="w-4 h-4" /> View
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="gap-1 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                  onClick={async () => {
+                                    if (confirm(`Are you sure you want to delete the ${doc.name}?`)) {
+                                      try {
+                                        const res = await fetch('/api/provider/verification-doc', {
+                                          method: 'DELETE',
+                                          credentials: 'include',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ docType: doc.key })
+                                        });
+                                        if (res.ok) {
+                                          setVerificationDocs(prev => {
+                                            const updated = { ...prev };
+                                            delete updated[doc.key];
+                                            return updated;
+                                          });
+                                        } else {
+                                          alert("Failed to delete document");
+                                        }
+                                      } catch (err) {
+                                        console.error("Delete error:", err);
+                                        alert("Failed to delete document");
+                                      }
+                                    }
+                                  }}
+                                  data-testid={`button-delete-${doc.key}`}
+                                >
+                                  <Trash2 className="w-4 h-4" /> Delete
+                                </Button>
+                              </>
+                            )}
+                            <div className="relative">
+                              <input 
+                                type="file" 
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                onChange={async (e) => {
+                                  if (e.target.files && e.target.files.length > 0) {
+                                    const file = e.target.files[0];
+                                    if (file.size > 5 * 1024 * 1024) {
+                                      alert("File is too large. Maximum size is 5MB.");
+                                      return;
+                                    }
+                                    const reader = new FileReader();
+                                    reader.onload = async () => {
+                                      const fileUrl = reader.result as string;
+                                      try {
+                                        const res = await fetch('/api/provider/verification-doc', {
+                                          method: 'POST',
+                                          credentials: 'include',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ docType: doc.key, fileUrl })
+                                        });
+                                        if (res.ok) {
+                                          setVerificationDocs(prev => ({ ...prev, [doc.key]: fileUrl }));
+                                        } else {
+                                          alert("Failed to upload document");
+                                        }
+                                      } catch (err) {
+                                        console.error("Upload error:", err);
                                         alert("Failed to upload document");
                                       }
-                                    } catch (err) {
-                                      console.error("Upload error:", err);
-                                      alert("Failed to upload document");
-                                    }
-                                  };
-                                  reader.readAsDataURL(file);
-                                }
-                              }}
-                              data-testid={`input-upload-${doc.key}`}
-                            />
-                            <Button size="sm" className="gap-2" variant={isUploaded ? "outline" : "default"}>
-                              <Upload className="w-4 h-4" /> {isUploaded ? "Update" : "Upload"}
-                            </Button>
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                                data-testid={`input-upload-${doc.key}`}
+                              />
+                              <Button size="sm" className="gap-2" variant={isUploaded ? "outline" : "default"}>
+                                <Upload className="w-4 h-4" /> {isUploaded ? "Replace" : "Upload"}
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       );
