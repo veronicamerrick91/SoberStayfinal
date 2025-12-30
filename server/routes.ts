@@ -2378,25 +2378,27 @@ Disallow: /auth/
       const companyName = providerProfile?.companyName || "Unknown";
       
       // Send email to support
-      try {
-        await sendEmail({
-          to: "Support@soberstayhomes.com",
-          subject: `[Provider Feedback] ${typeLabels[type] || "Other"} from ${companyName}`,
-          html: `
-            <h2>Provider Feedback Submission</h2>
-            <p><strong>Type:</strong> ${typeLabels[type] || type}</p>
-            <p><strong>Provider:</strong> ${companyName}</p>
-            <p><strong>Email:</strong> ${user.email}</p>
-            <p><strong>Provider ID:</strong> ${user.id}</p>
-            <hr />
-            <p><strong>Message:</strong></p>
-            <p>${message.replace(/\n/g, '<br>')}</p>
-          `,
-        });
-      } catch (emailError) {
-        console.log("Email notification for feedback skipped:", emailError);
+      const emailResult = await sendEmail({
+        to: "Support@soberstayhomes.com",
+        subject: `[Provider Feedback] ${typeLabels[type] || "Other"} from ${companyName}`,
+        html: `
+          <h2>Provider Feedback Submission</h2>
+          <p><strong>Type:</strong> ${typeLabels[type] || type}</p>
+          <p><strong>Provider:</strong> ${companyName}</p>
+          <p><strong>Email:</strong> ${user.email}</p>
+          <p><strong>Provider ID:</strong> ${user.id}</p>
+          <hr />
+          <p><strong>Message:</strong></p>
+          <p>${message.replace(/\n/g, '<br>')}</p>
+        `,
+      });
+      
+      if (!emailResult.success) {
+        console.error("Failed to send feedback email:", emailResult.error);
+        return res.status(500).json({ error: "Failed to send feedback. Please try again or email Support@soberstayhomes.com directly." });
       }
       
+      console.log("Feedback email sent successfully:", emailResult.messageId);
       res.json({ success: true });
     } catch (error) {
       console.error("Error submitting provider feedback:", error);
