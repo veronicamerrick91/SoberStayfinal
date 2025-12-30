@@ -427,6 +427,11 @@ function ProviderDashboardContent() {
   // Verification document uploads (loaded from backend)
   const [verificationDocs, setVerificationDocs] = useState<Record<string, string | null>>({});
   
+  // Document viewer modal state
+  const [docViewerOpen, setDocViewerOpen] = useState(false);
+  const [docViewerUrl, setDocViewerUrl] = useState<string>("");
+  const [docViewerName, setDocViewerName] = useState<string>("");
+  
   // Resident document uploads
   const [residentDocs, setResidentDocs] = useState<Record<string, Record<string, any>>>({});
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
@@ -2246,7 +2251,9 @@ function ProviderDashboardContent() {
                                   onClick={() => {
                                     const docUrl = verificationDocs[doc.key];
                                     if (docUrl) {
-                                      window.open(docUrl, '_blank');
+                                      setDocViewerUrl(docUrl);
+                                      setDocViewerName(doc.name);
+                                      setDocViewerOpen(true);
                                     }
                                   }}
                                   data-testid={`button-view-${doc.key}`}
@@ -3163,6 +3170,83 @@ function ProviderDashboardContent() {
                 data-testid="button-confirm-reschedule"
               >
                 Send Suggestion
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Document Viewer Modal */}
+        <Dialog open={docViewerOpen} onOpenChange={setDocViewerOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] bg-card border-border">
+            <DialogHeader>
+              <DialogTitle className="text-white flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary" />
+                {docViewerName}
+              </DialogTitle>
+              <DialogDescription>
+                Document preview
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col items-center justify-center p-4 min-h-[400px] max-h-[70vh] overflow-auto">
+              {docViewerUrl && (
+                docViewerUrl.startsWith('data:image') ? (
+                  <img 
+                    src={docViewerUrl} 
+                    alt={docViewerName}
+                    className="max-w-full max-h-[60vh] object-contain rounded-lg border border-border"
+                  />
+                ) : docViewerUrl.startsWith('data:application/pdf') ? (
+                  <div className="w-full text-center space-y-4">
+                    <FileText className="w-16 h-16 text-muted-foreground mx-auto" />
+                    <p className="text-muted-foreground">PDF documents cannot be previewed inline.</p>
+                    <Button
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = docViewerUrl;
+                        link.download = `${docViewerName.replace(/\s+/g, '_')}.pdf`;
+                        link.click();
+                      }}
+                      className="gap-2"
+                    >
+                      <Download className="w-4 h-4" /> Download PDF
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center space-y-4">
+                    <FileText className="w-16 h-16 text-muted-foreground mx-auto" />
+                    <p className="text-muted-foreground">Preview not available for this file type.</p>
+                    <Button
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = docViewerUrl;
+                        link.download = docViewerName.replace(/\s+/g, '_');
+                        link.click();
+                      }}
+                      className="gap-2"
+                    >
+                      <Download className="w-4 h-4" /> Download File
+                    </Button>
+                  </div>
+                )
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDocViewerOpen(false)}>
+                Close
+              </Button>
+              <Button
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = docViewerUrl;
+                  const ext = docViewerUrl.startsWith('data:application/pdf') ? '.pdf' : 
+                              docViewerUrl.startsWith('data:image/png') ? '.png' : 
+                              docViewerUrl.startsWith('data:image/jpeg') ? '.jpg' : '';
+                  link.download = `${docViewerName.replace(/\s+/g, '_')}${ext}`;
+                  link.click();
+                }}
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" /> Download
               </Button>
             </DialogFooter>
           </DialogContent>
