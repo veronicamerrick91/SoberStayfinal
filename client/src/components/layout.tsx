@@ -251,6 +251,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/browse" className="hover:text-primary">Browse Homes</Link></li>
                 <li><Link href="/find-sober-living" className="hover:text-primary">Find Sober Living</Link></li>
+                <li><Link href="/sober-living-california" className="hover:text-primary">Sober Living in California</Link></li>
                 <li><Link href="/for-tenants" className="hover:text-primary">For Tenants</Link></li>
                 <li><Link href="/for-providers" className="hover:text-primary">For Providers</Link></li>
                 <li><Link href="/blog" className="hover:text-primary">Blog</Link></li>

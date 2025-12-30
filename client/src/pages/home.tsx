@@ -167,6 +167,38 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Popular States - SEO Internal Links */}
+      <section className="py-12 bg-card/30 border-y border-border/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">Popular States for Sober Living</h3>
+            <p className="text-muted-foreground">Find recovery housing in top destinations</p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/sober-living-california">
+              <Button variant="outline" size="lg" className="rounded-full border-primary/30 hover:border-primary hover:bg-primary/10">
+                <MapPin className="w-4 h-4 mr-2" /> Sober Living in California
+              </Button>
+            </Link>
+            <Link href="/browse?state=Florida">
+              <Button variant="outline" size="lg" className="rounded-full border-primary/30 hover:border-primary hover:bg-primary/10">
+                <MapPin className="w-4 h-4 mr-2" /> Florida
+              </Button>
+            </Link>
+            <Link href="/browse?state=Texas">
+              <Button variant="outline" size="lg" className="rounded-full border-primary/30 hover:border-primary hover:bg-primary/10">
+                <MapPin className="w-4 h-4 mr-2" /> Texas
+              </Button>
+            </Link>
+            <Link href="/browse?state=Arizona">
+              <Button variant="outline" size="lg" className="rounded-full border-primary/30 hover:border-primary hover:bg-primary/10">
+                <MapPin className="w-4 h-4 mr-2" /> Arizona
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works - Redesigned */}
       <section className="relative py-12 bg-background overflow-hidden">
         {/* Background Path Visual */}

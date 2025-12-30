@@ -64,7 +64,7 @@ export function SoberLivingCalifornia() {
         <section className="py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto prose prose-invert">
-              <h2 className="text-3xl font-bold text-white mb-6">Why Choose California for Sober Living?</h2>
+              <h2 className="text-3xl font-bold text-white mb-6">Why Choose Sober Living Homes in California?</h2>
               
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
                 California has long been a destination for individuals seeking recovery from addiction. The state's combination of beautiful weather, diverse recovery communities, world-class treatment options, and quality sober living homes makes it an ideal place to rebuild your life. From the beaches of Southern California to the mountains of the north, the Golden State offers environments that support healing and personal growth.
@@ -132,7 +132,7 @@ export function SoberLivingCalifornia() {
                 </Card>
               </div>
 
-              <h2 className="text-3xl font-bold text-white mb-6 mt-12">Popular Regions for Sober Living in California</h2>
+              <h2 className="text-3xl font-bold text-white mb-6 mt-12">Best Regions for Sober Living in California</h2>
 
               <h3 className="text-2xl font-bold text-white mb-4">Southern California</h3>
               
@@ -156,7 +156,7 @@ export function SoberLivingCalifornia() {
                 The San Francisco Bay Area offers sober living options for those who prefer Northern California's cooler climate and urban culture. While not as concentrated as Southern California, the Bay Area has a strong recovery community with homes in San Francisco, Oakland, and surrounding suburbs. Wine country areas like Napa and Sonoma might seem counterintuitive, but they also have recovery communities serving those who live and work in the region.
               </p>
 
-              <h2 className="text-3xl font-bold text-white mb-6 mt-12">What to Consider When Choosing California Sober Living</h2>
+              <h2 className="text-3xl font-bold text-white mb-6 mt-12">How to Choose the Best Sober Living Home in California</h2>
 
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
                 Location within California matters significantly. Consider factors like proximity to family (if that's supportive for your recovery), access to employment opportunities, cost of living in the area, and the local recovery community. What works for someone in Malibu might not work for someone in Fresno – take time to research different regions.
@@ -170,7 +170,7 @@ export function SoberLivingCalifornia() {
                 Transportation is important in California, especially in car-dependent cities like Los Angeles. Consider whether you'll have a vehicle or need to rely on public transportation. Some homes offer transportation assistance or are located near public transit and recovery meetings.
               </p>
 
-              <h2 className="text-3xl font-bold text-white mb-6 mt-12">Starting Fresh in California</h2>
+              <h2 className="text-3xl font-bold text-white mb-6 mt-12">Relocating to California Sober Living Homes</h2>
 
               <p className="text-lg text-muted-foreground leading-relaxed mb-6">
                 For many people, relocating to California for sober living represents a fresh start. Being in a new environment, away from old triggers and negative influences, can support early recovery. However, a geographic change alone doesn't guarantee success – you'll still need to do the work of recovery. The difference is that California offers an environment rich with resources to support that work.
