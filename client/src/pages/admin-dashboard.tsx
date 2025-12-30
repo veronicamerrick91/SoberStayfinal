@@ -1910,32 +1910,32 @@ the actual document file stored on the server.
               <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
                 <Users className="w-5 h-5 text-primary shrink-0" />
                 <div className="flex-1">
-                  <p className="text-white font-medium">Total Users: 1,240</p>
-                  <p className="text-xs text-muted-foreground">850 Tenants • 390 Providers</p>
+                  <p className="text-white font-medium">Total Users: {users.length}</p>
+                  <p className="text-xs text-muted-foreground">{users.filter(u => u.role === "Tenant").length} Tenants • {users.filter(u => u.role === "Provider").length} Providers</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
                 <Building className="w-5 h-5 text-primary shrink-0" />
                 <div className="flex-1">
-                  <p className="text-white font-medium">Active Listings: 145</p>
-                  <p className="text-xs text-muted-foreground">12 pending verification</p>
+                  <p className="text-white font-medium">Active Listings: {listings.filter((l: any) => l.status === "approved").length}</p>
+                  <p className="text-xs text-muted-foreground">{listings.filter((l: any) => l.status === "pending").length} pending verification</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
                 <FileText className="w-5 h-5 text-primary shrink-0" />
                 <div className="flex-1">
-                  <p className="text-white font-medium">Applications: 892</p>
-                  <p className="text-xs text-muted-foreground">+45 this week</p>
+                  <p className="text-white font-medium">Applications: {applications.length}</p>
+                  <p className="text-xs text-muted-foreground">{applications.filter((a: any) => a.status === "pending").length} pending review</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
                 <DollarSign className="w-5 h-5 text-primary shrink-0" />
                 <div className="flex-1">
-                  <p className="text-white font-medium">Revenue: $12.4k</p>
-                  <p className="text-xs text-muted-foreground">From subscriptions this month</p>
+                  <p className="text-white font-medium">Subscriptions: {users.filter(u => u.role === "Provider").length}</p>
+                  <p className="text-xs text-muted-foreground">Active provider accounts</p>
                 </div>
               </div>
             </div>
@@ -1943,34 +1943,44 @@ the actual document file stored on the server.
             <div className="space-y-6">
               <div className="space-y-2">
                 <h3 className="text-white font-semibold mb-3">Alerts & Flags</h3>
-                {[
-                  { icon: AlertTriangle, title: "Suspicious Activity", desc: "User: john_recovery | Location: 5 failed logins from different countries in 2 hours | Email: john@example.com | Time: Dec 5, 2:30 PM", color: "red" },
-                  { icon: Flag, title: "Inappropriate Message", desc: "Conversation between mike_provider and sarah_tenant | Message contains restricted keywords | Flagged by moderation on Dec 5, 1:45 PM | Requires review", color: "amber" },
-                  { icon: Lock, title: "Payment Failed", desc: "Provider: Hope House LLC | Failed charge: $49.00 | Payment method expired | Account suspended automatically | Action required by Dec 7", color: "red" },
-                ].map((alert, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default border-b border-border/50 last:border-0">
-                    <alert.icon className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-white font-medium text-sm">{alert.title}</p>
-                      <p className="text-xs text-muted-foreground">{alert.desc}</p>
-                    </div>
+                {listings.filter((l: any) => l.status === "pending").length === 0 && applications.filter((a: any) => a.status === "pending").length === 0 ? (
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
+                    <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+                    <p className="text-muted-foreground text-sm">No alerts at this time</p>
                   </div>
-                ))}
+                ) : (
+                  <>
+                    {listings.filter((l: any) => l.status === "pending").length > 0 && (
+                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default border-b border-border/50 last:border-0">
+                        <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-white font-medium text-sm">Pending Listings</p>
+                          <p className="text-xs text-muted-foreground">{listings.filter((l: any) => l.status === "pending").length} listings awaiting review</p>
+                        </div>
+                      </div>
+                    )}
+                    {applications.filter((a: any) => a.status === "pending").length > 0 && (
+                      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default border-b border-border/50 last:border-0">
+                        <FileText className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+                        <div className="flex-1">
+                          <p className="text-white font-medium text-sm">Pending Applications</p>
+                          <p className="text-xs text-muted-foreground">{applications.filter((a: any) => a.status === "pending").length} applications awaiting review</p>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
               <div className="space-y-2">
                 <h3 className="text-white font-semibold mb-3">Recent Activity</h3>
-                {[
-                  { action: "User verified", user: "Admin Team", time: "2 mins ago" },
-                  { action: "Listing approved", user: "Platform", time: "15 mins ago" },
-                  { action: "Application denied", user: "Admin Team", time: "1 hour ago" }
-                ].map((item, i) => (
+                {users.slice(0, 3).map((user, i) => (
                   <div key={i} className="flex items-center justify-between text-sm p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default border-b border-border/50 last:border-0">
                     <div>
-                      <p className="text-white font-medium">{item.action}</p>
-                      <p className="text-xs text-muted-foreground">{item.user}</p>
+                      <p className="text-white font-medium">New {user.role}</p>
+                      <p className="text-xs text-muted-foreground">{user.name}</p>
                     </div>
-                    <span className="text-xs text-muted-foreground">{item.time}</span>
+                    <span className="text-xs text-muted-foreground">{user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Recent'}</span>
                   </div>
                 ))}
               </div>
