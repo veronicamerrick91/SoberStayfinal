@@ -2375,7 +2375,7 @@ Disallow: /auth/
       };
       
       const providerProfile = await storage.getProviderProfile(user.id);
-      const companyName = providerProfile?.companyName || "Unknown";
+      const companyName = providerProfile?.companyName || user.name || "Unknown";
       
       // Send feedback email using the proper email template
       const emailResult = await sendProviderFeedbackEmail(
