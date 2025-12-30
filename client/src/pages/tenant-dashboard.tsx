@@ -842,10 +842,19 @@ function TenantDashboardContent() {
                                   {statusInfo.label}
                                 </Badge>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <Progress value={appCompletionPercent} className="h-2 flex-1" />
-                                <span className="text-xs text-muted-foreground font-medium">{appCompletionPercent}%</span>
-                              </div>
+                              {app.status === "approved" && app.applicationData?.moveInDate ? (
+                                <div className="flex items-center gap-2 mt-1 p-2 bg-green-500/10 border border-green-500/30 rounded-lg">
+                                  <Calendar className="w-4 h-4 text-green-400" />
+                                  <span className="text-sm text-green-400 font-medium">
+                                    Move-in Date: {new Date(app.applicationData.moveInDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <Progress value={appCompletionPercent} className="h-2 flex-1" />
+                                  <span className="text-xs text-muted-foreground font-medium">{appCompletionPercent}%</span>
+                                </div>
+                              )}
                             </div>
                             <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
                           </div>
