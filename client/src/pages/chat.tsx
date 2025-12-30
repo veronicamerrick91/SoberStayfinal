@@ -254,11 +254,12 @@ export default function Chat() {
 
                 {/* Messages */}
                 {group.messages.map((msg: Message) => {
-                  const isSelf = isCurrentUserMessage(msg);
+                  // Tenant messages on the right, provider messages on the left
+                  const isTenantMessage = msg.sender === "tenant";
                   return (
-                  <div key={msg.id} className={`flex ${isSelf ? "justify-end" : "justify-start"} gap-3 animate-in slide-in-from-bottom-2 fade-in duration-300`}>
-                    {/* Other User's Avatar (Left) */}
-                    {!isSelf && (
+                  <div key={msg.id} className={`flex ${isTenantMessage ? "justify-end" : "justify-start"} gap-3 animate-in slide-in-from-bottom-2 fade-in duration-300`}>
+                    {/* Provider Avatar (Left) */}
+                    {!isTenantMessage && (
                       <div className="flex flex-col items-center gap-1 flex-shrink-0">
                         {msg.avatarUrl ? (
                           <img
@@ -277,10 +278,10 @@ export default function Chat() {
                       </div>
                     )}
 
-                    <div className={`flex flex-col ${isSelf ? "items-end" : "items-start"} gap-1 max-w-sm`}>
+                    <div className={`flex flex-col ${isTenantMessage ? "items-end" : "items-start"} gap-1 max-w-sm`}>
                       <div
                         className={`px-5 py-3 rounded-2xl transition-all ${
-                          isSelf
+                          isTenantMessage
                             ? "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-br-none shadow-lg shadow-primary/20"
                             : "bg-card border border-border/50 text-foreground rounded-bl-none hover:border-primary/30 shadow-md"
                         }`}
@@ -289,13 +290,13 @@ export default function Chat() {
                           {msg.text}
                         </p>
                       </div>
-                      <span className={`text-xs font-medium px-1 ${isSelf ? "text-muted-foreground mr-2" : "text-muted-foreground ml-2"}`}>
+                      <span className={`text-xs font-medium px-1 ${isTenantMessage ? "text-muted-foreground mr-2" : "text-muted-foreground ml-2"}`}>
                         {formatTime(msg.timestamp)}
                       </span>
                     </div>
 
-                    {/* Current User's Avatar (Right) */}
-                    {isSelf && (
+                    {/* Tenant Avatar (Right) */}
+                    {isTenantMessage && (
                       <div className="flex flex-col items-center gap-1 flex-shrink-0">
                         {msg.avatarUrl ? (
                           <img
