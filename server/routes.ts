@@ -2389,7 +2389,7 @@ Disallow: /auth/
       
       if (!emailResult.success) {
         console.error("Failed to send feedback email:", emailResult.error);
-        return res.status(500).json({ error: "Failed to send feedback. Please try again or email Veronicamerrick91@gmail.com directly." });
+        return res.status(500).json({ error: "Failed to send feedback. Please try again or email Support@soberstayhomes.com directly." });
       }
       
       console.log("Feedback email sent successfully:", emailResult.messageId);
