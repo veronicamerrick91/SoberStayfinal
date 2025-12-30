@@ -1114,3 +1114,124 @@ export async function sendAdminSubscriptionNotification(
     return false;
   }
 }
+
+// Provider notification: New message received
+export async function sendProviderNewMessageNotification(
+  providerEmail: string,
+  providerName: string,
+  senderName: string,
+  propertyName: string,
+  messagePreview: string
+): Promise<boolean> {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    const preview = messagePreview.length > 100 ? messagePreview.substring(0, 100) + '...' : messagePreview;
+    const content = `
+      <tr>
+        <td style="padding: 40px 30px; text-align: center;">
+          <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 50%; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+            <span style="font-size: 28px;">💬</span>
+          </div>
+          <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 16px;">New Message!</h1>
+          <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+            Hi ${providerName},
+          </p>
+          <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+            You've received a new message from <strong style="color: #3b82f6;">${senderName}</strong> about <strong style="color: #10b981;">${propertyName}</strong>:
+          </p>
+          <div style="background: #1e293b; border-radius: 12px; padding: 20px; margin: 0 0 24px; border-left: 4px solid #3b82f6;">
+            <p style="color: #e2e8f0; font-size: 15px; line-height: 1.6; margin: 0; font-style: italic;">
+              "${preview}"
+            </p>
+          </div>
+          <a href="${WEBSITE_URL}/provider-dashboard" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);">
+            Reply Now
+          </a>
+          <p style="color: #64748b; font-size: 14px; margin: 24px 0 0;">
+            Quick responses help build trust with potential tenants!
+          </p>
+        </td>
+      </tr>
+    `;
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
+      to: providerEmail,
+      subject: `New message from ${senderName} - Sober Stay Homes`,
+      html: getEmailWrapper(content, 'You have a new message'),
+    });
+
+    if (error) {
+      console.error('Failed to send provider message notification:', error);
+      return false;
+    }
+
+    console.log('Provider message notification sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Error sending provider message notification:', error);
+    return false;
+  }
+}
+
+// Provider notification: New tour request
+export async function sendProviderTourRequestNotification(
+  providerEmail: string,
+  providerName: string,
+  tenantName: string,
+  propertyName: string,
+  preferredDate?: string,
+  preferredTime?: string
+): Promise<boolean> {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    const dateInfo = preferredDate && preferredTime 
+      ? `<p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+           Preferred time: <strong style="color: #f59e0b;">${preferredDate} at ${preferredTime}</strong>
+         </p>`
+      : '';
+    
+    const content = `
+      <tr>
+        <td style="padding: 40px 30px; text-align: center;">
+          <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 50%; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center;">
+            <span style="font-size: 28px;">🏠</span>
+          </div>
+          <h1 style="color: #ffffff; font-size: 24px; font-weight: 700; margin: 0 0 16px;">Tour Request!</h1>
+          <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+            Hi ${providerName},
+          </p>
+          <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 16px;">
+            <strong style="color: #3b82f6;">${tenantName}</strong> has requested a tour of your property <strong style="color: #10b981;">${propertyName}</strong>.
+          </p>
+          ${dateInfo}
+          <p style="color: #94a3b8; font-size: 16px; line-height: 1.6; margin: 0 0 32px;">
+            Log in to your dashboard to respond and schedule the tour.
+          </p>
+          <a href="${WEBSITE_URL}/provider-dashboard" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);">
+            Respond to Request
+          </a>
+          <p style="color: #64748b; font-size: 14px; margin: 24px 0 0;">
+            Tours are a great opportunity to find the right fit for your home!
+          </p>
+        </td>
+      </tr>
+    `;
+    const { data, error } = await client.emails.send({
+      from: `${APP_NAME} <${fromEmail}>`,
+      to: providerEmail,
+      subject: `Tour Request from ${tenantName} - Sober Stay Homes`,
+      html: getEmailWrapper(content, 'Someone wants to tour your property'),
+    });
+
+    if (error) {
+      console.error('Failed to send provider tour request notification:', error);
+      return false;
+    }
+
+    console.log('Provider tour request notification sent successfully:', data?.id);
+    return true;
+  } catch (error) {
+    console.error('Error sending provider tour request notification:', error);
+    return false;
+  }
+}

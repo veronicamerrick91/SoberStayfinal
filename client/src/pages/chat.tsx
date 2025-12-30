@@ -12,7 +12,7 @@ import type { Listing } from "@shared/schema";
 interface Message {
   id: string;
   sender: "tenant" | "provider";
-  senderId?: number;
+  senderId?: string;
   senderName: string;
   text: string;
   timestamp: Date;
