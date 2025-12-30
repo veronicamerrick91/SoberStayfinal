@@ -157,12 +157,64 @@ export default function Home() {
             <p className="text-lg text-muted-foreground mb-4 leading-relaxed">
               Sober living homes provide a safe, substance-free environment for individuals 
               transitioning from treatment to independent living. These homes support recovery 
-              through accountability, structure, and community.
+              through accountability, structure, and community. Unlike inpatient treatment centers, 
+              sober living offers more independence while maintaining essential support systems.
+            </p>
+            <p className="text-lg text-muted-foreground mb-4 leading-relaxed">
+              Residents typically share responsibilities, attend house meetings, and follow established 
+              guidelines such as curfews and mandatory drug testing. Many homes require participation 
+              in recovery programs like AA or NA meetings. This structured environment helps individuals 
+              develop healthy habits and coping skills necessary for long-term sobriety.
             </p>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Sober Stay makes it easy to find sober living homes near you. 
-              Browse listings, review house rules, and apply directly through our platform.
+              Sober Stay makes it easy to find sober living homes near you. Browse verified listings, 
+              compare prices and amenities, review house rules, and apply directly through our platform. 
+              Whether you're looking for gender-specific housing, MAT-friendly options, or pet-friendly 
+              accommodations, we connect you with the right recovery environment for your needs.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits of Sober Living - Additional SEO Content */}
+      <section className="py-12 bg-card/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white text-center">Benefits of Sober Living Homes</h3>
+            <div className="grid md:grid-cols-2 gap-6 text-muted-foreground">
+              <div>
+                <h4 className="text-lg font-semibold text-white mb-2">Peer Support and Community</h4>
+                <p className="leading-relaxed">
+                  Living with others in recovery creates a built-in support network. Residents share experiences, 
+                  offer encouragement, and hold each other accountable. This sense of community reduces feelings 
+                  of isolation that often accompany early recovery.
+                </p>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-white mb-2">Structure and Routine</h4>
+                <p className="leading-relaxed">
+                  Sober living homes provide daily structure that helps residents establish healthy routines. 
+                  Regular schedules for meals, meetings, and responsibilities create stability during the 
+                  vulnerable transition period after treatment.
+                </p>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-white mb-2">Accountability</h4>
+                <p className="leading-relaxed">
+                  House rules and regular drug testing help residents stay committed to their sobriety goals. 
+                  This accountability framework provides guardrails while allowing individuals to practice 
+                  making responsible decisions.
+                </p>
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-white mb-2">Gradual Independence</h4>
+                <p className="leading-relaxed">
+                  Unlike residential treatment, sober living allows residents to work, attend school, 
+                  and rebuild their lives while still receiving support. This gradual transition to 
+                  independence increases long-term recovery success rates.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
