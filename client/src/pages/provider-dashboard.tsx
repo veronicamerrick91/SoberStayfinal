@@ -1383,6 +1383,13 @@ function ProviderDashboardContent() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
+                  {applications.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Users className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                      <h3 className="text-lg font-bold text-white mb-2">No Applications Yet</h3>
+                      <p>When tenants apply to your listings, they'll appear here for review.</p>
+                    </div>
+                  ) : (
                    <div className="p-0 overflow-x-auto rounded-md border border-border">
                     <table className="w-full text-left text-sm min-w-[700px]">
                       <thead className="bg-white/5 text-muted-foreground border-b border-border">
@@ -1402,11 +1409,13 @@ function ProviderDashboardContent() {
                             <td className="p-4 text-gray-300">{app.property}</td>
                             <td className="p-4 text-muted-foreground">{app.submittedDate}</td>
                             <td className="p-4">
-                              <div className="flex gap-1">
-                                {app.probation && <Badge variant="outline" className="text-amber-500 border-amber-500/30 text-[10px]">Legal</Badge>}
-                                {app.evictionHistory && <Badge variant="outline" className="text-red-500 border-red-500/30 text-[10px]">Eviction</Badge>}
-                                {app.matStatus && <Badge variant="outline" className="text-blue-500 border-blue-500/30 text-[10px]">MAT</Badge>}
-                                {!app.probation && !app.evictionHistory && !app.matStatus && <span className="text-muted-foreground text-xs">-</span>}
+                              <div className="flex gap-1 flex-wrap">
+                                {app.probation && <Badge variant="outline" className="text-amber-500 border-amber-500/30 text-[10px]">Legal/Probation</Badge>}
+                                {app.evictionHistory && <Badge variant="outline" className="text-red-500 border-red-500/30 text-[10px]">Prior Eviction</Badge>}
+                                {app.matStatus && <Badge variant="outline" className="text-blue-500 border-blue-500/30 text-[10px]">MAT Program</Badge>}
+                                {!app.probation && !app.evictionHistory && !app.matStatus && (
+                                  <span className="text-green-500 text-xs font-medium">None flagged</span>
+                                )}
                               </div>
                             </td>
                             <td className="p-4">
@@ -1422,6 +1431,7 @@ function ProviderDashboardContent() {
                       </tbody>
                     </table>
                   </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
