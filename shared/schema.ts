@@ -103,6 +103,7 @@ export const providerProfiles = pgTable("provider_profiles", {
   residentDocuments: jsonb("resident_documents").$type<Record<string, Record<string, string>>>().default({}),
   twoFactorSecret: text("two_factor_secret"),
   twoFactorEnabled: boolean("two_factor_enabled").default(false).notNull(),
+  isFoundingMember: boolean("is_founding_member").default(false).notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

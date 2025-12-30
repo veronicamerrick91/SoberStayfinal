@@ -701,7 +701,8 @@ Disallow: /auth/
         return { 
           ...safe, 
           documentsVerified: profile?.documentsVerified || false,
-          hasFeeWaiver: subscription?.hasFeeWaiver || false
+          hasFeeWaiver: subscription?.hasFeeWaiver || false,
+          isFoundingMember: profile?.isFoundingMember || false
         };
       }
       return safe;
@@ -1002,6 +1003,52 @@ Disallow: /auth/
     } catch (error) {
       console.error("[Fee Waiver] Error:", error);
       res.status(500).json({ error: "Failed to toggle fee waiver" });
+    }
+  });
+
+  // Admin: Toggle founding member status for a provider
+  app.patch("/api/admin/providers/:id/founding-member", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) return res.sendStatus(401);
+      const user = req.user as any;
+      if (user.role !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      const providerId = parseInt(req.params.id);
+      if (isNaN(providerId)) {
+        return res.status(400).json({ error: "Invalid provider ID" });
+      }
+      
+      const { isFoundingMember } = req.body;
+      if (typeof isFoundingMember !== "boolean") {
+        return res.status(400).json({ error: "isFoundingMember must be a boolean" });
+      }
+      
+      console.log(`[Founding Member] Toggling founding member for provider ${providerId} to ${isFoundingMember}`);
+      
+      // Check if provider exists
+      const provider = await storage.getUser(providerId);
+      if (!provider || provider.role !== "provider") {
+        return res.status(404).json({ error: "Provider not found" });
+      }
+      
+      // Update the provider profile - include defaults for NOT NULL fields when creating new
+      const existingProfile = await storage.getProviderProfile(providerId);
+      const updatedProfile = await storage.createOrUpdateProviderProfile(providerId, {
+        isFoundingMember,
+        // Include defaults for NOT NULL fields if creating new profile
+        ...(existingProfile ? {} : {
+          smsOptIn: false,
+          twoFactorEnabled: false,
+          documentsVerified: false
+        })
+      });
+      
+      res.json({ success: true, profile: updatedProfile });
+    } catch (error) {
+      console.error("[Founding Member] Error:", error);
+      res.status(500).json({ error: "Failed to toggle founding member status" });
     }
   });
 

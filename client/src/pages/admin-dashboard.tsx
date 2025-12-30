@@ -33,6 +33,8 @@ interface User {
   verified: boolean;
   documentsVerified?: boolean;
   hasFeeWaiver?: boolean;
+  isFoundingMember?: boolean;
+  createdAt?: string;
 }
 
 export function AdminDashboard() {
@@ -519,7 +521,9 @@ Thank you for being part of our recovery community!`
             status: 'Active' as const,
             verified: true,
             documentsVerified: u.documentsVerified || false,
-            hasFeeWaiver: u.hasFeeWaiver || false
+            hasFeeWaiver: u.hasFeeWaiver || false,
+            isFoundingMember: u.isFoundingMember || false,
+            createdAt: u.createdAt
           }));
           setUsers(formattedUsers);
           
@@ -725,6 +729,31 @@ Thank you for being part of our recovery community!`
       }
     } catch (error) {
       toast({ title: "Error", description: "Failed to update verification", variant: "destructive" });
+    }
+  };
+
+  const handleToggleFoundingMember = async (userId: string, currentlyIsFounder: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/providers/${userId}/founding-member`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ isFoundingMember: !currentlyIsFounder })
+      });
+      if (res.ok) {
+        setUsers(users.map(u => u.id === userId ? { ...u, isFoundingMember: !currentlyIsFounder } : u));
+        toast({ 
+          title: !currentlyIsFounder ? "Founding Member Status Granted" : "Founding Member Status Revoked", 
+          description: !currentlyIsFounder 
+            ? "Provider now has founding member discount." 
+            : "Provider no longer has founding member discount." 
+        });
+      } else {
+        const err = await res.json();
+        toast({ title: "Error", description: err.error || "Failed to update founding member status", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update founding member status", variant: "destructive" });
     }
   };
 
@@ -1970,6 +1999,9 @@ the actual document file stored on the server.
                       <div className="flex-1">
                         <p className="text-white font-medium">{user.name}</p>
                         <p className="text-xs text-muted-foreground">{user.email}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Joined {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown'}
+                        </p>
                       </div>
                       <div className="flex items-center gap-3">
                         <Badge variant={user.role === "Provider" ? "default" : "secondary"}>{user.role}</Badge>
@@ -1986,6 +2018,11 @@ the actual document file stored on the server.
                             {user.hasFeeWaiver && (
                               <Badge className="bg-purple-500/80 text-white">
                                 Fee Waiver
+                              </Badge>
+                            )}
+                            {user.isFoundingMember && (
+                              <Badge className="bg-amber-500/80 text-white">
+                                Founding Member
                               </Badge>
                             )}
                           </>
@@ -2012,6 +2049,15 @@ the actual document file stored on the server.
                                 data-testid={`button-fee-waiver-${user.id}`}
                               >
                                 {user.hasFeeWaiver ? "Revoke Waiver" : "Fee Waiver"}
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className={`h-8 ${user.isFoundingMember ? "text-green-500 hover:bg-green-500/10" : "text-amber-500 hover:bg-amber-500/10"}`}
+                                onClick={() => handleToggleFoundingMember(user.id, user.isFoundingMember || false)}
+                                data-testid={`button-founding-member-${user.id}`}
+                              >
+                                {user.isFoundingMember ? "Revoke Founder" : "Founding Member"}
                               </Button>
                             </>
                           )}
