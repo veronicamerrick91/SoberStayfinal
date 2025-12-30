@@ -53,8 +53,12 @@ export class StripeService {
     };
     
     if (isFoundingMember) {
+      // Founding members get 3 months free trial, then 50% off forever
       const couponId = await this.getOrCreateFoundingMemberCoupon();
       sessionParams.discounts = [{ coupon: couponId }];
+      sessionParams.subscription_data = {
+        trial_period_days: 90, // 3 months free
+      };
     }
     
     return await stripe.checkout.sessions.create(sessionParams);
