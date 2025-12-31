@@ -140,3 +140,13 @@
     padding: 0.75rem 1rem;
   }
 }
+
+/* Hide scrollbars globally but keep scroll functionality */
+html {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
