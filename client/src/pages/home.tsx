@@ -314,9 +314,9 @@ export default function Home() {
       </section>
 
       {/* Featured Homes */}
-      <section className="py-32 bg-background relative">
+      <section className="py-16 bg-background relative">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-16 gap-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-8 gap-6">
             <div>
               <h3 className="text-4xl font-bold mb-4 text-white">Featured Homes</h3>
               <p className="text-xl text-muted-foreground">Top-rated sober living environments near you.</p>
