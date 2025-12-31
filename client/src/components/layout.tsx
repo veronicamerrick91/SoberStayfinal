@@ -33,9 +33,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const isActive = (path: string) => location === path;
 
-  // Track site visits for admin analytics
+  // Track site visits for admin analytics (exclude admin users)
   const lastTrackedPath = useRef<string | null>(null);
   useEffect(() => {
+    // Skip tracking for admin users - only count outside visitors
+    if (user?.role === 'admin') return;
+    
     // Only track if path changed (avoid double-tracking)
     if (lastTrackedPath.current === location) return;
     lastTrackedPath.current = location;
@@ -64,7 +67,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         keepalive: true,
       }).catch(() => {});
     }
-  }, [location]);
+  }, [location, user]);
 
   const resourceLinks = [
     { href: "/what-is-sober-living", label: "What Is Sober Living?" },

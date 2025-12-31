@@ -3473,6 +3473,11 @@ Disallow: /auth/
       // Get user info if logged in
       const user = req.user as any;
       
+      // Skip tracking for admin users - only count outside visitors
+      if (user?.role === 'admin') {
+        return res.status(204).send();
+      }
+      
       // Get IP and user agent from request
       const ip = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.ip || 'unknown';
       const userAgent = req.headers['user-agent'] || null;
