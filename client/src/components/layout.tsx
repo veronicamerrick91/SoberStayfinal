@@ -77,7 +77,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col overflow-x-hidden">
       {/* Navigation */}
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background">
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
