@@ -256,6 +256,79 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Featured Homes */}
+      <section className="py-32 bg-background relative">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-16 gap-6">
+            <div>
+              <h3 className="text-4xl font-bold mb-4 text-white">Featured Homes</h3>
+              <p className="text-xl text-muted-foreground">Top-rated sober living environments near you.</p>
+            </div>
+            <Link href="/browse">
+              <Button variant="outline" className="text-primary border-primary/30 hover:bg-primary/10 text-lg px-6 h-12 rounded-full">
+                View All Listings <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
+
+          {listings.length === 0 ? (
+            <div className="text-center py-20 bg-card/30 rounded-2xl border border-border">
+              <HomeIcon className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-xl font-bold text-white mb-2">No Listings Yet</h3>
+              <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                Be the first to list your sober living property and connect with those in need of supportive housing.
+              </p>
+              <Link href="/create-listing">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Plus className="w-4 h-4 mr-2" /> List Your Property
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {listings.slice(0, 4).map((listing) => (
+                <Link key={listing.id} href={`/property/${listing.id}`}>
+                  <Card className="h-full overflow-hidden bg-card border-border hover:border-primary/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] cursor-pointer group rounded-2xl" data-testid={`card-featured-${listing.id}`}>
+                    <div className="relative h-64 overflow-hidden">
+                      <img 
+                        src={listing.photos?.[0] || placeholderHome} 
+                        alt={listing.propertyName}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-90" />
+                      
+                      <div className="absolute top-4 left-4 flex gap-2">
+                        {listing.status === "approved" && (
+                          <Badge className="bg-emerald-500 text-white border-none flex gap-1 items-center px-3 py-1 shadow-lg">
+                            <ShieldCheck className="w-3 h-3" /> Verified
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="absolute bottom-4 left-4 right-4">
+                         <div className="text-2xl font-bold text-white mb-1">{listing.propertyName}</div>
+                         <div className="text-emerald-400 font-bold text-lg">${listing.monthlyPrice}<span className="text-sm font-normal text-gray-300">/month</span></div>
+                      </div>
+                    </div>
+                    <CardContent className="p-6">
+                      <div className="flex items-center text-sm text-muted-foreground mb-4">
+                        <MapPin className="w-4 h-4 mr-2 text-primary" />
+                        {listing.city}, {listing.state}
+                      </div>
+                      <div className="flex gap-2 text-xs flex-wrap">
+                        <Badge variant="secondary" className="bg-secondary/50 py-1 px-2">{listing.gender}</Badge>
+                        {listing.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary py-1 px-2">MAT Friendly</Badge>}
+                        <Badge variant="outline" className="border-white/10 py-1 px-2">{listing.totalBeds} Beds</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* For Tenants & Providers Split - Creative Redesign */}
       <section className="py-0 bg-background">
         <div className="grid lg:grid-cols-2 min-h-[800px]">
@@ -336,79 +409,6 @@ export default function Home() {
             </div>
           </div>
 
-        </div>
-      </section>
-
-      {/* Featured Homes */}
-      <section className="py-32 bg-background relative">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-16 gap-6">
-            <div>
-              <h3 className="text-4xl font-bold mb-4 text-white">Featured Homes</h3>
-              <p className="text-xl text-muted-foreground">Top-rated sober living environments near you.</p>
-            </div>
-            <Link href="/browse">
-              <Button variant="outline" className="text-primary border-primary/30 hover:bg-primary/10 text-lg px-6 h-12 rounded-full">
-                View All Listings <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
-
-          {listings.length === 0 ? (
-            <div className="text-center py-20 bg-card/30 rounded-2xl border border-border">
-              <HomeIcon className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">No Listings Yet</h3>
-              <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                Be the first to list your sober living property and connect with those in need of supportive housing.
-              </p>
-              <Link href="/create-listing">
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Plus className="w-4 h-4 mr-2" /> List Your Property
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {listings.slice(0, 4).map((listing) => (
-                <Link key={listing.id} href={`/property/${listing.id}`}>
-                  <Card className="h-full overflow-hidden bg-card border-border hover:border-primary/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] cursor-pointer group rounded-2xl" data-testid={`card-featured-${listing.id}`}>
-                    <div className="relative h-64 overflow-hidden">
-                      <img 
-                        src={listing.photos?.[0] || placeholderHome} 
-                        alt={listing.propertyName}
-                        loading="lazy"
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-90" />
-                      
-                      <div className="absolute top-4 left-4 flex gap-2">
-                        {listing.status === "approved" && (
-                          <Badge className="bg-emerald-500 text-white border-none flex gap-1 items-center px-3 py-1 shadow-lg">
-                            <ShieldCheck className="w-3 h-3" /> Verified
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="absolute bottom-4 left-4 right-4">
-                         <div className="text-2xl font-bold text-white mb-1">{listing.propertyName}</div>
-                         <div className="text-emerald-400 font-bold text-lg">${listing.monthlyPrice}<span className="text-sm font-normal text-gray-300">/month</span></div>
-                      </div>
-                    </div>
-                    <CardContent className="p-6">
-                      <div className="flex items-center text-sm text-muted-foreground mb-4">
-                        <MapPin className="w-4 h-4 mr-2 text-primary" />
-                        {listing.city}, {listing.state}
-                      </div>
-                      <div className="flex gap-2 text-xs flex-wrap">
-                        <Badge variant="secondary" className="bg-secondary/50 py-1 px-2">{listing.gender}</Badge>
-                        {listing.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary py-1 px-2">MAT Friendly</Badge>}
-                        <Badge variant="outline" className="border-white/10 py-1 px-2">{listing.totalBeds} Beds</Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 
