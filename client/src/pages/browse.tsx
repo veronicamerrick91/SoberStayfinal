@@ -163,6 +163,68 @@ export default function Browse() {
         </div>
       </div>
 
+      {/* Featured Homes Section */}
+      {(() => {
+        const activeFeaturedIds = new Set(
+          featuredListings
+            .filter(f => f.isActive && new Date(f.endDate).getTime() > Date.now())
+            .map(f => f.listingId)
+        );
+        const featuredHomesList = listings.filter(l => activeFeaturedIds.has(l.id));
+        
+        if (featuredHomesList.length === 0) return null;
+        
+        return (
+          <div className="bg-gradient-to-r from-purple-900/20 via-pink-900/10 to-purple-900/20 border-y border-purple-500/20 py-6">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Zap className="w-5 h-5 text-purple-400" />
+                <h2 className="text-xl font-bold text-white">Featured Homes</h2>
+                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none text-xs">
+                  {featuredHomesList.length} Available
+                </Badge>
+              </div>
+              <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-purple-500/30 scrollbar-track-transparent">
+                {featuredHomesList.map((listing) => (
+                  <Link key={listing.id} href={`/property/${listing.id}`} onClick={() => trackListingClick(listing.id)}>
+                    <Card className="w-64 shrink-0 overflow-hidden bg-card border-purple-500/30 hover:border-purple-400 transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] cursor-pointer" data-testid={`card-featured-browse-${listing.id}`}>
+                      <div className="relative h-32 overflow-hidden">
+                        <img 
+                          src={listing.photos?.[0] || placeholderHome} 
+                          alt={listing.propertyName}
+                          loading="lazy"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
+                        <div className="absolute top-2 left-2">
+                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none shadow-lg flex gap-1 items-center text-xs">
+                            <Zap className="w-3 h-3" /> Featured
+                          </Badge>
+                        </div>
+                        <div className="absolute bottom-2 left-2 text-sm font-bold text-white drop-shadow-md">
+                          ${listing.monthlyPrice}<span className="text-xs font-normal text-gray-200">/mo</span>
+                        </div>
+                      </div>
+                      <CardContent className="p-3">
+                        <h3 className="font-bold text-sm text-white line-clamp-1">{listing.propertyName}</h3>
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <MapPin className="w-3 h-3 mr-1 text-purple-400" />
+                          {listing.city}, {listing.state}
+                        </div>
+                        <div className="flex gap-1 mt-2">
+                          <Badge variant="secondary" className="bg-secondary/60 text-xs py-0 px-2">{listing.gender}</Badge>
+                          <Badge variant="outline" className="border-purple-500/30 text-purple-300 text-xs py-0 px-2">{listing.roomType}</Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       <div className="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
         {/* Sidebar Filters */}
         <aside className="w-full lg:w-72 space-y-8 shrink-0">
