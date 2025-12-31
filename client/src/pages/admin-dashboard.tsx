@@ -2783,18 +2783,47 @@ the actual document file stored on the server.
                                   '/our-mission': 'Our Mission',
                                   '/faq': 'FAQ',
                                   '/privacy': 'Privacy Policy',
+                                  '/privacy-policy': 'Privacy Policy',
                                   '/terms': 'Terms of Service',
+                                  '/terms-of-use': 'Terms of Use',
                                   '/resources': 'Resources',
                                   '/contact': 'Contact',
                                   '/pricing': 'Pricing',
                                   '/founding-members': 'Founding Members',
+                                  '/for-tenants': 'For Tenants',
+                                  '/for-providers': 'For Providers',
+                                  '/list-your-home': 'List Your Home',
+                                  '/create-listing': 'Create Listing',
+                                  '/help-center': 'Help Center',
+                                  '/safety-reporting': 'Safety & Reporting',
+                                  '/crisis-resources': 'Crisis Resources',
+                                  '/disclaimer': 'Disclaimer',
+                                  '/liability-waiver': 'Liability Waiver',
+                                  '/blog': 'Blog',
+                                  '/find-sober-living': 'Find Sober Living',
+                                  '/sober-living-california': 'Sober Living - California',
+                                  '/tenant-profile': 'Tenant Profile',
+                                  '/provider-profile': 'Provider Profile',
+                                  '/forgot-password': 'Forgot Password',
+                                  '/reset-password': 'Reset Password',
                                 };
                                 const pagePath = page.page || '/';
                                 if (pageNames[pagePath]) return pageNames[pagePath];
-                                if (pagePath.startsWith('/chat/')) return `Chat #${pagePath.split('/')[2]}`;
+                                if (pagePath.startsWith('/chat/')) return `Chat Conversation`;
                                 if (pagePath.startsWith('/listing/')) return `Listing Details`;
                                 if (pagePath.startsWith('/property/')) return `Property Details`;
-                                return pagePath;
+                                if (pagePath.startsWith('/apply/')) return `Application Form`;
+                                if (pagePath.startsWith('/sober-living-homes/')) {
+                                  const city = pagePath.split('/')[2]?.replace(/-/g, ' ');
+                                  return city ? `Sober Living - ${city.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}` : 'Sober Living Homes';
+                                }
+                                if (pagePath.startsWith('/sober-living/')) {
+                                  const location = pagePath.split('/')[2]?.replace(/-/g, ' ');
+                                  return location ? `Sober Living - ${location.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}` : 'Sober Living';
+                                }
+                                if (pagePath.startsWith('/blog/')) return `Blog Post`;
+                                // Format any remaining URL as title case
+                                return pagePath.slice(1).replace(/-/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'Home';
                               })()}
                             </p>
                             <p className="text-xs text-muted-foreground">{page.count.toLocaleString()} views</p>
