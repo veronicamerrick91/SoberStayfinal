@@ -379,7 +379,7 @@ export function CreateListing() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h2 className="text-2xl font-bold text-white mb-1">{listingDraft.propertyName}</h2>
-                      <p className="text-sm text-muted-foreground">{listingDraft.address}, {listingDraft.city}, {listingDraft.state}</p>
+                      <p className="text-sm text-muted-foreground">{listingDraft.address ? `${listingDraft.address}, ` : ''}{listingDraft.city}, {listingDraft.state}</p>
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-primary">${listingDraft.monthlyPrice}</div>
@@ -573,13 +573,14 @@ export function CreateListing() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-white">Street Address</Label>
+                  <Label className="text-white">Street Address <span className="text-muted-foreground font-normal">(Optional)</span></Label>
                   <Input
                     placeholder="123 Main Street"
                     value={listingDraft.address}
                     onChange={(e) => handleInputChange("address", e.target.value)}
                     className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
                   />
+                  <p className="text-xs text-muted-foreground">Leave blank to only show city and state to protect your privacy</p>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4">

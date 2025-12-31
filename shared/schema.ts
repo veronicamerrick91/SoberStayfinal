@@ -20,7 +20,7 @@ export const listings = pgTable("listings", {
   id: serial("id").primaryKey(),
   providerId: integer("provider_id").notNull().references(() => users.id),
   propertyName: text("property_name").notNull(),
-  address: text("address").notNull(),
+  address: text("address"), // Optional - providers can choose to hide full address
   city: text("city").notNull(),
   state: text("state").notNull(),
   monthlyPrice: integer("monthly_price").notNull(),
