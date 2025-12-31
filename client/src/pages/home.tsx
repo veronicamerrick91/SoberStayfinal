@@ -214,9 +214,10 @@ export default function Home() {
                 <Sparkles className="w-4 h-4" /> For Tenants
               </div>
               <h3 className="text-4xl md:text-5xl font-bold text-white mb-6">Find Your Safe Haven</h3>
-              <p className="text-xl text-blue-100 mb-10 leading-relaxed">
+              <p className="text-xl text-blue-100 mb-4 leading-relaxed">
                 Your recovery deserves a supportive environment. Browse quality homes, chat directly with providers, and manage your applications in one secure place.
               </p>
+              <div className="h-[52px] mb-4"></div>
               
               <ul className="space-y-5 mb-12">
                 {["Browse trusted recovery environments", "Direct chat with providers", "Secure document storage", "Track application status in real-time"].map((item, i) => (
