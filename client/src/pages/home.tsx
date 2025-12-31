@@ -401,7 +401,7 @@ export default function Home() {
       </section>
 
       {/* Newsletter - Redesigned */}
-      <section className="py-32 border-t border-border relative overflow-hidden">
+      <section className="py-16 border-t border-border relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-card to-background z-0" />
         <div className="container mx-auto px-4 text-center max-w-2xl relative z-10">
           <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-8">
