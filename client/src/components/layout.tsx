@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Menu, LogOut, ChevronDown, Lock } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   DropdownMenu,
@@ -32,6 +32,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
   };
 
   const isActive = (path: string) => location === path;
+
+  // Track site visits for admin analytics
+  const lastTrackedPath = useRef<string | null>(null);
+  useEffect(() => {
+    // Only track if path changed (avoid double-tracking)
+    if (lastTrackedPath.current === location) return;
+    lastTrackedPath.current = location;
+
+    // Generate or retrieve session ID
+    let sessionId = sessionStorage.getItem('sober_session_id');
+    if (!sessionId) {
+      sessionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      sessionStorage.setItem('sober_session_id', sessionId);
+    }
+
+    // Send visit data using sendBeacon for non-blocking
+    const data = JSON.stringify({
+      page: location,
+      referrer: document.referrer || null,
+      sessionId,
+    });
+
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon('/api/analytics/site-visit', new Blob([data], { type: 'application/json' }));
+    } else {
+      fetch('/api/analytics/site-visit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: data,
+        keepalive: true,
+      }).catch(() => {});
+    }
+  }, [location]);
 
   const resourceLinks = [
     { href: "/what-is-sober-living", label: "What Is Sober Living?" },

@@ -3461,6 +3461,47 @@ Disallow: /auth/
 
   // Analytics endpoints
 
+  // Record site visit (public, for admin dashboard analytics)
+  app.post("/api/analytics/site-visit", async (req, res) => {
+    try {
+      const { page, referrer, sessionId } = req.body;
+      
+      if (!page) {
+        return res.status(400).json({ error: "page is required" });
+      }
+      
+      // Get user info if logged in
+      const user = req.user as any;
+      
+      // Get IP and user agent from request
+      const ip = req.headers['x-forwarded-for']?.toString().split(',')[0] || req.ip || 'unknown';
+      const userAgent = req.headers['user-agent'] || null;
+      
+      // Record the visit asynchronously (don't block response)
+      setImmediate(async () => {
+        try {
+          await storage.recordSiteVisit({
+            page,
+            referrer: referrer || null,
+            sessionId: sessionId || null,
+            userId: user?.id || null,
+            ip,
+            userAgent,
+            country: null, // Could add geo-lookup later
+            city: null,
+          });
+        } catch (err) {
+          console.error("Error recording site visit:", err);
+        }
+      });
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error in site visit endpoint:", error);
+      res.status(500).json({ error: "Failed to record visit" });
+    }
+  });
+
   // Record analytics event (public, uses sendBeacon)
   app.post("/api/analytics/events", async (req, res) => {
     try {
