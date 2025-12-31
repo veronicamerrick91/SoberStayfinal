@@ -183,7 +183,7 @@ export default function Home() {
             <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white text-center">Benefits of Sober Living Homes</h3>
             <div className="grid md:grid-cols-2 gap-6 text-muted-foreground">
               <div>
-                <h4 className="text-lg font-bold text-white mb-2 font-heading">Peer Support and Community</h4>
+                <h4 className="text-xl font-bold text-white mb-3 font-heading">Peer Support and Community</h4>
                 <p className="leading-relaxed">
                   Living with others in recovery creates a built-in support network. Residents share experiences, 
                   offer encouragement, and hold each other accountable. This sense of community reduces feelings 
@@ -191,7 +191,7 @@ export default function Home() {
                 </p>
               </div>
               <div>
-                <h4 className="text-lg font-bold text-white mb-2 font-heading">Structure and Routine</h4>
+                <h4 className="text-xl font-bold text-white mb-3 font-heading">Structure and Routine</h4>
                 <p className="leading-relaxed">
                   Sober living homes provide daily structure that helps residents establish healthy routines. 
                   Regular schedules for meals, meetings, and responsibilities create stability during the 
@@ -199,7 +199,7 @@ export default function Home() {
                 </p>
               </div>
               <div>
-                <h4 className="text-lg font-bold text-white mb-2 font-heading">Accountability</h4>
+                <h4 className="text-xl font-bold text-white mb-3 font-heading">Accountability</h4>
                 <p className="leading-relaxed">
                   House rules and regular drug testing help residents stay committed to their sobriety goals. 
                   This accountability framework provides guardrails while allowing individuals to practice 
@@ -207,7 +207,7 @@ export default function Home() {
                 </p>
               </div>
               <div>
-                <h4 className="text-lg font-bold text-white mb-2 font-heading">Gradual Independence</h4>
+                <h4 className="text-xl font-bold text-white mb-3 font-heading">Gradual Independence</h4>
                 <p className="leading-relaxed">
                   Unlike residential treatment, sober living allows residents to work, attend school, 
                   and rebuild their lives while still receiving support. This gradual transition to 
@@ -340,7 +340,7 @@ export default function Home() {
           </div>
 
           {/* Providers Side */}
-          <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full border-t lg:border-t-0 lg:border-l border-white/10">
+          <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full">
             <div className="absolute inset-0">
               <img src={providerBg} loading="lazy" className="w-full h-full object-cover" alt="" />
               <div className="absolute inset-0 bg-emerald-950/80 mix-blend-multiply" />
