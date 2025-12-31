@@ -2768,7 +2768,35 @@ the actual document file stored on the server.
                             <span className="text-xs font-bold text-primary">#{idx + 1}</span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-white font-medium text-sm truncate">{page.page || '/'}</p>
+                            <p className="text-white font-medium text-sm truncate">
+                              {(() => {
+                                const pageNames: Record<string, string> = {
+                                  '/': 'Home',
+                                  '/browse': 'Browse Homes',
+                                  '/login': 'Login',
+                                  '/register': 'Register',
+                                  '/provider-dashboard': 'Provider Dashboard',
+                                  '/tenant-dashboard': 'Tenant Dashboard',
+                                  '/admin-dashboard': 'Admin Dashboard',
+                                  '/admin': 'Admin Login',
+                                  '/what-is-sober-living': 'What Is Sober Living',
+                                  '/our-mission': 'Our Mission',
+                                  '/faq': 'FAQ',
+                                  '/privacy': 'Privacy Policy',
+                                  '/terms': 'Terms of Service',
+                                  '/resources': 'Resources',
+                                  '/contact': 'Contact',
+                                  '/pricing': 'Pricing',
+                                  '/founding-members': 'Founding Members',
+                                };
+                                const pagePath = page.page || '/';
+                                if (pageNames[pagePath]) return pageNames[pagePath];
+                                if (pagePath.startsWith('/chat/')) return `Chat #${pagePath.split('/')[2]}`;
+                                if (pagePath.startsWith('/listing/')) return `Listing Details`;
+                                if (pagePath.startsWith('/property/')) return `Property Details`;
+                                return pagePath;
+                              })()}
+                            </p>
                             <p className="text-xs text-muted-foreground">{page.count.toLocaleString()} views</p>
                           </div>
                         </div>
