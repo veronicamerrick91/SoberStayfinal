@@ -49,18 +49,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background">
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center hover:opacity-90 transition-opacity">
-            <img src={logo} alt="Sober Stay" className="h-16 w-auto" />
+            <img src={logo} alt="Sober Stay" className="h-14 md:h-18 w-auto" />
           </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/" className={`text-sm font-medium transition-colors hover:text-primary ${isActive("/") ? "text-primary font-bold" : "text-muted-foreground"}`}>
+            <Link href="/" className={`inline-flex items-center text-sm font-medium transition-colors hover:text-primary ${isActive("/") ? "text-primary font-bold" : "text-muted-foreground"}`}>
               Home
             </Link>
-            <Link href="/browse" className={`text-sm font-medium transition-colors hover:text-primary ${isActive("/browse") ? "text-primary font-bold" : "text-muted-foreground"}`}>
+            <Link href="/browse" className={`inline-flex items-center text-sm font-medium transition-colors hover:text-primary ${isActive("/browse") ? "text-primary font-bold" : "text-muted-foreground"}`}>
               Browse Homes
             </Link>
-            <Link href="/mission" className={`text-sm font-medium transition-colors hover:text-primary ${isActive("/mission") ? "text-primary font-bold" : "text-muted-foreground"}`}>
+            <Link href="/mission" className={`inline-flex items-center text-sm font-medium transition-colors hover:text-primary ${isActive("/mission") ? "text-primary font-bold" : "text-muted-foreground"}`}>
               Our Mission
             </Link>
             

@@ -194,6 +194,7 @@ export default function Browse() {
                       <div key={g} className="flex items-center space-x-2">
                         <Checkbox 
                           id={g} 
+                          className="h-4 w-4"
                           checked={selectedGenders.includes(g)}
                           onCheckedChange={() => toggleFilter(g, selectedGenders, setSelectedGenders)}
                         />
@@ -233,6 +234,7 @@ export default function Browse() {
                       <div key={type} className="flex items-center space-x-2">
                         <Checkbox 
                           id={type} 
+                          className="h-4 w-4"
                           checked={selectedSupervision.includes(type)}
                           onCheckedChange={() => toggleFilter(type, selectedSupervision, setSelectedSupervision)}
                         />
@@ -250,6 +252,7 @@ export default function Browse() {
                       <div key={roomType} className="flex items-center space-x-2">
                         <Checkbox 
                           id={roomType} 
+                          className="h-4 w-4"
                           checked={selectedRoomTypes.includes(roomType)}
                           onCheckedChange={() => toggleFilter(roomType, selectedRoomTypes, setSelectedRoomTypes)}
                         />
@@ -264,12 +267,13 @@ export default function Browse() {
                   <Label className="text-white font-semibold">Features & Support</Label>
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="verified" />
+                      <Checkbox id="verified" className="h-4 w-4" />
                       <Label htmlFor="verified" className="font-normal text-muted-foreground">Verified Only</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Checkbox 
                         id="mat" 
+                        className="h-4 w-4"
                         checked={showMatFriendly}
                         onCheckedChange={(checked) => setShowMatFriendly(!!checked)}
                       />
@@ -278,17 +282,18 @@ export default function Browse() {
                     <div className="flex items-center space-x-2">
                       <Checkbox 
                         id="couples" 
+                        className="h-4 w-4"
                         checked={showAcceptsCouples}
                         onCheckedChange={(checked) => setShowAcceptsCouples(!!checked)}
                       />
                       <Label htmlFor="couples" className="font-normal text-muted-foreground cursor-pointer">Accepts Couples</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="lgbtq" />
+                      <Checkbox id="lgbtq" className="h-4 w-4" />
                       <Label htmlFor="lgbtq" className="font-normal text-muted-foreground cursor-pointer">LGBTQ Friendly</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="faith" />
+                      <Checkbox id="faith" className="h-4 w-4" />
                       <Label htmlFor="faith" className="font-normal text-muted-foreground">Faith Based</Label>
                     </div>
                   </div>

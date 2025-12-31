@@ -149,6 +149,54 @@ export default function Home() {
         </div>
       </section>
 
+      {/* How It Works - Redesigned */}
+      <section className="relative py-12 bg-background overflow-hidden">
+        {/* Background Path Visual */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+           <img src={pathBg} loading="lazy" className="w-full h-full object-cover" alt="" />
+           <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <Badge variant="outline" className="mb-3 border-primary/50 text-primary px-4 py-1 text-sm uppercase tracking-widest">Simple Process</Badge>
+            <h3 className="text-4xl md:text-5xl font-bold mb-4 text-white tracking-tight">
+              Your Journey to <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">Safe Living</span>
+            </h3>
+            <p className="text-xl text-muted-foreground">Finding a safe environment shouldn't be harder than the recovery itself. We've simplified the process into three seamless steps.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-12 relative">
+            {[
+              { icon: HomeIcon, title: "Search Quality Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit.", step: "01", link: "/browse", showLearnMore: true },
+              { icon: FileText, title: "Apply Securely", desc: "Fill out one detailed application and submit it to multiple homes instantly.", step: "02", link: "/tenant-profile", showLearnMore: true },
+              { icon: HeartHandshake, title: "Connect & Move In", desc: "Chat directly with providers, schedule visits, and secure your spot.", step: "03", link: "/for-tenants", showLearnMore: false }
+            ].map((step, i) => (
+              <div key={i} className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-emerald-600/50 rounded-2xl blur opacity-20 group-hover:opacity-70 transition duration-500"></div>
+                <div className="relative h-full bg-card border border-white/10 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-500 overflow-hidden">
+                  <div className="absolute top-0 right-0 p-6 text-6xl font-bold text-white/5 select-none font-heading">{step.step}</div>
+                  
+                  <div className="w-20 h-20 mb-8 rounded-2xl bg-gradient-to-br from-primary/20 to-background border border-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+                    <step.icon className="w-10 h-10 text-primary" strokeWidth={2.5} />
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-primary transition-colors">{step.title}</h3>
+                  <p className="text-gray-400 leading-relaxed text-lg">{step.desc}</p>
+                  
+                  {step.showLearnMore && (
+                    <Link href={step.link} className="mt-8 flex items-center text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                      Learn more <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* What Is Sober Living - SEO Content */}
       <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
@@ -204,54 +252,6 @@ export default function Home() {
                 <MapPin className="w-4 h-4 mr-2" /> Arizona
               </Button>
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works - Redesigned */}
-      <section className="relative py-12 bg-background overflow-hidden">
-        {/* Background Path Visual */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-           <img src={pathBg} loading="lazy" className="w-full h-full object-cover" alt="" />
-           <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
-        </div>
-
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <Badge variant="outline" className="mb-3 border-primary/50 text-primary px-4 py-1 text-sm uppercase tracking-widest">Simple Process</Badge>
-            <h3 className="text-4xl md:text-5xl font-bold mb-4 text-white tracking-tight">
-              Your Journey to <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">Safe Living</span>
-            </h3>
-            <p className="text-xl text-muted-foreground">Finding a safe environment shouldn't be harder than the recovery itself. We've simplified the process into three seamless steps.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-12 relative">
-            {[
-              { icon: HomeIcon, title: "Search Quality Homes", desc: "Filter by location, budget, gender, and amenities to find the right fit.", step: "01", link: "/browse", showLearnMore: true },
-              { icon: FileText, title: "Apply Securely", desc: "Fill out one detailed application and submit it to multiple homes instantly.", step: "02", link: "/tenant-profile", showLearnMore: true },
-              { icon: HeartHandshake, title: "Connect & Move In", desc: "Chat directly with providers, schedule visits, and secure your spot.", step: "03", link: "/for-tenants", showLearnMore: false }
-            ].map((step, i) => (
-              <div key={i} className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-emerald-600/50 rounded-2xl blur opacity-20 group-hover:opacity-70 transition duration-500"></div>
-                <div className="relative h-full bg-card border border-white/10 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-500 overflow-hidden">
-                  <div className="absolute top-0 right-0 p-6 text-6xl font-bold text-white/5 select-none font-heading">{step.step}</div>
-                  
-                  <div className="w-20 h-20 mb-8 rounded-2xl bg-gradient-to-br from-primary/20 to-background border border-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-                    <step.icon className="w-10 h-10 text-primary" strokeWidth={2.5} />
-                  </div>
-                  
-                  <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-primary transition-colors">{step.title}</h3>
-                  <p className="text-gray-400 leading-relaxed text-lg">{step.desc}</p>
-                  
-                  {step.showLearnMore && (
-                    <Link href={step.link} className="mt-8 flex items-center text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                      Learn more <ArrowRight className="w-4 h-4 ml-2" />
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
