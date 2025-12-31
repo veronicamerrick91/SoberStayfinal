@@ -279,7 +279,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteListing(id: number): Promise<void> {
-    await db.delete(listings).where(eq(listings.id, id));
+    // Use a transaction to ensure all deletions succeed or rollback together
+    await db.transaction(async (tx) => {
+      // Delete related records first to avoid foreign key constraint violations
+      await tx.delete(applications).where(eq(applications.listingId, id));
+      await tx.delete(featuredListings).where(eq(featuredListings.listingId, id));
+      await tx.delete(tenantFavorites).where(eq(tenantFavorites.listingId, id));
+      await tx.delete(tenantViewedHomes).where(eq(tenantViewedHomes.listingId, id));
+      await tx.delete(listingAnalyticsEvents).where(eq(listingAnalyticsEvents.listingId, id));
+      await tx.delete(listingAnalyticsDaily).where(eq(listingAnalyticsDaily.listingId, id));
+      // Now delete the listing itself
+      await tx.delete(listings).where(eq(listings.id, id));
+    });
   }
 
   async createSubscription(insertSubscription: InsertSubscription): Promise<Subscription> {

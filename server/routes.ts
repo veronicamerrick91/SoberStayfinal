@@ -883,8 +883,13 @@ Disallow: /auth/
       return res.status(400).json({ error: "Invalid listing ID" });
     }
     
-    await storage.deleteListing(id);
-    res.json({ success: true });
+    try {
+      await storage.deleteListing(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting listing:", error);
+      res.status(500).json({ error: "Failed to delete listing" });
+    }
   });
 
   // Admin: Get all applications with tenant and listing info
