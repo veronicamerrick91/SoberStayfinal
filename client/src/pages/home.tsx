@@ -277,7 +277,7 @@ export default function Home() {
             ].map((step, i) => (
               <div key={i} className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-emerald-600/50 rounded-2xl blur opacity-20 group-hover:opacity-70 transition duration-500"></div>
-                <div className="relative h-full bg-card border border-white/10 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-500">
+                <div className="relative h-full bg-card border border-white/10 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-500 overflow-hidden">
                   <div className="absolute top-0 right-0 p-6 text-6xl font-bold text-white/5 select-none font-heading">{step.step}</div>
                   
                   <div className="w-20 h-20 mb-8 rounded-2xl bg-gradient-to-br from-primary/20 to-background border border-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
@@ -340,7 +340,7 @@ export default function Home() {
           </div>
 
           {/* Providers Side */}
-          <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full">
+          <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full border-t lg:border-t-0 lg:border-l border-white/10">
             <div className="absolute inset-0">
               <img src={providerBg} loading="lazy" className="w-full h-full object-cover" alt="" />
               <div className="absolute inset-0 bg-emerald-950/80 mix-blend-multiply" />
