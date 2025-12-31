@@ -197,30 +197,86 @@ export default function Home() {
         </div>
       </section>
 
-      {/* What Is Sober Living - SEO Content */}
-      <section className="py-12 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h3 className="text-3xl md:text-4xl font-bold mb-4 text-white">What Is Sober Living?</h3>
-            <p className="text-lg text-muted-foreground mb-4 leading-relaxed">
-              Sober living homes provide a safe, substance-free environment for individuals 
-              transitioning from treatment to independent living. These homes support recovery 
-              through accountability, structure, and community. Unlike inpatient treatment centers, 
-              sober living offers more independence while maintaining essential support systems.
-            </p>
-            <p className="text-lg text-muted-foreground mb-4 leading-relaxed">
-              Residents typically share responsibilities, attend house meetings, and follow established 
-              guidelines such as curfews and mandatory drug testing. Many homes require participation 
-              in recovery programs like AA or NA meetings. This structured environment helps individuals 
-              develop healthy habits and coping skills necessary for long-term sobriety.
-            </p>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              Sober Stay makes it easy to find sober living homes near you. Browse verified listings, 
-              compare prices and amenities, review house rules, and apply directly through our platform. 
-              Whether you're looking for gender-specific housing, MAT-friendly options, or pet-friendly 
-              accommodations, we connect you with the right recovery environment for your needs.
-            </p>
+      {/* For Tenants & Providers Split */}
+      <section className="py-0 bg-background">
+        <div className="grid lg:grid-cols-2 min-h-[800px]">
+          
+          {/* Tenants Side */}
+          <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full">
+            <div className="absolute inset-0">
+              <img src={tenantBg} loading="lazy" className="w-full h-full object-cover" alt="" />
+              <div className="absolute inset-0 bg-blue-950/80 mix-blend-multiply" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90" />
+            </div>
+            
+            <div className="relative z-10 h-full flex flex-col justify-center p-12 lg:p-20 max-w-2xl mx-auto lg:mx-0 lg:ml-auto">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-400/10 border border-blue-400/20 text-blue-300 text-sm font-medium mb-6 w-fit">
+                <Sparkles className="w-4 h-4" /> For Tenants
+              </div>
+              <h3 className="text-4xl md:text-5xl font-bold text-white mb-6">Find Your Safe Haven</h3>
+              <p className="text-xl text-blue-100 mb-10 leading-relaxed">
+                Your recovery deserves a supportive environment. Browse quality homes, chat directly with providers, and manage your applications in one secure place.
+              </p>
+              
+              <ul className="space-y-5 mb-12">
+                {["Browse trusted recovery environments", "Direct chat with providers", "Secure document storage", "Track application status in real-time"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-4 text-lg text-white">
+                    <div className="bg-blue-500/20 p-2 rounded-full">
+                      <CheckCircle2 className="w-5 h-5 text-blue-400" />
+                    </div>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              
+              <Link href="/for-tenants">
+                <Button size="lg" className="bg-white text-blue-950 hover:bg-blue-50 text-lg h-14 px-10 rounded-full w-fit shadow-xl transition-all hover:translate-x-2">
+                  Start Your Search <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
           </div>
+
+          {/* Providers Side */}
+          <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full border-t lg:border-t-0 lg:border-l border-white/10">
+            <div className="absolute inset-0">
+              <img src={providerBg} loading="lazy" className="w-full h-full object-cover" alt="" />
+              <div className="absolute inset-0 bg-emerald-950/80 mix-blend-multiply" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90" />
+            </div>
+            
+            <div className="relative z-10 h-full flex flex-col justify-center p-12 lg:p-20 max-w-2xl mx-auto lg:mx-0 lg:mr-auto">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-emerald-300 text-sm font-medium mb-6 w-fit">
+                <Building className="w-4 h-4" /> For Providers
+              </div>
+              <h3 className="text-4xl md:text-5xl font-bold text-white mb-6">Grow Your Community</h3>
+              <p className="text-xl text-emerald-100 mb-4 leading-relaxed">
+                Fill vacancies faster with qualified applicants. Manage listings, screen residents, and streamline your intake process with our powerful tools.
+              </p>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-semibold mb-10 w-fit">
+                <span>💰</span>
+                <span>$49/month per listing</span>
+              </div>
+              
+              <ul className="space-y-5 mb-12">
+                {["Fill vacancies faster", "Streamlined application management", "Marketing & SEO included", "Digital resident files"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-4 text-lg text-white">
+                    <div className="bg-emerald-500/20 p-2 rounded-full">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              
+              <Link href="/for-providers">
+                <Button size="lg" className="bg-emerald-500 text-white hover:bg-emerald-600 text-lg h-14 px-10 rounded-full w-fit shadow-xl shadow-emerald-900/20 transition-all hover:translate-x-2">
+                  List Your Property <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -341,89 +397,6 @@ export default function Home() {
               Learn More <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
-        </div>
-      </section>
-
-      {/* For Tenants & Providers Split - Creative Redesign */}
-      <section className="py-0 bg-background">
-        <div className="grid lg:grid-cols-2 min-h-[800px]">
-          
-          {/* Tenants Side */}
-          <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full">
-            <div className="absolute inset-0">
-              <img src={tenantBg} loading="lazy" className="w-full h-full object-cover" alt="" />
-              <div className="absolute inset-0 bg-blue-950/80 mix-blend-multiply" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90" />
-            </div>
-            
-            <div className="relative z-10 h-full flex flex-col justify-center p-12 lg:p-20 max-w-2xl mx-auto lg:mx-0 lg:ml-auto">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-400/10 border border-blue-400/20 text-blue-300 text-sm font-medium mb-6 w-fit">
-                <Sparkles className="w-4 h-4" /> For Tenants
-              </div>
-              <h3 className="text-4xl md:text-5xl font-bold text-white mb-6">Find Your Safe Haven</h3>
-              <p className="text-xl text-blue-100 mb-10 leading-relaxed">
-                Your recovery deserves a supportive environment. Browse quality homes, chat directly with providers, and manage your applications in one secure place.
-              </p>
-              
-              <ul className="space-y-5 mb-12">
-                {["Browse trusted recovery environments", "Direct chat with providers", "Secure document storage", "Track application status in real-time"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-4 text-lg text-white">
-                    <div className="bg-blue-500/20 p-2 rounded-full">
-                      <CheckCircle2 className="w-5 h-5 text-blue-400" />
-                    </div>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              
-              <Link href="/for-tenants">
-                <Button size="lg" className="bg-white text-blue-950 hover:bg-blue-50 text-lg h-14 px-10 rounded-full w-fit shadow-xl transition-all hover:translate-x-2">
-                  Start Your Search <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          {/* Providers Side */}
-          <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full border-t lg:border-t-0 lg:border-l border-white/10">
-            <div className="absolute inset-0">
-              <img src={providerBg} loading="lazy" className="w-full h-full object-cover" alt="" />
-              <div className="absolute inset-0 bg-emerald-950/80 mix-blend-multiply" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90" />
-            </div>
-            
-            <div className="relative z-10 h-full flex flex-col justify-center p-12 lg:p-20 max-w-2xl mx-auto lg:mx-0 lg:mr-auto">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-emerald-300 text-sm font-medium mb-6 w-fit">
-                <Building className="w-4 h-4" /> For Providers
-              </div>
-              <h3 className="text-4xl md:text-5xl font-bold text-white mb-6">Grow Your Community</h3>
-              <p className="text-xl text-emerald-100 mb-4 leading-relaxed">
-                Fill vacancies faster with qualified applicants. Manage listings, screen residents, and streamline your intake process with our powerful tools.
-              </p>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-semibold mb-10 w-fit">
-                <span>💰</span>
-                <span>$49/month per listing</span>
-              </div>
-              
-              <ul className="space-y-5 mb-12">
-                {["Fill vacancies faster", "Streamlined application management", "Marketing & SEO included", "Digital resident files"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-4 text-lg text-white">
-                    <div className="bg-emerald-500/20 p-2 rounded-full">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                    </div>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              
-              <Link href="/for-providers">
-                <Button size="lg" className="bg-emerald-500 text-white hover:bg-emerald-600 text-lg h-14 px-10 rounded-full w-fit shadow-xl shadow-emerald-900/20 transition-all hover:translate-x-2">
-                  List Your Property <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-
         </div>
       </section>
 
