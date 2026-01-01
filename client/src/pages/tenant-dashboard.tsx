@@ -180,88 +180,82 @@ function TenantDashboardContent() {
   };
 
   const calculateProfileCompletion = () => {
-    // If we have server application data, calculate based on the full profile
-    if (serverApplicationData && Object.keys(serverApplicationData).length > 0) {
-      const data = serverApplicationData;
-      
-      // First check if there's any meaningful data at all
-      const hasAnyMeaningfulData = Object.values(data).some(val => {
-        if (typeof val === 'boolean') return val === true;
-        if (typeof val === 'string') return val && val.trim() !== '';
-        return val != null;
-      });
-      
-      if (!hasAnyMeaningfulData) {
-        return 0;
-      }
-      
-      // Calculate filled fields safely - guards against zero-length arrays
-      const checkFilled = (fields: any[]) => fields.filter(f => {
-        if (typeof f === 'boolean') return f === true;
-        if (typeof f === 'string') return f && f.trim() !== '';
-        return f != null;
-      }).length;
-      
-      const calculateScore = (fields: any[], weight: number) => {
-        if (fields.length === 0) return 0; // No score for empty sections
-        return (checkFilled(fields) / fields.length) * weight;
-      };
-      
-      // Define required fields grouped by section - using ACTUAL field names from tenant-profile.tsx
-      const coreFields = [
-        data.firstName, data.lastName, data.email, data.phoneNumber,
-        data.dateOfBirth, data.gender, data.currentAddress
-      ];
-      
-      const emergencyFields = [
-        data.emergencyContactName, data.emergencyContactPhone, data.emergencyContactRelationship
-      ];
-      
-      const recoveryFields = [
-        data.primarySubstance, data.lengthOfSobriety, data.lastDateOfUse,
-        data.overdoseHistory, data.matHistory
-      ];
-      
-      const medicalFields = [
-        data.medicalConditions, data.mentalHealthDiagnoses, data.currentMedications,
-        data.mobilityIssues, data.seizureHistory
-      ];
-      
-      const legalFields = [
-        data.probationParole, data.pendingCases, data.violentOffenses
-      ];
-      
-      const employmentFields = [
-        data.employmentStatus, data.incomeSources, data.canPayRent, data.lookingForEmployment
-      ];
-      
-      const housingFields = [
-        data.moveInDate, data.roomPreference, data.genderSpecificHousing,
-        data.reasonForLeaving, data.previousSoberLiving
-      ];
-      
-      const consentFields = [
-        data.agreeNoDrugs, data.agreeUAandBreathalyzer, data.agreeNoViolence,
-        data.agreeShareInfo, data.agreeTerms
-      ];
-      
-      // Weighted scoring (totals 100%)
-      const coreScore = calculateScore(coreFields, 25);
-      const emergencyScore = calculateScore(emergencyFields, 12);
-      const recoveryScore = calculateScore(recoveryFields, 15);
-      const medicalScore = calculateScore(medicalFields, 8);
-      const legalScore = calculateScore(legalFields, 8);
-      const employmentScore = calculateScore(employmentFields, 12);
-      const housingScore = calculateScore(housingFields, 10);
-      const consentScore = calculateScore(consentFields, 10);
-      
-      return Math.round(coreScore + emergencyScore + recoveryScore + medicalScore + legalScore + employmentScore + housingScore + consentScore);
-    }
+    // Merge server data with profile state for consistent calculation
+    const serverData = serverApplicationData ?? {};
+    const data: Record<string, any> = {
+      ...serverData,
+      // Fallback to profile state for fields that might not be in serverApplicationData
+      firstName: serverData.firstName || profile.name?.split(' ')[0] || '',
+      lastName: serverData.lastName || profile.name?.split(' ').slice(1).join(' ') || '',
+      email: serverData.email || profile.email || '',
+      phoneNumber: serverData.phoneNumber || profile.phone || '',
+      emergencyContactName: serverData.emergencyContactName || profile.emergencyContactName || '',
+      emergencyContactPhone: serverData.emergencyContactPhone || profile.emergencyContactPhone || '',
+      sobrietyDate: serverData.sobrietyDate || serverData.lastDateOfUse || profile.sobrietyDate || '',
+      bio: serverData.bio || profile.bio || '',
+    };
     
-    // Fallback to basic fields if no server data loaded yet
-    const fields = [profile.name, profile.email, profile.phone, profile.sobrietyDate, profile.emergencyContactName, profile.emergencyContactPhone, profile.bio];
-    const filled = fields.filter(f => f && f.trim() !== "").length;
-    return Math.round((filled / fields.length) * 100);
+    // Check if filled (handles strings, booleans, etc.)
+    const checkFilled = (fields: any[]) => fields.filter(f => {
+      if (typeof f === 'boolean') return f === true;
+      if (typeof f === 'string') return f && f.trim() !== '';
+      return f != null;
+    }).length;
+    
+    const calculateScore = (fields: any[], weight: number) => {
+      if (fields.length === 0) return 0;
+      return (checkFilled(fields) / fields.length) * weight;
+    };
+    
+    // Define required fields grouped by section - comprehensive weighted scoring
+    const coreFields = [
+      data.firstName, data.lastName, data.email, data.phoneNumber,
+      data.dateOfBirth, data.gender, data.currentAddress
+    ];
+    
+    const emergencyFields = [
+      data.emergencyContactName, data.emergencyContactPhone, data.emergencyContactRelationship
+    ];
+    
+    const recoveryFields = [
+      data.primarySubstance, data.lengthOfSobriety, data.sobrietyDate,
+      data.overdoseHistory, data.matHistory
+    ];
+    
+    const medicalFields = [
+      data.medicalConditions, data.mentalHealthDiagnoses, data.currentMedications,
+      data.mobilityIssues, data.seizureHistory
+    ];
+    
+    const legalFields = [
+      data.probationParole, data.pendingCases, data.violentOffenses
+    ];
+    
+    const employmentFields = [
+      data.employmentStatus, data.incomeSources, data.canPayRent, data.lookingForEmployment
+    ];
+    
+    const housingFields = [
+      data.moveInDate, data.roomPreference, data.genderSpecificHousing,
+      data.reasonForLeaving, data.previousSoberLiving
+    ];
+    
+    const consentFields = [
+      data.agreeNoDrugs, data.agreeUAandBreathalyzer, data.agreeNoViolence,
+      data.agreeShareInfo, data.agreeTerms
+    ];
+    
+    // Weighted scoring (totals 100%)
+    const coreScore = calculateScore(coreFields, 25);
+    const emergencyScore = calculateScore(emergencyFields, 12);
+    const recoveryScore = calculateScore(recoveryFields, 15);
+    const medicalScore = calculateScore(medicalFields, 8);
+    const legalScore = calculateScore(legalFields, 8);
+    const employmentScore = calculateScore(employmentFields, 12);
+    const housingScore = calculateScore(housingFields, 10);
+    const consentScore = calculateScore(consentFields, 10);
+    
+    return Math.round(coreScore + emergencyScore + recoveryScore + medicalScore + legalScore + employmentScore + housingScore + consentScore);
   };
 
   useEffect(() => {
