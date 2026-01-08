@@ -1,0 +1,82 @@
+You are an expert SEO and Next.js engineer.
+
+TASK:
+Audit my entire codebase and fix Google indexing issues WITHOUT breaking authentication, dashboards, or private routes.
+
+GOALS:
+1) Ensure all PUBLIC pages are indexable by Google
+2) Ensure PRIVATE pages remain noindex
+3) Fix “Crawled – currently not indexed” issues by improving SEO structure
+4) Do NOT remove security protections
+
+STEP-BY-STEP INSTRUCTIONS:
+
+1) SEARCH THE ENTIRE PROJECT for:
+   - meta robots noindex
+   - noindex,nofollow
+   - X-Robots-Tag
+   - robots settings in layout, _app.js, _document.js, or Head components
+
+2) IDENTIFY ALL ROUTES that should remain NOINDEX:
+   - /login
+   - /signup
+   - /dashboard
+   - /admin
+   - /provider
+   - /tenant
+   - /apply
+   - any authenticated or internal portal pages
+
+   KEEP noindex on those pages.
+
+3) ENSURE ALL PUBLIC PAGES ARE INDEXABLE:
+   - /
+   - city pages (ex: /sober-living-los-angeles, /sober-living-phoenix, etc.)
+   - public listing pages
+   - blog or informational pages
+
+   REMOVE noindex from these pages.
+
+4) IMPLEMENT CONDITIONAL ROBOTS TAG LOGIC:
+   - Use router.pathname to apply:
+     index,follow → public pages
+     noindex,nofollow → private pages only
+
+   Example logic:
+   const noIndexRoutes = ['/login','/dashboard','/admin','/provider','/tenant','/apply'];
+   const shouldNoIndex = noIndexRoutes.some(route => router.pathname.startsWith(route));
+
+5) ADD / VERIFY CANONICAL TAGS ON ALL PUBLIC PAGES:
+   - Canonical format:
+     https://www.soberstayhomes.com + current path
+   - No duplicate or conflicting canonicals
+
+6) IMPROVE SEO FOR CITY PAGES (to fix “Crawled – currently not indexed”):
+   For EACH city page:
+   - Minimum 700 words of unique content
+   - City name in:
+     - <title>
+     - <h1>
+     - first paragraph
+   - Add internal links:
+     - homepage → city page
+     - city page → other city pages
+   - Add clear CTA text (example: “Find sober living homes in Phoenix”)
+
+7) CONFIRM SITEMAP:
+   - sitemap.xml must:
+     - be accessible at /sitemap.xml
+     - include ONLY public pages
+     - exclude dashboards, login, admin, tenant/provider routes
+
+8) DO NOT:
+   - Globally apply noindex
+   - Remove auth protections
+   - Index private user data
+
+9) OUTPUT:
+   - Make the required code changes
+   - Clearly comment what was changed
+   - Confirm which pages are now indexable vs noindex
+
+END TASK.

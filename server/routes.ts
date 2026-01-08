@@ -111,7 +111,8 @@ export async function registerRoutes(
       "/blog/how-to-choose-right-sober-living-home/",
       "/blog/building-healthy-relationships-recovery/",
       "/blog/sober-living-vs-halfway-house-differences/",
-      "/blog/employment-tips-sober-living/"
+      "/blog/employment-tips-sober-living/",
+      "/blog/how-to-attract-tenants-sober-living/"
     ];
     
     let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -147,18 +148,29 @@ Allow: /
 
 Sitemap: https://www.soberstayhomes.com/sitemap.xml
 
-# Block admin and user-specific pages
+# Block auth and user-specific pages
+Disallow: /login
+Disallow: /signup
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /auth/
 Disallow: /admin-dashboard
+Disallow: /admin
 Disallow: /provider-dashboard
 Disallow: /tenant-dashboard
 Disallow: /tenant-profile
+Disallow: /provider-profile
 Disallow: /create-listing
 Disallow: /edit-listing
 Disallow: /analytics
 Disallow: /seo-tools
 Disallow: /chat/
 Disallow: /apply/
-Disallow: /auth/
+Disallow: /provider-support
+Disallow: /safety-reporting
+Disallow: /liability-waiver
+Disallow: /for-tenants
 `);
   });
 
