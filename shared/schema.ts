@@ -187,6 +187,27 @@ export const listingAnalyticsDaily = pgTable("listing_analytics_daily", {
   applications: integer("applications").default(0).notNull(),
 });
 
+export const providerReferrals = pgTable("provider_referrals", {
+  id: serial("id").primaryKey(),
+  referrerId: integer("referrer_id").notNull().references(() => users.id),
+  referralCode: text("referral_code").notNull().unique(),
+  totalReferrals: integer("total_referrals").default(0).notNull(),
+  successfulReferrals: integer("successful_referrals").default(0).notNull(),
+  creditsEarned: integer("credits_earned").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const referralTracking = pgTable("referral_tracking", {
+  id: serial("id").primaryKey(),
+  referralCodeId: integer("referral_code_id").notNull().references(() => providerReferrals.id),
+  referredUserId: integer("referred_user_id").notNull().references(() => users.id),
+  status: text("status").default("pending").notNull(),
+  rewardCredited: boolean("reward_credited").default(false).notNull(),
+  rewardAmount: integer("reward_amount").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   email: true,
@@ -411,3 +432,6 @@ export const insertSiteVisitSchema = createInsertSchema(siteVisits).omit({
 
 export type SiteVisit = typeof siteVisits.$inferSelect;
 export type InsertSiteVisit = z.infer<typeof insertSiteVisitSchema>;
+
+export type ProviderReferral = typeof providerReferrals.$inferSelect;
+export type ReferralTracking = typeof referralTracking.$inferSelect;
