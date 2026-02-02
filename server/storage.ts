@@ -172,6 +172,17 @@ export interface IStorage {
     visitsByDay: { date: string; count: number }[];
   }>;
   
+  // Provider Referrals
+  getProviderReferral(providerId: number): Promise<any | undefined>;
+  createProviderReferral(providerId: number, code: string): Promise<any>;
+  getReferralByCode(code: string): Promise<any | undefined>;
+  getReferredUsers(referralId: number): Promise<any[]>;
+  createReferralTracking(referralId: number, userId: number): Promise<any>;
+  incrementReferralCount(referralId: number): Promise<void>;
+  getReferralTrackingByUser(userId: number): Promise<any | undefined>;
+  completeReferral(trackingId: number, referralId: number, rewardAmount: number): Promise<void>;
+  trackReferral(referralCode: string, referredUserId: number): Promise<boolean>;
+  
   sessionStore: session.Store;
 }
 
@@ -1619,6 +1630,93 @@ The Sober Stay Team`,
     const visitsByDay = visitsByDayResult.map(r => ({ date: r.date, count: r.count }));
 
     return { totalVisits, uniqueVisitors, topPages, visitsByDay };
+  }
+
+  // Provider Referral Methods
+  async getProviderReferral(providerId: number): Promise<any | undefined> {
+    const result = await db.execute(
+      sql`SELECT * FROM provider_referrals WHERE referrer_id = ${providerId} LIMIT 1`
+    );
+    return result.rows[0];
+  }
+
+  async createProviderReferral(providerId: number, code: string): Promise<any> {
+    const result = await db.execute(
+      sql`INSERT INTO provider_referrals (referrer_id, referral_code) VALUES (${providerId}, ${code}) RETURNING *`
+    );
+    return result.rows[0];
+  }
+
+  async getReferralByCode(code: string): Promise<any | undefined> {
+    const result = await db.execute(
+      sql`SELECT * FROM provider_referrals WHERE referral_code = ${code} LIMIT 1`
+    );
+    return result.rows[0];
+  }
+
+  async getReferredUsers(referralId: number): Promise<any[]> {
+    const result = await db.execute(
+      sql`SELECT rt.*, u.name, u.email, u.created_at as user_created_at 
+          FROM referral_tracking rt 
+          JOIN users u ON rt.referred_user_id = u.id 
+          WHERE rt.referral_code_id = ${referralId}
+          ORDER BY rt.created_at DESC`
+    );
+    return result.rows as any[];
+  }
+
+  async createReferralTracking(referralId: number, userId: number): Promise<any> {
+    const result = await db.execute(
+      sql`INSERT INTO referral_tracking (referral_code_id, referred_user_id) VALUES (${referralId}, ${userId}) RETURNING *`
+    );
+    return result.rows[0];
+  }
+
+  async incrementReferralCount(referralId: number): Promise<void> {
+    await db.execute(
+      sql`UPDATE provider_referrals SET total_referrals = total_referrals + 1 WHERE id = ${referralId}`
+    );
+  }
+
+  async getReferralTrackingByUser(userId: number): Promise<any | undefined> {
+    const result = await db.execute(
+      sql`SELECT * FROM referral_tracking WHERE referred_user_id = ${userId} LIMIT 1`
+    );
+    return result.rows[0];
+  }
+
+  async completeReferral(trackingId: number, referralId: number, rewardAmount: number): Promise<void> {
+    await db.execute(
+      sql`UPDATE referral_tracking SET status = 'completed', reward_credited = true, reward_amount = ${rewardAmount}, completed_at = NOW() WHERE id = ${trackingId}`
+    );
+    await db.execute(
+      sql`UPDATE provider_referrals SET successful_referrals = successful_referrals + 1, credits_earned = credits_earned + ${rewardAmount} WHERE id = ${referralId}`
+    );
+  }
+
+  async trackReferral(referralCode: string, referredUserId: number): Promise<boolean> {
+    // Normalize code to uppercase for case-insensitive matching
+    const normalizedCode = referralCode.toUpperCase();
+    
+    // Find the referral code
+    const referral = await this.getReferralByCode(normalizedCode);
+    if (!referral) {
+      console.log(`Referral code ${referralCode} not found`);
+      return false;
+    }
+
+    // Check if user was already referred (prevent duplicate tracking)
+    const existingTracking = await this.getReferralTrackingByUser(referredUserId);
+    if (existingTracking) {
+      console.log(`User ${referredUserId} was already referred`);
+      return false;
+    }
+
+    // Create tracking record and increment count
+    await this.createReferralTracking(referral.id, referredUserId);
+    await this.incrementReferralCount(referral.id);
+    
+    return true;
   }
 }
 

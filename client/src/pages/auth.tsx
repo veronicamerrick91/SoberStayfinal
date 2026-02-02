@@ -31,6 +31,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [requires2FA, setRequires2FA] = useState(false);
   const [twoFactorToken, setTwoFactorToken] = useState("");
   const [accountExists, setAccountExists] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
 
   useEffect(() => {
     setRole(defaultRole as any);
@@ -90,6 +91,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
             firstName,
             lastName,
             role: role === "admin" ? "tenant" : role, // Admins register as tenants
+            ...(role === "provider" && referralCode.trim() ? { referralCode: referralCode.trim() } : {}),
           }),
         });
 
@@ -345,6 +347,21 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                   </button>
                 </div>
               </div>
+
+              {type === "signup" && role === "provider" && (
+                <div className="space-y-2">
+                  <Label htmlFor="referral-code">Referral Code (optional)</Label>
+                  <Input 
+                    id="referral-code" 
+                    placeholder="Enter referral code if you have one" 
+                    className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary" 
+                    value={referralCode} 
+                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                    data-testid="input-referral-code"
+                  />
+                  <p className="text-xs text-muted-foreground">Were you referred by another provider? Enter their code here.</p>
+                </div>
+              )}
 
               {type === "login" && !requires2FA && (
                 <div className="flex items-center gap-2">

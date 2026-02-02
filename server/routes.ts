@@ -77,6 +77,7 @@ const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   role: z.enum(["tenant", "provider"]),
+  referralCode: z.string().optional(),
 });
 
 export async function registerRoutes(
@@ -209,7 +210,7 @@ Disallow: /for-tenants
         return res.status(400).json({ error: parsed.error.errors[0].message });
       }
 
-      const { email, password, firstName, lastName, role } = parsed.data;
+      const { email, password, firstName, lastName, role, referralCode } = parsed.data;
 
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email);
@@ -243,6 +244,20 @@ Disallow: /for-tenants
       sendAdminNewUserNotification(name, email, role as 'provider' | 'tenant').catch(err => {
         console.error("Failed to send admin new user notification:", err);
       });
+
+      // Track referral if a valid code was provided (for provider signups)
+      if (role === "provider" && referralCode) {
+        try {
+          // Validate and track the referral
+          const referralResult = await storage.trackReferral(referralCode, user.id);
+          if (referralResult) {
+            console.log(`Referral tracked successfully for user ${user.id} with code ${referralCode}`);
+          }
+        } catch (referralErr) {
+          // Don't fail registration if referral tracking fails
+          console.error("Failed to track referral:", referralErr);
+        }
+      }
 
       // Log the user in automatically
       req.login(user, (err) => {
@@ -3628,6 +3643,123 @@ Disallow: /for-tenants
     } catch (error) {
       console.error("Error fetching analytics locations:", error);
       res.status(500).json({ error: "Failed to fetch locations" });
+    }
+  });
+
+  // Provider Referral Program endpoints
+
+  // Get or create provider's referral code
+  app.get("/api/provider/referral", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      let referral = await storage.getProviderReferral(user.id);
+      
+      if (!referral) {
+        // Generate a unique referral code
+        const code = `REF${user.id}${Date.now().toString(36).toUpperCase()}`.slice(0, 12);
+        referral = await storage.createProviderReferral(user.id, code);
+      }
+      
+      res.json(referral);
+    } catch (error) {
+      console.error("Error fetching referral:", error);
+      res.status(500).json({ error: "Failed to fetch referral info" });
+    }
+  });
+
+  // Get referral stats for provider
+  app.get("/api/provider/referral/stats", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const referral = await storage.getProviderReferral(user.id);
+      if (!referral) {
+        return res.json({ totalReferrals: 0, successfulReferrals: 0, creditsEarned: 0, referredUsers: [] });
+      }
+      
+      const referredUsers = await storage.getReferredUsers(referral.id);
+      
+      res.json({
+        totalReferrals: referral.totalReferrals,
+        successfulReferrals: referral.successfulReferrals,
+        creditsEarned: referral.creditsEarned,
+        referralCode: referral.referralCode,
+        referredUsers
+      });
+    } catch (error) {
+      console.error("Error fetching referral stats:", error);
+      res.status(500).json({ error: "Failed to fetch referral stats" });
+    }
+  });
+
+  // Validate a referral code (public - used during signup)
+  app.get("/api/referral/validate/:code", async (req, res) => {
+    try {
+      const referral = await storage.getReferralByCode(req.params.code.toUpperCase());
+      if (!referral) {
+        return res.status(404).json({ valid: false, error: "Invalid referral code" });
+      }
+      res.json({ valid: true, referrerId: referral.referrerId });
+    } catch (error) {
+      console.error("Error validating referral code:", error);
+      res.status(500).json({ error: "Failed to validate code" });
+    }
+  });
+
+  // Track a referral signup (called after successful provider registration)
+  app.post("/api/referral/track", async (req, res) => {
+    try {
+      const { referralCode, referredUserId } = req.body;
+      
+      if (!referralCode || !referredUserId) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      
+      const referral = await storage.getReferralByCode(referralCode.toUpperCase());
+      if (!referral) {
+        return res.status(404).json({ error: "Invalid referral code" });
+      }
+      
+      // Create tracking record
+      await storage.createReferralTracking(referral.id, referredUserId);
+      
+      // Update referral counts
+      await storage.incrementReferralCount(referral.id);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error tracking referral:", error);
+      res.status(500).json({ error: "Failed to track referral" });
+    }
+  });
+
+  // Mark referral as successful (when referred provider subscribes)
+  app.post("/api/referral/complete", async (req, res) => {
+    try {
+      const { referredUserId } = req.body;
+      
+      if (!referredUserId) {
+        return res.status(400).json({ error: "Missing user ID" });
+      }
+      
+      const tracking = await storage.getReferralTrackingByUser(referredUserId);
+      if (!tracking) {
+        return res.json({ success: false, message: "No referral found" });
+      }
+      
+      // Mark as completed and credit reward (1 month free = 2999 cents)
+      const rewardAmount = 2999;
+      await storage.completeReferral(tracking.id, tracking.referralCodeId, rewardAmount);
+      
+      res.json({ success: true, rewardAmount });
+    } catch (error) {
+      console.error("Error completing referral:", error);
+      res.status(500).json({ error: "Failed to complete referral" });
     }
   });
 
