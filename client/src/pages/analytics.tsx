@@ -3,10 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { ArrowLeft, TrendingUp, Users, Eye, Download, Filter } from "lucide-react";
+import { ArrowLeft, TrendingUp, Users, Eye, Download, Filter, History, Calendar, FileText } from "lucide-react";
 import { getAuth } from "@/lib/auth";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const viewsData = [
   { date: "Mon", views: 124, clicks: 32, applications: 8 },
@@ -38,11 +45,21 @@ const topListings = [
   { name: "New Beginnings Co-ed", views: 342, clicks: 87, applications: 8, conversion: "2.3%" }
 ];
 
+const historicalReports = [
+  { id: 1, period: "January 2026", date: "2026-01-31", views: 2156, clicks: 512, applications: 78, conversion: "14.2%" },
+  { id: 2, period: "December 2025", date: "2025-12-31", views: 1987, clicks: 456, applications: 65, conversion: "13.8%" },
+  { id: 3, period: "November 2025", date: "2025-11-30", views: 1654, clicks: 389, applications: 52, conversion: "12.9%" },
+  { id: 4, period: "October 2025", date: "2025-10-31", views: 1432, clicks: 321, applications: 43, conversion: "12.1%" },
+  { id: 5, period: "September 2025", date: "2025-09-30", views: 1198, clicks: 278, applications: 35, conversion: "11.5%" },
+  { id: 6, period: "August 2025", date: "2025-08-31", views: 987, clicks: 234, applications: 28, conversion: "10.8%" },
+];
+
 export function Analytics() {
   const [location, setLocation] = useLocation();
   const user = getAuth();
   const { toast } = useToast();
   const [isExporting, setIsExporting] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     if (!user || user.role !== "provider") {
@@ -155,7 +172,80 @@ export function Analytics() {
             <h1 className="text-3xl font-bold text-white">Analytics & Performance</h1>
             <p className="text-muted-foreground">Track your listings' performance and tenant engagement</p>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex gap-2">
+            <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="gap-2 border-primary/50 text-primary hover:bg-primary/10"
+                  data-testid="button-history"
+                >
+                  <History className="w-4 h-4" />
+                  History
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-primary" />
+                    Analytics History
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 mt-4">
+                  <p className="text-sm text-muted-foreground">View past analytics data and download previous reports.</p>
+                  
+                  <div className="space-y-3">
+                    {historicalReports.map((report) => (
+                      <div 
+                        key={report.id} 
+                        className="p-4 bg-white/5 border border-border rounded-lg hover:border-primary/50 transition-colors"
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <h4 className="font-semibold text-white flex items-center gap-2">
+                              <FileText className="w-4 h-4 text-primary" />
+                              {report.period}
+                            </h4>
+                            <p className="text-xs text-muted-foreground mt-1">Generated on {report.date}</p>
+                          </div>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-primary hover:bg-primary/10"
+                            onClick={() => {
+                              toast({
+                                title: "Report downloaded",
+                                description: `${report.period} analytics report downloaded.`,
+                              });
+                            }}
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2 text-sm">
+                          <div>
+                            <p className="text-muted-foreground text-xs">Views</p>
+                            <p className="font-bold text-primary">{report.views.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground text-xs">Clicks</p>
+                            <p className="font-bold text-blue-400">{report.clicks.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground text-xs">Applications</p>
+                            <p className="font-bold text-green-400">{report.applications}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground text-xs">Conversion</p>
+                            <p className="font-bold text-amber-400">{report.conversion}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
             <Button 
               className="gap-2 bg-primary hover:bg-primary/90" 
               onClick={handleExportReport} 
