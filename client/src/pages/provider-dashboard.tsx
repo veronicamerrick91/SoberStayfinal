@@ -10,7 +10,7 @@ import {
   Plus, Check, X, MoreHorizontal, Search, ChevronRight,
   Bed, FileText, Settings, Lock, Mail, Phone, Upload, Shield, ToggleRight,
   Zap, BarChart3, FileArchive, Folder, Share2, TrendingUp, Calendar, Clock, MapPin, Video, Eye, CreditCard,
-  ShieldCheck, Loader2, RotateCcw, CheckCircle, Download, Trash2, Copy
+  ShieldCheck, Loader2, RotateCcw, CheckCircle, Download, Trash2
 } from "lucide-react";
 import { downloadDocument } from "@/lib/document-utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,7 +33,6 @@ import { PaymentModal } from "@/components/payment-modal";
 import { getAuth } from "@/lib/auth";
 import { TourRequest } from "@/components/tour-schedule-modal";
 import { ApplicationDetailsModal, ApplicationData } from "@/components/application-details-modal";
-import { useToast } from "@/hooks/use-toast";
 
 interface ChatMessage {
   sender: "tenant" | "provider";
@@ -438,12 +437,6 @@ function ProviderDashboardContent() {
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
   const [customDocName, setCustomDocName] = useState("");
   const [showCustomDocInput, setShowCustomDocInput] = useState(false);
-  
-  // Referral program state
-  const [referralCode, setReferralCode] = useState<string>("");
-  const [referralStats, setReferralStats] = useState({ totalReferrals: 0, successfulReferrals: 0, creditsEarned: 0 });
-  
-  const { toast } = useToast();
 
   const user = getAuth();
 
@@ -877,24 +870,6 @@ function ProviderDashboardContent() {
       }
     };
 
-    // Fetch referral program data
-    const fetchReferralData = async () => {
-      try {
-        const res = await fetch('/api/provider/referral', { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-          setReferralCode(data.referral_code || data.referralCode || "");
-          setReferralStats({
-            totalReferrals: data.total_referrals || data.totalReferrals || 0,
-            successfulReferrals: data.successful_referrals || data.successfulReferrals || 0,
-            creditsEarned: data.credits_earned || data.creditsEarned || 0
-          });
-        }
-      } catch (err) {
-        console.error("Error fetching referral data:", err);
-      }
-    };
-    
     // Load all data in parallel and set loading to false when done
     const loadAllData = async () => {
       setIsLoading(true);
@@ -905,8 +880,7 @@ function ProviderDashboardContent() {
           fetchFeaturedListings(),
           fetchVerificationStatus(),
           fetch2FAStatus(),
-          fetchApplications(),
-          fetchReferralData()
+          fetchApplications()
         ]);
       } finally {
         setIsLoading(false);
@@ -1838,78 +1812,6 @@ function ProviderDashboardContent() {
                       Boost your listings for premium placement at the top of search results.
                     </p>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Referral Program */}
-            <Card className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border-emerald-500/30">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Users className="w-5 h-5 text-emerald-400" /> Referral Program
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  Invite other sober living providers to join Sober Stay and earn rewards! You'll receive a free month of subscription for each provider who signs up and subscribes using your referral code.
-                </p>
-                
-                <div className="p-4 bg-white/5 border border-emerald-500/30 rounded-lg">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Your Referral Code</p>
-                      <div className="flex items-center gap-2">
-                        <code className="text-xl font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded">
-                          {referralCode || "Loading..."}
-                        </code>
-                        <Button 
-                          size="sm" 
-                          variant="ghost" 
-                          className="text-emerald-400 hover:bg-emerald-500/10"
-                          onClick={() => {
-                            navigator.clipboard.writeText(referralCode || "");
-                            toast({ title: "Copied!", description: "Referral code copied to clipboard" });
-                          }}
-                          data-testid="button-copy-referral-code"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="flex gap-4 text-center">
-                      <div>
-                        <p className="text-2xl font-bold text-white">{referralStats.totalReferrals}</p>
-                        <p className="text-xs text-muted-foreground">Total Referrals</p>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-emerald-400">{referralStats.successfulReferrals}</p>
-                        <p className="text-xs text-muted-foreground">Successful</p>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-amber-400">${(referralStats.creditsEarned / 100).toFixed(0)}</p>
-                        <p className="text-xs text-muted-foreground">Credits Earned</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="p-3 bg-white/5 rounded-lg text-center">
-                    <div className="text-2xl mb-1">1</div>
-                    <p className="text-xs text-muted-foreground">Share your referral code with other providers</p>
-                  </div>
-                  <div className="p-3 bg-white/5 rounded-lg text-center">
-                    <div className="text-2xl mb-1">2</div>
-                    <p className="text-xs text-muted-foreground">They sign up using your code</p>
-                  </div>
-                  <div className="p-3 bg-white/5 rounded-lg text-center">
-                    <div className="text-2xl mb-1">3</div>
-                    <p className="text-xs text-muted-foreground">When they subscribe, you get a free month!</p>
-                  </div>
-                </div>
-
-                <div className="text-center p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
-                  <p className="text-sm text-emerald-400 font-medium">Earn $29.99 credit for each successful referral</p>
                 </div>
               </CardContent>
             </Card>
