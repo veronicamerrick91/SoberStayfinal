@@ -9,6 +9,14 @@ import { startSubscriptionScheduler } from './subscriptionScheduler';
 import { generateBrowsePageHtml, generatePropertyPageHtml } from './seo-templates';
 import { storage } from './storage';
 
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+});
+
 // Bot detection for SSR
 function isBot(userAgent: string): boolean {
   const botPatterns = [
@@ -170,13 +178,25 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  await initStripe();
+  try {
+    await initStripe();
+  } catch (err) {
+    console.error('Stripe init failed (non-fatal):', err);
+  }
+  
   await registerRoutes(httpServer, app);
   
-  // Seed default email templates if none exist
-  await storage.seedDefaultEmailTemplates();
+  try {
+    await storage.seedDefaultEmailTemplates();
+  } catch (err) {
+    console.error('Email template seeding failed (non-fatal):', err);
+  }
   
-  startSubscriptionScheduler();
+  try {
+    startSubscriptionScheduler();
+  } catch (err) {
+    console.error('Scheduler start failed (non-fatal):', err);
+  }
 
   // SSR routes for search engine bots
   app.get('/browse', async (req, res, next) => {
