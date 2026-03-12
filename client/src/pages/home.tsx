@@ -51,16 +51,13 @@ export default function Home() {
   return (
     <Layout>
       {/* Hero Section with Home Image */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-        <div 
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: `url(${heroBg})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
+      <section className="relative min-h-[70vh] md:min-h-[80vh] flex items-center justify-center overflow-hidden">
+        <img 
+          src={heroBg}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover object-center z-0"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/40 z-0" />
+        <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-background/95 via-background/80 to-background/50 z-0" />
         
         <div className="container relative z-10 px-4 py-20 text-left">
           <div className="space-y-8 max-w-2xl animate-in slide-in-from-bottom-8 duration-700 fade-in">
@@ -70,7 +67,7 @@ export default function Home() {
               <Heart className="w-4 h-4" />
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-heading font-bold tracking-tight text-white leading-[1.1]">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-heading font-bold tracking-tight text-white leading-[1.1]">
               Find Sober Living Homes Near You
             </h1>
             
@@ -153,7 +150,7 @@ export default function Home() {
       <section className="relative py-12 bg-background overflow-hidden">
         {/* Background Path Visual */}
         <div className="absolute inset-0 opacity-20 pointer-events-none">
-           <img src={pathBg} loading="lazy" className="w-full h-full object-cover" alt="" />
+           <img src={pathBg} loading="lazy" className="absolute inset-0 w-full h-full object-cover object-center" alt="" />
            <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
         </div>
 
@@ -199,17 +196,17 @@ export default function Home() {
 
       {/* For Tenants & Providers Split */}
       <section className="py-0 bg-background">
-        <div className="grid lg:grid-cols-2 min-h-[800px]">
+        <div className="grid lg:grid-cols-2 min-h-[600px] lg:min-h-[800px]">
           
           {/* Tenants Side */}
-          <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full">
+          <div className="relative group overflow-hidden min-h-[600px] lg:min-h-full">
             <div className="absolute inset-0">
-              <img src={tenantBg} loading="lazy" className="w-full h-full object-cover" alt="" />
+              <img src={tenantBg} loading="lazy" className="absolute inset-0 w-full h-full object-cover object-center" alt="" />
               <div className="absolute inset-0 bg-blue-950/80 mix-blend-multiply" />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90" />
             </div>
             
-            <div className="relative z-10 h-full flex flex-col justify-center p-12 lg:p-20 max-w-2xl mx-auto lg:mx-0 lg:ml-auto">
+            <div className="relative z-10 h-full flex flex-col justify-center p-8 md:p-12 lg:p-20 max-w-2xl mx-auto lg:mx-0 lg:ml-auto">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-400/10 border border-blue-400/20 text-blue-300 text-sm font-medium mb-6 w-fit">
                 <Sparkles className="w-4 h-4" /> For Tenants
               </div>
@@ -239,14 +236,14 @@ export default function Home() {
           </div>
 
           {/* Providers Side */}
-          <div className="relative group overflow-hidden min-h-[500px] lg:min-h-full border-t lg:border-t-0 lg:border-l border-white/10">
+          <div className="relative group overflow-hidden min-h-[600px] lg:min-h-full border-t lg:border-t-0 lg:border-l border-white/10">
             <div className="absolute inset-0">
-              <img src={providerBg} loading="lazy" className="w-full h-full object-cover" alt="" />
+              <img src={providerBg} loading="lazy" className="absolute inset-0 w-full h-full object-cover object-center" alt="" />
               <div className="absolute inset-0 bg-emerald-950/80 mix-blend-multiply" />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90" />
             </div>
             
-            <div className="relative z-10 h-full flex flex-col justify-center p-12 lg:p-20 max-w-2xl mx-auto lg:mx-0 lg:mr-auto">
+            <div className="relative z-10 h-full flex flex-col justify-center p-8 md:p-12 lg:p-20 max-w-2xl mx-auto lg:mx-0 lg:mr-auto">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-emerald-300 text-sm font-medium mb-6 w-fit">
                 <Building className="w-4 h-4" /> For Providers
               </div>
