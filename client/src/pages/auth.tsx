@@ -9,6 +9,7 @@ import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { saveAuth, clearAuth, isAuthenticated } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import { Award } from "lucide-react";
 
 
 interface AuthPageProps {
@@ -31,6 +32,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [requires2FA, setRequires2FA] = useState(false);
   const [twoFactorToken, setTwoFactorToken] = useState("");
   const [accountExists, setAccountExists] = useState(false);
+  const [foundingStatus, setFoundingStatus] = useState<{ cap: number; current: number; spotsRemaining: number; isFull: boolean } | null>(null);
 
   useEffect(() => {
     setRole(defaultRole as any);
@@ -39,8 +41,16 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   // Clear any stale auth state when landing on signup page
   useEffect(() => {
     if (type === "signup") {
-      // Clear local storage auth to prevent confusion
       clearAuth();
+    }
+  }, [type]);
+
+  useEffect(() => {
+    if (type === "signup") {
+      fetch('/api/founding-member-status')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => data && setFoundingStatus(data))
+        .catch(() => {});
     }
   }, [type]);
 
@@ -276,6 +286,16 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                 {type === "login" && <TabsTrigger value="admin" className="text-xs">Admin</TabsTrigger>}
               </TabsList>
             </Tabs>
+
+            {type === "signup" && role === "provider" && foundingStatus && !foundingStatus.isFull && (
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-center gap-2 mb-4" data-testid="banner-founding-signup">
+                <Award className="w-4 h-4 text-amber-400 shrink-0" />
+                <p className="text-sm text-amber-200">
+                  <span className="font-semibold">{foundingStatus.spotsRemaining} founding member spots left!</span>
+                  {" "}Get 3 months free + 50% off forever.
+                </p>
+              </div>
+            )}
 
             {loginError && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex gap-2 mb-4">

@@ -42,6 +42,8 @@ export interface IStorage {
   
   getProviderProfile(providerId: number): Promise<ProviderProfile | undefined>;
   createOrUpdateProviderProfile(providerId: number, profile: Partial<InsertProviderProfile>): Promise<ProviderProfile>;
+  getFoundingMemberCount(): Promise<number>;
+  tryAssignFoundingMember(providerId: number, cap: number): Promise<boolean>;
   isProviderVerified(providerId: number): Promise<boolean>;
   verifyProvider(providerId: number): Promise<ProviderProfile | undefined>;
   unverifyProvider(providerId: number): Promise<ProviderProfile | undefined>;
@@ -431,6 +433,42 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return created;
     }
+  }
+
+  async getFoundingMemberCount(): Promise<number> {
+    const [result] = await db
+      .select({ count: count() })
+      .from(providerProfiles)
+      .where(eq(providerProfiles.isFoundingMember, true));
+    return result?.count ?? 0;
+  }
+
+  async tryAssignFoundingMember(providerId: number, cap: number): Promise<boolean> {
+    return await db.transaction(async (tx) => {
+      const [result] = await tx
+        .select({ count: count() })
+        .from(providerProfiles)
+        .where(eq(providerProfiles.isFoundingMember, true));
+      const currentCount = result?.count ?? 0;
+      if (currentCount >= cap) {
+        return false;
+      }
+      const [existing] = await tx
+        .select()
+        .from(providerProfiles)
+        .where(eq(providerProfiles.providerId, providerId));
+      if (existing) {
+        await tx
+          .update(providerProfiles)
+          .set({ isFoundingMember: true, updatedAt: new Date() })
+          .where(eq(providerProfiles.providerId, providerId));
+      } else {
+        await tx
+          .insert(providerProfiles)
+          .values({ providerId, isFoundingMember: true, smsOptIn: false, twoFactorEnabled: false, documentsVerified: false });
+      }
+      return true;
+    });
   }
 
   async isProviderVerified(providerId: number): Promise<boolean> {

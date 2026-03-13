@@ -17,7 +17,7 @@ import {
   Award
 } from "lucide-react";
 import { useDocumentMeta } from "@/lib/use-document-meta";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const benefits = [
   {
@@ -122,6 +122,14 @@ const testimonials = [
 
 export function ForProviders() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const [foundingStatus, setFoundingStatus] = useState<{ cap: number; current: number; spotsRemaining: number; isFull: boolean } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/founding-member-status')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => data && setFoundingStatus(data))
+      .catch(() => {});
+  }, []);
 
   useDocumentMeta({
     title: "List Your Sober Living Home | For Providers | Sober Stay",
@@ -146,6 +154,25 @@ export function ForProviders() {
             </li>
           </ol>
         </nav>
+
+        {foundingStatus && !foundingStatus.isFull && (
+          <section className="bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-500/20 border-y border-amber-500/30 py-4" data-testid="banner-founding-member">
+            <div className="container mx-auto px-4 text-center">
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                <Award className="w-5 h-5 text-amber-400" />
+                <span className="text-amber-200 font-semibold text-lg">
+                  Founding Member Program
+                </span>
+                <span className="text-amber-100">
+                  — {foundingStatus.spotsRemaining} of {foundingStatus.cap} spots remaining!
+                </span>
+              </div>
+              <p className="text-amber-200/80 text-sm mt-1">
+                Sign up now to get 3 months free + 50% off your subscription forever
+              </p>
+            </div>
+          </section>
+        )}
 
         <section className="py-20 bg-gradient-to-b from-primary/10 to-background">
           <div className="container mx-auto px-4">

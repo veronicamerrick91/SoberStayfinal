@@ -79,6 +79,8 @@ const registerSchema = z.object({
   role: z.enum(["tenant", "provider"]),
 });
 
+const FOUNDING_MEMBER_CAP = 50;
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -233,6 +235,18 @@ Disallow: /for-tenants
         role,
       });
 
+      // Auto-assign founding member status for providers if cap not reached (atomic)
+      if (role === "provider") {
+        try {
+          const assigned = await storage.tryAssignFoundingMember(user.id, FOUNDING_MEMBER_CAP);
+          if (assigned) {
+            console.log(`[Founding Member] Auto-assigned founding member to provider ${user.id}`);
+          }
+        } catch (err) {
+          console.error("Failed to auto-assign founding member status:", err);
+        }
+      }
+
       // Enroll user in relevant workflows based on role
       const workflowTrigger = role === "provider" ? "on-provider-signup" : "on-tenant-signup";
       enrollUserInActiveWorkflows(user.id, workflowTrigger, role).catch(err => {
@@ -257,6 +271,22 @@ Disallow: /for-tenants
     } catch (error) {
       console.error("Registration error:", error);
       res.status(500).json({ error: "Failed to create account. Please try again." });
+    }
+  });
+
+  // Public: Get founding member program status
+  app.get("/api/founding-member-status", async (req, res) => {
+    try {
+      const currentCount = await storage.getFoundingMemberCount();
+      res.json({
+        cap: FOUNDING_MEMBER_CAP,
+        current: currentCount,
+        spotsRemaining: Math.max(0, FOUNDING_MEMBER_CAP - currentCount),
+        isFull: currentCount >= FOUNDING_MEMBER_CAP,
+      });
+    } catch (error) {
+      console.error("Failed to get founding member status:", error);
+      res.status(500).json({ error: "Failed to get founding member status" });
     }
   });
 
@@ -1082,25 +1112,41 @@ Disallow: /for-tenants
         return res.status(400).json({ error: "isFoundingMember must be a boolean" });
       }
       
-      console.log(`[Founding Member] Toggling founding member for provider ${providerId} to ${isFoundingMember}`);
-      
       // Check if provider exists
       const provider = await storage.getUser(providerId);
       if (!provider || provider.role !== "provider") {
         return res.status(404).json({ error: "Provider not found" });
       }
       
-      // Update the provider profile - include defaults for NOT NULL fields when creating new
       const existingProfile = await storage.getProviderProfile(providerId);
-      const updatedProfile = await storage.createOrUpdateProviderProfile(providerId, {
-        isFoundingMember,
-        // Include defaults for NOT NULL fields if creating new profile
-        ...(existingProfile ? {} : {
-          smsOptIn: false,
-          twoFactorEnabled: false,
-          documentsVerified: false
-        })
-      });
+      
+      // Check cap when granting founding member status (skip if already a founding member)
+      if (isFoundingMember && !(existingProfile?.isFoundingMember)) {
+        const assigned = await storage.tryAssignFoundingMember(providerId, FOUNDING_MEMBER_CAP);
+        if (!assigned) {
+          const currentCount = await storage.getFoundingMemberCount();
+          return res.status(400).json({ 
+            error: `Founding member cap reached (${currentCount}/${FOUNDING_MEMBER_CAP}). Cannot grant additional founding member status.`,
+            capReached: true,
+            current: currentCount,
+            cap: FOUNDING_MEMBER_CAP
+          });
+        }
+      } else {
+        // Revoking or idempotent update
+        await storage.createOrUpdateProviderProfile(providerId, {
+          isFoundingMember,
+          ...(existingProfile ? {} : {
+            smsOptIn: false,
+            twoFactorEnabled: false,
+            documentsVerified: false
+          })
+        });
+      }
+      
+      console.log(`[Founding Member] Toggling founding member for provider ${providerId} to ${isFoundingMember}`);
+      
+      const updatedProfile = await storage.getProviderProfile(providerId);
       
       // If provider has an active Stripe subscription, apply/remove the founding member discount
       if (provider.stripeSubscriptionId) {

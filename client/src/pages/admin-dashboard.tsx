@@ -8,7 +8,7 @@ import {
   Users, Building, FileText, Activity, 
   Check, X, Eye, EyeOff, ShieldAlert, BarChart3, AlertTriangle,
   Mail, MessageSquare, Settings, DollarSign, TrendingUp,
-  Search, Download, Flag, Lock, Clock, Upload, Shield, Plus,
+  Search, Download, Flag, Lock, Clock, Upload, Shield, Plus, Award,
   CheckCircle, Bold, Italic, Underline, Strikethrough, 
   List, ListOrdered, Heading1, Heading2, Link2, Quote, 
   AlignLeft, AlignCenter, AlignRight, Undo, Redo, Type, Save,
@@ -99,6 +99,7 @@ export function AdminDashboard() {
   const [newWorkflowDelayDays, setNewWorkflowDelayDays] = useState(0);
   const [newWorkflowDelayHours, setNewWorkflowDelayHours] = useState(0);
   const [viewingWorkflow, setViewingWorkflow] = useState<any | null>(null);
+  const [foundingMemberStatus, setFoundingMemberStatus] = useState<{ cap: number; current: number; spotsRemaining: number; isFull: boolean } | null>(null);
   const [incidentReports, setIncidentReports] = useState<any[]>([]);
   const [complianceIssues, setComplianceIssues] = useState<any[]>([]);
   const [viewingComplianceIssue, setViewingComplianceIssue] = useState<any | null>(null);
@@ -497,7 +498,7 @@ Thank you for being part of our recovery community!`
     // Fetch real data from database
     const fetchAdminData = async () => {
       try {
-        const [usersRes, listingsRes, promosRes, featuredRes, blogPostsRes, partnersRes, emailTemplatesRes, workflowsRes, applicationsRes, siteVisitsRes] = await Promise.all([
+        const [usersRes, listingsRes, promosRes, featuredRes, blogPostsRes, partnersRes, emailTemplatesRes, workflowsRes, applicationsRes, siteVisitsRes, foundingMemberRes] = await Promise.all([
           fetch('/api/admin/users', { credentials: 'include' }),
           fetch('/api/admin/listings', { credentials: 'include' }),
           fetch('/api/admin/promos', { credentials: 'include' }),
@@ -507,8 +508,13 @@ Thank you for being part of our recovery community!`
           fetch('/api/admin/email-templates', { credentials: 'include' }),
           fetch('/api/admin/workflows', { credentials: 'include' }),
           fetch('/api/admin/applications', { credentials: 'include' }),
-          fetch('/api/admin/site-visits?days=7', { credentials: 'include' })
+          fetch('/api/admin/site-visits?days=7', { credentials: 'include' }),
+          fetch('/api/founding-member-status', { credentials: 'include' })
         ]);
+        
+        if (foundingMemberRes.ok) {
+          setFoundingMemberStatus(await foundingMemberRes.json());
+        }
         
         if (usersRes.ok) {
           const usersData = await usersRes.json();
@@ -748,9 +754,17 @@ Thank you for being part of our recovery community!`
             ? "Provider now has founding member discount." 
             : "Provider no longer has founding member discount." 
         });
+        // Refresh founding member count
+        fetch('/api/founding-member-status', { credentials: 'include' })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => data && setFoundingMemberStatus(data));
       } else {
         const err = await res.json();
-        toast({ title: "Error", description: err.error || "Failed to update founding member status", variant: "destructive" });
+        if (err.capReached) {
+          toast({ title: "Cap Reached", description: `Founding member cap reached (${err.current}/${err.cap}). No more spots available.`, variant: "destructive" });
+        } else {
+          toast({ title: "Error", description: err.error || "Failed to update founding member status", variant: "destructive" });
+        }
       }
     } catch (error) {
       toast({ title: "Error", description: "Failed to update founding member status", variant: "destructive" });
@@ -1938,6 +1952,23 @@ the actual document file stored on the server.
                   <p className="text-xs text-muted-foreground">Active provider accounts</p>
                 </div>
               </div>
+              
+              {foundingMemberStatus && (
+                <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
+                  <Award className="w-5 h-5 text-amber-500 shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-white font-medium">Founding Members: {foundingMemberStatus.current}/{foundingMemberStatus.cap}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {foundingMemberStatus.isFull 
+                        ? "Cap reached — new providers pay full price" 
+                        : `${foundingMemberStatus.spotsRemaining} spots remaining`}
+                    </p>
+                  </div>
+                  {foundingMemberStatus.isFull && (
+                    <Badge className="bg-red-500/80 text-white text-xs">Full</Badge>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-6">
