@@ -1141,9 +1141,9 @@ Disallow: /for-tenants
       let capWarning: string | null = null;
       
       if (isFoundingMember && !(existingProfile?.isFoundingMember)) {
-        const currentCount = await storage.getFoundingMemberCount();
-        if (currentCount >= FOUNDING_MEMBER_CAP) {
-          capWarning = `Warning: Founding member cap exceeded (${currentCount}/${FOUNDING_MEMBER_CAP}). Admin override applied.`;
+        const providerCount = await storage.getProviderCount();
+        if (providerCount >= FOUNDING_MEMBER_CAP) {
+          capWarning = `Warning: All ${FOUNDING_MEMBER_CAP} provider spots are filled (${providerCount} providers registered). Admin override applied.`;
         }
       }
       
