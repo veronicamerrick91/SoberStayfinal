@@ -751,7 +751,12 @@ Disallow: /for-tenants
       return res.status(400).json(parsed.error);
     }
     
-    const updatedListing = await storage.updateListing(id, parsed.data);
+    const listingData = { ...parsed.data };
+    if (existingListing.listingTier === "basic" && listingData.photos && listingData.photos.length > 0) {
+      listingData.photos = [];
+    }
+    
+    const updatedListing = await storage.updateListing(id, listingData);
     res.json(updatedListing);
   });
 
@@ -3687,6 +3692,10 @@ Disallow: /for-tenants
         return res.status(403).json({ error: "Listing not found or access denied" });
       }
       
+      if (listing.listingTier !== "pro") {
+        return res.status(403).json({ error: "Only Pro tier listings can be featured. Upgrade your listing first." });
+      }
+      
       // Check if listing is already featured
       const existingFeatured = await storage.getFeaturedListingByListingId(listingId);
       if (existingFeatured) {
@@ -3897,6 +3906,11 @@ Disallow: /for-tenants
       return res.status(401).json({ error: "Unauthorized" });
     }
     try {
+      const providerListings = await storage.getListingsByProvider(user.id);
+      const hasProListing = providerListings.some(l => l.listingTier === "pro");
+      if (!hasProListing) {
+        return res.status(403).json({ error: "Upgrade at least one listing to Pro to access detailed analytics." });
+      }
       const { days = 30 } = req.query;
       const numDays = Math.min(Math.max(parseInt(String(days)) || 30, 1), 365);
       

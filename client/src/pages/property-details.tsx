@@ -439,7 +439,7 @@ export default function PropertyDetails() {
                         <span className="text-lg font-bold text-amber-400">Unclaimed Listing</span>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        This listing was imported from a public directory. Information may be limited or outdated.
+                        This listing was created using publicly available business information. Claim this listing to update details.
                       </p>
                     </div>
 
@@ -584,9 +584,9 @@ export default function PropertyDetails() {
           {claimSubmitted ? (
             <div className="text-center py-6">
               <ShieldCheck className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-white mb-2">Claim Submitted!</h3>
+              <h3 className="text-lg font-bold text-white mb-2">Claim Submitted</h3>
               <p className="text-sm text-muted-foreground">
-                We'll review your request and get back to you within 1-2 business days. You'll receive an email once your claim has been reviewed.
+                Your claim request has been submitted. We will review it shortly.
               </p>
               <Button onClick={() => setShowClaimModal(false)} className="mt-4 bg-primary text-primary-foreground">
                 Close
