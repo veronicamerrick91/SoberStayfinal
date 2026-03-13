@@ -33,6 +33,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [twoFactorToken, setTwoFactorToken] = useState("");
   const [accountExists, setAccountExists] = useState(false);
   const [foundingStatus, setFoundingStatus] = useState<{ cap: number; current: number; spotsRemaining: number; isFull: boolean } | null>(null);
+  const [referralCode, setReferralCode] = useState("");
 
   useEffect(() => {
     setRole(defaultRole as any);
@@ -51,6 +52,9 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
         .then(r => r.ok ? r.json() : null)
         .then(data => data && setFoundingStatus(data))
         .catch(() => {});
+      const urlParams = new URLSearchParams(window.location.search);
+      const ref = urlParams.get('ref');
+      if (ref) setReferralCode(ref);
     }
   }, [type]);
 
@@ -99,7 +103,8 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
             password,
             firstName,
             lastName,
-            role: role === "admin" ? "tenant" : role, // Admins register as tenants
+            role: role === "admin" ? "tenant" : role,
+            ...(referralCode.trim() ? { referralCode: referralCode.trim() } : {}),
           }),
         });
 
@@ -365,6 +370,24 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
                   </button>
                 </div>
               </div>
+
+              {type === "signup" && (
+                <div className="space-y-2">
+                  <Label htmlFor="referralCode" className="text-sm font-medium">
+                    Referral Code <span className="text-muted-foreground">(optional)</span>
+                  </Label>
+                  <Input
+                    id="referralCode"
+                    name="referralCode"
+                    type="text"
+                    placeholder="Enter referral code"
+                    className="bg-background/60 border-2 border-primary/40 hover:border-primary/60 focus:border-primary"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                    data-testid="input-referral-code"
+                  />
+                </div>
+              )}
 
               {type === "login" && !requires2FA && (
                 <div className="flex items-center gap-2">

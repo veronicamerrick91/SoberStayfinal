@@ -77,6 +77,7 @@ const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   role: z.enum(["tenant", "provider"]),
+  referralCode: z.string().optional(),
 });
 
 const FOUNDING_MEMBER_CAP = 50;
@@ -211,7 +212,7 @@ Disallow: /for-tenants
         return res.status(400).json({ error: parsed.error.errors[0].message });
       }
 
-      const { email, password, firstName, lastName, role } = parsed.data;
+      const { email, password, firstName, lastName, role, referralCode } = parsed.data;
 
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email);
@@ -247,6 +248,19 @@ Disallow: /for-tenants
         }
       }
 
+      // Track referral if a valid referral code was provided
+      if (referralCode) {
+        try {
+          const referral = await storage.getReferralByCode(referralCode.trim().toUpperCase());
+          if (referral) {
+            await storage.trackReferralSignup(referral.id, user.id);
+            console.log(`[Referral] Tracked signup via code ${referralCode} for user ${user.id}`);
+          }
+        } catch (err) {
+          console.error("Failed to track referral signup:", err);
+        }
+      }
+
       // Enroll user in relevant workflows based on role
       const workflowTrigger = role === "provider" ? "on-provider-signup" : "on-tenant-signup";
       enrollUserInActiveWorkflows(user.id, workflowTrigger, role).catch(err => {
@@ -277,12 +291,17 @@ Disallow: /for-tenants
   // Public: Get founding member program status
   app.get("/api/founding-member-status", async (req, res) => {
     try {
-      const currentCount = await storage.getFoundingMemberCount();
+      const [foundingCount, providerCount] = await Promise.all([
+        storage.getFoundingMemberCount(),
+        storage.getProviderCount()
+      ]);
+      const isFull = providerCount >= FOUNDING_MEMBER_CAP;
       res.json({
         cap: FOUNDING_MEMBER_CAP,
-        current: currentCount,
-        spotsRemaining: Math.max(0, FOUNDING_MEMBER_CAP - currentCount),
-        isFull: currentCount >= FOUNDING_MEMBER_CAP,
+        current: foundingCount,
+        providerCount,
+        spotsRemaining: Math.max(0, FOUNDING_MEMBER_CAP - providerCount),
+        isFull,
       });
     } catch (error) {
       console.error("Failed to get founding member status:", error);
@@ -1159,6 +1178,59 @@ Disallow: /for-tenants
     } catch (error) {
       console.error("[Founding Member] Error:", error);
       res.status(500).json({ error: "Failed to toggle founding member status" });
+    }
+  });
+
+  // Provider: Get or create referral code
+  app.get("/api/provider/referral", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "provider") {
+      return res.status(403).json({ error: "Provider access required" });
+    }
+    try {
+      const referral = await storage.getOrCreateReferralCode(user.id);
+      res.json(referral);
+    } catch (error) {
+      console.error("Failed to get referral code:", error);
+      res.status(500).json({ error: "Failed to get referral code" });
+    }
+  });
+
+  // Provider: Get referral tracking details
+  app.get("/api/provider/referral/tracking", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "provider") {
+      return res.status(403).json({ error: "Provider access required" });
+    }
+    try {
+      const tracking = await storage.getReferralTrackingByProvider(user.id);
+      res.json(tracking);
+    } catch (error) {
+      console.error("Failed to get referral tracking:", error);
+      res.status(500).json({ error: "Failed to get referral tracking" });
+    }
+  });
+
+  // Admin: Complete a referral (mark as rewarded)
+  app.post("/api/admin/referrals/:id/complete", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    const trackingId = parseInt(req.params.id);
+    if (isNaN(trackingId)) return res.status(400).json({ error: "Invalid tracking ID" });
+
+    const rewardAmount = req.body.rewardAmount ?? 1;
+    try {
+      const updated = await storage.completeReferral(trackingId, rewardAmount);
+      if (!updated) return res.status(404).json({ error: "Referral tracking not found" });
+      res.json({ success: true, tracking: updated });
+    } catch (error) {
+      console.error("Failed to complete referral:", error);
+      res.status(500).json({ error: "Failed to complete referral" });
     }
   });
 

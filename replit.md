@@ -72,6 +72,17 @@ The platform includes a comprehensive analytics tracking system for providers:
   - Opt-in preference stored in provider_profiles and tenant_profiles tables (smsOptIn, phone fields)
 - **Privacy Policy**: Section 8 covers SMS notifications, message frequency, costs, and opt-out instructions
 
+### Provider Referral Program
+- **Database Tables**: `provider_referrals` (referral codes, stats) and `referral_tracking` (individual referral records)
+- **Referral Code Format**: `SS-XXXXXX` (auto-generated, unique per provider)
+- **API Endpoints**:
+  - `GET /api/provider/referral` — Get or create provider's referral code
+  - `GET /api/provider/referral/tracking` — Get referral history with referred user details
+  - `POST /api/admin/referrals/:id/complete` — Admin marks referral as completed/rewarded
+- **Signup Integration**: Optional `referralCode` field on registration; URL param `?ref=CODE` auto-fills
+- **Provider Dashboard**: "Referrals" tab with code display, copy/share buttons, stats (total/successful/credits), and referral history
+- **Tracking Flow**: Signup with code → pending status → admin completes → credits awarded to referrer
+
 ### Payment Processing
 - **Stripe**: For provider subscriptions, integrated via `stripe-replit-sync` for real credit card payments, checkout flows, and customer portal management.
 

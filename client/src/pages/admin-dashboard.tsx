@@ -99,7 +99,7 @@ export function AdminDashboard() {
   const [newWorkflowDelayDays, setNewWorkflowDelayDays] = useState(0);
   const [newWorkflowDelayHours, setNewWorkflowDelayHours] = useState(0);
   const [viewingWorkflow, setViewingWorkflow] = useState<any | null>(null);
-  const [foundingMemberStatus, setFoundingMemberStatus] = useState<{ cap: number; current: number; spotsRemaining: number; isFull: boolean } | null>(null);
+  const [foundingMemberStatus, setFoundingMemberStatus] = useState<{ cap: number; current: number; providerCount: number; spotsRemaining: number; isFull: boolean } | null>(null);
   const [incidentReports, setIncidentReports] = useState<any[]>([]);
   const [complianceIssues, setComplianceIssues] = useState<any[]>([]);
   const [viewingComplianceIssue, setViewingComplianceIssue] = useState<any | null>(null);
@@ -1961,11 +1961,11 @@ the actual document file stored on the server.
                 <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 transition-colors cursor-default">
                   <Award className="w-5 h-5 text-amber-500 shrink-0" />
                   <div className="flex-1">
-                    <p className="text-white font-medium">Founding Members: {foundingMemberStatus.current}/{foundingMemberStatus.cap}</p>
+                    <p className="text-white font-medium">Founding Members: {foundingMemberStatus.current} active ({foundingMemberStatus.providerCount}/{foundingMemberStatus.cap} providers signed up)</p>
                     <p className="text-xs text-muted-foreground">
                       {foundingMemberStatus.isFull 
                         ? "Cap reached — new providers pay full price" 
-                        : `${foundingMemberStatus.spotsRemaining} spots remaining`}
+                        : `${foundingMemberStatus.spotsRemaining} provider spots remaining`}
                     </p>
                   </div>
                   {foundingMemberStatus.isFull && (
