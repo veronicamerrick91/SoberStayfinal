@@ -1114,47 +1114,49 @@ export class DatabaseStorage implements IStorage {
     .groupBy(listingAnalyticsEvents.city, listingAnalyticsEvents.state)
     .orderBy(desc(sql`COUNT(*) FILTER (WHERE ${listingAnalyticsEvents.eventType} IN ('view', 'click'))`));
 
-    const siteVisitPairConditions = cityStatePairs.map(p =>
-      sql`LOWER(${siteVisits.page}) LIKE ${`%${p.city.toLowerCase()}%`}`
-    );
-    const siteVisitFilter = sql`(${sql.join(siteVisitPairConditions, sql` OR `)})`;
-
-    let siteVisitCount = 0;
-    try {
-      const svResult = await db.select({ count: count() })
-        .from(siteVisits)
-        .where(and(
-          gte(siteVisits.createdAt, startDate),
-          lte(siteVisits.createdAt, endDate),
-          sql`${siteVisits.page} LIKE '/browse%'`,
-          siteVisitFilter
-        ));
-      siteVisitCount = svResult[0]?.count ?? 0;
-    } catch {
-      siteVisitCount = 0;
-    }
-
-    const results = analyticsResults.map(r => ({
-      city: r.city || 'Unknown',
-      state: r.state || 'Unknown',
-      views: Number(r.views) || 0,
-      clicks: Number(r.clicks) || 0,
-      total: (Number(r.total) || 0)
-    }));
-
-    if (siteVisitCount > 0 && results.length > 0) {
-      results[0].total += siteVisitCount;
-    } else if (siteVisitCount > 0 && results.length === 0) {
-      results.push({
-        city: cityStatePairs[0].city,
-        state: cityStatePairs[0].state,
-        views: 0,
-        clicks: 0,
-        total: siteVisitCount
+    const resultsMap = new Map<string, { city: string; state: string; views: number; clicks: number; total: number }>();
+    for (const r of analyticsResults) {
+      const key = `${(r.city || '').toLowerCase()}|${(r.state || '').toLowerCase()}`;
+      resultsMap.set(key, {
+        city: r.city || 'Unknown',
+        state: r.state || 'Unknown',
+        views: Number(r.views) || 0,
+        clicks: Number(r.clicks) || 0,
+        total: Number(r.total) || 0
       });
     }
 
-    return results;
+    for (const pair of cityStatePairs) {
+      const key = `${pair.city.toLowerCase()}|${pair.state.toLowerCase()}`;
+      try {
+        const svResult = await db.select({ count: count() })
+          .from(siteVisits)
+          .where(and(
+            gte(siteVisits.createdAt, startDate),
+            lte(siteVisits.createdAt, endDate),
+            sql`${siteVisits.page} LIKE '/browse%'`,
+            sql`LOWER(${siteVisits.page}) LIKE ${`%${pair.city.toLowerCase()}%`}`
+          ));
+        const browseCount = svResult[0]?.count ?? 0;
+        if (browseCount > 0) {
+          const existing = resultsMap.get(key);
+          if (existing) {
+            existing.total += browseCount;
+          } else {
+            resultsMap.set(key, {
+              city: pair.city,
+              state: pair.state,
+              views: 0,
+              clicks: 0,
+              total: browseCount
+            });
+          }
+        }
+      } catch {
+      }
+    }
+
+    return Array.from(resultsMap.values()).sort((a, b) => b.total - a.total);
   }
 
   async aggregateDailyAnalytics(): Promise<void> {

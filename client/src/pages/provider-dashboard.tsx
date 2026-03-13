@@ -1180,7 +1180,7 @@ function ProviderDashboardContent() {
                 </div>
               </CardHeader>
               <CardContent>
-                {trafficSnapshot ? (
+                {trafficSnapshot && (trafficSnapshot.views > 0 || trafficSnapshot.clicks > 0 || trafficSnapshot.inquiries > 0 || trafficSnapshot.tourRequests > 0 || trafficSnapshot.applications > 0) ? (
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div className="space-y-1" data-testid="stat-listing-views">
                       <div className="flex items-center gap-2">
