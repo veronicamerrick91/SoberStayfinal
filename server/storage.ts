@@ -461,13 +461,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async tryAssignFoundingMember(providerId: number, cap: number): Promise<boolean> {
-    const rankResult = await db.execute(sql`
+    const rankResult: { rows: { rank: string }[] } = await db.execute(sql`
       SELECT rank FROM (
         SELECT id, ROW_NUMBER() OVER (ORDER BY id ASC) AS rank
         FROM users WHERE role = 'provider'
       ) ranked WHERE id = ${providerId}
-    `);
-    const rank = (rankResult as any).rows?.[0]?.rank ?? (rankResult as any)[0]?.rank;
+    `) as any;
+    const rank = rankResult.rows?.[0]?.rank;
     if (!rank || Number(rank) > cap) {
       return false;
     }
