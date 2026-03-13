@@ -1637,6 +1637,49 @@ Disallow: /for-tenants
     }
   });
 
+  app.post("/api/provider/listings/:id/upgrade-tier", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as Express.User & { id: number; role: string };
+    if (user.role !== "provider") return res.status(403).json({ error: "Only providers can upgrade listings" });
+
+    const listingId = parseInt(req.params.id);
+    const listing = await storage.getListing(listingId);
+    if (!listing || listing.providerId !== user.id) {
+      return res.status(404).json({ error: "Listing not found or access denied" });
+    }
+
+    const subResult = await db.execute(sql`
+      SELECT status FROM stripe.subscriptions 
+      WHERE customer = (SELECT stripe_customer_id FROM users WHERE id = ${user.id})
+      AND status IN ('active', 'trialing')
+      LIMIT 1
+    `);
+    const localSub = await storage.getSubscriptionByProvider(user.id);
+    const hasActiveSub = subResult.rows.length > 0 || (localSub?.hasFeeWaiver && localSub.status === 'active');
+
+    if (!hasActiveSub) {
+      return res.status(402).json({ error: "Active subscription required to upgrade to Pro" });
+    }
+
+    await storage.updateListing(listingId, { listingTier: "pro" });
+    res.json({ success: true, tier: "pro" });
+  });
+
+  app.post("/api/provider/listings/:id/downgrade-tier", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as Express.User & { id: number; role: string };
+    if (user.role !== "provider") return res.status(403).json({ error: "Only providers can manage listings" });
+
+    const listingId = parseInt(req.params.id);
+    const listing = await storage.getListing(listingId);
+    if (!listing || listing.providerId !== user.id) {
+      return res.status(404).json({ error: "Listing not found or access denied" });
+    }
+
+    await storage.updateListing(listingId, { listingTier: "basic" });
+    res.json({ success: true, tier: "basic" });
+  });
+
   // Legacy subscription endpoint (for backwards compatibility)
   app.post("/api/subscriptions", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

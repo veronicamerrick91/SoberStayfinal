@@ -117,7 +117,7 @@ export default function PropertyDetails() {
     staleTime: 1000 * 60 * 60,
   });
 
-  const isUnclaimed = listing && (listing as any).isClaimed === false;
+  const isUnclaimed = listing && listing.isClaimed === false;
 
   useDocumentMeta({
     title: listing ? `${listing.propertyName} | Sober Living in ${listing.city}, ${listing.state}` : "Sober Living Home | Sober Stay",
@@ -242,7 +242,7 @@ export default function PropertyDetails() {
                     </Badge>
                   )
                 )}
-                {(listing as any).listingTier === "pro" && (
+                {listing.listingTier === "pro" && (
                   <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black border-none flex gap-1 items-center px-3 py-1.5 shadow-lg font-semibold">
                     Pro
                   </Badge>
@@ -444,20 +444,20 @@ export default function PropertyDetails() {
                     </div>
 
                     <div className="space-y-3">
-                      {(listing as any).phone && (
+                      {listing.phone && (
                         <a 
-                          href={`tel:${(listing as any).phone}`}
+                          href={`tel:${listing.phone}`}
                           onClick={() => listing?.id && trackPhoneClick(listing.id)}
                           className="block"
                         >
                           <Button variant="outline" className="w-full border-primary/30 text-primary hover:bg-primary/10 h-12" data-testid="button-call">
-                            <Phone className="w-4 h-4 mr-2" /> Call {(listing as any).phone}
+                            <Phone className="w-4 h-4 mr-2" /> Call {listing.phone}
                           </Button>
                         </a>
                       )}
-                      {(listing as any).website && (
+                      {listing.website && (
                         <a 
-                          href={(listing as any).website.startsWith("http") ? (listing as any).website : `https://${(listing as any).website}`}
+                          href={listing.website.startsWith("http") ? listing.website : `https://${listing.website}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => listing?.id && trackWebsiteClick(listing.id)}

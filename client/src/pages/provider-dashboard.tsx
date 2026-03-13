@@ -1410,7 +1410,7 @@ function ProviderDashboardContent() {
                       ) : (
                         <Building className="w-12 h-12 text-primary/50" />
                       )}
-                      <div className="absolute top-2 left-2">
+                      <div className="absolute top-2 left-2 flex gap-1">
                         {home.status === "draft" && (
                           <Badge className="bg-amber-500 text-black">Draft</Badge>
                         )}
@@ -1419,6 +1419,11 @@ function ProviderDashboardContent() {
                         )}
                         {home.status === "active" && (
                           <Badge className="bg-green-500">Active</Badge>
+                        )}
+                        {home.listingTier === "pro" ? (
+                          <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black border-none font-semibold">Pro</Badge>
+                        ) : (
+                          <Badge className="bg-white/20 text-white border-none">Basic</Badge>
                         )}
                       </div>
                       <div className="absolute top-2 right-2">
@@ -1440,6 +1445,54 @@ function ProviderDashboardContent() {
                           </>
                         )}
                       </div>
+                      {home.status === "approved" && (
+                        <div className="mt-2">
+                          {home.listingTier === "basic" ? (
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="w-full border-amber-500/30 text-amber-400 hover:bg-amber-500/10 text-xs"
+                              data-testid={`button-upgrade-${home.id}`}
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch(`/api/provider/listings/${home.id}/upgrade-tier`, { method: "POST", credentials: "include" });
+                                  if (res.status === 402) {
+                                    const checkoutRes = await fetch("/api/stripe/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ billingPeriod: "monthly" }) });
+                                    const data = await checkoutRes.json();
+                                    if (data.url) window.location.href = data.url;
+                                    else toast({ title: "Error", description: "Unable to start checkout. Please try again.", variant: "destructive" });
+                                    return;
+                                  }
+                                  if (res.ok) {
+                                    toast({ title: "Upgraded to Pro", description: "Your listing is now Pro tier with enhanced visibility." });
+                                    queryClient.invalidateQueries({ queryKey: ["/api/provider/listings"] });
+                                  }
+                                } catch { toast({ title: "Error", description: "Failed to upgrade listing.", variant: "destructive" }); }
+                              }}
+                            >
+                              Upgrade to Pro
+                            </Button>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              className="w-full text-xs text-muted-foreground hover:text-white"
+                              data-testid={`button-downgrade-${home.id}`}
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch(`/api/provider/listings/${home.id}/downgrade-tier`, { method: "POST", credentials: "include" });
+                                  if (res.ok) {
+                                    toast({ title: "Downgraded", description: "Listing moved to Basic tier." });
+                                    queryClient.invalidateQueries({ queryKey: ["/api/provider/listings"] });
+                                  }
+                                } catch { toast({ title: "Error", description: "Failed to downgrade listing.", variant: "destructive" }); }
+                              }}
+                            >
+                              Downgrade to Basic
+                            </Button>
+                          )}
+                        </div>
+                      )}
                    </CardContent>
                 </Card>
               ))}

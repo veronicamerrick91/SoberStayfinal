@@ -81,8 +81,9 @@ function ListingAnalyticsInline({ listingId }: { listingId: number }) {
           <div className="text-muted-foreground">Inquiries</div>
         </div>
       </div>
-      <div className="text-xs text-muted-foreground mt-1 text-right">
-        Last 30d: {stats.view || 0} views, {stats.website_click || 0} website, {stats.phone_click || 0} phone
+      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mt-2 border-t border-border/30 pt-2">
+        <div>Last 7d: {(analytics.last7?.view || 0)} views, {(analytics.last7?.click || 0)} clicks, {(analytics.last7?.website_click || 0)} web, {(analytics.last7?.phone_click || 0)} phone</div>
+        <div>Last 30d: {stats.view || 0} views, {stats.click || 0} clicks, {stats.website_click || 0} web, {stats.phone_click || 0} phone</div>
       </div>
     </div>
   );
