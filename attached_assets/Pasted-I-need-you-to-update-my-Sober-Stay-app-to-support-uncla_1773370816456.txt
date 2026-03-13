@@ -1,0 +1,197 @@
+I need you to update my Sober Stay app to support “unclaimed listings” and provider claiming flow.
+
+GOAL:
+Take providers from my saved directory list and create public unclaimed listings for them. Then allow providers to claim their listing, upgrade to paid, and manage their profile.
+
+Please implement the following exactly:
+
+==================================================
+STEP 3 — INVITE PROVIDERS TO CLAIM THEIR LISTING
+==================================================
+
+For every provider imported from my saved directory list, create a public listing page.
+
+Each imported listing must:
+- be marked as `isClaimed: false`
+- be marked as `isImported: true`
+- show a visible badge that says: “Unclaimed Listing”
+- show a message that says:
+  “This listing was created using publicly available business information. Claim this listing to update details.”
+
+Add a prominent button on each unclaimed listing:
+- “Claim this Listing”
+
+When clicked, the provider should go to a claim request form.
+
+Create a claim request form with these fields:
+- full name
+- business name
+- email
+- phone number
+- website
+- listing id
+- message / notes
+- proof of ownership checkbox
+- optional upload field for proof documents if easy to add
+
+Create a `claim_requests` table with:
+- id
+- listing_id
+- provider_name
+- business_name
+- email
+- phone
+- website
+- notes
+- status (`pending`, `approved`, `rejected`)
+- created_at
+
+When a claim request is submitted:
+- save it in the database
+- notify admin if email notification already exists in the app
+- show success message:
+  “Your claim request has been submitted. We will review it shortly.”
+
+==================================================
+STEP 4 — SHOW BASIC TRAFFIC / VALUE TO THE PROVIDER
+==================================================
+
+I want each listing to track simple engagement stats.
+
+Create tracking for:
+- page views
+- claim button clicks
+- inquiry button clicks (if inquiry exists)
+- website clicks
+- phone clicks
+
+Add a `listing_analytics` table or equivalent structure with:
+- id
+- listing_id
+- event_type (`view`, `claim_click`, `inquiry_click`, `website_click`, `phone_click`)
+- created_at
+
+On each public listing page:
+- increment a `view` event whenever the page is loaded
+- track clicks on claim button
+- track clicks on website and phone links
+
+In admin dashboard, show per-listing analytics totals:
+- total views
+- total claim clicks
+- total phone clicks
+- total website clicks
+- total inquiry clicks
+
+If easy, also show:
+- last 7 days views
+- last 30 days views
+
+For now, do not overcomplicate analytics. Keep it simple and working.
+
+==================================================
+STEP 5 — UPSELL THE PAID PLAN AFTER CLAIMING
+==================================================
+
+After a provider’s claim request is approved, allow that provider to access a provider dashboard for their listing.
+
+When claim is approved:
+- set `isClaimed: true`
+- connect the listing to the provider user account
+- remove the “Unclaimed Listing” badge
+- allow the provider to edit their profile
+
+Create 2 provider listing tiers:
+
+1. Free / Basic Claimed Listing
+- business name
+- city
+- phone
+- website
+- basic description
+- no featured placement
+- limited photo count or no photos
+- no badge except standard listing
+
+2. Pro Paid Listing — $49/month
+- everything in Basic
+- featured placement in search results
+- photo gallery
+- “Verified” or “Featured” badge if already supported
+- ability to receive inquiries
+- priority visibility
+- analytics view in provider dashboard
+
+If Stripe billing already exists, connect Pro listing to Stripe subscription at $49/month.
+If Stripe is not fully set up yet, still build the plan structure and UI so billing can be connected later.
+
+Add a provider upgrade screen with:
+- current plan
+- upgrade to Pro for $49/month
+- list of included features
+
+On public listing cards and search results:
+- show Pro/Featured listings first
+- then show free/basic listings after
+
+==================================================
+IMPORTANT UI / LEGAL / CONTENT RULES
+==================================================
+
+For imported unclaimed listings:
+- DO NOT pull or copy provider photos from their websites
+- use either no photo or a generic placeholder image
+- do not auto-copy descriptions from other websites unless already legally written by me
+- show only basic business info from my saved directory list
+
+Each imported listing should only include:
+- business name
+- city
+- phone
+- website
+- address only if I already have it and want it shown
+- placeholder image only
+
+Add an admin control to:
+- approve claim request
+- reject claim request
+- remove listing
+- convert imported listing into claimed provider listing
+
+==================================================
+SEARCH / SORTING LOGIC
+==================================================
+
+Update directory search results so that:
+1. Featured / Pro paid listings appear first
+2. Claimed free/basic listings appear next
+3. Unclaimed imported listings appear last
+
+Add labels in the UI:
+- Featured
+- Claimed
+- Unclaimed Listing
+
+==================================================
+DATABASE / BACKEND NOTES
+==================================================
+
+Please inspect my current schema first and adapt to my existing stack.
+Do not break current provider records.
+Add migrations safely.
+Use my existing styling/components wherever possible.
+
+If some tables already exist, extend them instead of duplicating them.
+
+==================================================
+FINAL DELIVERABLE
+==================================================
+
+Please:
+1. implement the database changes
+2. implement backend routes / actions
+3. implement frontend UI
+4. connect the full claim flow
+5. make search ordering work
+6. summarize exactly what you changed
+7. tell me what environment variables or Stripe items still need to be added manually
