@@ -444,23 +444,32 @@ export class DatabaseStorage implements IStorage {
   }
 
   async tryAssignFoundingMember(providerId: number, cap: number): Promise<boolean> {
-    const result = await db.execute(sql`
-      WITH current_count AS (
-        SELECT COUNT(*)::int AS cnt FROM provider_profiles WHERE is_founding_member = true
-      ),
-      existing AS (
-        SELECT provider_id FROM provider_profiles WHERE provider_id = ${providerId}
-      )
-      INSERT INTO provider_profiles (provider_id, is_founding_member, sms_opt_in, two_factor_enabled, documents_verified)
-      SELECT ${providerId}, true, false, false, false
-      FROM current_count
-      WHERE current_count.cnt < ${cap}
-        AND NOT EXISTS (SELECT 1 FROM existing)
-      ON CONFLICT (provider_id) DO UPDATE SET is_founding_member = true, updated_at = NOW()
-      WHERE (SELECT cnt FROM current_count) < ${cap}
-      RETURNING provider_id
-    `);
-    return (result as any).rows?.length > 0 || (result as any).length > 0;
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('SELECT pg_advisory_xact_lock(8675309)');
+      const countResult = await client.query(
+        'SELECT COUNT(*)::int AS cnt FROM provider_profiles WHERE is_founding_member = true'
+      );
+      const currentCount = countResult.rows[0]?.cnt ?? 0;
+      if (currentCount >= cap) {
+        await client.query('ROLLBACK');
+        return false;
+      }
+      await client.query(
+        `INSERT INTO provider_profiles (provider_id, is_founding_member, sms_opt_in, two_factor_enabled, documents_verified)
+         VALUES ($1, true, false, false, false)
+         ON CONFLICT (provider_id) DO UPDATE SET is_founding_member = true, updated_at = NOW()`,
+        [providerId]
+      );
+      await client.query('COMMIT');
+      return true;
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
   }
 
   async isProviderVerified(providerId: number): Promise<boolean> {
