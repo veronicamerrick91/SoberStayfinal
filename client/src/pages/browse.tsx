@@ -487,6 +487,11 @@ export default function Browse() {
                             Pro
                           </Badge>
                         )}
+                        {(listing as any).isClaimed === false && (
+                          <Badge className="bg-amber-500/90 text-black border-none shadow-lg flex gap-1 items-center text-xs">
+                            Unclaimed
+                          </Badge>
+                        )}
                         {(listing as any).isClaimed !== false && listing.status === "approved" && (
                           <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center text-xs">
                             <ShieldCheck className="w-3 h-3" /> Verified
@@ -565,6 +570,11 @@ export default function Browse() {
                           {(listing as any).listingTier === "pro" && (
                             <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black border-none shadow-lg flex gap-1 items-center text-xs font-semibold">
                               Pro
+                            </Badge>
+                          )}
+                          {(listing as any).isClaimed === false && (
+                            <Badge className="bg-amber-500/90 text-black border-none shadow-lg flex gap-1 items-center text-xs">
+                              Unclaimed
                             </Badge>
                           )}
                           {(listing as any).isClaimed !== false && listing.status === "approved" && (

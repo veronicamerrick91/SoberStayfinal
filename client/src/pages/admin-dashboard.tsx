@@ -37,6 +37,57 @@ interface User {
   createdAt?: string;
 }
 
+function ListingAnalyticsInline({ listingId }: { listingId: number }) {
+  const [analytics, setAnalytics] = useState<any>(null);
+
+  useEffect(() => {
+    fetch(`/api/admin/listings/${listingId}/analytics`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => setAnalytics(data))
+      .catch(() => {});
+  }, [listingId]);
+
+  if (!analytics) return null;
+
+  const stats = analytics.last30 || {};
+  const allTime = analytics.allTime || {};
+  
+  return (
+    <div className="mt-2 bg-background/50 rounded-lg p-3">
+      <h5 className="text-xs font-semibold text-white mb-2">Listing Analytics</h5>
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+        <div className="text-center">
+          <div className="text-white font-bold">{allTime.view || 0}</div>
+          <div className="text-muted-foreground">Views</div>
+        </div>
+        <div className="text-center">
+          <div className="text-white font-bold">{allTime.click || 0}</div>
+          <div className="text-muted-foreground">Clicks</div>
+        </div>
+        <div className="text-center">
+          <div className="text-white font-bold">{allTime.website_click || 0}</div>
+          <div className="text-muted-foreground">Website</div>
+        </div>
+        <div className="text-center">
+          <div className="text-white font-bold">{allTime.phone_click || 0}</div>
+          <div className="text-muted-foreground">Phone</div>
+        </div>
+        <div className="text-center">
+          <div className="text-white font-bold">{allTime.claim_click || 0}</div>
+          <div className="text-muted-foreground">Claims</div>
+        </div>
+        <div className="text-center">
+          <div className="text-white font-bold">{allTime.inquiry || 0}</div>
+          <div className="text-muted-foreground">Inquiries</div>
+        </div>
+      </div>
+      <div className="text-xs text-muted-foreground mt-1 text-right">
+        Last 30d: {stats.view || 0} views, {stats.website_click || 0} website, {stats.phone_click || 0} phone
+      </div>
+    </div>
+  );
+}
+
 function ClaimsTab() {
   const [claims, setClaims] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -171,6 +222,7 @@ function ClaimsTab() {
                       {claim.proofOfOwnership && <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs mr-2">Ownership Confirmed</Badge>}
                       Submitted: {new Date(claim.createdAt).toLocaleDateString()}
                     </div>
+                    <ListingAnalyticsInline listingId={claim.listingId} />
                   </div>
                   <div className="flex flex-col gap-2 shrink-0">
                     <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => handleApprove(claim.id)}>

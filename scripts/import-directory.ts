@@ -26,7 +26,10 @@ async function importDirectory() {
   for (const row of rows) {
     const name = (row["Company Name"] || "").trim();
     const city = (row["Company City"] || "").trim();
+    const state = (row["Company State"] || "").trim();
     if (!name || !city) continue;
+
+    if (state && !state.toLowerCase().includes("california") && state.toLowerCase() !== "ca") continue;
 
     const key = `${name.toLowerCase()}|${city.toLowerCase()}`;
     if (seen.has(key)) continue;
@@ -34,7 +37,7 @@ async function importDirectory() {
     uniqueRows.push(row);
   }
 
-  console.log(`${uniqueRows.length} unique companies to import`);
+  console.log(`${uniqueRows.length} unique California companies to import`);
 
   let imported = 0;
   let skipped = 0;
@@ -42,7 +45,6 @@ async function importDirectory() {
   for (const row of uniqueRows) {
     const companyName = (row["Company Name"] || "").trim();
     const city = (row["Company City"] || "").trim();
-    const state = (row["Company State"] || "CA").trim();
     const phone = (row["Corporate Phone"] || "").trim();
     const website = (row["Website"] || "").trim();
     const address = (row["Company Address"] || "").trim();
@@ -65,11 +67,10 @@ async function importDirectory() {
 
     await db.insert(listings).values({
       propertyName: companyName,
-      address: address || `${city}, ${state}`,
+      address: address || `${city}, CA`,
       city,
-      state,
-      zipCode: "00000",
-      description: `${companyName} is a sober living facility located in ${city}, ${state}. Contact them directly for availability, pricing, and program details.`,
+      state: "California",
+      description: `${companyName} is a sober living facility located in ${city}, California. Contact them directly for availability, pricing, and program details.`,
       monthlyPrice: 0,
       totalBeds: 0,
       gender: "co-ed",
@@ -83,13 +84,13 @@ async function importDirectory() {
       isClaimed: false,
       isImported: true,
       listingTier: "basic",
-      providerId: null as any,
+      providerId: null,
       phone: phone || null,
       website: website || null,
-    } as any);
+    });
 
     imported++;
-    console.log(`  Imported: ${companyName} (${city}, ${state})`);
+    console.log(`  Imported: ${companyName} (${city}, CA)`);
   }
 
   console.log(`\nImport complete: ${imported} imported, ${skipped} skipped (already existed)`);

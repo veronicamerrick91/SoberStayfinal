@@ -3809,7 +3809,7 @@ Disallow: /for-tenants
       }
       
       // Validate event type
-      const validEventTypes = ['view', 'click', 'inquiry', 'tour_request', 'application'];
+      const validEventTypes = ['view', 'click', 'inquiry', 'tour_request', 'application', 'website_click', 'phone_click', 'claim_click'];
       if (!validEventTypes.includes(eventType)) {
         return res.status(400).json({ error: "Invalid event type" });
       }
