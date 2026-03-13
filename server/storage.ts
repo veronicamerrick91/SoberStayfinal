@@ -461,32 +461,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async tryAssignFoundingMember(providerId: number, cap: number): Promise<boolean> {
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
-      await client.query('SELECT pg_advisory_xact_lock(8675309)');
-      const countResult = await client.query(
-        "SELECT COUNT(*)::int AS cnt FROM users WHERE role = 'provider'"
-      );
-      const providerCount = countResult.rows[0]?.cnt ?? 0;
-      if (providerCount > cap) {
-        await client.query('ROLLBACK');
-        return false;
-      }
-      await client.query(
-        `INSERT INTO provider_profiles (provider_id, is_founding_member, sms_opt_in, two_factor_enabled, documents_verified)
-         VALUES ($1, true, false, false, false)
-         ON CONFLICT (provider_id) DO UPDATE SET is_founding_member = true, updated_at = NOW()`,
-        [providerId]
-      );
-      await client.query('COMMIT');
-      return true;
-    } catch (err) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
+    const rankResult = await db.execute(sql`
+      SELECT rank FROM (
+        SELECT id, ROW_NUMBER() OVER (ORDER BY id ASC) AS rank
+        FROM users WHERE role = 'provider'
+      ) ranked WHERE id = ${providerId}
+    `);
+    const rank = (rankResult as any).rows?.[0]?.rank ?? (rankResult as any)[0]?.rank;
+    if (!rank || Number(rank) > cap) {
+      return false;
     }
+
+    await db.execute(sql`
+      INSERT INTO provider_profiles (provider_id, is_founding_member, sms_opt_in, two_factor_enabled, documents_verified)
+      VALUES (${providerId}, true, false, false, false)
+      ON CONFLICT (provider_id) DO UPDATE SET is_founding_member = true, updated_at = NOW()
+    `);
+    return true;
   }
 
   async isProviderVerified(providerId: number): Promise<boolean> {
