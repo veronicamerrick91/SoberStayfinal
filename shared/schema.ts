@@ -172,9 +172,9 @@ export const tenantViewedHomes = pgTable("tenant_viewed_homes", {
 export const listingAnalyticsEvents = pgTable("listing_analytics_events", {
   id: serial("id").primaryKey(),
   listingId: integer("listing_id").notNull().references(() => listings.id),
-  providerId: integer("provider_id").notNull().references(() => users.id),
-  tenantId: integer("tenant_id").references(() => users.id), // nullable for anonymous
-  eventType: text("event_type").notNull(), // view, click, inquiry, tour_request, application
+  providerId: integer("provider_id").references(() => users.id),
+  tenantId: integer("tenant_id").references(() => users.id),
+  eventType: text("event_type").notNull(),
   city: text("city"), // geo context
   state: text("state"),
   occurredAt: timestamp("occurred_at").defaultNow().notNull(),

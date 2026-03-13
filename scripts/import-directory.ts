@@ -31,7 +31,7 @@ async function importDirectory() {
 
     if (state && !state.toLowerCase().includes("california") && state.toLowerCase() !== "ca") continue;
 
-    const key = `${name.toLowerCase()}|${city.toLowerCase()}`;
+    const key = name.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
     uniqueRows.push(row);

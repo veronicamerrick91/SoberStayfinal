@@ -1244,7 +1244,7 @@ Disallow: /for-tenants
       }
       const listing = await storage.getListing(listingId);
       if (!listing) return res.status(404).json({ error: "Listing not found" });
-      if ((listing as any).isClaimed !== false) {
+      if (listing.isClaimed !== false) {
         return res.status(400).json({ error: "This listing has already been claimed" });
       }
 
@@ -1329,7 +1329,7 @@ Disallow: /for-tenants
       if (claim.status !== "pending") return res.status(409).json({ error: "Claim has already been resolved" });
 
       await storage.updateClaimRequestStatus(claimId, "approved");
-      await storage.updateListing(claim.listingId, { isClaimed: true, isImported: false, providerId } as any);
+      await storage.updateListing(claim.listingId, { isClaimed: true, isImported: false, providerId });
 
       res.json({ success: true });
     } catch (error) {
@@ -3829,7 +3829,7 @@ Disallow: /for-tenants
         try {
           await storage.recordAnalyticsEvent({
             listingId: listing.id,
-            providerId: listing.providerId,
+            providerId: listing.providerId ?? undefined,
             tenantId,
             eventType,
             city: city ? String(city).slice(0, 100) : null,

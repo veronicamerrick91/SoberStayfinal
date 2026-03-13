@@ -25,7 +25,7 @@ export interface IStorage {
   getAllListings(): Promise<Listing[]>;
   getApprovedListings(): Promise<Listing[]>;
   getListingsByProvider(providerId: number): Promise<Listing[]>;
-  updateListing(id: number, listing: Partial<InsertListing>): Promise<Listing | undefined>;
+  updateListing(id: number, listing: Partial<Listing>): Promise<Listing | undefined>;
   updateListingStatus(id: number, data: { status?: string; isVisible?: boolean }): Promise<Listing | undefined>;
   deleteListing(id: number): Promise<void>;
   
@@ -282,10 +282,10 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(listings).where(eq(listings.providerId, providerId));
   }
 
-  async updateListing(id: number, listingData: Partial<InsertListing>): Promise<Listing | undefined> {
+  async updateListing(id: number, listingData: Partial<Listing>): Promise<Listing | undefined> {
     const [listing] = await db
       .update(listings)
-      .set(listingData as any)
+      .set(listingData)
       .where(eq(listings.id, id))
       .returning();
     return listing;
@@ -294,7 +294,7 @@ export class DatabaseStorage implements IStorage {
   async updateListingStatus(id: number, data: { status?: string; isVisible?: boolean }): Promise<Listing | undefined> {
     const [listing] = await db
       .update(listings)
-      .set(data as any)
+      .set(data)
       .where(eq(listings.id, id))
       .returning();
     return listing;
