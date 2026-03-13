@@ -131,7 +131,7 @@ export interface IStorage {
   getProviderAnalyticsSummary(providerId: number, startDate: Date, endDate: Date): Promise<ListingAnalyticsDaily[]>;
   getProviderAnalyticsByListing(providerId: number, listingId: number, startDate: Date, endDate: Date): Promise<ListingAnalyticsDaily[]>;
   getProviderTopLocations(providerId: number, startDate: Date, endDate: Date): Promise<{city: string; state: string; count: number}[]>;
-  getCityDemand(cities: string[], startDate: Date, endDate: Date): Promise<{ city: string; state: string; views: number; clicks: number; total: number }[]>;
+  getCityDemand(cityStatePairs: { city: string; state: string }[], startDate: Date, endDate: Date): Promise<{ city: string; state: string; views: number; clicks: number; total: number }[]>;
   aggregateDailyAnalytics(): Promise<void>;
   
   // Email Templates
@@ -1089,32 +1089,72 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async getCityDemand(cities: string[], startDate: Date, endDate: Date): Promise<{ city: string; state: string; views: number; clicks: number; total: number }[]> {
-    if (cities.length === 0) return [];
-    const lowerCities = cities.map(c => c.toLowerCase());
-    const results = await db.select({
+  async getCityDemand(cityStatePairs: { city: string; state: string }[], startDate: Date, endDate: Date): Promise<{ city: string; state: string; views: number; clicks: number; total: number }[]> {
+    if (cityStatePairs.length === 0) return [];
+
+    const pairConditions = cityStatePairs.map(p =>
+      sql`(LOWER(${listingAnalyticsEvents.city}) = ${p.city.toLowerCase()} AND LOWER(${listingAnalyticsEvents.state}) = ${p.state.toLowerCase()})`
+    );
+    const cityStateFilter = sql`(${sql.join(pairConditions, sql` OR `)})`;
+
+    const analyticsResults = await db.select({
       city: listingAnalyticsEvents.city,
       state: listingAnalyticsEvents.state,
       views: sql<number>`COUNT(*) FILTER (WHERE ${listingAnalyticsEvents.eventType} = 'view')`,
       clicks: sql<number>`COUNT(*) FILTER (WHERE ${listingAnalyticsEvents.eventType} = 'click')`,
-      total: count()
+      total: sql<number>`COUNT(*) FILTER (WHERE ${listingAnalyticsEvents.eventType} IN ('view', 'click'))`
     })
     .from(listingAnalyticsEvents)
     .where(and(
       gte(listingAnalyticsEvents.occurredAt, startDate),
       lte(listingAnalyticsEvents.occurredAt, endDate),
-      sql`LOWER(${listingAnalyticsEvents.city}) IN (${sql.join(lowerCities.map(c => sql`${c}`), sql`, `)})`
+      sql`${listingAnalyticsEvents.eventType} IN ('view', 'click')`,
+      cityStateFilter
     ))
     .groupBy(listingAnalyticsEvents.city, listingAnalyticsEvents.state)
-    .orderBy(desc(count()));
+    .orderBy(desc(sql`COUNT(*) FILTER (WHERE ${listingAnalyticsEvents.eventType} IN ('view', 'click'))`));
 
-    return results.map(r => ({
+    const siteVisitPairConditions = cityStatePairs.map(p =>
+      sql`LOWER(${siteVisits.page}) LIKE ${`%${p.city.toLowerCase()}%`}`
+    );
+    const siteVisitFilter = sql`(${sql.join(siteVisitPairConditions, sql` OR `)})`;
+
+    let siteVisitCount = 0;
+    try {
+      const svResult = await db.select({ count: count() })
+        .from(siteVisits)
+        .where(and(
+          gte(siteVisits.createdAt, startDate),
+          lte(siteVisits.createdAt, endDate),
+          sql`${siteVisits.page} LIKE '/browse%'`,
+          siteVisitFilter
+        ));
+      siteVisitCount = svResult[0]?.count ?? 0;
+    } catch {
+      siteVisitCount = 0;
+    }
+
+    const results = analyticsResults.map(r => ({
       city: r.city || 'Unknown',
       state: r.state || 'Unknown',
       views: Number(r.views) || 0,
       clicks: Number(r.clicks) || 0,
-      total: r.total
+      total: (Number(r.total) || 0)
     }));
+
+    if (siteVisitCount > 0 && results.length > 0) {
+      results[0].total += siteVisitCount;
+    } else if (siteVisitCount > 0 && results.length === 0) {
+      results.push({
+        city: cityStatePairs[0].city,
+        state: cityStatePairs[0].state,
+        views: 0,
+        clicks: 0,
+        total: siteVisitCount
+      });
+    }
+
+    return results;
   }
 
   async aggregateDailyAnalytics(): Promise<void> {

@@ -3756,14 +3756,25 @@ Disallow: /for-tenants
       startDate.setDate(startDate.getDate() - numDays);
 
       const providerListings = await storage.getListingsByProvider(user.id);
-      const cities = [...new Set(providerListings.map(l => l.city).filter(Boolean))] as string[];
+      const cityStatePairs: { city: string; state: string }[] = [];
+      const seen = new Set<string>();
+      for (const l of providerListings) {
+        if (l.city && l.state) {
+          const key = `${l.city.toLowerCase()}|${l.state.toLowerCase()}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            cityStatePairs.push({ city: l.city, state: l.state });
+          }
+        }
+      }
 
-      if (cities.length === 0) {
+      if (cityStatePairs.length === 0) {
         return res.json({ demand: [], totalSearches: 0, cities: [] });
       }
 
-      const demand = await storage.getCityDemand(cities, startDate, endDate);
+      const demand = await storage.getCityDemand(cityStatePairs, startDate, endDate);
       const totalSearches = demand.reduce((sum, d) => sum + d.total, 0);
+      const cities = cityStatePairs.map(p => `${p.city}, ${p.state}`);
 
       res.json({ demand, totalSearches, cities });
     } catch (error) {
