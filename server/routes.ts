@@ -1234,6 +1234,171 @@ Disallow: /for-tenants
     }
   });
 
+  // ============ CLAIM REQUESTS ============
+
+  app.post("/api/claim-requests", async (req, res) => {
+    try {
+      const { listingId, providerName, businessName, email, phone, website, notes, proofOfOwnership } = req.body;
+      if (!listingId || !providerName || !businessName || !email) {
+        return res.status(400).json({ error: "Missing required fields: listingId, providerName, businessName, email" });
+      }
+      const listing = await storage.getListing(listingId);
+      if (!listing) return res.status(404).json({ error: "Listing not found" });
+      if ((listing as any).isClaimed !== false) {
+        return res.status(400).json({ error: "This listing has already been claimed" });
+      }
+
+      const existingClaims = await storage.getClaimRequestsByListing(listingId);
+      const hasPending = existingClaims.some(c => c.status === "pending" && c.email === email);
+      if (hasPending) {
+        return res.status(409).json({ error: "You already have a pending claim for this listing" });
+      }
+
+      const claim = await storage.createClaimRequest({
+        listingId,
+        providerName,
+        businessName,
+        email,
+        phone: phone || null,
+        website: website || null,
+        notes: notes || null,
+        proofOfOwnership: !!proofOfOwnership,
+      });
+
+      try {
+        const admins = await storage.getAdminUsers();
+        if (admins.length > 0) {
+          await sendEmail({
+            to: admins[0].email,
+            subject: `New Claim Request: ${businessName} - Sober Stay Homes`,
+            html: `<h2>New Claim Request Received</h2>
+              <p><strong>Business:</strong> ${businessName}</p>
+              <p><strong>Contact:</strong> ${providerName} (${email})</p>
+              <p><strong>Listing:</strong> ${listing.propertyName} (#${listingId})</p>
+              <p><strong>Phone:</strong> ${phone || 'N/A'}</p>
+              <p><strong>Website:</strong> ${website || 'N/A'}</p>
+              <p><strong>Notes:</strong> ${notes || 'None'}</p>
+              <p><strong>Proof of Ownership:</strong> ${proofOfOwnership ? 'Yes' : 'No'}</p>
+              <p>Log in to your admin dashboard to review this claim request.</p>`
+          });
+        }
+      } catch (emailError) {
+        console.error("Failed to send admin claim notification:", emailError);
+      }
+
+      res.json({ success: true, claim });
+    } catch (error) {
+      console.error("Error creating claim request:", error);
+      res.status(500).json({ error: "Failed to submit claim request" });
+    }
+  });
+
+  app.get("/api/admin/claim-requests", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") return res.status(403).json({ error: "Admin access required" });
+    try {
+      const claims = await storage.getAllClaimRequests();
+      const claimsWithListings = await Promise.all(claims.map(async (claim) => {
+        const listing = await storage.getListing(claim.listingId);
+        return { ...claim, listing };
+      }));
+      res.json(claimsWithListings);
+    } catch (error) {
+      console.error("Error fetching claim requests:", error);
+      res.status(500).json({ error: "Failed to fetch claim requests" });
+    }
+  });
+
+  app.patch("/api/admin/claim-requests/:id/approve", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") return res.status(403).json({ error: "Admin access required" });
+    const claimId = parseInt(req.params.id);
+    if (isNaN(claimId)) return res.status(400).json({ error: "Invalid claim ID" });
+    const { providerId } = req.body;
+    if (!providerId) return res.status(400).json({ error: "providerId is required to assign the listing" });
+
+    try {
+      const provider = await storage.getUser(providerId);
+      if (!provider) return res.status(400).json({ error: "Provider user not found" });
+      if (provider.role !== "provider") return res.status(400).json({ error: "User is not a provider" });
+
+      const claim = await storage.getClaimRequest(claimId);
+      if (!claim) return res.status(404).json({ error: "Claim request not found" });
+      if (claim.status !== "pending") return res.status(409).json({ error: "Claim has already been resolved" });
+
+      await storage.updateClaimRequestStatus(claimId, "approved");
+      await storage.updateListing(claim.listingId, { isClaimed: true, isImported: false, providerId } as any);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error approving claim:", error);
+      res.status(500).json({ error: "Failed to approve claim request" });
+    }
+  });
+
+  app.patch("/api/admin/claim-requests/:id/reject", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") return res.status(403).json({ error: "Admin access required" });
+    const claimId = parseInt(req.params.id);
+    if (isNaN(claimId)) return res.status(400).json({ error: "Invalid claim ID" });
+
+    try {
+      await storage.updateClaimRequestStatus(claimId, "rejected");
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error rejecting claim:", error);
+      res.status(500).json({ error: "Failed to reject claim request" });
+    }
+  });
+
+  app.delete("/api/admin/claim-requests/:id/listing", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") return res.status(403).json({ error: "Admin access required" });
+    const claimId = parseInt(req.params.id);
+    if (isNaN(claimId)) return res.status(400).json({ error: "Invalid claim ID" });
+
+    try {
+      const claim = await storage.getClaimRequest(claimId);
+      if (!claim) return res.status(404).json({ error: "Claim request not found" });
+
+      const allClaims = await storage.getClaimRequestsByListing(claim.listingId);
+      for (const c of allClaims) {
+        await storage.updateClaimRequestStatus(c.id, "rejected");
+      }
+
+      await storage.updateListingStatus(claim.listingId, { isVisible: false, status: "removed" });
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing listing:", error);
+      res.status(500).json({ error: "Failed to remove listing" });
+    }
+  });
+
+  app.get("/api/admin/listings/:id/analytics", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== "admin") return res.status(403).json({ error: "Admin access required" });
+    const listingId = parseInt(req.params.id);
+    if (isNaN(listingId)) return res.status(400).json({ error: "Invalid listing ID" });
+
+    try {
+      const allTime = await storage.getListingAnalyticsTotals(listingId);
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const last7 = await storage.getListingAnalyticsTotals(listingId, sevenDaysAgo, now);
+      const last30 = await storage.getListingAnalyticsTotals(listingId, thirtyDaysAgo, now);
+      res.json({ allTime, last7, last30 });
+    } catch (error) {
+      console.error("Error fetching listing analytics:", error);
+      res.status(500).json({ error: "Failed to fetch listing analytics" });
+    }
+  });
+
   // Admin: Get subscription info for a provider
   app.get("/api/admin/providers/:id/subscription", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

@@ -31,7 +31,7 @@ The platform uses a monorepo structure for code organization. Session-based auth
 The platform includes a comprehensive analytics tracking system for providers:
 
 - **Database Schema**: Two-table approach with `listing_analytics_events` (raw events) and `listing_analytics_daily` (aggregated daily stats for performance)
-- **Event Types**: Views, clicks, inquiries, tour requests, and applications
+- **Event Types**: Views, clicks, inquiries, tour requests, applications, website_click, phone_click, claim_click
 - **Tracking Helper** (`client/src/lib/analytics.ts`): Uses sendBeacon API for non-blocking event submission with sessionStorage debouncing (5-second window for views)
 - **Provider Dashboard Overview**: Traffic Snapshot section shows real-time metrics (views, clicks, inquiries, tour requests, applications) for last 30 days; "Searches in Your City" card shows demand in provider's listing cities with per-city breakdowns; "View Full Analytics" button links to detailed Analytics tab
 - **Provider Dashboard Analytics Tab**: Full KPIs, daily breakdown charts, and top visitor locations with 7/30/90 day filtering
@@ -42,6 +42,29 @@ The platform includes a comprehensive analytics tracking system for providers:
   - `trackTourRequest`: Fires on confirmed tour submission (in modal, not on open)
   - `trackInquiry`: Fires when clicking "Message Provider" link
   - `trackApplication`: Fires on all "Apply" CTAs (browse and detail pages)
+  - `trackWebsiteClick`: Fires when clicking website link on unclaimed listing
+  - `trackPhoneClick`: Fires when clicking phone link on unclaimed listing
+  - `trackClaimClick`: Fires when clicking "Claim This Listing" button
+
+### Unclaimed Listings & Claim Flow
+- **Imported Directory Listings**: 201 CA sober living facilities imported from public directory spreadsheet (`scripts/import-directory.ts`)
+- **Schema Fields**: `isClaimed` (default true), `isImported` (default false), `listingTier` (default 'basic'), `phone` (listing_phone), `website` (listing_website) on listings table; `providerId` is nullable for unclaimed listings
+- **Claim Requests Table**: `claim_requests` with fields: listingId, providerName, businessName, email, phone, website, notes, proofOfOwnership, status (pending/approved/rejected), createdAt
+- **API Endpoints**:
+  - `POST /api/claim-requests` — Public endpoint for submitting claim requests (sends admin email notification via Resend)
+  - `GET /api/admin/claim-requests` — Admin: list all claims with associated listings
+  - `PATCH /api/admin/claim-requests/:id/approve` — Admin: approve claim, assign listing to provider (requires providerId in body)
+  - `PATCH /api/admin/claim-requests/:id/reject` — Admin: reject claim
+  - `DELETE /api/admin/claim-requests/:id/listing` — Admin: remove listing entirely
+  - `GET /api/admin/listings/:id/analytics` — Admin: per-listing analytics (allTime, last7, last30)
+- **Unclaimed Listing UI** (`client/src/pages/property-details.tsx`): Amber "Unclaimed Listing" badge, phone/website buttons with analytics tracking, "Is this your facility?" claim CTA with modal form
+- **Admin Claims Tab** (`client/src/pages/admin-dashboard.tsx`): "Claims" tab showing pending/resolved claims with approve/reject/remove actions
+
+### Provider Tiers
+- **Tier Column**: `listingTier` on listings table (values: 'basic', 'pro')
+- **Browse Sorting**: Pro/featured first → claimed basic → unclaimed imported last
+- **Browse Labels**: Pro badge (amber/yellow gradient), verified badge only for claimed listings, "Contact for Pricing" for unclaimed
+- **Tier Badges**: Shown on listing cards in browse page and property detail page
 
 ## External Dependencies
 

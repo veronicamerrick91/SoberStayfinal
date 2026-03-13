@@ -18,9 +18,9 @@ export const users = pgTable("users", {
 
 export const listings = pgTable("listings", {
   id: serial("id").primaryKey(),
-  providerId: integer("provider_id").notNull().references(() => users.id),
+  providerId: integer("provider_id").references(() => users.id),
   propertyName: text("property_name").notNull(),
-  address: text("address"), // Optional - providers can choose to hide full address
+  address: text("address"),
   city: text("city").notNull(),
   state: text("state").notNull(),
   monthlyPrice: integer("monthly_price").notNull(),
@@ -42,6 +42,11 @@ export const listings = pgTable("listings", {
   acceptsCouples: boolean("accepts_couples").default(false).notNull(),
   status: text("status").default("draft").notNull(),
   isVisible: boolean("is_visible").default(true).notNull(),
+  isClaimed: boolean("is_claimed").default(true).notNull(),
+  isImported: boolean("is_imported").default(false).notNull(),
+  listingTier: text("listing_tier").default("basic").notNull(),
+  phone: text("listing_phone"),
+  website: text("listing_website"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -208,6 +213,29 @@ export const referralTracking = pgTable("referral_tracking", {
   completedAt: timestamp("completed_at"),
 });
 
+export const claimRequests = pgTable("claim_requests", {
+  id: serial("id").primaryKey(),
+  listingId: integer("listing_id").notNull().references(() => listings.id),
+  providerName: text("provider_name").notNull(),
+  businessName: text("business_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  website: text("website"),
+  notes: text("notes"),
+  proofOfOwnership: boolean("proof_of_ownership").default(false).notNull(),
+  status: text("status").default("pending").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertClaimRequestSchema = createInsertSchema(claimRequests).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+});
+
+export type ClaimRequest = typeof claimRequests.$inferSelect;
+export type InsertClaimRequest = z.infer<typeof insertClaimRequestSchema>;
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   email: true,
@@ -221,6 +249,11 @@ export const insertListingSchema = createInsertSchema(listings).omit({
   providerId: true,
   createdAt: true,
   isVisible: true,
+  isClaimed: true,
+  isImported: true,
+  listingTier: true,
+  phone: true,
+  website: true,
 });
 
 export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({

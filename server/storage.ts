@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, type TenantFavorite, type TenantViewedHome, type ListingAnalyticsEvent, type InsertListingAnalyticsEvent, type ListingAnalyticsDaily, type EmailTemplate, type InsertEmailTemplate, type EmailWorkflow, type InsertEmailWorkflow, type WorkflowStep, type InsertWorkflowStep, type WorkflowEnrollment, type InsertWorkflowEnrollment, type SiteVisit, type InsertSiteVisit, type ProviderReferral, type ReferralTracking, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners, tenantFavorites, tenantViewedHomes, listingAnalyticsEvents, listingAnalyticsDaily, emailTemplates, emailWorkflows, workflowSteps, workflowEnrollments, siteVisits, providerReferrals, referralTracking } from "@shared/schema";
+import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, type TenantFavorite, type TenantViewedHome, type ListingAnalyticsEvent, type InsertListingAnalyticsEvent, type ListingAnalyticsDaily, type EmailTemplate, type InsertEmailTemplate, type EmailWorkflow, type InsertEmailWorkflow, type WorkflowStep, type InsertWorkflowStep, type WorkflowEnrollment, type InsertWorkflowEnrollment, type SiteVisit, type InsertSiteVisit, type ProviderReferral, type ReferralTracking, type ClaimRequest, type InsertClaimRequest, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners, tenantFavorites, tenantViewedHomes, listingAnalyticsEvents, listingAnalyticsDaily, emailTemplates, emailWorkflows, workflowSteps, workflowEnrollments, siteVisits, providerReferrals, referralTracking, claimRequests } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, lt, isNull, or, desc, count, inArray, gte, lte, sql } from "drizzle-orm";
 import session from "express-session";
@@ -175,6 +175,16 @@ export interface IStorage {
     topPages: { page: string; count: number }[];
     visitsByDay: { date: string; count: number }[];
   }>;
+  
+  // Claim Requests
+  createClaimRequest(claim: InsertClaimRequest): Promise<ClaimRequest>;
+  getAllClaimRequests(): Promise<ClaimRequest[]>;
+  getClaimRequest(id: number): Promise<ClaimRequest | undefined>;
+  updateClaimRequestStatus(id: number, status: string): Promise<ClaimRequest | undefined>;
+  getClaimRequestsByListing(listingId: number): Promise<ClaimRequest[]>;
+  
+  // Listing analytics for admin (per-listing totals)
+  getListingAnalyticsTotals(listingId: number, startDate?: Date, endDate?: Date): Promise<Record<string, number>>;
   
   // Referral Program
   getOrCreateReferralCode(providerId: number): Promise<ProviderReferral>;
@@ -1823,6 +1833,49 @@ The Sober Stay Team`,
         .where(eq(providerReferrals.id, updated.referralCodeId));
     }
     return updated;
+  }
+
+  async createClaimRequest(claim: InsertClaimRequest): Promise<ClaimRequest> {
+    const [result] = await db.insert(claimRequests).values(claim).returning();
+    return result;
+  }
+
+  async getAllClaimRequests(): Promise<ClaimRequest[]> {
+    return await db.select().from(claimRequests).orderBy(desc(claimRequests.createdAt));
+  }
+
+  async getClaimRequest(id: number): Promise<ClaimRequest | undefined> {
+    const [result] = await db.select().from(claimRequests).where(eq(claimRequests.id, id));
+    return result;
+  }
+
+  async updateClaimRequestStatus(id: number, status: string): Promise<ClaimRequest | undefined> {
+    const [result] = await db.update(claimRequests).set({ status }).where(eq(claimRequests.id, id)).returning();
+    return result;
+  }
+
+  async getClaimRequestsByListing(listingId: number): Promise<ClaimRequest[]> {
+    return await db.select().from(claimRequests).where(eq(claimRequests.listingId, listingId));
+  }
+
+  async getListingAnalyticsTotals(listingId: number, startDate?: Date, endDate?: Date): Promise<Record<string, number>> {
+    const conditions = [eq(listingAnalyticsEvents.listingId, listingId)];
+    if (startDate) conditions.push(gte(listingAnalyticsEvents.occurredAt, startDate));
+    if (endDate) conditions.push(lte(listingAnalyticsEvents.occurredAt, endDate));
+
+    const results = await db.select({
+      eventType: listingAnalyticsEvents.eventType,
+      count: count()
+    })
+    .from(listingAnalyticsEvents)
+    .where(and(...conditions))
+    .groupBy(listingAnalyticsEvents.eventType);
+
+    const totals: Record<string, number> = {};
+    for (const r of results) {
+      totals[r.eventType] = r.count;
+    }
+    return totals;
   }
 }
 

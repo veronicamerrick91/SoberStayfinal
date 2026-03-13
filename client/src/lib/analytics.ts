@@ -1,4 +1,4 @@
-type EventType = 'view' | 'click' | 'inquiry' | 'tour_request' | 'application';
+type EventType = 'view' | 'click' | 'inquiry' | 'tour_request' | 'application' | 'website_click' | 'phone_click' | 'claim_click';
 
 interface AnalyticsEvent {
   listingId: number;
@@ -64,6 +64,18 @@ export function trackTourRequest(listingId: number): void {
 
 export function trackApplication(listingId: number): void {
   trackEvent({ listingId, eventType: 'application' });
+}
+
+export function trackWebsiteClick(listingId: number): void {
+  trackEvent({ listingId, eventType: 'website_click' });
+}
+
+export function trackPhoneClick(listingId: number): void {
+  trackEvent({ listingId, eventType: 'phone_click' });
+}
+
+export function trackClaimClick(listingId: number): void {
+  trackEvent({ listingId, eventType: 'claim_click' });
 }
 
 // Site-wide visitor tracking for admin analytics

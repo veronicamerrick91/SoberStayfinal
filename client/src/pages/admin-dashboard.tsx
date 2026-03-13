@@ -37,6 +37,185 @@ interface User {
   createdAt?: string;
 }
 
+function ClaimsTab() {
+  const [claims, setClaims] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const fetchClaims = async () => {
+    try {
+      const res = await fetch("/api/admin/claim-requests", { credentials: "include" });
+      if (res.ok) {
+        setClaims(await res.json());
+      }
+    } catch (e) {
+      console.error("Failed to fetch claims:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchClaims(); }, []);
+
+  const handleApprove = async (claimId: number, providerId?: number) => {
+    if (!providerId) {
+      const id = prompt("Enter the Provider User ID to assign this listing to:");
+      if (!id) return;
+      providerId = parseInt(id);
+      if (isNaN(providerId)) return;
+    }
+    try {
+      const res = await fetch(`/api/admin/claim-requests/${claimId}/approve`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ providerId }),
+      });
+      if (res.ok) {
+        toast({ title: "Claim approved", description: "Listing has been assigned to the provider." });
+        fetchClaims();
+      }
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to approve claim.", variant: "destructive" });
+    }
+  };
+
+  const handleReject = async (claimId: number) => {
+    if (!confirm("Are you sure you want to reject this claim?")) return;
+    try {
+      const res = await fetch(`/api/admin/claim-requests/${claimId}/reject`, {
+        method: "PATCH",
+        credentials: "include",
+      });
+      if (res.ok) {
+        toast({ title: "Claim rejected" });
+        fetchClaims();
+      }
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to reject claim.", variant: "destructive" });
+    }
+  };
+
+  const handleRemoveListing = async (claimId: number) => {
+    if (!confirm("Are you sure you want to remove this listing entirely? This cannot be undone.")) return;
+    try {
+      const res = await fetch(`/api/admin/claim-requests/${claimId}/listing`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.ok) {
+        toast({ title: "Listing removed", description: "The listing and claim have been removed." });
+        fetchClaims();
+      }
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to remove listing.", variant: "destructive" });
+    }
+  };
+
+  const pendingClaims = claims.filter(c => c.status === "pending");
+  const resolvedClaims = claims.filter(c => c.status !== "pending");
+
+  if (loading) {
+    return <div className="text-center py-8 text-muted-foreground">Loading claims...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-bold text-white">Claim Requests</h2>
+          <p className="text-sm text-muted-foreground">Manage ownership claims for imported listings</p>
+        </div>
+        <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
+          {pendingClaims.length} Pending
+        </Badge>
+      </div>
+
+      {pendingClaims.length === 0 && resolvedClaims.length === 0 && (
+        <Card className="bg-card border-border">
+          <CardContent className="p-8 text-center">
+            <Building className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-bold text-white mb-2">No Claim Requests</h3>
+            <p className="text-sm text-muted-foreground">When providers submit claim requests for imported listings, they'll appear here.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {pendingClaims.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-md font-semibold text-white">Pending Claims</h3>
+          {pendingClaims.map((claim) => (
+            <Card key={claim.id} className="bg-card border-amber-500/30">
+              <CardContent className="p-4">
+                <div className="flex flex-col md:flex-row md:items-start gap-4">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-white">{claim.businessName}</h4>
+                      <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-xs">Pending</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Claiming: <strong className="text-white">{claim.listing?.propertyName || `Listing #${claim.listingId}`}</strong>
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                      <div><strong>Contact:</strong> {claim.providerName}</div>
+                      <div><strong>Email:</strong> {claim.email}</div>
+                      {claim.phone && <div><strong>Phone:</strong> {claim.phone}</div>}
+                      {claim.website && <div><strong>Website:</strong> {claim.website}</div>}
+                    </div>
+                    {claim.notes && (
+                      <p className="text-xs text-muted-foreground bg-background/50 rounded p-2 mt-2">
+                        <strong>Notes:</strong> {claim.notes}
+                      </p>
+                    )}
+                    <div className="text-xs text-muted-foreground">
+                      {claim.proofOfOwnership && <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs mr-2">Ownership Confirmed</Badge>}
+                      Submitted: {new Date(claim.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => handleApprove(claim.id)}>
+                      <Check className="w-3 h-3 mr-1" /> Approve
+                    </Button>
+                    <Button size="sm" variant="outline" className="border-red-500/30 text-red-400 hover:bg-red-500/10" onClick={() => handleReject(claim.id)}>
+                      <X className="w-3 h-3 mr-1" /> Reject
+                    </Button>
+                    <Button size="sm" variant="outline" className="border-red-500/30 text-red-400 hover:bg-red-500/10" onClick={() => handleRemoveListing(claim.id)}>
+                      <Trash2 className="w-3 h-3 mr-1" /> Remove Listing
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {resolvedClaims.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-md font-semibold text-white">Resolved Claims</h3>
+          {resolvedClaims.map((claim) => (
+            <Card key={claim.id} className="bg-card border-border">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-bold text-white text-sm">{claim.businessName}</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {claim.listing?.propertyName || `Listing #${claim.listingId}`} - {claim.providerName} ({claim.email})
+                    </p>
+                  </div>
+                  <Badge className={claim.status === "approved" ? "bg-green-500/20 text-green-400 border-green-500/30" : "bg-red-500/20 text-red-400 border-red-500/30"}>
+                    {claim.status}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function AdminDashboard() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -1913,6 +2092,7 @@ the actual document file stored on the server.
             <TabsTrigger value="email-list" className="px-3 py-2 text-xs font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-1.5"><Mail className="w-3.5 h-3.5" /> Email List</TabsTrigger>
             <TabsTrigger value="settings" className="px-3 py-2 text-xs font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-1.5"><Settings className="w-3.5 h-3.5" /> Settings</TabsTrigger>
             <TabsTrigger value="partners" className="px-3 py-2 text-xs font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-1.5"><Users className="w-3.5 h-3.5" /> Partners</TabsTrigger>
+            <TabsTrigger value="claims" className="px-3 py-2 text-xs font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all gap-1.5 relative"><Building className="w-3.5 h-3.5" /> Claims</TabsTrigger>
           </TabsList>
 
           {blogPublishSuccess && (
@@ -4425,6 +4605,10 @@ the actual document file stored on the server.
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="claims" className="space-y-6">
+            <ClaimsTab />
           </TabsContent>
         </Tabs>
 

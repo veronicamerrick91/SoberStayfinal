@@ -7,16 +7,21 @@ import {
   MapPin, ShieldCheck, Check, ArrowLeft, Share2, Heart, Flag,
   Wifi, Car, Utensils, Tv, Dumbbell, Calendar,
   Info, Mail, Phone, MessageSquare, Bus, ShoppingCart, Stethoscope, Users,
-  Video, Lock, Loader2, Home, ExternalLink
+  Video, Lock, Loader2, Home, ExternalLink, AlertTriangle, Globe, Building2
 } from "lucide-react";
 import { useRoute, Link, useLocation } from "wouter";
 import { isAuthenticated, getAuth } from "@/lib/auth";
 import { useState, useEffect } from "react";
 import { isFavorite, toggleFavorite } from "@/lib/favorites";
 import { incrementStat, addViewedHome } from "@/lib/tenant-engagement";
-import { trackListingView, trackInquiry, trackApplication } from "@/lib/analytics";
+import { trackListingView, trackInquiry, trackApplication, trackWebsiteClick, trackPhoneClick, trackClaimClick } from "@/lib/analytics";
 import { ReportModal } from "@/components/report-modal";
 import { TourScheduleModal } from "@/components/tour-schedule-modal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
@@ -62,7 +67,42 @@ export default function PropertyDetails() {
   const [isFav, setIsFav] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showTourModal, setShowTourModal] = useState(false);
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [claimSubmitting, setClaimSubmitting] = useState(false);
+  const [claimSubmitted, setClaimSubmitted] = useState(false);
+  const [claimForm, setClaimForm] = useState({
+    providerName: "",
+    businessName: "",
+    email: "",
+    phone: "",
+    website: "",
+    notes: "",
+    proofOfOwnership: false,
+  });
   const user = { name: "Tenant User", email: "tenant@example.com" };
+
+  const handleClaimSubmit = async () => {
+    if (!listing || !claimForm.providerName || !claimForm.businessName || !claimForm.email) return;
+    setClaimSubmitting(true);
+    try {
+      const res = await fetch("/api/claim-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId: listing.id, ...claimForm }),
+      });
+      if (res.ok) {
+        setClaimSubmitted(true);
+      } else {
+        const data = await res.json().catch(() => ({ error: "Something went wrong" }));
+        alert(data.error || "Failed to submit claim request");
+      }
+    } catch (e) {
+      console.error("Claim submission failed", e);
+      alert("Failed to submit claim request. Please try again.");
+    } finally {
+      setClaimSubmitting(false);
+    }
+  };
 
   const { data: listing, isLoading, error } = useQuery({
     queryKey: ["listing", params?.id],
@@ -76,6 +116,8 @@ export default function PropertyDetails() {
     enabled: !!params?.id,
     staleTime: 1000 * 60 * 60,
   });
+
+  const isUnclaimed = listing && (listing as any).isClaimed === false;
 
   useDocumentMeta({
     title: listing ? `${listing.propertyName} | Sober Living in ${listing.city}, ${listing.state}` : "Sober Living Home | Sober Stay",
@@ -188,10 +230,21 @@ export default function PropertyDetails() {
             {/* Image Gallery (Main Image) */}
             <div className="relative h-[400px] rounded-2xl overflow-hidden border border-border/50 shadow-2xl">
               <img src={listing.photos?.[0] || placeholderHome} loading="lazy" className="w-full h-full object-cover" alt={listing.propertyName} />
-              <div className="absolute top-4 left-4">
-                {listing.status === "approved" && (
-                  <Badge className="bg-emerald-500 text-white border-none flex gap-1 items-center px-3 py-1.5 shadow-lg">
-                    <ShieldCheck className="w-3 h-3" /> Verified Listing
+              <div className="absolute top-4 left-4 flex gap-2">
+                {isUnclaimed ? (
+                  <Badge className="bg-amber-500/90 text-black border-none flex gap-1 items-center px-3 py-1.5 shadow-lg">
+                    <AlertTriangle className="w-3 h-3" /> Unclaimed Listing
+                  </Badge>
+                ) : (
+                  listing.status === "approved" && (
+                    <Badge className="bg-emerald-500 text-white border-none flex gap-1 items-center px-3 py-1.5 shadow-lg">
+                      <ShieldCheck className="w-3 h-3" /> Verified Listing
+                    </Badge>
+                  )
+                )}
+                {(listing as any).listingTier === "pro" && (
+                  <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black border-none flex gap-1 items-center px-3 py-1.5 shadow-lg font-semibold">
+                    Pro
                   </Badge>
                 )}
               </div>
@@ -378,55 +431,130 @@ export default function PropertyDetails() {
           <div className="lg:col-span-1 space-y-6">
             <Card className="bg-card border-border sticky top-6 shadow-2xl">
               <CardContent className="p-6 space-y-6">
-                <div className="text-center border-b border-border pb-6">
-                  <div className="text-3xl font-bold text-primary mb-1">${listing.monthlyPrice}</div>
-                  <div className="text-sm text-muted-foreground">per month</div>
-                </div>
+                {isUnclaimed ? (
+                  <>
+                    <div className="text-center border-b border-border pb-6">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <AlertTriangle className="w-5 h-5 text-amber-400" />
+                        <span className="text-lg font-bold text-amber-400">Unclaimed Listing</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        This listing was imported from a public directory. Information may be limited or outdated.
+                      </p>
+                    </div>
 
-                <div className="space-y-3">
-                  <Button 
-                    onClick={handleApply} 
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg shadow-lg shadow-primary/20"
-                    data-testid="button-apply"
-                  >
-                    Apply Now
-                  </Button>
-                  <Button 
-                    onClick={() => setShowTourModal(true)} 
-                    variant="outline" 
-                    className="w-full border-primary/30 text-primary hover:bg-primary/10 h-12"
-                    data-testid="button-schedule-tour"
-                  >
-                    <Calendar className="w-4 h-4 mr-2" /> Schedule a Tour
-                  </Button>
-                  <Link href={`/chat/${listing.id}`} className="block w-full" onClick={() => {
-                    if (listing?.id) trackInquiry(listing.id);
-                  }}>
-                    <Button variant="outline" className="w-full border-white/10 hover:bg-card h-10">
-                      <MessageSquare className="w-4 h-4 mr-2" /> Message Provider
-                    </Button>
-                  </Link>
-                </div>
+                    <div className="space-y-3">
+                      {(listing as any).phone && (
+                        <a 
+                          href={`tel:${(listing as any).phone}`}
+                          onClick={() => listing?.id && trackPhoneClick(listing.id)}
+                          className="block"
+                        >
+                          <Button variant="outline" className="w-full border-primary/30 text-primary hover:bg-primary/10 h-12" data-testid="button-call">
+                            <Phone className="w-4 h-4 mr-2" /> Call {(listing as any).phone}
+                          </Button>
+                        </a>
+                      )}
+                      {(listing as any).website && (
+                        <a 
+                          href={(listing as any).website.startsWith("http") ? (listing as any).website : `https://${(listing as any).website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => listing?.id && trackWebsiteClick(listing.id)}
+                          className="block"
+                        >
+                          <Button variant="outline" className="w-full border-primary/30 text-primary hover:bg-primary/10 h-12" data-testid="button-website">
+                            <Globe className="w-4 h-4 mr-2" /> Visit Website
+                          </Button>
+                        </a>
+                      )}
+                    </div>
 
-                <div className="pt-6 border-t border-border space-y-4">
-                  <h4 className="font-bold text-white text-sm">Contact Information</h4>
-                  <div className="flex items-center gap-3 text-sm text-gray-300">
-                    <Phone className="w-4 h-4 text-primary" />
-                    Contact via message
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-300">
-                    <Mail className="w-4 h-4 text-primary" />
-                    Contact via message
-                  </div>
-                </div>
+                    <div className="pt-6 border-t border-border">
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-4">
+                        <div className="flex items-start gap-3">
+                          <Building2 className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+                          <div>
+                            <h4 className="font-bold text-amber-400 text-sm mb-1">Is this your facility?</h4>
+                            <p className="text-xs text-muted-foreground mb-3">
+                              Claim this listing to manage your profile, receive inquiries, and connect with potential residents.
+                            </p>
+                            <Button 
+                              onClick={() => {
+                                if (listing?.id) trackClaimClick(listing.id);
+                                setShowClaimModal(true);
+                              }}
+                              className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold h-10"
+                              data-testid="button-claim"
+                            >
+                              Claim This Listing
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-                <div className="pt-6 border-t border-border text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Info className="w-3 h-3" />
-                    <span>Listed by verified provider</span>
-                  </div>
-                  <p>This listing has been verified by our team. Always visit in person before committing.</p>
-                </div>
+                    <div className="pt-4 border-t border-border text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Info className="w-3 h-3" />
+                        <span>Imported from public directory</span>
+                      </div>
+                      <p>This listing has not been claimed or verified by the facility operator. Contact the facility directly for current availability and pricing.</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-center border-b border-border pb-6">
+                      <div className="text-3xl font-bold text-primary mb-1">${listing.monthlyPrice}</div>
+                      <div className="text-sm text-muted-foreground">per month</div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <Button 
+                        onClick={handleApply} 
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-lg shadow-lg shadow-primary/20"
+                        data-testid="button-apply"
+                      >
+                        Apply Now
+                      </Button>
+                      <Button 
+                        onClick={() => setShowTourModal(true)} 
+                        variant="outline" 
+                        className="w-full border-primary/30 text-primary hover:bg-primary/10 h-12"
+                        data-testid="button-schedule-tour"
+                      >
+                        <Calendar className="w-4 h-4 mr-2" /> Schedule a Tour
+                      </Button>
+                      <Link href={`/chat/${listing.id}`} className="block w-full" onClick={() => {
+                        if (listing?.id) trackInquiry(listing.id);
+                      }}>
+                        <Button variant="outline" className="w-full border-white/10 hover:bg-card h-10">
+                          <MessageSquare className="w-4 h-4 mr-2" /> Message Provider
+                        </Button>
+                      </Link>
+                    </div>
+
+                    <div className="pt-6 border-t border-border space-y-4">
+                      <h4 className="font-bold text-white text-sm">Contact Information</h4>
+                      <div className="flex items-center gap-3 text-sm text-gray-300">
+                        <Phone className="w-4 h-4 text-primary" />
+                        Contact via message
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-gray-300">
+                        <Mail className="w-4 h-4 text-primary" />
+                        Contact via message
+                      </div>
+                    </div>
+
+                    <div className="pt-6 border-t border-border text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Info className="w-3 h-3" />
+                        <span>Listed by verified provider</span>
+                      </div>
+                      <p>This listing has been verified by our team. Always visit in person before committing.</p>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -447,6 +575,120 @@ export default function PropertyDetails() {
         tenantName={user.name}
         tenantEmail={user.email}
       />
+
+      <Dialog open={showClaimModal} onOpenChange={setShowClaimModal}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">Claim This Listing</DialogTitle>
+          </DialogHeader>
+          {claimSubmitted ? (
+            <div className="text-center py-6">
+              <ShieldCheck className="w-12 h-12 text-primary mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-white mb-2">Claim Submitted!</h3>
+              <p className="text-sm text-muted-foreground">
+                We'll review your request and get back to you within 1-2 business days. You'll receive an email once your claim has been reviewed.
+              </p>
+              <Button onClick={() => setShowClaimModal(false)} className="mt-4 bg-primary text-primary-foreground">
+                Close
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Fill out the form below to claim <strong className="text-white">{listing.propertyName}</strong>. Our team will review your request.
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-sm text-gray-300">Your Name *</Label>
+                  <Input
+                    value={claimForm.providerName}
+                    onChange={(e) => setClaimForm(f => ({ ...f, providerName: e.target.value }))}
+                    placeholder="John Doe"
+                    className="bg-background border-border"
+                    data-testid="input-claim-name"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-300">Business Name *</Label>
+                  <Input
+                    value={claimForm.businessName}
+                    onChange={(e) => setClaimForm(f => ({ ...f, businessName: e.target.value }))}
+                    placeholder="Your Facility Name"
+                    className="bg-background border-border"
+                    data-testid="input-claim-business"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-300">Email *</Label>
+                  <Input
+                    type="email"
+                    value={claimForm.email}
+                    onChange={(e) => setClaimForm(f => ({ ...f, email: e.target.value }))}
+                    placeholder="you@example.com"
+                    className="bg-background border-border"
+                    data-testid="input-claim-email"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-300">Phone</Label>
+                  <Input
+                    value={claimForm.phone}
+                    onChange={(e) => setClaimForm(f => ({ ...f, phone: e.target.value }))}
+                    placeholder="(555) 123-4567"
+                    className="bg-background border-border"
+                    data-testid="input-claim-phone"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-300">Website</Label>
+                  <Input
+                    value={claimForm.website}
+                    onChange={(e) => setClaimForm(f => ({ ...f, website: e.target.value }))}
+                    placeholder="https://yourfacility.com"
+                    className="bg-background border-border"
+                    data-testid="input-claim-website"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-300">Additional Notes</Label>
+                  <Textarea
+                    value={claimForm.notes}
+                    onChange={(e) => setClaimForm(f => ({ ...f, notes: e.target.value }))}
+                    placeholder="Any additional information to help verify your ownership..."
+                    className="bg-background border-border"
+                    rows={3}
+                    data-testid="input-claim-notes"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="proof"
+                    checked={claimForm.proofOfOwnership}
+                    onCheckedChange={(checked) => setClaimForm(f => ({ ...f, proofOfOwnership: !!checked }))}
+                    className="h-4 w-4"
+                    data-testid="checkbox-proof"
+                  />
+                  <Label htmlFor="proof" className="text-sm text-gray-300 cursor-pointer">
+                    I confirm I am authorized to manage this facility
+                  </Label>
+                </div>
+              </div>
+              <Button
+                onClick={handleClaimSubmit}
+                disabled={claimSubmitting || !claimForm.providerName || !claimForm.businessName || !claimForm.email}
+                className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold h-12"
+                data-testid="button-submit-claim"
+              >
+                {claimSubmitting ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Submitting...</>
+                ) : (
+                  "Submit Claim Request"
+                )}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* LocalBusiness Schema for SEO */}
       <script

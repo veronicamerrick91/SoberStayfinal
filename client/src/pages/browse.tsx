@@ -120,8 +120,8 @@ export default function Browse() {
         if (!matchesSearch) return false;
       }
       
-      // Price filter
-      if (listing.monthlyPrice > priceRange[0]) return false;
+      // Price filter (skip for unclaimed imported listings with $0 price)
+      if (listing.monthlyPrice > 0 && listing.monthlyPrice > priceRange[0]) return false;
       
       // Gender filter
       if (selectedGenders.length > 0 && !selectedGenders.includes(listing.gender || "")) return false;
@@ -140,9 +140,20 @@ export default function Browse() {
       
       return true;
     }).sort((a, b) => {
-      const aBoost = featuredMap[a.id]?.boostLevel || 0;
-      const bBoost = featuredMap[b.id]?.boostLevel || 0;
-      return bBoost - aBoost;
+      const aFeatured = featuredMap[a.id]?.boostLevel || 0;
+      const bFeatured = featuredMap[b.id]?.boostLevel || 0;
+      if (aFeatured !== bFeatured) return bFeatured - aFeatured;
+
+      const tierOrder = (l: Listing) => {
+        if ((l as any).listingTier === 'pro') return 0;
+        if ((l as any).isClaimed !== false) return 1;
+        return 2;
+      };
+      const aTier = tierOrder(a);
+      const bTier = tierOrder(b);
+      if (aTier !== bTier) return aTier - bTier;
+
+      return 0;
     });
   }, [listings, searchLocation, priceRange, selectedGenders, selectedSupervision, selectedRoomTypes, showMatFriendly, showAcceptsCouples, featuredMap]);
   
@@ -471,7 +482,12 @@ export default function Browse() {
                             <Zap className="w-3 h-3" /> Featured
                           </Badge>
                         )}
-                        {listing.status === "approved" && (
+                        {(listing as any).listingTier === "pro" && (
+                          <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black border-none shadow-lg flex gap-1 items-center text-xs font-semibold">
+                            Pro
+                          </Badge>
+                        )}
+                        {(listing as any).isClaimed !== false && listing.status === "approved" && (
                           <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center text-xs">
                             <ShieldCheck className="w-3 h-3" /> Verified
                           </Badge>
@@ -479,9 +495,15 @@ export default function Browse() {
                       </div>
                       
                       <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end">
-                        <div className="text-sm font-bold text-white drop-shadow-md">
-                          ${listing.monthlyPrice}<span className="text-xs font-normal text-gray-200">/month</span>
-                        </div>
+                        {(listing as any).isClaimed === false ? (
+                          <div className="text-sm font-bold text-amber-400 drop-shadow-md">
+                            Contact for Pricing
+                          </div>
+                        ) : (
+                          <div className="text-sm font-bold text-white drop-shadow-md">
+                            ${listing.monthlyPrice}<span className="text-xs font-normal text-gray-200">/month</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -540,7 +562,12 @@ export default function Browse() {
                               <Zap className="w-3 h-3" /> Featured
                             </Badge>
                           )}
-                          {listing.status === "approved" && (
+                          {(listing as any).listingTier === "pro" && (
+                            <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black border-none shadow-lg flex gap-1 items-center text-xs font-semibold">
+                              Pro
+                            </Badge>
+                          )}
+                          {(listing as any).isClaimed !== false && listing.status === "approved" && (
                             <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center text-xs">
                               <ShieldCheck className="w-3 h-3" /> Verified
                             </Badge>
@@ -552,9 +579,13 @@ export default function Browse() {
                         <div>
                           <div className="flex justify-between items-start gap-4 mb-2">
                             <h3 className="font-bold text-sm text-white group-hover:text-primary transition-colors line-clamp-1">{listing.propertyName}</h3>
-                            <div className="text-sm font-bold text-primary shrink-0">
-                              ${listing.monthlyPrice}<span className="text-xs font-normal text-gray-300">/month</span>
-                            </div>
+                            {(listing as any).isClaimed === false ? (
+                              <div className="text-sm font-bold text-amber-400 shrink-0">Contact for Pricing</div>
+                            ) : (
+                              <div className="text-sm font-bold text-primary shrink-0">
+                                ${listing.monthlyPrice}<span className="text-xs font-normal text-gray-300">/month</span>
+                              </div>
+                            )}
                           </div>
                           
                           <div className="flex items-center text-sm text-muted-foreground mb-3">
