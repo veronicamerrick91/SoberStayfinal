@@ -144,14 +144,9 @@ export default function Browse() {
       const bFeatured = featuredMap[b.id]?.boostLevel || 0;
       if (aFeatured !== bFeatured) return bFeatured - aFeatured;
 
-      const tierOrder = (l: Listing) => {
-        if (l.listingTier === 'pro') return 0;
-        if (l.isClaimed !== false) return 1;
-        return 2;
-      };
-      const aTier = tierOrder(a);
-      const bTier = tierOrder(b);
-      if (aTier !== bTier) return aTier - bTier;
+      const aOrder = a.isClaimed !== false ? 0 : 1;
+      const bOrder = b.isClaimed !== false ? 0 : 1;
+      if (aOrder !== bOrder) return aOrder - bOrder;
 
       return 0;
     });
@@ -482,11 +477,6 @@ export default function Browse() {
                             <Zap className="w-3 h-3" /> Featured
                           </Badge>
                         )}
-                        {listing.listingTier === "pro" && (
-                          <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black border-none shadow-lg flex gap-1 items-center text-xs font-semibold">
-                            Pro
-                          </Badge>
-                        )}
                         {listing.isClaimed === false && (
                           <Badge className="bg-amber-500/90 text-black border-none shadow-lg flex gap-1 items-center text-xs">
                             Unclaimed
@@ -565,11 +555,6 @@ export default function Browse() {
                           {isListingFeatured(listing.id) && (
                             <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none shadow-lg flex gap-1 items-center text-xs">
                               <Zap className="w-3 h-3" /> Featured
-                            </Badge>
-                          )}
-                          {listing.listingTier === "pro" && (
-                            <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black border-none shadow-lg flex gap-1 items-center text-xs font-semibold">
-                              Pro
                             </Badge>
                           )}
                           {listing.isClaimed === false && (

@@ -752,9 +752,6 @@ Disallow: /for-tenants
     }
     
     const listingData = { ...parsed.data };
-    if (existingListing.listingTier === "basic" && listingData.photos && listingData.photos.length > 0) {
-      listingData.photos = [];
-    }
     
     const updatedListing = await storage.updateListing(id, listingData);
     res.json(updatedListing);
@@ -1474,13 +1471,12 @@ Disallow: /for-tenants
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
-      const { billingPeriod, priceId: directPriceId } = req.body;
+      const { priceId: directPriceId } = req.body;
 
       let priceId = directPriceId;
 
-      // If billingPeriod is provided, look up the price from the database or Stripe API
-      if (!priceId && billingPeriod) {
-        const interval = billingPeriod === 'annual' ? 'year' : 'month';
+      if (!priceId) {
+        const interval = 'month';
         
         // Try database first
         const result = await db.execute(sql`
@@ -1537,14 +1533,16 @@ Disallow: /for-tenants
       const providerProfile = await storage.getProviderProfile(user.id);
       const isFoundingMember = providerProfile?.isFoundingMember || false;
 
-      // Create checkout session (with founding member discount if applicable)
+      const providerListings = await storage.getListingsByProvider(user.id);
+      const targetListing = providerListings.find(l => !l.stripeSubscriptionId && l.isClaimed);
+
       const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
       const session = await stripeService.createCheckoutSession(
         customerId,
         priceId,
         `${baseUrl}/provider-dashboard`,
         `${baseUrl}/provider-dashboard`,
-        { providerId: String(user.id) },
+        { providerId: String(user.id), ...(targetListing ? { listingId: String(targetListing.id) } : {}) },
         isFoundingMember
       );
 
@@ -1642,47 +1640,138 @@ Disallow: /for-tenants
     }
   });
 
-  app.post("/api/provider/listings/:id/upgrade-tier", async (req, res) => {
+  app.delete("/api/provider/listings/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const user = req.user as Express.User & { id: number; role: string };
-    if (user.role !== "provider") return res.status(403).json({ error: "Only providers can upgrade listings" });
+    if (user.role !== "provider") return res.status(403).json({ error: "Only providers can remove listings" });
 
     const listingId = parseInt(req.params.id);
+    if (isNaN(listingId)) {
+      return res.status(400).json({ error: "Invalid listing ID" });
+    }
+
     const listing = await storage.getListing(listingId);
     if (!listing || listing.providerId !== user.id) {
       return res.status(404).json({ error: "Listing not found or access denied" });
     }
 
-    const subResult = await db.execute(sql`
-      SELECT status FROM stripe.subscriptions 
-      WHERE customer = (SELECT stripe_customer_id FROM users WHERE id = ${user.id})
-      AND status IN ('active', 'trialing')
-      LIMIT 1
-    `);
-    const localSub = await storage.getSubscriptionByProvider(user.id);
-    const hasActiveSub = subResult.rows.length > 0 || (localSub?.hasFeeWaiver && localSub.status === 'active');
+    try {
+      const providerListings = await storage.getListingsByProvider(user.id);
+      const isLastListing = providerListings.length <= 1;
+      let subscriptionCanceled = false;
 
-    if (!hasActiveSub) {
-      return res.status(402).json({ error: "Active subscription required to upgrade to Pro" });
+      const freshUser = await storage.getUser(user.id);
+      if (freshUser?.stripeCustomerId) {
+        try {
+          const { getUncachableStripeClient } = await import('./stripeClient');
+          const stripe = await getUncachableStripeClient();
+
+          if (listing.stripeSubscriptionId) {
+            try {
+              const sub = await stripe.subscriptions.retrieve(listing.stripeSubscriptionId);
+              if (sub.customer === freshUser.stripeCustomerId) {
+                await stripe.subscriptions.cancel(listing.stripeSubscriptionId);
+                console.log(`[Provider] Canceled linked Stripe subscription ${listing.stripeSubscriptionId} for listing ${listingId}`);
+                subscriptionCanceled = true;
+              } else {
+                console.error(`[Provider] Subscription ${listing.stripeSubscriptionId} does not belong to customer ${freshUser.stripeCustomerId}`);
+              }
+            } catch (subErr) {
+              if (subErr instanceof Error && 'code' in subErr && (subErr as { code: string }).code === 'resource_missing') {
+                console.log(`[Provider] Subscription ${listing.stripeSubscriptionId} already canceled or missing`);
+              } else {
+                throw subErr;
+              }
+            }
+          } else if (isLastListing) {
+            const activeSubscriptions = await stripe.subscriptions.list({
+              customer: freshUser.stripeCustomerId,
+              status: 'active',
+            });
+            const trialingSubscriptions = await stripe.subscriptions.list({
+              customer: freshUser.stripeCustomerId,
+              status: 'trialing',
+            });
+            const allSubs = [...activeSubscriptions.data, ...trialingSubscriptions.data];
+            for (const sub of allSubs) {
+              await stripe.subscriptions.cancel(sub.id);
+              console.log(`[Provider] Canceled Stripe subscription ${sub.id} (last listing ${listingId} removed)`);
+            }
+            subscriptionCanceled = allSubs.length > 0;
+          } else {
+            console.log(`[Provider] Listing ${listingId} has no linked subscription; provider should manage billing via the billing portal`);
+          }
+        } catch (stripeErr) {
+          console.error("[Provider] Error canceling Stripe subscription:", stripeErr);
+          return res.status(500).json({ error: "Failed to cancel subscription. Please cancel your subscription via the billing portal before removing this listing." });
+        }
+      }
+
+      const localSub = await storage.getSubscriptionByProvider(user.id);
+      if (localSub && localSub.listingAllowance > 0) {
+        await storage.updateSubscription(user.id, {
+          listingAllowance: Math.max(0, localSub.listingAllowance - 1),
+        });
+      }
+
+      await storage.deleteListing(listingId);
+      res.json({ success: true, subscriptionCanceled });
+    } catch (error) {
+      console.error("Error removing provider listing:", error);
+      res.status(500).json({ error: "Failed to remove listing" });
     }
-
-    await storage.updateListing(listingId, { listingTier: "pro" });
-    res.json({ success: true, tier: "pro" });
   });
 
-  app.post("/api/provider/listings/:id/downgrade-tier", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const user = req.user as Express.User & { id: number; role: string };
-    if (user.role !== "provider") return res.status(403).json({ error: "Only providers can manage listings" });
+  app.post("/api/listings/:id/request-removal", async (req, res) => {
+    try {
+      const listingId = parseInt(req.params.id);
+      if (isNaN(listingId)) {
+        return res.status(400).json({ error: "Invalid listing ID" });
+      }
 
-    const listingId = parseInt(req.params.id);
-    const listing = await storage.getListing(listingId);
-    if (!listing || listing.providerId !== user.id) {
-      return res.status(404).json({ error: "Listing not found or access denied" });
+      const listing = await storage.getListing(listingId);
+      if (!listing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+
+      if (listing.isClaimed !== false) {
+        return res.status(400).json({ error: "Only unclaimed listings can be removed via this endpoint" });
+      }
+
+      const { contactName, contactEmail, reason } = req.body;
+      if (!contactName || !contactEmail) {
+        return res.status(400).json({ error: "Name and email are required" });
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(contactEmail)) {
+        return res.status(400).json({ error: "Valid email address is required" });
+      }
+
+      const existingRequests = await storage.getClaimRequestsByListing(listingId);
+      const hasRemovalRequest = existingRequests.some((r) => r.notes?.startsWith('[REMOVAL REQUEST]'));
+      if (hasRemovalRequest) {
+        return res.status(400).json({ error: "A removal request has already been submitted for this listing" });
+      }
+
+      await storage.createClaimRequest({
+        listingId,
+        providerName: contactName,
+        businessName: listing.propertyName,
+        email: contactEmail,
+        phone: null,
+        website: null,
+        notes: `[REMOVAL REQUEST] ${reason || 'No reason provided'}`,
+        proofOfOwnership: false,
+      });
+
+      console.log(`[Removal] Removal request submitted for unclaimed listing ${listingId} (${listing.propertyName}) by ${contactName} (${contactEmail}). Reason: ${reason || 'none provided'}`);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error processing listing removal request:", error);
+      res.status(500).json({ error: "Failed to process removal request" });
     }
-
-    await storage.updateListing(listingId, { listingTier: "basic" });
-    res.json({ success: true, tier: "basic" });
   });
 
   // Legacy subscription endpoint (for backwards compatibility)
@@ -3692,10 +3781,6 @@ Disallow: /for-tenants
         return res.status(403).json({ error: "Listing not found or access denied" });
       }
       
-      if (listing.listingTier !== "pro") {
-        return res.status(403).json({ error: "Only Pro tier listings can be featured. Upgrade your listing first." });
-      }
-      
       // Check if listing is already featured
       const existingFeatured = await storage.getFeaturedListingByListingId(listingId);
       if (existingFeatured) {
@@ -3906,11 +3991,6 @@ Disallow: /for-tenants
       return res.status(401).json({ error: "Unauthorized" });
     }
     try {
-      const providerListings = await storage.getListingsByProvider(user.id);
-      const hasProListing = providerListings.some(l => l.listingTier === "pro");
-      if (!hasProListing) {
-        return res.status(403).json({ error: "Upgrade at least one listing to Pro to access detailed analytics." });
-      }
       const { days = 30 } = req.query;
       const numDays = Math.min(Math.max(parseInt(String(days)) || 30, 1), 365);
       

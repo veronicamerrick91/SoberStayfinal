@@ -56,7 +56,7 @@ const steps = [
   {
     number: "1",
     title: "Create Your Account",
-    description: "Sign up for free and complete your provider profile with your business information."
+    description: "Create your provider account and complete your profile with your business information."
   },
   {
     number: "2",
@@ -78,7 +78,7 @@ const steps = [
 const faqs = [
   {
     question: "How much does it cost to list my sober living home?",
-    answer: "Our subscription is $49/month or $399/year (save $189). This includes unlimited applications, messaging, analytics, and verified badge. There are no additional fees or commissions."
+    answer: "Each listing costs a flat $49/month. This includes all features — photos, verified badge, analytics, messaging, and application management. There are no tiers, no hidden fees, and no commissions."
   },
   {
     question: "How do I get my listing verified?",
@@ -86,7 +86,7 @@ const faqs = [
   },
   {
     question: "Can I list multiple properties?",
-    answer: "Yes! With a subscription, you can list multiple sober living homes under one account. Each property gets its own dedicated listing page."
+    answer: "Yes! You can list multiple sober living homes under one account. Each listing is $49/month and gets its own dedicated listing page with all features included."
   },
   {
     question: "How do residents find my listing?",
@@ -191,7 +191,7 @@ export function ForProviders() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/signup?role=provider">
                   <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg h-14 px-8 rounded-full" data-testid="button-get-started">
-                    Get Started Free
+                    Get Started
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
@@ -255,20 +255,23 @@ export function ForProviders() {
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-white mb-4">Simple, Transparent Pricing</h2>
-              <p className="text-muted-foreground">No hidden fees. No commissions. Cancel anytime.</p>
+              <p className="text-muted-foreground">No hidden fees. No commissions. No tiers. Cancel anytime.</p>
             </div>
-            <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-              <Card className="bg-card border-border">
+            <div className="max-w-lg mx-auto">
+              <Card className="bg-card border-primary relative">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white px-4 py-1 rounded-full text-sm font-medium">
+                  All Features Included
+                </div>
                 <CardContent className="p-8">
-                  <h3 className="text-xl font-bold text-white mb-2">Monthly</h3>
+                  <h3 className="text-xl font-bold text-white mb-2">Per Listing</h3>
                   <div className="flex items-baseline gap-1 mb-4">
                     <span className="text-4xl font-bold text-white">$49</span>
-                    <span className="text-muted-foreground">/month</span>
+                    <span className="text-muted-foreground">/month per listing</span>
                   </div>
                   <ul className="space-y-3 mb-6">
                     <li className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-green-500" />
-                      Unlimited property listings
+                      Full listing with photos
                     </li>
                     <li className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-green-500" />
@@ -280,7 +283,15 @@ export function ForProviders() {
                     </li>
                     <li className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-green-500" />
-                      Direct messaging
+                      Direct messaging & inquiries
+                    </li>
+                    <li className="flex items-center gap-2 text-muted-foreground">
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      Application management tools
+                    </li>
+                    <li className="flex items-center gap-2 text-muted-foreground">
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      Priority visibility in search
                     </li>
                     <li className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-green-500" />
@@ -288,49 +299,9 @@ export function ForProviders() {
                     </li>
                   </ul>
                   <Link href="/signup?role=provider">
-                    <Button className="w-full" variant="outline" data-testid="button-monthly-plan">
-                      Start Monthly
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-card border-primary relative">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white px-4 py-1 rounded-full text-sm font-medium">
-                  Best Value
-                </div>
-                <CardContent className="p-8">
-                  <h3 className="text-xl font-bold text-white mb-2">Annual</h3>
-                  <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-4xl font-bold text-white">$399</span>
-                    <span className="text-muted-foreground">/year</span>
-                  </div>
-                  <p className="text-green-500 text-sm mb-4">Save $189 compared to monthly</p>
-                  <ul className="space-y-3 mb-6">
-                    <li className="flex items-center gap-2 text-muted-foreground">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      Everything in Monthly
-                    </li>
-                    <li className="flex items-center gap-2 text-muted-foreground">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      Priority support
-                    </li>
-                    <li className="flex items-center gap-2 text-muted-foreground">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      Featured listings
-                    </li>
-                    <li className="flex items-center gap-2 text-muted-foreground">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      SEO optimization tools
-                    </li>
-                    <li className="flex items-center gap-2 text-muted-foreground">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      2 months free
-                    </li>
-                  </ul>
-                  <Link href="/signup?role=provider">
-                    <Button className="w-full bg-primary hover:bg-primary/90" data-testid="button-annual-plan">
-                      Start Annual
+                    <Button className="w-full bg-primary hover:bg-primary/90 h-12 text-lg" data-testid="button-get-started-pricing">
+                      Get Started
+                      <ArrowRight className="w-5 h-5 ml-2" />
                     </Button>
                   </Link>
                 </CardContent>
@@ -446,22 +417,14 @@ export function ForProviders() {
               "@type": "Product",
               "name": "Sober Stay Provider Subscription",
               "description": "List your sober living home and connect with residents seeking recovery housing.",
-              "offers": [
-                {
-                  "@type": "Offer",
-                  "name": "Monthly Subscription",
-                  "price": "49.00",
-                  "priceCurrency": "USD",
-                  "availability": "https://schema.org/InStock"
-                },
-                {
-                  "@type": "Offer",
-                  "name": "Annual Subscription",
-                  "price": "399.00",
-                  "priceCurrency": "USD",
-                  "availability": "https://schema.org/InStock"
-                }
-              ]
+              "offers": {
+                "@type": "Offer",
+                "name": "Provider Listing",
+                "price": "49.00",
+                "priceCurrency": "USD",
+                "availability": "https://schema.org/InStock",
+                "description": "$49/month per listing - all features included"
+              }
             })
           }}
         />

@@ -379,6 +379,11 @@ function ProviderDashboardContent() {
     }
   };
   
+  // Listing removal state
+  const [listingToRemove, setListingToRemove] = useState<Listing | null>(null);
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  
   // Featured Listings state
   const [featuredListings, setFeaturedListings] = useState<any[]>([]);
   const [showBoostModal, setShowBoostModal] = useState(false);
@@ -998,7 +1003,7 @@ function ProviderDashboardContent() {
                 <Badge className={subscriptionStatus.subscriptionStatus === "active" ? "bg-green-500/80" : "bg-amber-500/80"}>
                   {subscriptionStatus.subscriptionStatus === "active" 
                     ? (subscriptionStatus.hasFeeWaiver 
-                        ? `✓ Fee Waiver Active until ${new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toLocaleDateString()} · Unlimited Listings` 
+                        ? `✓ Fee Waiver Active · All Listings Included` 
                         : `✓ Subscription Active · $${subscriptionStatus.monthlyFee}/month per listing`)
                     : "No Active Subscription"}
                 </Badge>
@@ -1286,7 +1291,7 @@ function ProviderDashboardContent() {
                   <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                     <div>
                       <h3 className="text-lg font-bold text-white mb-1">Subscribe to List Properties</h3>
-                      <p className="text-sm text-muted-foreground">Get access to unlimited listings, tenant messaging, and more.</p>
+                      <p className="text-sm text-muted-foreground">$49/month per listing. Includes all features — messaging, analytics, and more.</p>
                     </div>
                     <Button 
                       onClick={() => setShowPaymentModal(true)}
@@ -1420,11 +1425,6 @@ function ProviderDashboardContent() {
                         {home.status === "active" && (
                           <Badge className="bg-green-500">Active</Badge>
                         )}
-                        {home.listingTier === "pro" ? (
-                          <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black border-none font-semibold">Pro</Badge>
-                        ) : (
-                          <Badge className="bg-white/20 text-white border-none">Basic</Badge>
-                        )}
                       </div>
                       <div className="absolute top-2 right-2">
                         <Badge className={home.totalBeds > 0 ? "bg-green-500" : "bg-red-500"}>
@@ -1445,54 +1445,20 @@ function ProviderDashboardContent() {
                           </>
                         )}
                       </div>
-                      {home.status === "approved" && (
-                        <div className="mt-2">
-                          {home.listingTier === "basic" ? (
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="w-full border-amber-500/30 text-amber-400 hover:bg-amber-500/10 text-xs"
-                              data-testid={`button-upgrade-${home.id}`}
-                              onClick={async () => {
-                                try {
-                                  const res = await fetch(`/api/provider/listings/${home.id}/upgrade-tier`, { method: "POST", credentials: "include" });
-                                  if (res.status === 402) {
-                                    const checkoutRes = await fetch("/api/stripe/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ billingPeriod: "monthly" }) });
-                                    const data = await checkoutRes.json();
-                                    if (data.url) window.location.href = data.url;
-                                    else toast({ title: "Error", description: "Unable to start checkout. Please try again.", variant: "destructive" });
-                                    return;
-                                  }
-                                  if (res.ok) {
-                                    toast({ title: "Upgraded to Pro", description: "Your listing is now Pro tier with enhanced visibility." });
-                                    queryClient.invalidateQueries({ queryKey: ["/api/provider/listings"] });
-                                  }
-                                } catch { toast({ title: "Error", description: "Failed to upgrade listing.", variant: "destructive" }); }
-                              }}
-                            >
-                              Upgrade to Pro
-                            </Button>
-                          ) : (
-                            <Button 
-                              size="sm" 
-                              variant="ghost" 
-                              className="w-full text-xs text-muted-foreground hover:text-white"
-                              data-testid={`button-downgrade-${home.id}`}
-                              onClick={async () => {
-                                try {
-                                  const res = await fetch(`/api/provider/listings/${home.id}/downgrade-tier`, { method: "POST", credentials: "include" });
-                                  if (res.ok) {
-                                    toast({ title: "Downgraded", description: "Listing moved to Basic tier." });
-                                    queryClient.invalidateQueries({ queryKey: ["/api/provider/listings"] });
-                                  }
-                                } catch { toast({ title: "Error", description: "Failed to downgrade listing.", variant: "destructive" }); }
-                              }}
-                            >
-                              Downgrade to Basic
-                            </Button>
-                          )}
-                        </div>
-                      )}
+                      <div className="mt-2">
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          className="w-full text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                          data-testid={`button-remove-${home.id}`}
+                          onClick={() => {
+                            setListingToRemove(home);
+                            setShowRemoveConfirm(true);
+                          }}
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" /> Remove Listing
+                        </Button>
+                      </div>
                    </CardContent>
                 </Card>
               ))}
@@ -2881,14 +2847,14 @@ function ProviderDashboardContent() {
                           </h3>
                           <p className="text-sm text-green-300">
                             {subscriptionStatus.hasFeeWaiver 
-                              ? "Unlimited listings at no charge" 
+                              ? "All listings included at no charge" 
                               : `$${subscriptionStatus.monthlyFee}/month per listing`}
                           </p>
                         </div>
                       </div>
                       <p className="text-sm text-gray-400">
                         {subscriptionStatus.hasFeeWaiver 
-                          ? "Your account has been granted a fee waiver by an administrator. You can create unlimited listings at no charge."
+                          ? "Your account has been granted a fee waiver by an administrator. All listings are included at no charge."
                           : "Your subscription is active. Each property listing is billed at $49/month."}
                       </p>
                     </div>
@@ -3541,6 +3507,53 @@ function ProviderDashboardContent() {
                 className="gap-2"
               >
                 <Download className="w-4 h-4" /> Download
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showRemoveConfirm} onOpenChange={setShowRemoveConfirm}>
+          <DialogContent className="bg-card border-border max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-white">Remove Listing</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to remove <strong>{listingToRemove?.propertyName}</strong>? This action cannot be undone. The associated subscription for this listing will be canceled.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button variant="outline" onClick={() => setShowRemoveConfirm(false)} disabled={isRemoving}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive"
+                disabled={isRemoving}
+                data-testid="button-confirm-remove"
+                onClick={async () => {
+                  if (!listingToRemove) return;
+                  setIsRemoving(true);
+                  try {
+                    const res = await fetch(`/api/provider/listings/${listingToRemove.id}`, {
+                      method: "DELETE",
+                      credentials: "include",
+                    });
+                    if (res.ok) {
+                      setListings(prev => prev.filter(l => l.id !== listingToRemove.id));
+                      setShowRemoveConfirm(false);
+                      setListingToRemove(null);
+                      alert("Listing removed successfully.");
+                    } else {
+                      const data = await res.json();
+                      alert(data.error || "Failed to remove listing.");
+                    }
+                  } catch (err) {
+                    console.error("Error removing listing:", err);
+                    alert("Failed to remove listing.");
+                  } finally {
+                    setIsRemoving(false);
+                  }
+                }}
+              >
+                {isRemoving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Removing...</> : <><Trash2 className="w-4 h-4 mr-2" /> Remove Listing</>}
               </Button>
             </DialogFooter>
           </DialogContent>

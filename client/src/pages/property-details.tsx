@@ -70,6 +70,14 @@ export default function PropertyDetails() {
   const [showClaimModal, setShowClaimModal] = useState(false);
   const [claimSubmitting, setClaimSubmitting] = useState(false);
   const [claimSubmitted, setClaimSubmitted] = useState(false);
+  const [showRemovalModal, setShowRemovalModal] = useState(false);
+  const [removalSubmitting, setRemovalSubmitting] = useState(false);
+  const [removalSubmitted, setRemovalSubmitted] = useState(false);
+  const [removalForm, setRemovalForm] = useState({
+    contactName: "",
+    contactEmail: "",
+    reason: "",
+  });
   const [claimForm, setClaimForm] = useState({
     providerName: "",
     businessName: "",
@@ -241,11 +249,6 @@ export default function PropertyDetails() {
                       <ShieldCheck className="w-3 h-3" /> Verified Listing
                     </Badge>
                   )
-                )}
-                {listing.listingTier === "pro" && (
-                  <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black border-none flex gap-1 items-center px-3 py-1.5 shadow-lg font-semibold">
-                    Pro
-                  </Badge>
                 )}
               </div>
               <div className="absolute bottom-4 right-4 flex gap-2">
@@ -494,6 +497,17 @@ export default function PropertyDetails() {
                       </div>
                     </div>
 
+                    <div className="pt-4 border-t border-border">
+                      <Button 
+                        variant="ghost"
+                        className="w-full text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        onClick={() => setShowRemovalModal(true)}
+                        data-testid="button-request-removal"
+                      >
+                        <Flag className="w-3 h-3 mr-1" /> Request Listing Removal
+                      </Button>
+                    </div>
+
                     <div className="pt-4 border-t border-border text-xs text-muted-foreground">
                       <div className="flex items-center gap-2 mb-2">
                         <Info className="w-3 h-3" />
@@ -683,6 +697,99 @@ export default function PropertyDetails() {
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Submitting...</>
                 ) : (
                   "Submit Claim Request"
+                )}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showRemovalModal} onOpenChange={setShowRemovalModal}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white">Request Listing Removal</DialogTitle>
+          </DialogHeader>
+          {removalSubmitted ? (
+            <div className="text-center py-6">
+              <ShieldCheck className="w-12 h-12 text-primary mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-white mb-2">Removal Request Submitted</h3>
+              <p className="text-sm text-muted-foreground">
+                Your removal request has been submitted and will be reviewed by our team. You will be notified once a decision is made.
+              </p>
+              <Button onClick={() => setShowRemovalModal(false)} className="mt-4 bg-primary text-primary-foreground">
+                Close
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                If you are the owner or operator of <strong className="text-white">{listing.propertyName}</strong> and would like it removed from our directory, please provide your contact details below.
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-sm text-gray-300">Your Name *</Label>
+                  <Input
+                    value={removalForm.contactName}
+                    onChange={(e) => setRemovalForm(f => ({ ...f, contactName: e.target.value }))}
+                    placeholder="John Doe"
+                    className="bg-background border-border"
+                    data-testid="input-removal-name"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-300">Email *</Label>
+                  <Input
+                    type="email"
+                    value={removalForm.contactEmail}
+                    onChange={(e) => setRemovalForm(f => ({ ...f, contactEmail: e.target.value }))}
+                    placeholder="you@example.com"
+                    className="bg-background border-border"
+                    data-testid="input-removal-email"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-300">Reason (optional)</Label>
+                  <Textarea
+                    value={removalForm.reason}
+                    onChange={(e) => setRemovalForm(f => ({ ...f, reason: e.target.value }))}
+                    placeholder="Why would you like this listing removed?"
+                    className="bg-background border-border"
+                    rows={3}
+                    data-testid="input-removal-reason"
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={async () => {
+                  if (!listing || !removalForm.contactName || !removalForm.contactEmail) return;
+                  setRemovalSubmitting(true);
+                  try {
+                    const res = await fetch(`/api/listings/${listing.id}/request-removal`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(removalForm),
+                    });
+                    if (res.ok) {
+                      setRemovalSubmitted(true);
+                    } else {
+                      const data = await res.json().catch(() => ({ error: "Something went wrong" }));
+                      alert(data.error || "Failed to process removal request");
+                    }
+                  } catch (e) {
+                    console.error("Removal request failed", e);
+                    alert("Failed to process removal request. Please try again.");
+                  } finally {
+                    setRemovalSubmitting(false);
+                  }
+                }}
+                disabled={removalSubmitting || !removalForm.contactName || !removalForm.contactEmail}
+                className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold h-12"
+                data-testid="button-submit-removal"
+              >
+                {removalSubmitting ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
+                ) : (
+                  "Submit Removal Request"
                 )}
               </Button>
             </div>

@@ -60,19 +60,34 @@ export class WebhookHandlers {
         
         console.log(`[Webhook] Subscription ${status} for provider ${provider.id}, cancelAtPeriodEnd: ${cancelAtPeriodEnd}`);
         
-        // Handle cancellation
         if (status === 'canceled' || (status === 'active' && cancelAtPeriodEnd)) {
-          const gracePeriodEndsAt = new Date();
-          gracePeriodEndsAt.setDate(gracePeriodEndsAt.getDate() + GRACE_PERIOD_DAYS);
-          
-          await handleSubscriptionCanceled(provider.id);
-          await sendSubscriptionCanceledEmail(provider.email, provider.name, gracePeriodEndsAt);
-          
-          // Notify admins of subscription cancellation
-          sendAdminSubscriptionNotification(provider.name || 'Provider', provider.email, 'canceled')
-            .catch(err => console.error('[Webhook] Failed to send admin subscription notification:', err));
-          
-          console.log(`[Webhook] Provider ${provider.id} entered grace period`);
+          const stripe = await getUncachableStripeClient();
+          const remainingActive = await stripe.subscriptions.list({
+            customer: customerId,
+            status: 'active',
+          });
+          const remainingTrialing = await stripe.subscriptions.list({
+            customer: customerId,
+            status: 'trialing',
+          });
+          const otherActiveSubs = [...remainingActive.data, ...remainingTrialing.data].filter(
+            s => s.id !== data.id
+          );
+
+          if (otherActiveSubs.length > 0) {
+            console.log(`[Webhook] Provider ${provider.id} still has ${otherActiveSubs.length} active subscription(s); skipping account-level cancellation`);
+          } else {
+            const gracePeriodEndsAt = new Date();
+            gracePeriodEndsAt.setDate(gracePeriodEndsAt.getDate() + GRACE_PERIOD_DAYS);
+            
+            await handleSubscriptionCanceled(provider.id);
+            await sendSubscriptionCanceledEmail(provider.email, provider.name, gracePeriodEndsAt);
+            
+            sendAdminSubscriptionNotification(provider.name || 'Provider', provider.email, 'canceled')
+              .catch(err => console.error('[Webhook] Failed to send admin subscription notification:', err));
+            
+            console.log(`[Webhook] Provider ${provider.id} entered grace period (no remaining active subscriptions)`);
+          }
         }
         // Handle reactivation
         else if (status === 'active' && !cancelAtPeriodEnd) {
@@ -103,6 +118,26 @@ export class WebhookHandlers {
         break;
       }
       
+      case 'checkout.session.completed': {
+        if (data.mode === 'subscription' && data.subscription) {
+          const checkoutMetadata = data.metadata || {};
+          const listingId = checkoutMetadata.listingId ? parseInt(checkoutMetadata.listingId) : null;
+          
+          if (listingId) {
+            await storage.updateListing(listingId, { 
+              stripeSubscriptionId: data.subscription as string 
+            });
+            console.log(`[Webhook] Linked subscription ${data.subscription} to listing ${listingId}`);
+          } else {
+            const providerId = checkoutMetadata.providerId ? parseInt(checkoutMetadata.providerId) : null;
+            if (providerId) {
+              console.log(`[Webhook] checkout.session.completed for provider ${providerId} without listingId in metadata; subscription ${data.subscription} not linked to a specific listing`);
+            }
+          }
+        }
+        break;
+      }
+
       case 'invoice.payment_succeeded': {
         const customerId = data.customer;
         const users = await storage.getAllUsers();

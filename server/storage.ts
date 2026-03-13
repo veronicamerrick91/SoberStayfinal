@@ -310,6 +310,7 @@ export class DatabaseStorage implements IStorage {
       await tx.delete(tenantViewedHomes).where(eq(tenantViewedHomes.listingId, id));
       await tx.delete(listingAnalyticsEvents).where(eq(listingAnalyticsEvents.listingId, id));
       await tx.delete(listingAnalyticsDaily).where(eq(listingAnalyticsDaily.listingId, id));
+      await tx.delete(claimRequests).where(eq(claimRequests.listingId, id));
       // Now delete the listing itself
       await tx.delete(listings).where(eq(listings.id, id));
     });

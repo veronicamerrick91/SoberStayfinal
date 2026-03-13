@@ -45,6 +45,7 @@ export const listings = pgTable("listings", {
   isClaimed: boolean("is_claimed").default(true).notNull(),
   isImported: boolean("is_imported").default(false).notNull(),
   listingTier: text("listing_tier").default("basic").notNull(),
+  stripeSubscriptionId: text("stripe_subscription_id"),
   phone: text("listing_phone"),
   website: text("listing_website"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -252,6 +253,7 @@ export const insertListingSchema = createInsertSchema(listings).omit({
   isClaimed: true,
   isImported: true,
   listingTier: true,
+  stripeSubscriptionId: true,
   phone: true,
   website: true,
 });

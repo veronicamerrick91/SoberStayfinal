@@ -48,7 +48,7 @@ The platform includes a comprehensive analytics tracking system for providers:
 
 ### Unclaimed Listings & Claim Flow
 - **Imported Directory Listings**: 201 CA sober living facilities imported from public directory spreadsheet (`scripts/import-directory.ts`)
-- **Schema Fields**: `isClaimed` (default true), `isImported` (default false), `listingTier` (default 'basic'), `phone` (listing_phone), `website` (listing_website) on listings table; `providerId` is nullable for unclaimed listings
+- **Schema Fields**: `isClaimed` (default true), `isImported` (default false), `listingTier` (default 'basic', legacy field — no longer used for gating), `phone` (listing_phone), `website` (listing_website) on listings table; `providerId` is nullable for unclaimed listings
 - **Claim Requests Table**: `claim_requests` with fields: listingId, providerName, businessName, email, phone, website, notes, proofOfOwnership, status (pending/approved/rejected), createdAt
 - **API Endpoints**:
   - `POST /api/claim-requests` — Public endpoint for submitting claim requests (sends admin email notification via Resend)
@@ -60,11 +60,13 @@ The platform includes a comprehensive analytics tracking system for providers:
 - **Unclaimed Listing UI** (`client/src/pages/property-details.tsx`): Amber "Unclaimed Listing" badge, phone/website buttons with analytics tracking, "Is this your facility?" claim CTA with modal form
 - **Admin Claims Tab** (`client/src/pages/admin-dashboard.tsx`): "Claims" tab showing pending/resolved claims with approve/reject/remove actions
 
-### Provider Tiers
-- **Tier Column**: `listingTier` on listings table (values: 'basic', 'pro')
-- **Browse Sorting**: Pro/featured first → claimed basic → unclaimed imported last
-- **Browse Labels**: Pro badge (amber/yellow gradient), verified badge only for claimed listings, "Contact for Pricing" for unclaimed
-- **Tier Badges**: Shown on listing cards in browse page and property detail page
+### Flat Pricing Model
+- **Pricing**: Flat $49/month per listing — no tiers, all features included (photos, verified badge, analytics, inquiries, priority visibility)
+- **Founding Member Program**: First 50 providers get 3 months free + 50% off for life (preserved in Stripe checkout via coupon + trial)
+- **Browse Sorting**: Featured/boosted first → claimed → unclaimed imported last
+- **Provider Listing Removal**: `DELETE /api/provider/listings/:id` — verifies ownership, cancels all Stripe subscriptions if this is the provider's last listing, deletes listing and related records
+- **Unclaimed Listing Removal Request**: `POST /api/listings/:id/request-removal` — public endpoint that creates a claim_request with `[REMOVAL REQUEST]` prefix in notes for admin review (does not immediately hide listing). Deduplicates by checking existing requests.
+- **Listing↔Subscription Mapping**: `stripeSubscriptionId` column on listings table; populated via `checkout.session.completed` webhook handler. Used by deletion endpoint to cancel the exact subscription tied to a listing.
 
 ## External Dependencies
 
