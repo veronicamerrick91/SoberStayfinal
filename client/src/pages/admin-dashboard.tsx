@@ -747,24 +747,28 @@ Thank you for being part of our recovery community!`
         body: JSON.stringify({ isFoundingMember: !currentlyIsFounder })
       });
       if (res.ok) {
+        const data = await res.json();
         setUsers(users.map(u => u.id === userId ? { ...u, isFoundingMember: !currentlyIsFounder } : u));
-        toast({ 
-          title: !currentlyIsFounder ? "Founding Member Status Granted" : "Founding Member Status Revoked", 
-          description: !currentlyIsFounder 
-            ? "Provider now has founding member discount." 
-            : "Provider no longer has founding member discount." 
-        });
+        if (data.capExceeded) {
+          toast({ 
+            title: "Founding Member Status Granted (Cap Override)", 
+            description: data.warning || "The founding member cap has been exceeded via admin override."
+          });
+        } else {
+          toast({ 
+            title: !currentlyIsFounder ? "Founding Member Status Granted" : "Founding Member Status Revoked", 
+            description: !currentlyIsFounder 
+              ? "Provider now has founding member discount." 
+              : "Provider no longer has founding member discount." 
+          });
+        }
         // Refresh founding member count
         fetch('/api/founding-member-status', { credentials: 'include' })
           .then(r => r.ok ? r.json() : null)
-          .then(data => data && setFoundingMemberStatus(data));
+          .then(d => d && setFoundingMemberStatus(d));
       } else {
         const err = await res.json();
-        if (err.capReached) {
-          toast({ title: "Cap Reached", description: `Founding member cap reached (${err.current}/${err.cap}). No more spots available.`, variant: "destructive" });
-        } else {
-          toast({ title: "Error", description: err.error || "Failed to update founding member status", variant: "destructive" });
-        }
+        toast({ title: "Error", description: err.error || "Failed to update founding member status", variant: "destructive" });
       }
     } catch (error) {
       toast({ title: "Error", description: "Failed to update founding member status", variant: "destructive" });

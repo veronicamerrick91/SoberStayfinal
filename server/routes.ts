@@ -1119,34 +1119,26 @@ Disallow: /for-tenants
       }
       
       const existingProfile = await storage.getProviderProfile(providerId);
+      let capWarning: string | null = null;
       
-      // Check cap when granting founding member status (skip if already a founding member)
       if (isFoundingMember && !(existingProfile?.isFoundingMember)) {
-        const assigned = await storage.tryAssignFoundingMember(providerId, FOUNDING_MEMBER_CAP);
-        if (!assigned) {
-          const currentCount = await storage.getFoundingMemberCount();
-          return res.status(400).json({ 
-            error: `Founding member cap reached (${currentCount}/${FOUNDING_MEMBER_CAP}). Cannot grant additional founding member status.`,
-            capReached: true,
-            current: currentCount,
-            cap: FOUNDING_MEMBER_CAP
-          });
+        const currentCount = await storage.getFoundingMemberCount();
+        if (currentCount >= FOUNDING_MEMBER_CAP) {
+          capWarning = `Warning: Founding member cap exceeded (${currentCount}/${FOUNDING_MEMBER_CAP}). Admin override applied.`;
         }
-      } else {
-        // Revoking or idempotent update
-        await storage.createOrUpdateProviderProfile(providerId, {
-          isFoundingMember,
-          ...(existingProfile ? {} : {
-            smsOptIn: false,
-            twoFactorEnabled: false,
-            documentsVerified: false
-          })
-        });
       }
       
-      console.log(`[Founding Member] Toggling founding member for provider ${providerId} to ${isFoundingMember}`);
+      // Admin can always toggle — update the profile
+      const updatedProfile = await storage.createOrUpdateProviderProfile(providerId, {
+        isFoundingMember,
+        ...(existingProfile ? {} : {
+          smsOptIn: false,
+          twoFactorEnabled: false,
+          documentsVerified: false
+        })
+      });
       
-      const updatedProfile = await storage.getProviderProfile(providerId);
+      console.log(`[Founding Member] Toggling founding member for provider ${providerId} to ${isFoundingMember}${capWarning ? ' (cap override)' : ''}`);
       
       // If provider has an active Stripe subscription, apply/remove the founding member discount
       if (provider.stripeSubscriptionId) {
@@ -1163,7 +1155,7 @@ Disallow: /for-tenants
         }
       }
       
-      res.json({ success: true, profile: updatedProfile });
+      res.json({ success: true, profile: updatedProfile, ...(capWarning ? { warning: capWarning, capExceeded: true } : {}) });
     } catch (error) {
       console.error("[Founding Member] Error:", error);
       res.status(500).json({ error: "Failed to toggle founding member status" });

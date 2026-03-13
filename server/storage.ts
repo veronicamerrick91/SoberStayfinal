@@ -444,31 +444,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async tryAssignFoundingMember(providerId: number, cap: number): Promise<boolean> {
-    return await db.transaction(async (tx) => {
-      const [result] = await tx
-        .select({ count: count() })
-        .from(providerProfiles)
-        .where(eq(providerProfiles.isFoundingMember, true));
-      const currentCount = result?.count ?? 0;
-      if (currentCount >= cap) {
-        return false;
-      }
-      const [existing] = await tx
-        .select()
-        .from(providerProfiles)
-        .where(eq(providerProfiles.providerId, providerId));
-      if (existing) {
-        await tx
-          .update(providerProfiles)
-          .set({ isFoundingMember: true, updatedAt: new Date() })
-          .where(eq(providerProfiles.providerId, providerId));
-      } else {
-        await tx
-          .insert(providerProfiles)
-          .values({ providerId, isFoundingMember: true, smsOptIn: false, twoFactorEnabled: false, documentsVerified: false });
-      }
-      return true;
-    });
+    const result = await db.execute(sql`
+      WITH current_count AS (
+        SELECT COUNT(*)::int AS cnt FROM provider_profiles WHERE is_founding_member = true
+      ),
+      existing AS (
+        SELECT provider_id FROM provider_profiles WHERE provider_id = ${providerId}
+      )
+      INSERT INTO provider_profiles (provider_id, is_founding_member, sms_opt_in, two_factor_enabled, documents_verified)
+      SELECT ${providerId}, true, false, false, false
+      FROM current_count
+      WHERE current_count.cnt < ${cap}
+        AND NOT EXISTS (SELECT 1 FROM existing)
+      ON CONFLICT (provider_id) DO UPDATE SET is_founding_member = true, updated_at = NOW()
+      WHERE (SELECT cnt FROM current_count) < ${cap}
+      RETURNING provider_id
+    `);
+    return (result as any).rows?.length > 0 || (result as any).length > 0;
   }
 
   async isProviderVerified(providerId: number): Promise<boolean> {
