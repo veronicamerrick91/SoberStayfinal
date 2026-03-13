@@ -1152,7 +1152,8 @@ export class DatabaseStorage implements IStorage {
             });
           }
         }
-      } catch {
+      } catch (err) {
+        console.error(`Error querying site_visits for ${pair.city}, ${pair.state}:`, err);
       }
     }
 
