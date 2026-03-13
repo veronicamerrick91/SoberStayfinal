@@ -407,6 +407,10 @@ function ProviderDashboardContent() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
+  // Traffic snapshot for overview tab
+  const [trafficSnapshot, setTrafficSnapshot] = useState<{ views: number; clicks: number; inquiries: number; tourRequests: number; applications: number } | null>(null);
+  const [cityDemand, setCityDemand] = useState<{ demand: { city: string; state: string; views: number; clicks: number; total: number }[]; totalSearches: number; cities: string[] } | null>(null);
+  
   // Provider settings state
   const [settingsEmail, setSettingsEmail] = useState("");
   const [settingsPhone, setSettingsPhone] = useState("");
@@ -890,6 +894,18 @@ function ProviderDashboardContent() {
     loadAllData();
   }, [user?.id]);
 
+  // Fetch traffic snapshot for overview
+  useEffect(() => {
+    if (!user?.id) return;
+    Promise.all([
+      fetch('/api/provider/analytics/summary?days=30', { credentials: 'include' }).then(r => r.ok ? r.json() : null),
+      fetch('/api/provider/analytics/city-demand?days=30', { credentials: 'include' }).then(r => r.ok ? r.json() : null),
+    ]).then(([summary, demand]) => {
+      if (summary?.totals) setTrafficSnapshot(summary.totals);
+      if (demand) setCityDemand(demand);
+    }).catch(() => {});
+  }, [user?.id]);
+
   // Handle return from Stripe checkout - refetch subscription status
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1142,6 +1158,127 @@ function ProviderDashboardContent() {
               </Card>
             </div>
             )}
+
+            {/* Traffic Snapshot */}
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-bold flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-primary" />
+                    Traffic Snapshot
+                    <span className="text-xs font-normal text-muted-foreground ml-1">Last 30 days</span>
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-primary hover:text-primary/80 gap-1 text-xs"
+                    onClick={() => handleTabChange("analytics")}
+                    data-testid="button-view-full-analytics"
+                  >
+                    View Full Analytics <ChevronRight className="w-3 h-3" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {trafficSnapshot ? (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div className="space-y-1" data-testid="stat-listing-views">
+                      <div className="flex items-center gap-2">
+                        <Eye className="w-4 h-4 text-blue-400" />
+                        <span className="text-2xl font-bold text-white">{trafficSnapshot.views}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Listing Views</p>
+                    </div>
+                    <div className="space-y-1" data-testid="stat-listing-clicks">
+                      <div className="flex items-center gap-2">
+                        <BarChart3 className="w-4 h-4 text-cyan-400" />
+                        <span className="text-2xl font-bold text-white">{trafficSnapshot.clicks}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Clicks</p>
+                    </div>
+                    <div className="space-y-1" data-testid="stat-inquiries">
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-green-400" />
+                        <span className="text-2xl font-bold text-white">{trafficSnapshot.inquiries}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Inquiries</p>
+                    </div>
+                    <div className="space-y-1" data-testid="stat-tour-requests">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-amber-400" />
+                        <span className="text-2xl font-bold text-white">{trafficSnapshot.tourRequests}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Tour Requests</p>
+                    </div>
+                    <div className="space-y-1" data-testid="stat-traffic-applications">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-purple-400" />
+                        <span className="text-2xl font-bold text-white">{trafficSnapshot.applications}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Applications</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <Eye className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Your listings are being indexed — traffic data will appear here soon</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Searches in Your City */}
+            <Card className="bg-card border-border">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-bold flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-primary" />
+                  Searches in Your City
+                  <span className="text-xs font-normal text-muted-foreground ml-1">Last 30 days</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {cityDemand && cityDemand.demand.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                      <div className="p-2 bg-primary/20 rounded-lg">
+                        <Search className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-white" data-testid="text-total-city-searches">{cityDemand.totalSearches}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Total listing interactions in {cityDemand.cities.length === 1 ? cityDemand.cities[0] : `${cityDemand.cities.length} cities`}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      {cityDemand.demand.slice(0, 5).map((d, i) => (
+                        <div key={i} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-white/5 transition-colors" data-testid={`row-city-demand-${i}`}>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-sm font-medium">{d.city}, {d.state}</span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span>{d.views} views</span>
+                            <span>{d.clicks} clicks</span>
+                            <span className="font-bold text-primary">{d.total} total</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : cityDemand && cityDemand.cities.length === 0 ? (
+                  <div className="text-center py-4">
+                    <MapPin className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Add a listing to see search demand in your area</p>
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <MapPin className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">No search activity in your cities yet — demand data will appear as tenants browse</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {!hasActiveSubscription && (
               <Card className="bg-gradient-to-r from-primary/20 via-primary/10 to-card border-primary/30">

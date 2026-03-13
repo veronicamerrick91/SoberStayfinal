@@ -131,6 +131,7 @@ export interface IStorage {
   getProviderAnalyticsSummary(providerId: number, startDate: Date, endDate: Date): Promise<ListingAnalyticsDaily[]>;
   getProviderAnalyticsByListing(providerId: number, listingId: number, startDate: Date, endDate: Date): Promise<ListingAnalyticsDaily[]>;
   getProviderTopLocations(providerId: number, startDate: Date, endDate: Date): Promise<{city: string; state: string; count: number}[]>;
+  getCityDemand(cities: string[], startDate: Date, endDate: Date): Promise<{ city: string; state: string; views: number; clicks: number; total: number }[]>;
   aggregateDailyAnalytics(): Promise<void>;
   
   // Email Templates
@@ -1085,6 +1086,34 @@ export class DatabaseStorage implements IStorage {
       city: r.city || 'Unknown',
       state: r.state || 'Unknown',
       count: r.count
+    }));
+  }
+
+  async getCityDemand(cities: string[], startDate: Date, endDate: Date): Promise<{ city: string; state: string; views: number; clicks: number; total: number }[]> {
+    if (cities.length === 0) return [];
+    const lowerCities = cities.map(c => c.toLowerCase());
+    const results = await db.select({
+      city: listingAnalyticsEvents.city,
+      state: listingAnalyticsEvents.state,
+      views: sql<number>`COUNT(*) FILTER (WHERE ${listingAnalyticsEvents.eventType} = 'view')`,
+      clicks: sql<number>`COUNT(*) FILTER (WHERE ${listingAnalyticsEvents.eventType} = 'click')`,
+      total: count()
+    })
+    .from(listingAnalyticsEvents)
+    .where(and(
+      gte(listingAnalyticsEvents.occurredAt, startDate),
+      lte(listingAnalyticsEvents.occurredAt, endDate),
+      sql`LOWER(${listingAnalyticsEvents.city}) IN (${sql.join(lowerCities.map(c => sql`${c}`), sql`, `)})`
+    ))
+    .groupBy(listingAnalyticsEvents.city, listingAnalyticsEvents.state)
+    .orderBy(desc(count()));
+
+    return results.map(r => ({
+      city: r.city || 'Unknown',
+      state: r.state || 'Unknown',
+      views: Number(r.views) || 0,
+      clicks: Number(r.clicks) || 0,
+      total: r.total
     }));
   }
 

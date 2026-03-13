@@ -33,7 +33,9 @@ The platform includes a comprehensive analytics tracking system for providers:
 - **Database Schema**: Two-table approach with `listing_analytics_events` (raw events) and `listing_analytics_daily` (aggregated daily stats for performance)
 - **Event Types**: Views, clicks, inquiries, tour requests, and applications
 - **Tracking Helper** (`client/src/lib/analytics.ts`): Uses sendBeacon API for non-blocking event submission with sessionStorage debouncing (5-second window for views)
-- **Provider Dashboard**: Analytics tab shows KPIs, daily breakdown charts, and top visitor locations with 7/30/90 day filtering
+- **Provider Dashboard Overview**: Traffic Snapshot section shows real-time metrics (views, clicks, inquiries, tour requests, applications) for last 30 days; "Searches in Your City" card shows demand in provider's listing cities with per-city breakdowns; "View Full Analytics" button links to detailed Analytics tab
+- **Provider Dashboard Analytics Tab**: Full KPIs, daily breakdown charts, and top visitor locations with 7/30/90 day filtering
+- **City Demand API**: `GET /api/provider/analytics/city-demand` aggregates listing interactions (views/clicks) by city, matching against the provider's listing locations
 - **Event Triggers**:
   - `trackListingView`: Fires once per session when property detail page loads
   - `trackListingClick`: Fires when clicking listing cards in browse page

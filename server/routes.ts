@@ -3741,6 +3741,37 @@ Disallow: /for-tenants
     }
   });
 
+  // Get city-level demand for provider's listing cities
+  app.get("/api/provider/analytics/city-demand", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const { days = 30 } = req.query;
+      const numDays = Math.min(Math.max(parseInt(String(days)) || 30, 1), 365);
+
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - numDays);
+
+      const providerListings = await storage.getListingsByProvider(user.id);
+      const cities = [...new Set(providerListings.map(l => l.city).filter(Boolean))] as string[];
+
+      if (cities.length === 0) {
+        return res.json({ demand: [], totalSearches: 0, cities: [] });
+      }
+
+      const demand = await storage.getCityDemand(cities, startDate, endDate);
+      const totalSearches = demand.reduce((sum, d) => sum + d.total, 0);
+
+      res.json({ demand, totalSearches, cities });
+    } catch (error) {
+      console.error("Error fetching city demand:", error);
+      res.status(500).json({ error: "Failed to fetch city demand" });
+    }
+  });
+
   // Blog Post Management endpoints
 
   // Get all blog posts (admin only)
