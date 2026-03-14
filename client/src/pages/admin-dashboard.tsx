@@ -3445,13 +3445,13 @@ the actual document file stored on the server.
                       try {
                         const res = await fetch("/api/admin/seed-test-data", { method: "POST", credentials: "include" });
                         if (res.ok) {
-                          const data = await res.json();
-                          const creds = data.credentials || {};
-                          const lines = Object.entries(creds).map(([role, c]: [string, any]) => `${role}: ${c.email} / ${c.password}`).join("\n");
+                          const data: { credentials?: Record<string, { email: string; password: string }> } = await res.json();
+                          const creds = data.credentials ?? {};
+                          const lines = Object.entries(creds).map(([role, c]) => `${role}: ${c.email} / ${c.password}`).join("\n");
                           toast({ title: "Test data seeded", description: lines || "Test users, listings, and analytics created." });
                         } else {
-                          const err = await res.json().catch(() => ({}));
-                          toast({ title: "Seed failed", description: (err as any).error || "Unknown error", variant: "destructive" });
+                          const err: { error?: string } = await res.json().catch(() => ({}));
+                          toast({ title: "Seed failed", description: err.error ?? "Unknown error", variant: "destructive" });
                         }
                       } catch {
                         toast({ title: "Seed failed", description: "Network error", variant: "destructive" });
@@ -3474,8 +3474,9 @@ the actual document file stored on the server.
                       try {
                         const res = await fetch("/api/admin/test-data", { method: "DELETE", credentials: "include" });
                         if (res.ok) {
-                          const data = await res.json();
-                          const summary = Object.entries(data.deleted || {}).filter(([, v]) => (v as number) > 0).map(([k, v]) => `${k}: ${v}`).join(", ");
+                          const data: { deleted?: Record<string, number> } = await res.json();
+                          const deleted = data.deleted ?? {};
+                          const summary = Object.entries(deleted).filter(([, v]) => v > 0).map(([k, v]) => `${k}: ${v}`).join(", ");
                           toast({ title: "Test data cleaned up", description: summary || "Nothing to remove." });
                         } else {
                           toast({ title: "Cleanup failed", description: "Unknown error", variant: "destructive" });
