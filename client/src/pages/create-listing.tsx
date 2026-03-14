@@ -48,6 +48,8 @@ export function CreateListing() {
   const { toast } = useToast();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReview, setShowReview] = useState(false);
+  const [verificationDoc, setVerificationDoc] = useState<{ name: string; data: string } | null>(null);
+  const [verificationDocError, setVerificationDocError] = useState("");
   const [isLoading, setIsLoading] = useState(isEditMode);
   const [hasFeeWaiver, setHasFeeWaiver] = useState(false);
 
@@ -119,6 +121,9 @@ export function CreateListing() {
                 houseRules: listing.houseRules || [],
                 customHouseRules: listing.customHouseRules || "",
               });
+              if (listing.verificationDocumentUrl) {
+                setVerificationDoc({ name: "Previously uploaded document", data: listing.verificationDocumentUrl });
+              }
             }
           }
         } catch (error) {
@@ -260,7 +265,34 @@ export function CreateListing() {
     }));
   };
 
-  const isFormComplete = listingDraft.propertyName && listingDraft.city && listingDraft.state && listingDraft.monthlyPrice && listingDraft.totalBeds && listingDraft.description;
+  const handleVerificationDocChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setVerificationDocError("");
+    const file = e.target.files?.[0];
+    if (!file) {
+      setVerificationDoc(null);
+      return;
+    }
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+    if (!allowedTypes.includes(file.type)) {
+      setVerificationDocError("Invalid file type. Accepted: PDF, JPG, PNG");
+      setVerificationDoc(null);
+      e.target.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setVerificationDocError("File too large. Maximum size is 5MB.");
+      setVerificationDoc(null);
+      e.target.value = "";
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setVerificationDoc({ name: file.name, data: reader.result as string });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const isFormComplete = listingDraft.propertyName && listingDraft.city && listingDraft.state && listingDraft.monthlyPrice && listingDraft.totalBeds && listingDraft.description && verificationDoc;
 
   const handleReview = () => {
     if (isFormComplete) {
@@ -336,7 +368,8 @@ export function CreateListing() {
         ...listingDraft,
         monthlyPrice: parseInt(listingDraft.monthlyPrice),
         totalBeds: parseInt(listingDraft.totalBeds),
-        status: "pending"
+        status: "pending",
+        verificationDocumentUrl: verificationDoc?.data || null,
       });
       
       toast({
@@ -861,6 +894,31 @@ export function CreateListing() {
                     ))}
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Verification Document */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white text-lg flex items-center gap-2">
+                  <Upload className="w-5 h-5" />
+                  Verification Document *
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Upload a business license, state certification, or similar proof of authorization to operate this facility. This document will be reviewed by our admin team before your listing is approved.
+                </p>
+                <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG (max 5MB)</p>
+                <Input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={handleVerificationDocChange}
+                  className="bg-background border-border text-sm file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-primary/20 file:text-primary"
+                  data-testid="input-verification-document"
+                />
+                {verificationDocError && <p className="text-xs text-red-400">{verificationDocError}</p>}
+                {verificationDoc && <p className="text-xs text-green-400">Attached: {verificationDoc.name}</p>}
               </CardContent>
             </Card>
 

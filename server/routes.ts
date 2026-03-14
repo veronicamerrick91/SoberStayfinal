@@ -557,6 +557,25 @@ Disallow: /for-tenants
       }
     }
     
+    if (!isDraft && !req.body.verificationDocumentUrl) {
+      return res.status(400).json({ error: "A verification document is required to publish a listing" });
+    }
+
+    if (req.body.verificationDocumentUrl) {
+      const docData = req.body.verificationDocumentUrl;
+      const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+      const base64Match = docData.match(/^data:(.*?);base64,/);
+      const mimeType = base64Match ? base64Match[1] : null;
+      if (!mimeType || !allowedTypes.includes(mimeType)) {
+        return res.status(400).json({ error: "Invalid document file type. Accepted: PDF, JPG, PNG" });
+      }
+      const base64Content = docData.replace(/^data:.*?;base64,/, "");
+      const fileSizeBytes = Buffer.from(base64Content, "base64").length;
+      if (fileSizeBytes > 5 * 1024 * 1024) {
+        return res.status(400).json({ error: "Document file too large. Maximum size is 5MB." });
+      }
+    }
+
     const parsed = insertListingSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json(parsed.error);
@@ -629,7 +648,8 @@ Disallow: /for-tenants
   app.get("/api/listings", async (req, res) => {
     try {
       const listings = await storage.getVisibleApprovedListings();
-      res.json(listings);
+      const sanitized = listings.map(({ verificationDocumentUrl, ...rest }) => rest);
+      res.json(sanitized);
     } catch (error) {
       console.error("Error fetching listings:", error);
       res.status(500).json({ error: "Failed to fetch listings" });
@@ -647,14 +667,17 @@ Disallow: /for-tenants
       if (!listing) {
         return res.status(404).json({ error: "Listing not found" });
       }
-      // Only show if approved and visible (or if user is the provider/admin)
+      const reqUser = req.user as any;
+      const isOwner = reqUser && listing.providerId === reqUser.id;
+      const isAdmin = reqUser && reqUser.role === 'admin';
       if (listing.status !== 'approved' || !listing.isVisible) {
-        const user = req.user as any;
-        const isOwner = user && listing.providerId === user.id;
-        const isAdmin = user && user.role === 'admin';
         if (!isOwner && !isAdmin) {
           return res.status(404).json({ error: "Listing not found" });
         }
+      }
+      if (!isOwner && !isAdmin) {
+        const { verificationDocumentUrl, ...sanitized } = listing;
+        return res.json(sanitized);
       }
       res.json(listing);
     } catch (error) {
@@ -747,6 +770,25 @@ Disallow: /for-tenants
       }
     }
     
+    if (!isDraft && !req.body.verificationDocumentUrl && !existingListing.verificationDocumentUrl) {
+      return res.status(400).json({ error: "A verification document is required to publish a listing" });
+    }
+
+    if (req.body.verificationDocumentUrl) {
+      const docData = req.body.verificationDocumentUrl;
+      const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+      const base64Match = docData.match(/^data:(.*?);base64,/);
+      const mimeType = base64Match ? base64Match[1] : null;
+      if (!mimeType || !allowedTypes.includes(mimeType)) {
+        return res.status(400).json({ error: "Invalid document file type. Accepted: PDF, JPG, PNG" });
+      }
+      const base64Content = docData.replace(/^data:.*?;base64,/, "");
+      const fileSizeBytes = Buffer.from(base64Content, "base64").length;
+      if (fileSizeBytes > 5 * 1024 * 1024) {
+        return res.status(400).json({ error: "Document file too large. Maximum size is 5MB." });
+      }
+    }
+
     const parsed = insertListingSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json(parsed.error);
@@ -1241,9 +1283,12 @@ Disallow: /for-tenants
 
   app.post("/api/claim-requests", async (req, res) => {
     try {
-      const { listingId, providerName, businessName, email, phone, website, notes, proofOfOwnership } = req.body;
+      const { listingId, providerName, businessName, email, phone, website, notes, documentData } = req.body;
       if (!listingId || !providerName || !businessName || !email) {
         return res.status(400).json({ error: "Missing required fields: listingId, providerName, businessName, email" });
+      }
+      if (!documentData) {
+        return res.status(400).json({ error: "A verification document is required" });
       }
       const listing = await storage.getListing(listingId);
       if (!listing) return res.status(404).json({ error: "Listing not found" });
@@ -1257,6 +1302,19 @@ Disallow: /for-tenants
         return res.status(409).json({ error: "You already have a pending claim for this listing" });
       }
 
+      const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+      const base64Match = documentData.match(/^data:(.*?);base64,/);
+      const mimeType = base64Match ? base64Match[1] : null;
+      if (!mimeType || !allowedTypes.includes(mimeType)) {
+        return res.status(400).json({ error: "Invalid file type. Accepted: PDF, JPG, PNG" });
+      }
+      const base64Content = documentData.replace(/^data:.*?;base64,/, "");
+      const fileSizeBytes = Buffer.from(base64Content, "base64").length;
+      const maxSize = 5 * 1024 * 1024;
+      if (fileSizeBytes > maxSize) {
+        return res.status(400).json({ error: "File too large. Maximum size is 5MB." });
+      }
+
       const claim = await storage.createClaimRequest({
         listingId,
         providerName,
@@ -1265,7 +1323,8 @@ Disallow: /for-tenants
         phone: phone || null,
         website: website || null,
         notes: notes || null,
-        proofOfOwnership: !!proofOfOwnership,
+        proofOfOwnership: false,
+        documentUrl: documentData,
       });
 
       try {
@@ -1281,8 +1340,8 @@ Disallow: /for-tenants
               <p><strong>Phone:</strong> ${phone || 'N/A'}</p>
               <p><strong>Website:</strong> ${website || 'N/A'}</p>
               <p><strong>Notes:</strong> ${notes || 'None'}</p>
-              <p><strong>Proof of Ownership:</strong> ${proofOfOwnership ? 'Yes' : 'No'}</p>
-              <p>Log in to your admin dashboard to review this claim request.</p>`
+              <p><strong>Verification Document:</strong> A document has been uploaded for review.</p>
+              <p>Log in to your admin dashboard to review this claim request and the attached document.</p>`
           });
         }
       } catch (emailError) {

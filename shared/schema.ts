@@ -48,6 +48,7 @@ export const listings = pgTable("listings", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   phone: text("listing_phone"),
   website: text("listing_website"),
+  verificationDocumentUrl: text("verification_document_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -224,6 +225,7 @@ export const claimRequests = pgTable("claim_requests", {
   website: text("website"),
   notes: text("notes"),
   proofOfOwnership: boolean("proof_of_ownership").default(false).notNull(),
+  documentUrl: text("document_url"),
   status: text("status").default("pending").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

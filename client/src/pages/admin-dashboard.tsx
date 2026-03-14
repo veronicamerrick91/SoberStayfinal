@@ -219,9 +219,13 @@ function ClaimsTab() {
                         <strong>Notes:</strong> {claim.notes}
                       </p>
                     )}
-                    <div className="text-xs text-muted-foreground">
-                      {claim.proofOfOwnership && <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs mr-2">Ownership Confirmed</Badge>}
-                      Submitted: {new Date(claim.createdAt).toLocaleDateString()}
+                    <div className="text-xs text-muted-foreground flex items-center flex-wrap gap-2">
+                      {claim.documentUrl && (
+                        <a href={claim.documentUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
+                          <FileText className="w-3 h-3" /> View Document
+                        </a>
+                      )}
+                      <span>Submitted: {new Date(claim.createdAt).toLocaleDateString()}</span>
                     </div>
                     <ListingAnalyticsInline listingId={claim.listingId} />
                   </div>

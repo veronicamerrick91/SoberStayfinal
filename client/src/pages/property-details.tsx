@@ -20,7 +20,6 @@ import { TourScheduleModal } from "@/components/tour-schedule-modal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
@@ -85,18 +84,46 @@ export default function PropertyDetails() {
     phone: "",
     website: "",
     notes: "",
-    proofOfOwnership: false,
   });
+  const [claimDocument, setClaimDocument] = useState<{ name: string; data: string } | null>(null);
+  const [claimDocError, setClaimDocError] = useState("");
   const user = { name: "Tenant User", email: "tenant@example.com" };
 
+  const handleClaimDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setClaimDocError("");
+    const file = e.target.files?.[0];
+    if (!file) {
+      setClaimDocument(null);
+      return;
+    }
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
+    if (!allowedTypes.includes(file.type)) {
+      setClaimDocError("Invalid file type. Accepted: PDF, JPG, PNG");
+      setClaimDocument(null);
+      e.target.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setClaimDocError("File too large. Maximum size is 5MB.");
+      setClaimDocument(null);
+      e.target.value = "";
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setClaimDocument({ name: file.name, data: reader.result as string });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleClaimSubmit = async () => {
-    if (!listing || !claimForm.providerName || !claimForm.businessName || !claimForm.email) return;
+    if (!listing || !claimForm.providerName || !claimForm.businessName || !claimForm.email || !claimDocument) return;
     setClaimSubmitting(true);
     try {
       const res = await fetch("/api/claim-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId: listing.id, ...claimForm }),
+        body: JSON.stringify({ listingId: listing.id, ...claimForm, documentData: claimDocument.data }),
       });
       if (res.ok) {
         setClaimSubmitted(true);
@@ -674,22 +701,23 @@ export default function PropertyDetails() {
                     data-testid="input-claim-notes"
                   />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="proof"
-                    checked={claimForm.proofOfOwnership}
-                    onCheckedChange={(checked) => setClaimForm(f => ({ ...f, proofOfOwnership: !!checked }))}
-                    className="h-4 w-4"
-                    data-testid="checkbox-proof"
+                <div>
+                  <Label className="text-sm text-gray-300">Verification Document *</Label>
+                  <p className="text-xs text-muted-foreground mb-2">Upload a business license, state certification, or similar proof of ownership. Accepted: PDF, JPG, PNG (max 5MB)</p>
+                  <Input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleClaimDocumentChange}
+                    className="bg-background border-border text-sm file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:bg-primary/20 file:text-primary"
+                    data-testid="input-claim-document"
                   />
-                  <Label htmlFor="proof" className="text-sm text-gray-300 cursor-pointer">
-                    I confirm I am authorized to manage this facility
-                  </Label>
+                  {claimDocError && <p className="text-xs text-red-400 mt-1">{claimDocError}</p>}
+                  {claimDocument && <p className="text-xs text-green-400 mt-1">Attached: {claimDocument.name}</p>}
                 </div>
               </div>
               <Button
                 onClick={handleClaimSubmit}
-                disabled={claimSubmitting || !claimForm.providerName || !claimForm.businessName || !claimForm.email}
+                disabled={claimSubmitting || !claimForm.providerName || !claimForm.businessName || !claimForm.email || !claimDocument}
                 className="w-full bg-amber-500 hover:bg-amber-600 text-black font-semibold h-12"
                 data-testid="button-submit-claim"
               >
