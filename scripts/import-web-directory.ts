@@ -85,6 +85,32 @@ const FACILITIES: Facility[] = [
   { name: "Cielo Sober Living", city: "Palm Springs", source: "addicted.org" },
   { name: "Ascension Treatment Center", city: "Desert Hot Springs", source: "addicted.org" },
 
+  // --- Orange County ---
+  // Source: soberhousedirectory.com, addicted.org
+  { name: "Cornerstone SoCal", city: "Anaheim", source: "soberhousedirectory.com" },
+  { name: "Asana Recovery", city: "Costa Mesa", source: "soberhousedirectory.com" },
+  { name: "Heritage House", city: "Costa Mesa", phone: "(949) 646-2271", source: "soberhousedirectory.com" },
+  { name: "Woodglen Recovery", city: "Anaheim", phone: "(714) 879-0929", source: "soberhousedirectory.com" },
+
+  // --- Long Beach ---
+  // Source: soberhousedirectory.com
+  { name: "Haven House Sober Living", city: "Long Beach", source: "soberhousedirectory.com" },
+  { name: "Transformational Living Homes", city: "Long Beach", source: "soberhousedirectory.com" },
+  { name: "Demarco Housing", city: "Long Beach", source: "soberhousedirectory.com" },
+  { name: "New Found Life", city: "Long Beach", source: "soberhousedirectory.com" },
+  { name: "Symfonica Sober Living", city: "Long Beach", source: "soberhousedirectory.com" },
+
+  // --- Santa Monica ---
+  // Source: soberhousedirectory.com
+  { name: "HAUS Recovery", city: "Santa Monica", source: "soberhousedirectory.com" },
+  { name: "The Nook Sober Living", city: "Santa Monica", source: "soberhousedirectory.com" },
+  { name: "START UP Recovery", city: "Santa Monica", source: "soberhousedirectory.com" },
+
+  // --- Pasadena ---
+  // Source: soberhousedirectory.com
+  { name: "Starting Over Sober Living", city: "Pasadena", source: "soberhousedirectory.com" },
+  { name: "Casa de las Amigas", city: "Pasadena", source: "soberhousedirectory.com" },
+
   // --- Inland Empire ---
   // Source: addicted.org, soberhousedirectory.com
   { name: "Beloved Treatment Centers", city: "Apple Valley", source: "addicted.org" },
