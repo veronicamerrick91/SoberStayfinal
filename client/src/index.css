@@ -92,11 +92,11 @@
   }
   
   /* Mobile optimization: ensure minimum touch target size */
-  button, 
+  button:not([role="checkbox"]), 
   a, 
   input[type="button"], 
   input[type="submit"],
-  [role="button"] {
+  [role="button"]:not([role="checkbox"]) {
     min-height: 44px;
     min-width: 44px;
   }
@@ -136,7 +136,7 @@
   }
   
   /* Ensure tap targets are large enough */
-  .btn, button, a {
+  .btn, button:not([role="checkbox"]), a {
     padding: 0.75rem 1rem;
   }
 }
