@@ -14,6 +14,7 @@ import { stripeService } from "./stripeService";
 import { getStripePublishableKey } from "./stripeClient";
 import { sql } from "drizzle-orm";
 import { db } from "./db";
+import { seedTestData, cleanupTestData } from "./seedTestData";
 import { sendApplicationNotification as sendSmsApplicationNotification, sendApplicationApprovedNotification as sendSmsApproved, sendApplicationDeniedNotification as sendSmsDenied, sendNewMessageNotification as sendSmsMessage, send2FACode, generate2FACode, isTwilioConfigured, sendTourRequestNotification as sendSmsTourRequest, isValidPhoneNumber } from "./sms-service";
 import { getNearbyServicesForAddress, isGoogleMapsConfigured } from "./places-service";
 
@@ -4502,6 +4503,34 @@ Disallow: /for-tenants
     } catch (error) {
       console.error("Error toggling workflow:", error);
       res.status(500).json({ error: "Failed to toggle workflow" });
+    }
+  });
+
+  app.post("/api/admin/seed-test-data", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const result = await seedTestData();
+      res.json({ success: true, ...result });
+    } catch (error) {
+      console.error("Error seeding test data:", error);
+      res.status(500).json({ error: "Failed to seed test data" });
+    }
+  });
+
+  app.delete("/api/admin/test-data", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const result = await cleanupTestData();
+      res.json({ success: true, ...result });
+    } catch (error) {
+      console.error("Error cleaning up test data:", error);
+      res.status(500).json({ error: "Failed to cleanup test data" });
     }
   });
 
