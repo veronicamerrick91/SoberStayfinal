@@ -49,7 +49,7 @@ async function importDirectory() {
         if (!row.companyName || !row.city) continue;
         if (row.state && !isCalifornia(row.state)) continue;
 
-        const key = row.companyName.toLowerCase();
+        const key = row.companyName.toLowerCase() + "|" + row.city.toLowerCase();
         if (seen.has(key)) continue;
         seen.add(key);
         allRows.push(row);
