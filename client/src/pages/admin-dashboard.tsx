@@ -412,6 +412,8 @@ export function AdminDashboard() {
   const [blogScheduleDate, setBlogScheduleDate] = useState("");
   const [blogAutoSaved, setBlogAutoSaved] = useState(false);
   const [draftSaveTimeout, setDraftSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [seedingData, setSeedingData] = useState(false);
+  const [cleaningData, setCleaningData] = useState(false);
   const [flaggedListings, setFlaggedListings] = useState<Set<string>>(new Set());
   const [showDenyApplicationModal, setShowDenyApplicationModal] = useState(false);
   const [denyApplicationReason, setDenyApplicationReason] = useState("");
@@ -3423,6 +3425,70 @@ the actual document file stored on the server.
                   <Button onClick={handleSaveSettings} className="bg-primary text-primary-foreground hover:bg-primary/90">Save Changes</Button>
                   <Button onClick={handleResetSettings} variant="outline">Reset to Default</Button>
                   <Button onClick={handleExportData} variant="ghost" className="text-red-500 hover:bg-red-500/10 ml-auto">Export Data</Button>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Settings className="w-5 h-5" /> Dev Tools
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">Seed or remove test data (test provider, test tenant, test listings, analytics). Test accounts use the <code className="text-primary">test_</code> prefix and won't affect real data.</p>
+                <div className="flex gap-3">
+                  <Button
+                    data-testid="button-seed-test-data"
+                    disabled={seedingData || cleaningData}
+                    onClick={async () => {
+                      setSeedingData(true);
+                      try {
+                        const res = await fetch("/api/admin/seed-test-data", { method: "POST", credentials: "include" });
+                        if (res.ok) {
+                          const data = await res.json();
+                          const creds = data.credentials || {};
+                          const lines = Object.entries(creds).map(([role, c]: [string, any]) => `${role}: ${c.email} / ${c.password}`).join("\n");
+                          toast({ title: "Test data seeded", description: lines || "Test users, listings, and analytics created." });
+                        } else {
+                          const err = await res.json().catch(() => ({}));
+                          toast({ title: "Seed failed", description: (err as any).error || "Unknown error", variant: "destructive" });
+                        }
+                      } catch {
+                        toast({ title: "Seed failed", description: "Network error", variant: "destructive" });
+                      } finally {
+                        setSeedingData(false);
+                      }
+                    }}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    {seedingData ? "Seeding..." : "Seed Test Data"}
+                  </Button>
+                  <Button
+                    data-testid="button-clean-test-data"
+                    disabled={seedingData || cleaningData}
+                    variant="outline"
+                    className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                    onClick={async () => {
+                      if (!confirm("Remove all test data (test_ prefixed users, their listings, analytics, etc.)?")) return;
+                      setCleaningData(true);
+                      try {
+                        const res = await fetch("/api/admin/test-data", { method: "DELETE", credentials: "include" });
+                        if (res.ok) {
+                          const data = await res.json();
+                          const summary = Object.entries(data.deleted || {}).filter(([, v]) => (v as number) > 0).map(([k, v]) => `${k}: ${v}`).join(", ");
+                          toast({ title: "Test data cleaned up", description: summary || "Nothing to remove." });
+                        } else {
+                          toast({ title: "Cleanup failed", description: "Unknown error", variant: "destructive" });
+                        }
+                      } catch {
+                        toast({ title: "Cleanup failed", description: "Network error", variant: "destructive" });
+                      } finally {
+                        setCleaningData(false);
+                      }
+                    }}
+                  >
+                    {cleaningData ? "Cleaning..." : "Clean Up Test Data"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
