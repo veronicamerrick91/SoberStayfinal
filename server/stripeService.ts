@@ -2,7 +2,7 @@ import { storage } from './storage';
 import { getUncachableStripeClient } from './stripeClient';
 
 const FOUNDING_MEMBER_COUPON_ID = 'FOUNDING_MEMBER_50';
-const REFERRAL_COUPON_ID = '655FIACI';
+const REFERRAL_COUPON_ID = 'R2EWiPIP';
 
 export class StripeService {
   async createCustomer(email: string, userId: number) {

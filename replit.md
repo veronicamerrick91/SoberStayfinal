@@ -118,7 +118,7 @@ The platform includes a comprehensive analytics tracking system for providers:
   - "Verified Badge" — $15/month add-on, requires verification (`prod_U9cON8rNXhW9f9`)
 - **Stripe Coupons**:
   - `FOUNDING_MEMBER_50` — 50% off forever (auto-created on first use for founding members, includes 90-day trial)
-  - `655FIACI` — Referral coupon, 100% off first month (applied when referred provider checks out)
+  - `R2EWiPIP` — Referral coupon, 50% off first month (applied when referred provider checks out)
 - **Checkout Flows**: All purchases (base listing, featured listing, verified badge) go through Stripe Checkout with `checkoutType` metadata to differentiate in webhook handler
 - **Webhook Handler**: `checkout.session.completed` reads `checkoutType` from metadata: `listing` (link subscription to listing), `featured_listing` (create featured listing record), `verified_badge` (log activation)
 
