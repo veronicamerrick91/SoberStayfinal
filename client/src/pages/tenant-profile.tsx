@@ -406,7 +406,7 @@ export function TenantProfile() {
 
               {/* ID Photo Upload */}
               <div className="space-y-3">
-                <Label className="text-white">Government ID Photo</Label>
+                <Label className="text-white">Identification Document</Label>
                 {idPhoto ? (
                   <div className="flex items-center gap-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
                     <img 

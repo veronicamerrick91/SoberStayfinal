@@ -232,7 +232,7 @@ A Preparation & Transition Worksheet
 BEFORE MOVE-IN: PREPARATION CHECKLIST
 
 Documents to Gather:
-[ ] Government-issued ID
+[ ] Identification document (government ID, birth certificate, benefit card, or other accepted form)
 [ ] Proof of income or employment
 [ ] Emergency contact information
 [ ] Insurance information (if applicable)

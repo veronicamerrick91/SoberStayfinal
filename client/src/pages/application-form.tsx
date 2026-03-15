@@ -299,7 +299,7 @@ export default function ApplicationForm() {
     
     // Validate required checkboxes and employment requirement
     if (!idUploaded) {
-      setFormError("Please upload a valid government-issued ID to submit this application.");
+      setFormError("Please upload a valid identification document to submit this application.");
       return;
     }
     if (employmentRequirement !== "yes") {
@@ -624,15 +624,15 @@ export default function ApplicationForm() {
                     {existingIdUrl ? (
                       <>
                         <div className="mb-3 inline-block rounded-lg overflow-hidden border border-primary/20">
-                          <img src={existingIdUrl} alt="Government ID" className="max-h-32 object-contain" data-testid="img-existing-id" />
+                          <img src={existingIdUrl} alt="Identification Document" className="max-h-32 object-contain" data-testid="img-existing-id" />
                         </div>
                         <p className="text-xs text-primary mb-3">✓ Using ID from your profile</p>
                       </>
                     ) : (
                       <Upload className="w-12 h-12 mx-auto mb-3 text-primary/60" />
                     )}
-                    <p className="text-sm text-gray-300 mb-4">Upload a government-issued photo ID <span className="text-destructive">*</span></p>
-                    <p className="text-xs text-muted-foreground mb-4">Accepted: Driver's License, State ID, Passport</p>
+                    <p className="text-sm text-gray-300 mb-4">Upload a valid identification document <span className="text-destructive">*</span></p>
+                    <p className="text-xs text-muted-foreground mb-4">Accepted: Driver's License, State ID, Passport, Birth Certificate, Probation/Parole Documents, Benefit Card (EBT/Medicaid), School or Work ID, Treatment Program Letter, or Shelter Intake Documents</p>
                     <input type="file" accept="image/*,.pdf" onChange={() => { handleFileUpload(); setExistingIdUrl(null); }} className="hidden" id="id-upload" data-testid="input-id-upload" />
                     <label htmlFor="id-upload">
                       <Button type="button" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10" onClick={() => document.getElementById('id-upload')?.click()} data-testid="button-upload-id">

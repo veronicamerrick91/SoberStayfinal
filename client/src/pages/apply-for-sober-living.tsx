@@ -13,7 +13,7 @@ interface FAQItem {
 const faqs: FAQItem[] = [
   {
     question: "What do I need to apply for sober living?",
-    answer: "Most applications require basic personal information, recovery history, employment or income details, emergency contacts, and sometimes references. Some homes may require a photo ID, proof of income, or documentation of recent treatment. Sober Stay allows you to create a reusable application profile to streamline this process."
+    answer: "Most applications require basic personal information, recovery history, employment or income details, emergency contacts, and sometimes references. Some homes may require an identification document (government ID, benefit card, birth certificate, or other accepted form), proof of income, or documentation of recent treatment. Sober Stay allows you to create a reusable application profile to streamline this process."
   },
   {
     question: "How long does the application process take?",
@@ -135,7 +135,7 @@ export function ApplyForSoberLiving() {
                     "Treatment history (programs completed)",
                     "Employment or income information",
                     "Housing preferences (location, budget, amenities)",
-                    "Photo ID (may be required)",
+                    "Identification document (government ID, benefit card, or alternative — see accepted forms)",
                     "References (some homes require these)"
                   ].map((item, index) => (
                     <li key={index} className="flex items-start gap-3">

@@ -211,15 +211,15 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
           {/* 2. ID Document */}
           {application.idPhotoUrl && (
             <div className="mb-6">
-              <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">2. Government ID</h3>
+              <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 mb-3">2. Identification Document</h3>
               <div className="bg-white/5 border border-border rounded-lg p-4">
                 <img 
                   src={application.idPhotoUrl} 
-                  alt="Government ID" 
+                  alt="Identification Document" 
                   className="max-w-full max-h-48 rounded-lg border border-border mx-auto"
                   data-testid="img-tenant-id"
                 />
-                <p className="text-xs text-muted-foreground text-center mt-2">Uploaded government-issued ID</p>
+                <p className="text-xs text-muted-foreground text-center mt-2">Uploaded identification document</p>
               </div>
             </div>
           )}
