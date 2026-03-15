@@ -3,15 +3,17 @@ import Stripe from 'stripe';
 let connectionSettings: any;
 
 async function getCredentials() {
-  // Check for environment variables first (for Render/external deployments)
-  if (process.env.STRIPE_SECRET_KEY && process.env.STRIPE_PUBLISHABLE_KEY) {
-    return {
-      publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
-      secretKey: process.env.STRIPE_SECRET_KEY,
-    };
+  const secretKey = process.env.STRIPE_SECRET_KEY?.trim();
+  const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY?.trim();
+  
+  if (secretKey && publishableKey) {
+    console.log('[Stripe] Using environment variable credentials');
+    return { publishableKey, secretKey };
   }
 
-  // Fall back to Replit connector (for Replit development/deployment)
+  console.log('[Stripe] No env var credentials found, trying Replit connector...');
+  console.log('[Stripe] STRIPE_SECRET_KEY present:', !!process.env.STRIPE_SECRET_KEY, 'STRIPE_PUBLISHABLE_KEY present:', !!process.env.STRIPE_PUBLISHABLE_KEY);
+  
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY
     ? 'repl ' + process.env.REPL_IDENTITY
@@ -20,7 +22,7 @@ async function getCredentials() {
       : null;
 
   if (!xReplitToken) {
-    throw new Error('Stripe credentials not found. Set STRIPE_SECRET_KEY and STRIPE_PUBLISHABLE_KEY environment variables, or use Replit connector.');
+    throw new Error('Stripe credentials not found. Set STRIPE_SECRET_KEY and STRIPE_PUBLISHABLE_KEY environment variables, or use Replit connector. SECRET_KEY present: ' + !!process.env.STRIPE_SECRET_KEY + ', PUBLISHABLE_KEY present: ' + !!process.env.STRIPE_PUBLISHABLE_KEY);
   }
 
   const connectorName = 'stripe';
