@@ -1666,18 +1666,40 @@ Disallow: /for-tenants
       const targetListing = providerListings.find(l => !l.stripeSubscriptionId && l.isClaimed);
 
       const baseUrl = getBaseUrl(req);
-      console.log('[Checkout] Using base URL:', baseUrl);
-      const session = await stripeService.createCheckoutSession(
-        customerId,
-        priceId,
-        `${baseUrl}/provider-dashboard`,
-        `${baseUrl}/provider-dashboard`,
-        { providerId: String(user.id), checkoutType: 'listing', ...(targetListing ? { listingId: String(targetListing.id) } : {}) },
-        isFoundingMember,
-        isReferred
-      );
+      console.log('[Checkout] Using base URL:', baseUrl, 'Customer:', customerId);
 
-      res.json({ url: session.url });
+      const checkoutMeta = { providerId: String(user.id), checkoutType: 'listing', ...(targetListing ? { listingId: String(targetListing.id) } : {}) };
+      
+      try {
+        const session = await stripeService.createCheckoutSession(
+          customerId,
+          priceId,
+          `${baseUrl}/provider-dashboard`,
+          `${baseUrl}/provider-dashboard`,
+          checkoutMeta,
+          isFoundingMember,
+          isReferred
+        );
+        res.json({ url: session.url });
+      } catch (checkoutErr: any) {
+        if (checkoutErr.code === 'resource_missing' && checkoutErr.message?.includes('customer')) {
+          console.log(`[Checkout] Customer ${customerId} invalid during checkout, creating fresh customer`);
+          const newCustomer = await stripeService.createCustomer(user.email, user.id);
+          await storage.updateUserStripeCustomerId(user.id, newCustomer.id);
+          const session = await stripeService.createCheckoutSession(
+            newCustomer.id,
+            priceId,
+            `${baseUrl}/provider-dashboard`,
+            `${baseUrl}/provider-dashboard`,
+            checkoutMeta,
+            isFoundingMember,
+            isReferred
+          );
+          res.json({ url: session.url });
+        } else {
+          throw checkoutErr;
+        }
+      }
     } catch (error: any) {
       console.error("Error creating checkout session:", error?.message || error);
       console.error("Full checkout error stack:", error?.stack);
