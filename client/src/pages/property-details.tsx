@@ -88,7 +88,7 @@ export default function PropertyDetails() {
   const [claimDocument, setClaimDocument] = useState<{ name: string; data: string } | null>(null);
   const [claimDocError, setClaimDocError] = useState("");
   const authUser = getAuth();
-  const user = authUser ? { name: `${authUser.firstName || ''} ${authUser.lastName || ''}`.trim() || "User", email: authUser.email || "" } : { name: "Guest", email: "" };
+  const user = authUser ? { name: authUser.name || "User", email: authUser.email || "" } : { name: "Guest", email: "" };
   const [providerContact, setProviderContact] = useState<{ phone?: string; email?: string; companyName?: string } | null>(null);
 
   const handleClaimDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
