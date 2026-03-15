@@ -3908,7 +3908,7 @@ Disallow: /for-tenants
         return res.status(400).json({ error: "Featured Listing price not found in Stripe" });
       }
 
-      const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      const baseUrl = process.env.APP_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
       const session = await stripeService.createAddOnCheckoutSession(
         customerId,
         priceId,
@@ -3951,7 +3951,7 @@ Disallow: /for-tenants
         return res.status(400).json({ error: "Verified Badge price not found in Stripe" });
       }
 
-      const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      const baseUrl = process.env.APP_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
       const session = await stripeService.createAddOnCheckoutSession(
         customerId,
         priceId,
