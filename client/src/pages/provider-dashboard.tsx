@@ -449,7 +449,7 @@ function ProviderDashboardContent() {
   const [showBoostModal, setShowBoostModal] = useState(false);
   const [selectedListingToBoost, setSelectedListingToBoost] = useState<Listing | null>(null);
   const [boostLevel, setBoostLevel] = useState(2);
-  const [boostDuration, setBoostDuration] = useState(7);
+  const [boostDuration, setBoostDuration] = useState(30);
   const [isBoostLoading, setIsBoostLoading] = useState(false);
   
   // Provider verification state
@@ -706,8 +706,6 @@ function ProviderDashboardContent() {
   };
 
   const getBoostPrice = () => {
-    if (boostLevel === 5) return 200;
-    if (boostLevel === 3) return 150;
     return 100;
   };
 
@@ -1777,36 +1775,23 @@ function ProviderDashboardContent() {
 
               <Card className="bg-card border-border">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2"><Zap className="w-5 h-5 text-amber-500" /> Boost Your Listings</CardTitle>
+                  <CardTitle className="text-white flex items-center gap-2"><Zap className="w-5 h-5 text-amber-500" /> Feature Your Listings</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-muted-foreground">Get premium placement and reach more potential tenants.</p>
-                  <div className="space-y-3">
-                    <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <div className="bg-purple-500/20 p-2 rounded text-purple-400">
-                          <Zap className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-white text-sm">Featured Placement</h4>
-                          <p className="text-xs text-muted-foreground mt-1">Boosted listings appear at the top of search results with a special badge.</p>
-                        </div>
-                      </div>
+                  <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-white font-medium">Featured Listing</span>
+                      <span className="text-lg font-bold text-purple-400">$100<span className="text-sm font-normal text-muted-foreground">/month</span></span>
                     </div>
-                    <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <div className="bg-purple-500/20 p-2 rounded text-purple-400">
-                          <TrendingUp className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-white text-sm">Increased Visibility</h4>
-                          <p className="text-xs text-muted-foreground mt-1">Get 2x, 3x, or 5x more views on your listings.</p>
-                        </div>
-                      </div>
-                    </div>
+                    <ul className="space-y-1.5 text-xs text-muted-foreground">
+                      <li className="flex items-center gap-2"><Check className="w-3 h-3 text-purple-400 shrink-0" /> Pinned to the top of search results</li>
+                      <li className="flex items-center gap-2"><Check className="w-3 h-3 text-purple-400 shrink-0" /> "Featured" badge on your listing</li>
+                      <li className="flex items-center gap-2"><Check className="w-3 h-3 text-purple-400 shrink-0" /> 30-day placement, cancel anytime</li>
+                    </ul>
                   </div>
                   <p className="text-xs text-center text-muted-foreground">
-                    Starting at $100/month. Scroll down to boost a listing.
+                    Scroll down to feature a listing.
                   </p>
                 </CardContent>
               </Card>
@@ -1837,7 +1822,7 @@ function ProviderDashboardContent() {
             <Card className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/30">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-purple-400" /> Featured Listings - Boost Your Visibility
+                  <Zap className="w-5 h-5 text-purple-400" /> Featured Listings
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -1875,7 +1860,7 @@ function ProviderDashboardContent() {
                 {/* Active Featured Listings */}
                 {featuredListings.filter(f => f.isActive && new Date(f.endDate) > new Date()).length > 0 && (
                   <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-white">Active Boosts</h4>
+                    <h4 className="text-sm font-medium text-white">Currently Featured</h4>
                     {featuredListings.filter(f => f.isActive && new Date(f.endDate) > new Date()).map((featured) => {
                       const listing = listings.find(l => l.id === featured.listingId);
                       const daysLeft = Math.ceil((new Date(featured.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -1883,9 +1868,9 @@ function ProviderDashboardContent() {
                         <div key={featured.id} className="p-3 rounded-lg bg-white/5 border border-purple-500/20 flex items-center justify-between">
                           <div>
                             <p className="text-white font-medium text-sm">{listing?.propertyName || 'Unknown Listing'}</p>
-                            <p className="text-xs text-muted-foreground">{featured.boostLevel}x visibility • {daysLeft} days remaining</p>
+                            <p className="text-xs text-muted-foreground">{daysLeft} days remaining</p>
                           </div>
-                          <Badge className="bg-purple-500/80">{featured.boostLevel}x Boost</Badge>
+                          <Badge className="bg-purple-500/80">Featured</Badge>
                         </div>
                       );
                     })}
@@ -1895,12 +1880,12 @@ function ProviderDashboardContent() {
                 {/* Listings Available to Boost - Only show if verified */}
                 {isDocumentsVerified && (
                   <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-white">Boost a Listing</h4>
+                    <h4 className="text-sm font-medium text-white">Feature a Listing</h4>
                     {listings.filter(l => l.status === 'approved' && !isListingFeatured(l.id)).length === 0 ? (
                       <p className="text-xs text-muted-foreground">
                         {listings.filter(l => l.status === 'approved').length === 0 
-                          ? "No approved listings available to boost. Get your listings approved first."
-                          : "All your listings are already boosted!"}
+                          ? "No approved listings available to feature. Get your listings approved first."
+                          : "All your listings are already featured!"}
                       </p>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1916,12 +1901,12 @@ function ProviderDashboardContent() {
                               onClick={() => {
                                 setSelectedListingToBoost(listing);
                                 setBoostLevel(2);
-                                setBoostDuration(7);
+                                setBoostDuration(30);
                                 setShowBoostModal(true);
                               }}
                               data-testid={`button-boost-listing-${listing.id}`}
                             >
-                              <Zap className="w-3 h-3" /> Boost
+                              <Zap className="w-3 h-3" /> Feature
                             </Button>
                           </div>
                         ))}
@@ -1932,21 +1917,15 @@ function ProviderDashboardContent() {
                 
                 {/* Pricing Info */}
                 <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                  <h4 className="text-sm font-medium text-purple-300 mb-2">Boost Pricing (Monthly)</h4>
-                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                    <div>
-                      <p className="text-white font-bold">2x Visibility</p>
-                      <p className="text-muted-foreground">$100/month</p>
-                    </div>
-                    <div>
-                      <p className="text-white font-bold">3x Visibility</p>
-                      <p className="text-muted-foreground">$150/month</p>
-                    </div>
-                    <div>
-                      <p className="text-white font-bold">5x Visibility</p>
-                      <p className="text-muted-foreground">$200/month</p>
-                    </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-purple-300">Featured Listing</h4>
+                    <span className="text-lg font-bold text-purple-400">$100/month</span>
                   </div>
+                  <ul className="space-y-1.5 text-xs text-muted-foreground">
+                    <li className="flex items-center gap-2"><Check className="w-3 h-3 text-purple-400 shrink-0" /> Pinned to the top of search results</li>
+                    <li className="flex items-center gap-2"><Check className="w-3 h-3 text-purple-400 shrink-0" /> "Featured" badge on your listing</li>
+                    <li className="flex items-center gap-2"><Check className="w-3 h-3 text-purple-400 shrink-0" /> Priority placement for 30 days</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>
@@ -3105,61 +3084,31 @@ function ProviderDashboardContent() {
             <div className="bg-gradient-to-b from-card to-background border border-purple-500/30 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
               <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/5 border-b border-purple-500/20 px-6 py-4">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-purple-400" /> Boost Your Listing
+                  <Zap className="w-5 h-5 text-purple-400" /> Feature Your Listing
                 </h2>
                 <p className="text-xs text-muted-foreground mt-1">{selectedListingToBoost.propertyName}</p>
               </div>
               <div className="p-6 space-y-4">
-                <div>
-                  <label className="text-sm text-white mb-2 block">Visibility Boost Level</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[2, 3, 5].map((level) => (
-                      <button
-                        key={level}
-                        onClick={() => setBoostLevel(level)}
-                        className={`p-3 rounded-lg border text-center transition-all ${
-                          boostLevel === level 
-                            ? 'bg-purple-500/20 border-purple-500 text-white' 
-                            : 'bg-white/5 border-white/10 text-muted-foreground hover:border-purple-500/50'
-                        }`}
-                        data-testid={`button-boost-level-${level}`}
-                      >
-                        <p className="text-lg font-bold">{level}x</p>
-                        <p className="text-xs">${level === 5 ? 200 : level === 3 ? 150 : 100}/mo</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="text-sm text-white mb-2 block">Duration</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[7, 14, 30].map((days) => (
-                      <button
-                        key={days}
-                        onClick={() => setBoostDuration(days)}
-                        className={`p-3 rounded-lg border text-center transition-all ${
-                          boostDuration === days 
-                            ? 'bg-purple-500/20 border-purple-500 text-white' 
-                            : 'bg-white/5 border-white/10 text-muted-foreground hover:border-purple-500/50'
-                        }`}
-                        data-testid={`button-boost-duration-${days}`}
-                      >
-                        <p className="text-lg font-bold">{days}</p>
-                        <p className="text-xs">days</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                
                 <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white">Monthly Cost</span>
-                    <span className="text-2xl font-bold text-purple-400">${getBoostPrice()}/mo</span>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-white font-medium">Featured Listing</span>
+                    <span className="text-2xl font-bold text-purple-400">$100<span className="text-sm font-normal text-muted-foreground">/month</span></span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {boostLevel}x visibility boost for your listing
-                  </p>
+                  <p className="text-xs text-muted-foreground mb-3">30-day featured placement for your listing</p>
+                  <ul className="space-y-2">
+                    <li className="flex items-center gap-2 text-sm text-gray-300">
+                      <Check className="w-4 h-4 text-purple-400 shrink-0" /> Pinned to the top of search results
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-gray-300">
+                      <Check className="w-4 h-4 text-purple-400 shrink-0" /> "Featured" badge displayed on your listing
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-gray-300">
+                      <Check className="w-4 h-4 text-purple-400 shrink-0" /> Higher visibility to prospective tenants
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-gray-300">
+                      <Check className="w-4 h-4 text-purple-400 shrink-0" /> Renewed monthly — cancel anytime
+                    </li>
+                  </ul>
                 </div>
               </div>
               <div className="bg-background border-t border-purple-500/20 px-6 py-4 flex gap-2">
@@ -3173,7 +3122,7 @@ function ProviderDashboardContent() {
                     <span className="animate-pulse">Processing...</span>
                   ) : (
                     <>
-                      <Zap className="w-4 h-4" /> Boost Now - ${getBoostPrice()}
+                      <Zap className="w-4 h-4" /> Feature Now — $100
                     </>
                   )}
                 </Button>
