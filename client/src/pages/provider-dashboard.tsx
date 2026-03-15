@@ -3689,7 +3689,7 @@ function ReferralTab() {
               </div>
               <div className="p-3 rounded-lg bg-white/5 border border-white/10">
                 <p className="text-xs font-medium text-primary mb-1">They get</p>
-                <p className="text-sm text-white font-semibold">First month 50% off</p>
+                <p className="text-sm text-white font-semibold">First month free</p>
                 <p className="text-xs text-muted-foreground">Discount applied automatically at checkout</p>
               </div>
             </div>
