@@ -4,6 +4,7 @@ import { serveStatic } from "./static";
 import { createServer } from "http";
 import { runMigrations } from 'stripe-replit-sync';
 import { getStripeSync } from './stripeClient';
+import { ensureStripeProductsExist } from './stripeSetup';
 import { WebhookHandlers } from './webhookHandlers';
 import { startSubscriptionScheduler } from './subscriptionScheduler';
 import { generateBrowsePageHtml, generatePropertyPageHtml } from './seo-templates';
@@ -95,6 +96,8 @@ async function initStripe() {
       .catch((err: any) => {
         console.error('Error syncing Stripe data:', err);
       });
+
+    await ensureStripeProductsExist();
   } catch (error) {
     console.error('Failed to initialize Stripe:', error);
   }
