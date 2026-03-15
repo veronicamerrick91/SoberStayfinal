@@ -72,6 +72,7 @@ interface LocationData {
 function AnalyticsDashboard() {
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
   const [locations, setLocations] = useState<LocationData[]>([]);
+  const [cityDemand, setCityDemand] = useState<{ demand: { city: string; state: string; views: number; clicks: number; total: number }[]; totalSearches: number; cities: string[] } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [timeframe, setTimeframe] = useState(30);
 
@@ -79,9 +80,10 @@ function AnalyticsDashboard() {
     const fetchAnalytics = async () => {
       setIsLoading(true);
       try {
-        const [summaryRes, locationsRes] = await Promise.all([
+        const [summaryRes, locationsRes, demandRes] = await Promise.all([
           fetch(`/api/provider/analytics/summary?days=${timeframe}`, { credentials: 'include' }),
-          fetch(`/api/provider/analytics/locations?days=${timeframe}`, { credentials: 'include' })
+          fetch(`/api/provider/analytics/locations?days=${timeframe}`, { credentials: 'include' }),
+          fetch(`/api/provider/analytics/city-demand?days=${timeframe}`, { credentials: 'include' })
         ]);
         
         if (summaryRes.ok) {
@@ -92,6 +94,11 @@ function AnalyticsDashboard() {
         if (locationsRes.ok) {
           const data = await locationsRes.json();
           setLocations(data.locations || []);
+        }
+
+        if (demandRes.ok) {
+          const data = await demandRes.json();
+          setCityDemand(data);
         }
       } catch (err) {
         console.error("Error fetching analytics:", err);
@@ -269,6 +276,58 @@ function AnalyticsDashboard() {
         </Card>
       </div>
 
+      <Card className="bg-card border-border">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-bold flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-primary" />
+            Searches in Your City
+            <span className="text-xs font-normal text-muted-foreground ml-1">Last {timeframe} days</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {cityDemand && cityDemand.demand.length > 0 ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                <div className="p-2 bg-primary/20 rounded-lg">
+                  <Search className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-white" data-testid="text-total-city-searches">{cityDemand.totalSearches}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Total listing interactions in {cityDemand.cities.length === 1 ? cityDemand.cities[0] : `${cityDemand.cities.length} cities`}
+                  </p>
+                </div>
+              </div>
+              <div className="grid gap-2">
+                {cityDemand.demand.slice(0, 5).map((d, i) => (
+                  <div key={i} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-white/5 transition-colors" data-testid={`row-city-demand-${i}`}>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-3 h-3 text-muted-foreground" />
+                      <span className="text-sm font-medium">{d.city}, {d.state}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>{d.views} views</span>
+                      <span>{d.clicks} clicks</span>
+                      <span className="font-bold text-primary">{d.total} total</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : cityDemand && cityDemand.cities.length === 0 ? (
+            <div className="text-center py-4">
+              <MapPin className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Add a listing to see search demand in your area</p>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <MapPin className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No search activity in your cities yet — demand data will appear as tenants browse</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card className="bg-gradient-to-r from-primary/10 to-card border-primary/20">
         <CardContent className="pt-6">
           <div className="flex items-start gap-4">
@@ -414,7 +473,6 @@ function ProviderDashboardContent() {
   
   // Traffic snapshot for overview tab
   const [trafficSnapshot, setTrafficSnapshot] = useState<{ views: number; clicks: number; inquiries: number; tourRequests: number; applications: number } | null>(null);
-  const [cityDemand, setCityDemand] = useState<{ demand: { city: string; state: string; views: number; clicks: number; total: number }[]; totalSearches: number; cities: string[] } | null>(null);
   
   // Provider settings state
   const [settingsEmail, setSettingsEmail] = useState("");
@@ -899,16 +957,14 @@ function ProviderDashboardContent() {
     loadAllData();
   }, [user?.id]);
 
-  // Fetch traffic snapshot for overview
   useEffect(() => {
     if (!user?.id) return;
-    Promise.all([
-      fetch('/api/provider/analytics/summary?days=30', { credentials: 'include' }).then(r => r.ok ? r.json() : null),
-      fetch('/api/provider/analytics/city-demand?days=30', { credentials: 'include' }).then(r => r.ok ? r.json() : null),
-    ]).then(([summary, demand]) => {
-      if (summary?.totals) setTrafficSnapshot(summary.totals);
-      if (demand) setCityDemand(demand);
-    }).catch(() => {});
+    fetch('/api/provider/analytics/summary?days=30', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(summary => {
+        if (summary?.totals) setTrafficSnapshot(summary.totals);
+      })
+      .catch(() => {});
   }, [user?.id]);
 
   // Handle return from Stripe checkout - refetch subscription status
@@ -1147,22 +1203,86 @@ function ProviderDashboardContent() {
 
               <Card className="bg-card border-border">
                 <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
+                  <div className="flex justify-between items-start mb-3">
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Pending Actions</p>
-                      <h3 className="text-3xl font-bold text-white">{applications.filter(a => a.status === "New" || a.status === "Screening").length}</h3>
+                      <h3 className="text-3xl font-bold text-white">{applications.filter(a => a.status === "New" || a.status === "Screening").length + conversations.filter(c => c.unreadCount > 0).length + tourRequests.filter(t => t.status === "pending").length}</h3>
                     </div>
                     <div className="p-2 bg-amber-500/10 rounded-lg">
                       <AlertCircle className="w-5 h-5 text-amber-500" />
                     </div>
                   </div>
-                  <div className="text-xs text-amber-500 font-bold">
-                    Requires attention
+                  <div className="space-y-1.5 text-xs">
+                    {applications.filter(a => a.status === "New" || a.status === "Screening").length > 0 && (
+                      <div className="flex items-center gap-2 text-amber-400">
+                        <FileText className="w-3 h-3" />
+                        <span>{applications.filter(a => a.status === "New" || a.status === "Screening").length} new application{applications.filter(a => a.status === "New" || a.status === "Screening").length !== 1 ? 's' : ''} to review</span>
+                      </div>
+                    )}
+                    {conversations.filter(c => c.unreadCount > 0).length > 0 && (
+                      <div className="flex items-center gap-2 text-amber-400">
+                        <MessageSquare className="w-3 h-3" />
+                        <span>{conversations.filter(c => c.unreadCount > 0).length} unread message{conversations.filter(c => c.unreadCount > 0).length !== 1 ? 's' : ''}</span>
+                      </div>
+                    )}
+                    {tourRequests.filter(t => t.status === "pending").length > 0 && (
+                      <div className="flex items-center gap-2 text-amber-400">
+                        <Calendar className="w-3 h-3" />
+                        <span>{tourRequests.filter(t => t.status === "pending").length} pending tour request{tourRequests.filter(t => t.status === "pending").length !== 1 ? 's' : ''}</span>
+                      </div>
+                    )}
+                    {applications.filter(a => a.status === "New" || a.status === "Screening").length === 0 && conversations.filter(c => c.unreadCount > 0).length === 0 && tourRequests.filter(t => t.status === "pending").length === 0 && (
+                      <div className="text-green-400 font-medium">All caught up!</div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             </div>
             )}
+
+            {!hasActiveSubscription && (
+              <Card className="bg-gradient-to-r from-primary/20 via-primary/10 to-card border-primary/30">
+                <CardContent className="pt-6">
+                  <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-1">Subscribe to List Properties</h3>
+                      <p className="text-sm text-muted-foreground">$49/month per listing. Includes all features — messaging, analytics, and more.</p>
+                    </div>
+                    <Button 
+                      onClick={() => setShowPaymentModal(true)}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                      data-testid="button-subscribe"
+                    >
+                      <CreditCard className="w-4 h-4" /> Subscribe Now
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card className="bg-blue-500/10 border-blue-500/30">
+              <CardContent className="pt-6">
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                  <div className="flex gap-3">
+                    <div className="p-2 bg-blue-500/20 rounded-lg h-fit">
+                      <Eye className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-white mb-1">Preview Tenant Applications</h3>
+                      <p className="text-sm text-muted-foreground">See exactly what tenants fill out when applying to your listings. Preview the full application form to understand the information you'll receive.</p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    onClick={() => window.open('/apply/preview', '_blank')}
+                    className="gap-2 border-blue-500/50 text-blue-400 hover:bg-blue-500/10 whitespace-nowrap"
+                    data-testid="button-preview-application"
+                  >
+                    <Eye className="w-4 h-4" /> Preview Application Form
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Traffic Snapshot */}
             <Card className="bg-card border-border">
@@ -1229,103 +1349,6 @@ function ProviderDashboardContent() {
                     <p className="text-sm text-muted-foreground">Your listings are being indexed — traffic data will appear here soon</p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Searches in Your City */}
-            <Card className="bg-card border-border">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-primary" />
-                  Searches in Your City
-                  <span className="text-xs font-normal text-muted-foreground ml-1">Last 30 days</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {cityDemand && cityDemand.demand.length > 0 ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
-                      <div className="p-2 bg-primary/20 rounded-lg">
-                        <Search className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-white" data-testid="text-total-city-searches">{cityDemand.totalSearches}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Total listing interactions in {cityDemand.cities.length === 1 ? cityDemand.cities[0] : `${cityDemand.cities.length} cities`}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="grid gap-2">
-                      {cityDemand.demand.slice(0, 5).map((d, i) => (
-                        <div key={i} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-white/5 transition-colors" data-testid={`row-city-demand-${i}`}>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-sm font-medium">{d.city}, {d.state}</span>
-                          </div>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <span>{d.views} views</span>
-                            <span>{d.clicks} clicks</span>
-                            <span className="font-bold text-primary">{d.total} total</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : cityDemand && cityDemand.cities.length === 0 ? (
-                  <div className="text-center py-4">
-                    <MapPin className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">Add a listing to see search demand in your area</p>
-                  </div>
-                ) : (
-                  <div className="text-center py-4">
-                    <MapPin className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">No search activity in your cities yet — demand data will appear as tenants browse</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {!hasActiveSubscription && (
-              <Card className="bg-gradient-to-r from-primary/20 via-primary/10 to-card border-primary/30">
-                <CardContent className="pt-6">
-                  <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-bold text-white mb-1">Subscribe to List Properties</h3>
-                      <p className="text-sm text-muted-foreground">$49/month per listing. Includes all features — messaging, analytics, and more.</p>
-                    </div>
-                    <Button 
-                      onClick={() => setShowPaymentModal(true)}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-                      data-testid="button-subscribe"
-                    >
-                      <CreditCard className="w-4 h-4" /> Subscribe Now
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            <Card className="bg-blue-500/10 border-blue-500/30">
-              <CardContent className="pt-6">
-                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                  <div className="flex gap-3">
-                    <div className="p-2 bg-blue-500/20 rounded-lg h-fit">
-                      <Eye className="w-5 h-5 text-blue-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-white mb-1">Preview Tenant Applications</h3>
-                      <p className="text-sm text-muted-foreground">See exactly what tenants fill out when applying to your listings. Preview the full application form to understand the information you'll receive.</p>
-                    </div>
-                  </div>
-                  <Button 
-                    variant="outline"
-                    onClick={() => window.open('/apply/preview', '_blank')}
-                    className="gap-2 border-blue-500/50 text-blue-400 hover:bg-blue-500/10 whitespace-nowrap"
-                    data-testid="button-preview-application"
-                  >
-                    <Eye className="w-4 h-4" /> Preview Application Form
-                  </Button>
-                </div>
               </CardContent>
             </Card>
 

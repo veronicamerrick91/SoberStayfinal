@@ -795,12 +795,13 @@ function TenantDashboardContent() {
                             return (checkFilled(fields) / fields.length) * weight;
                           };
                           
-                          const coreFields = [data.firstName, data.lastName, data.email, data.phoneNumber, data.dateOfBirth, data.gender, data.currentAddress];
+                          const coreFields = [data.firstName, data.lastName, data.email, data.phone || data.phoneNumber, data.dateOfBirth, data.gender, data.currentAddress];
                           const emergencyFields = [data.emergencyContactName, data.emergencyContactPhone, data.emergencyContactRelationship];
                           const recoveryFields = [data.primarySubstance, data.lengthOfSobriety, data.lastDateOfUse];
                           const employmentFields = [data.employmentStatus, data.incomeSources, data.canPayRent];
                           const housingFields = [data.moveInDate, data.roomPreference];
-                          const consentFields = [data.agreeNoDrugs, data.agreeTerms];
+                          const isSubmitted = app.status === "pending" || app.status === "approved" || app.status === "denied" || app.status === "screening" || app.status === "under_review";
+                          const consentFields = [data.consentShareInfo || data.agreeNoDrugs || isSubmitted, data.consentTerms || data.agreeTerms || isSubmitted];
                           
                           return Math.round(
                             calculateScore(coreFields, 30) +

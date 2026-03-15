@@ -248,6 +248,9 @@ export default function ApplicationForm() {
           if (appData.transportationNeeds) setTransportationNeeds(appData.transportationNeeds);
           if (appData.emotionalSupportAnimal) setEmotionalSupportAnimal(appData.emotionalSupportAnimal);
           if (appData.moveInDate) setMoveInDate(appData.moveInDate);
+          if (profile.idPhotoUrl) {
+            setIdUploaded(true);
+          }
         } else if (user) {
           // If no profile exists, still use user account data
           const userFirstName = user.firstName || (user.name ? user.name.split(' ')[0] : '');
