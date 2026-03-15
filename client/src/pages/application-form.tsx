@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useLocation, useRoute } from "wouter";
 import { ArrowLeft, CheckCircle2, Upload, Loader2, PartyPopper, AlertCircle, Circle } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Progress } from "@/components/ui/progress";
 import { useState, useEffect } from "react";
 import { isAuthenticated, getAuth } from "@/lib/auth";
@@ -518,7 +519,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Date of Birth *</Label>
-                  <Input type="date" className="bg-background/50 border-border" required data-testid="input-dob" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
+                  <DatePicker value={dateOfBirth} onChange={setDateOfBirth} placeholder="Select date of birth" data-testid="input-dob" required disableFuture />
                 </div>
                 <div className="space-y-2">
                   <Label>Gender *</Label>
@@ -667,7 +668,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Last Date of Use *</Label>
-                  <Input type="date" className="bg-background/50 border-border" required value={lastDateOfUse} onChange={(e) => setLastDateOfUse(e.target.value)} />
+                  <DatePicker value={lastDateOfUse} onChange={setLastDateOfUse} placeholder="Select last date of use" required disableFuture />
                 </div>
                 <div className="space-y-2">
                   <Label>Length of Sobriety *</Label>
@@ -687,7 +688,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>If Yes, Date (if comfortable sharing)</Label>
-                  <Input type="date" className="bg-background/50 border-border" value={overdoseDate} onChange={(e) => setOverdoseDate(e.target.value)} />
+                  <DatePicker value={overdoseDate} onChange={setOverdoseDate} placeholder="Select date (optional)" disableFuture />
                 </div>
                 <div className="space-y-2">
                   <Label>Have You Ever Been on MAT? *</Label>
@@ -1116,7 +1117,7 @@ export default function ApplicationForm() {
                 </div>
                 <div className="space-y-2">
                   <Label>Desired Move-In Date *</Label>
-                  <Input type="date" className="bg-background/50 border-border" required value={moveInDate} onChange={(e) => setMoveInDate(e.target.value)} />
+                  <DatePicker value={moveInDate} onChange={setMoveInDate} placeholder="Select desired move-in date" required disablePast />
                 </div>
                 
                 <div className="mt-4 pt-4 border-t border-border">

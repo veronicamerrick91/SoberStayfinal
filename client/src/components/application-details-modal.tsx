@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { DatePicker } from "@/components/ui/date-picker";
 
 export interface ApplicationData {
   id: string;
@@ -451,13 +452,12 @@ export function ApplicationDetailsModal({ open, onClose, application, onApprove,
             <div className="space-y-3">
               <div>
                 <label className="text-xs text-muted-foreground mb-2 block">Move-In Date (optional)</label>
-                <input
-                  type="date"
+                <DatePicker
                   value={moveInDate}
-                  onChange={(e) => setMoveInDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 rounded-lg bg-background/50 border border-white/10 text-white text-sm"
+                  onChange={setMoveInDate}
+                  placeholder="Select move-in date"
                   data-testid="input-move-in-date"
+                  disablePast
                 />
                 <p className="text-xs text-muted-foreground mt-1">Set move-in date to send a reminder email 3 days before</p>
               </div>

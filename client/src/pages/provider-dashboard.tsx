@@ -13,6 +13,7 @@ import {
   ShieldCheck, Loader2, RotateCcw, CheckCircle, Download, Trash2
 } from "lucide-react";
 import { downloadDocument } from "@/lib/document-utils";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
@@ -1462,10 +1463,7 @@ function ProviderDashboardContent() {
                         {home.status === "draft" ? (
                           <Button size="sm" className="flex-1 bg-amber-500 hover:bg-amber-600 text-black" onClick={() => setLocation(`/edit-listing/${home.id}`)} data-testid={`button-continue-${home.id}`}>Continue Editing</Button>
                         ) : (
-                          <>
-                            <Button size="sm" variant="outline" className="flex-1" onClick={() => setLocation(`/edit-listing/${home.id}`)} data-testid={`button-edit-${home.id}`}>Edit</Button>
-                            <Button size="sm" className="flex-1 bg-primary text-primary-foreground" onClick={() => setLocation(`/edit-listing/${home.id}`)} data-testid={`button-manage-${home.id}`}>Manage</Button>
-                          </>
+                          <Button size="sm" className="flex-1 bg-primary text-primary-foreground" onClick={() => setLocation(`/edit-listing/${home.id}`)} data-testid={`button-manage-${home.id}`}>Manage</Button>
                         )}
                       </div>
                       <div className="mt-2">
@@ -3405,13 +3403,12 @@ function ProviderDashboardContent() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="suggested-date" className="text-white">Suggested Date</Label>
-                <Input
-                  id="suggested-date"
-                  type="date"
+                <DatePicker
                   value={suggestedDate}
-                  onChange={(e) => setSuggestedDate(e.target.value)}
-                  className="bg-background border-border text-white"
+                  onChange={setSuggestedDate}
+                  placeholder="Select a date"
                   data-testid="input-suggested-date"
+                  disablePast
                 />
               </div>
               <div className="space-y-2">

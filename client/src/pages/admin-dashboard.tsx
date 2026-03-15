@@ -14,6 +14,7 @@ import {
   AlignLeft, AlignCenter, AlignRight, Undo, Redo, Type, Save,
   ChevronRight, RotateCcw, Trash2, CreditCard
 } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
 import { getReports, updateReportStatus } from "@/lib/reports";
 import { UserEditModal } from "@/components/user-edit-modal";
 import { ListingReviewModal } from "@/components/listing-review-modal";
@@ -4398,13 +4399,12 @@ the actual document file stored on the server.
                         className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm"
                         data-testid="input-promo-limit"
                       />
-                      <input 
-                        type="date" 
-                        placeholder="Expiration Date (optional)"
+                      <DatePicker
                         value={newPromoExpiry}
-                        onChange={(e) => setNewPromoExpiry(e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none transition-colors text-white text-sm"
+                        onChange={setNewPromoExpiry}
+                        placeholder="Expiration Date (optional)"
                         data-testid="input-promo-expiry"
+                        disablePast
                       />
                       <Button 
                         onClick={handleCreatePromo} 
@@ -5563,11 +5563,10 @@ the actual document file stored on the server.
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Schedule</label>
-                    <input 
-                      type="date" 
+                    <DatePicker
                       value={blogScheduleDate}
-                      onChange={(e) => setBlogScheduleDate(e.target.value)}
-                      className="w-full px-3 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white text-xs transition-colors"
+                      onChange={setBlogScheduleDate}
+                      placeholder="Schedule date"
                     />
                   </div>
                 </div>
@@ -6750,12 +6749,12 @@ Use the toolbar above for formatting, or write in Markdown:
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-muted-foreground mb-2 block uppercase tracking-wider">Expiration Date</label>
-                  <input 
-                    type="date" 
+                  <DatePicker
                     value={newPromoExpiry}
-                    onChange={(e) => setNewPromoExpiry(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-background/80 border border-primary/30 hover:border-primary/50 focus:border-primary focus:outline-none text-white transition-colors"
+                    onChange={setNewPromoExpiry}
+                    placeholder="Expiration Date (optional)"
                     data-testid="input-edit-promo-expiry"
+                    disablePast
                   />
                 </div>
                 <div className="flex items-center gap-3">

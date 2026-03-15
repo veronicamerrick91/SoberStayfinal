@@ -4089,9 +4089,31 @@ Disallow: /for-tenants
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - numDays);
       
-      const dailyData = await storage.getProviderAnalyticsSummary(user.id, startDate, endDate);
+      const rawDailyData = await storage.getProviderAnalyticsSummary(user.id, startDate, endDate);
       
-      // Calculate totals
+      const dateMap = new Map<string, { eventDate: string; views: number; clicks: number; inquiries: number; tourRequests: number; applications: number }>();
+      for (const row of rawDailyData) {
+        const dateKey = new Date(row.eventDate).toISOString().split('T')[0];
+        const existing = dateMap.get(dateKey);
+        if (existing) {
+          existing.views += row.views;
+          existing.clicks += row.clicks;
+          existing.inquiries += row.inquiries;
+          existing.tourRequests += row.tourRequests;
+          existing.applications += row.applications;
+        } else {
+          dateMap.set(dateKey, {
+            eventDate: dateKey,
+            views: row.views,
+            clicks: row.clicks,
+            inquiries: row.inquiries,
+            tourRequests: row.tourRequests,
+            applications: row.applications,
+          });
+        }
+      }
+      const dailyData = Array.from(dateMap.values()).sort((a, b) => b.eventDate.localeCompare(a.eventDate));
+      
       const totals = dailyData.reduce((acc, day) => ({
         views: acc.views + day.views,
         clicks: acc.clicks + day.clicks,

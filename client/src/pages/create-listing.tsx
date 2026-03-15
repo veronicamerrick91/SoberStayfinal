@@ -568,7 +568,7 @@ export function CreateListing() {
           <Button
             variant="ghost"
             className="gap-2 mb-8 pl-0 text-muted-foreground hover:text-primary"
-            onClick={() => setLocation("/provider-dashboard")}
+            onClick={() => window.history.length > 1 ? window.history.back() : setLocation("/provider-dashboard")}
           >
             <ArrowLeft className="w-4 h-4" /> Back
           </Button>

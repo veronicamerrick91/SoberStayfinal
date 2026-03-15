@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, Check, Loader2, AlertCircle, Send, MapPin, Building, Phone } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
 import { useState, useEffect, useRef } from "react";
 import { getAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
@@ -485,7 +486,7 @@ export function TenantProfile() {
                 </div>
                 <div className="space-y-2">
                   <Label>Date of Birth *</Label>
-                  <Input type="date" className="bg-background/50 border-border" value={formData.dateOfBirth} onChange={(e) => handleInputChange("dateOfBirth", e.target.value)} required />
+                  <DatePicker value={formData.dateOfBirth} onChange={(v) => handleInputChange("dateOfBirth", v)} placeholder="Select date of birth" required disableFuture />
                 </div>
                 <div className="space-y-2">
                   <Label>Gender *</Label>
@@ -543,7 +544,7 @@ export function TenantProfile() {
                 </div>
                 <div className="space-y-2">
                   <Label>Last Date of Use *</Label>
-                  <Input type="date" className="bg-background/50 border-border" value={formData.lastDateOfUse} onChange={(e) => handleInputChange("lastDateOfUse", e.target.value)} required />
+                  <DatePicker value={formData.lastDateOfUse} onChange={(v) => handleInputChange("lastDateOfUse", v)} placeholder="Select last date of use" required disableFuture />
                 </div>
                 <div className="space-y-2">
                   <Label>Length of Sobriety *</Label>
@@ -563,7 +564,7 @@ export function TenantProfile() {
                 </div>
                 <div className="space-y-2">
                   <Label>If Yes, Date (if comfortable sharing)</Label>
-                  <Input type="date" className="bg-background/50 border-border" value={formData.overdoseDate} onChange={(e) => handleInputChange("overdoseDate", e.target.value)} />
+                  <DatePicker value={formData.overdoseDate} onChange={(v) => handleInputChange("overdoseDate", v)} placeholder="Select date (optional)" disableFuture />
                 </div>
                 <div className="space-y-2">
                   <Label>Have You Ever Been on MAT? *</Label>
@@ -884,7 +885,7 @@ export function TenantProfile() {
                 </div>
                 <div className="space-y-2">
                   <Label>Desired Move-In Date *</Label>
-                  <Input type="date" className="bg-background/50 border-border" value={formData.moveInDate} onChange={(e) => handleInputChange("moveInDate", e.target.value)} required />
+                  <DatePicker value={formData.moveInDate} onChange={(v) => handleInputChange("moveInDate", v)} placeholder="Select desired move-in date" required disablePast />
                 </div>
               </div>
 

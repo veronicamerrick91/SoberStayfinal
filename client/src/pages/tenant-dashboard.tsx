@@ -26,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getEngagementStats, getRecoveryBadges, getNextStep, getDaysClean, getViewedHomes, fetchServerViewedHomes, getTourRequests, TourRequest } from "@/lib/tenant-engagement";
 import { getSubmittedApplications, initializeSampleApplications, SubmittedApplication } from "@/lib/application-profile";
 import { formatDistanceToNow } from "date-fns";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface ChatMessage {
   sender: "tenant" | "provider";
@@ -1151,13 +1152,12 @@ function TenantDashboardContent() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="sobrietyDate">Sobriety Date</Label>
-                  <Input 
-                    id="sobrietyDate" 
-                    type="date"
-                    value={profile.sobrietyDate} 
-                    onChange={(e) => setProfile({...profile, sobrietyDate: e.target.value})}
-                    className="bg-background/50"
+                  <DatePicker
+                    value={profile.sobrietyDate}
+                    onChange={(v) => setProfile({...profile, sobrietyDate: v})}
+                    placeholder="Select sobriety date"
                     data-testid="input-sobriety-date"
+                    disableFuture
                   />
                 </div>
                 <div className="space-y-2">
