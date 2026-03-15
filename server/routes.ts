@@ -85,18 +85,6 @@ const FOUNDING_MEMBER_CAP = 50;
 
 async function findPriceForProduct(productName: string, interval: string): Promise<string | null> {
   try {
-    const result = await db.execute(sql`
-      SELECT pr.id as price_id
-      FROM stripe.prices pr
-      JOIN stripe.products p ON pr.product = p.id
-      WHERE p.name ILIKE ${productName}
-      AND pr.active = true
-      AND pr.recurring->>'interval' = ${interval}
-      LIMIT 1
-    `);
-    if (result.rows.length > 0) {
-      return (result.rows[0] as any).price_id;
-    }
     const { getUncachableStripeClient } = await import('./stripeClient');
     const stripe = await getUncachableStripeClient();
     const products = await stripe.products.search({ query: `name~'${productName}' AND active:'true'` });
@@ -1598,37 +1586,33 @@ Disallow: /for-tenants
       if (!priceId) {
         const interval = 'month';
         
-        // Try database first
-        const result = await db.execute(sql`
-          SELECT pr.id as price_id
-          FROM stripe.prices pr
-          JOIN stripe.products p ON pr.product = p.id
-          WHERE (p.name ILIKE '%Provider%Subscription%' OR p.metadata->>'type' = 'provider_subscription')
-          AND pr.active = true
-          AND pr.recurring->>'interval' = ${interval}
-          LIMIT 1
-        `);
+        // Search Stripe API directly for the listing product price
+        const { getUncachableStripeClient } = await import('./stripeClient');
+        const stripe = await getUncachableStripeClient();
         
-        if (result.rows.length > 0) {
-          priceId = (result.rows[0] as any).price_id;
-        }
+        const products = await stripe.products.search({ 
+          query: "name~'Provider' AND active:'true'" 
+        });
         
-        // If not in database, try Stripe API directly
-        if (!priceId) {
-          const { getUncachableStripeClient } = await import('./stripeClient');
-          const stripe = await getUncachableStripeClient();
-          
-          // Search for provider subscription products
-          const products = await stripe.products.search({ 
-            query: "name~'Provider' AND active:'true'" 
+        for (const product of products.data) {
+          const prices = await stripe.prices.list({ 
+            product: product.id, 
+            active: true 
           });
-          
-          for (const product of products.data) {
-            const prices = await stripe.prices.list({ 
-              product: product.id, 
-              active: true 
-            });
-            const matchingPrice = prices.data.find(p => p.recurring?.interval === interval);
+          const matchingPrice = prices.data.find(p => p.recurring?.interval === interval);
+          if (matchingPrice) {
+            priceId = matchingPrice.id;
+            break;
+          }
+        }
+
+        if (!priceId) {
+          const listingProducts = await stripe.products.search({
+            query: "name~'Listing' AND active:'true'"
+          });
+          for (const product of listingProducts.data) {
+            const prices = await stripe.prices.list({ product: product.id, active: true });
+            const matchingPrice = prices.data.find(p => p.recurring?.interval === interval && p.unit_amount === 4900);
             if (matchingPrice) {
               priceId = matchingPrice.id;
               break;
