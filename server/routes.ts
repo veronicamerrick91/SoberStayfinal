@@ -1636,6 +1636,20 @@ Disallow: /for-tenants
 
       // Get or create Stripe customer for this user
       let customerId = user.stripeCustomerId;
+      if (customerId) {
+        const { getUncachableStripeClient: getStripe } = await import('./stripeClient');
+        const stripeClient = await getStripe();
+        try {
+          await stripeClient.customers.retrieve(customerId);
+        } catch (err: any) {
+          if (err.code === 'resource_missing') {
+            console.log(`[Checkout] Customer ${customerId} not found in Stripe (likely test-mode ID), creating new one`);
+            customerId = null;
+          } else {
+            throw err;
+          }
+        }
+      }
       if (!customerId) {
         const customer = await stripeService.createCustomer(user.email, user.id);
         await storage.updateUserStripeCustomerId(user.id, customer.id);
