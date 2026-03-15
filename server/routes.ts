@@ -962,6 +962,10 @@ Disallow: /for-tenants
       if (!listing.totalBeds || listing.totalBeds <= 0) requiredFields.push("Number of Beds");
       if (!listing.description || listing.description.trim() === "") requiredFields.push("Description");
       
+      if (!listing.isImported && !listing.verificationDocumentUrl) {
+        requiredFields.push("Verification Document (provider must upload proof of ownership)");
+      }
+      
       if (requiredFields.length > 0) {
         return res.status(400).json({ 
           error: `Cannot approve listing with missing required fields: ${requiredFields.join(", ")}` 

@@ -38,7 +38,7 @@ const benefits = [
   {
     icon: MessageSquare,
     title: "Direct Messaging",
-    description: "Communicate directly with prospective residents through our secure messaging system."
+    description: "Communicate directly with prospective residents through our secure messaging system and receive online applications."
   },
   {
     icon: DollarSign,
@@ -78,7 +78,7 @@ const steps = [
 const faqs = [
   {
     question: "How much does it cost to list my sober living home?",
-    answer: "Each listing costs a flat $49/month. This includes all features — photos, verified badge, analytics, messaging, and application management. There are no tiers, no hidden fees, and no commissions."
+    answer: "Each listing costs a flat $49/month. This includes all features — photos, analytics, messaging, and application management. The Verified Badge is available as an optional add-on for $15/month. There are no tiers, no hidden fees, and no commissions."
   },
   {
     question: "How do I get my listing verified?",
@@ -179,7 +179,7 @@ export function ForProviders() {
             <div className="max-w-4xl mx-auto text-center">
               <div className="inline-flex items-center gap-2 bg-primary/20 text-primary px-4 py-2 rounded-full mb-6">
                 <Home className="w-4 h-4" />
-                <span className="text-sm font-medium">Trusted by 500+ Sober Living Operators</span>
+                <span className="text-sm font-medium">Trusted by 50+ Sober Living Operators</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
                 List Your Sober Living Home
@@ -272,10 +272,6 @@ export function ForProviders() {
                     <li className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-green-500" />
                       Full listing with photos
-                    </li>
-                    <li className="flex items-center gap-2 text-muted-foreground">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      Verified badge
                     </li>
                     <li className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-green-500" />

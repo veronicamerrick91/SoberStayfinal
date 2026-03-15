@@ -61,7 +61,7 @@ The platform includes a comprehensive analytics tracking system for providers:
 - **Admin Claims Tab** (`client/src/pages/admin-dashboard.tsx`): "Claims" tab showing pending/resolved claims with approve/reject/remove actions
 
 ### Flat Pricing Model
-- **Pricing**: Flat $49/month per listing — no tiers, all features included (photos, verified badge, analytics, inquiries, priority visibility)
+- **Pricing**: Flat $49/month per listing — all features included (photos, analytics, inquiries, priority visibility). Verified Badge available as optional $15/month add-on. Document proof of ownership required before listing approval (non-imported listings).
 - **Founding Member Program**: First 50 providers get 3 months free + 50% off for life (preserved in Stripe checkout via coupon + trial)
 - **Browse Sorting**: Featured/boosted first → claimed → unclaimed imported last
 - **Provider Listing Removal**: `DELETE /api/provider/listings/:id` — verifies ownership, cancels all Stripe subscriptions if this is the provider's last listing, deletes listing and related records

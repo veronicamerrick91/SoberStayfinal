@@ -68,7 +68,7 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
               <p className="text-sm font-medium text-primary mb-2">What's Included:</p>
               <ul className="text-xs text-gray-300 space-y-1">
                 <li>✓ Full listing with photos</li>
-                <li>✓ Verified badge & priority visibility</li>
+                <li>✓ Priority visibility in search</li>
                 <li>✓ Access to thousands of clients seeking sober living</li>
                 <li>✓ Direct tenant messaging</li>
                 <li>✓ Application management tools</li>

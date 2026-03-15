@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/collapsible";
 import logo from "@assets/C442C7B9-08EE-40E8-9A2E-1D38827FBB5B_1764526673965.jpeg";
 import { isAuthenticated, getAuth, logout } from "@/lib/auth";
+import { toast } from "@/hooks/use-toast";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
@@ -29,6 +30,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
     await logout();
     setLocation("/");
     setMenuOpen(false);
+    toast({
+      title: "You've been signed out",
+    });
   };
 
   const isActive = (path: string) => location === path;

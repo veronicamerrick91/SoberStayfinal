@@ -12,6 +12,7 @@ import {
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import type { Listing } from "@shared/schema";
+import { SUPERVISION_DEFINITIONS } from "@/lib/mock-data";
 
 interface QuizAnswers {
   budget: number;
@@ -384,6 +385,11 @@ export default function Quiz() {
                     {level}
                   </button>
                 ))}
+              </div>
+              <div className="mt-4 space-y-2 text-xs text-muted-foreground">
+                <p><span className="font-medium text-white">Peer Ran:</span> {SUPERVISION_DEFINITIONS["Peer Ran"]}</p>
+                <p><span className="font-medium text-white">Supervised:</span> {SUPERVISION_DEFINITIONS["Supervised"]}</p>
+                <p><span className="font-medium text-white">Monitored:</span> {SUPERVISION_DEFINITIONS["Monitored"]}</p>
               </div>
             </div>
           </div>
