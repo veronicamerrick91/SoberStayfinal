@@ -2374,6 +2374,28 @@ function ProviderDashboardContent() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
+                {!isDocumentsVerified && (
+                  <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                    <div className="flex items-start gap-3">
+                      <Zap className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="font-semibold text-amber-400 text-sm">Verification required for Featured Listings</h4>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          You must complete document verification before you can purchase a Featured Listing ($100/month). 
+                          Upload the documents below and our team will review them, typically within 1–2 business days.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                  <p className="text-xs text-blue-300">
+                    <strong>Multiple locations?</strong> Your verification applies to all listings under your account. 
+                    Upload documents for your primary business — once verified, you can list and feature any of your properties.
+                  </p>
+                </div>
+
                 <div className="space-y-4">
                   <h3 className="font-bold text-white">Upload Documents</h3>
                   <p className="text-sm text-muted-foreground">Submit the following documents to get verified on Sober Stay and unlock featured listing benefits.</p>
@@ -2501,12 +2523,12 @@ function ProviderDashboardContent() {
                 </div>
 
                 <div className="pt-4 border-t border-border">
-                  <h3 className="font-bold text-white mb-3">Verification Benefits</h3>
+                  <h3 className="font-bold text-white mb-3">What verification unlocks</h3>
                   <ul className="space-y-2">
-                    <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Unlock featured listing placement</li>
-                    <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Verified badge add-on ($15/mo)</li>
-                    <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Priority support</li>
-                    <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Higher tenant trust</li>
+                    <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Purchase Featured Listings ($100/month) — pinned to top of search results</li>
+                    <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Add Verified Badge to your listings ($15/month add-on)</li>
+                    <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Priority support from our team</li>
+                    <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Higher tenant trust — tenants prefer verified providers</li>
                   </ul>
                 </div>
               </CardContent>
@@ -3608,10 +3630,22 @@ function ReferralTab() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 space-y-3">
             <p className="text-sm text-foreground/80">
-              Refer other sober living providers to Sober Stay Homes! When they sign up using your unique referral code, you'll both benefit. Share your code and help grow our recovery housing network.
+              Refer other sober living providers to Sober Stay Homes and earn rewards when they list their first property.
             </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                <p className="text-xs font-medium text-primary mb-1">You earn</p>
+                <p className="text-sm text-white font-semibold">1 month free listing</p>
+                <p className="text-xs text-muted-foreground">Applied as a credit to your next billing cycle</p>
+              </div>
+              <div className="p-3 rounded-lg bg-white/5 border border-white/10">
+                <p className="text-xs font-medium text-primary mb-1">They get</p>
+                <p className="text-sm text-white font-semibold">First month 50% off</p>
+                <p className="text-xs text-muted-foreground">Discount applied automatically at checkout</p>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -3677,7 +3711,7 @@ function ReferralTab() {
               </div>
               <div>
                 <p className="text-2xl font-bold" data-testid="text-credits-earned">{referral?.creditsEarned || 0}</p>
-                <p className="text-xs text-muted-foreground">Credits Earned</p>
+                <p className="text-xs text-muted-foreground">Free Months Earned</p>
               </div>
             </div>
           </CardContent>
@@ -3721,7 +3755,7 @@ function ReferralTab() {
           <CardContent className="py-12 text-center">
             <Gift className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
             <p className="text-foreground/60 font-medium">No referrals yet</p>
-            <p className="text-sm text-muted-foreground mt-1">Share your referral code to start earning rewards!</p>
+            <p className="text-sm text-muted-foreground mt-1">Share your referral code to start earning free months!</p>
           </CardContent>
         </Card>
       )}
