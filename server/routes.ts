@@ -1694,14 +1694,13 @@ Disallow: /for-tenants
         return res.status(404).json({ error: "User not found" });
       }
       
-      // First check for fee waiver in local subscriptions table
       const localSubscription = await storage.getSubscriptionByProvider(user.id);
-      if (localSubscription?.hasFeeWaiver && localSubscription.status === 'active') {
+      if (localSubscription?.status === 'active' && (localSubscription.hasFeeWaiver || !user.stripeCustomerId)) {
         return res.json({ 
           subscription: {
-            id: `fee-waiver-${localSubscription.id}`,
+            id: localSubscription.hasFeeWaiver ? `fee-waiver-${localSubscription.id}` : `local-${localSubscription.id}`,
             status: 'active',
-            hasFeeWaiver: true,
+            hasFeeWaiver: localSubscription.hasFeeWaiver || false,
             currentPeriodEnd: localSubscription.currentPeriodEnd,
             listingAllowance: localSubscription.listingAllowance
           }
