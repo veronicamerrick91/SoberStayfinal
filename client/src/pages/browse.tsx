@@ -123,14 +123,34 @@ export default function Browse() {
       // Price filter (skip for unclaimed imported listings with $0 price)
       if (listing.monthlyPrice > 0 && listing.monthlyPrice > priceRange[0]) return false;
       
-      // Gender filter
-      if (selectedGenders.length > 0 && !selectedGenders.includes(listing.gender || "")) return false;
+      // Gender filter (normalize DB values: male→Men Only, female→Women Only, co-ed→Co-ed, Men→Men Only, Women→Women Only)
+      if (selectedGenders.length > 0) {
+        const genderVal = (listing.gender || "").toLowerCase();
+        const normalizedGender = genderVal === "male" || genderVal === "mens" || genderVal === "men" || genderVal === "men only" ? "Men Only"
+          : genderVal === "female" || genderVal === "womens" || genderVal === "women" || genderVal === "women only" ? "Women Only"
+          : genderVal === "co-ed" || genderVal === "coed" ? "Co-ed" : listing.gender || "";
+        if (!selectedGenders.includes(normalizedGender)) return false;
+      }
       
-      // Supervision filter
-      if (selectedSupervision.length > 0 && !selectedSupervision.includes(listing.supervisionType || "")) return false;
+      // Supervision filter (normalize DB values to display labels)
+      if (selectedSupervision.length > 0) {
+        const supVal = (listing.supervisionType || "").toLowerCase().replace(/_/g, "-");
+        const normalizedSup = supVal === "peer-run" || supVal === "peer ran" ? "Peer Ran"
+          : supVal === "supervised" || supVal === "house-manager" || supVal === "house_manager" ? "Supervised"
+          : supVal === "monitored" ? "Monitored"
+          : supVal === "integrated-treatment" || supVal === "integrated treatment" || supVal === "clinical-staff" || supVal === "clinical_staff" ? "Integrated Treatment"
+          : listing.supervisionType || "";
+        if (!selectedSupervision.includes(normalizedSup)) return false;
+      }
       
-      // Room type filter
-      if (selectedRoomTypes.length > 0 && !selectedRoomTypes.includes(listing.roomType || "")) return false;
+      // Room type filter (normalize DB values: private→Private Room, shared→Shared Room)
+      if (selectedRoomTypes.length > 0) {
+        const roomVal = (listing.roomType || "").toLowerCase();
+        const normalizedRoom = roomVal === "private" || roomVal === "private room" ? "Private Room"
+          : roomVal === "shared" || roomVal === "shared room" || roomVal === "semi-private" ? "Shared Room"
+          : listing.roomType || "";
+        if (!selectedRoomTypes.includes(normalizedRoom)) return false;
+      }
       
       // MAT friendly filter
       if (showMatFriendly && !listing.isMatFriendly) return false;

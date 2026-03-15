@@ -735,6 +735,27 @@ Disallow: /for-tenants
     }
   });
 
+  app.get("/api/listings/:id/provider-contact", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid listing ID" });
+      }
+      const listing = await storage.getListing(id);
+      if (!listing || !listing.providerId) {
+        return res.json({ phone: null, email: null });
+      }
+      const profile = await storage.getProviderProfile(listing.providerId);
+      const user = await storage.getUser(listing.providerId);
+      const phone = profile?.phone || null;
+      const email = user?.email || null;
+      res.json({ phone, email });
+    } catch (error) {
+      console.error("Error fetching provider contact:", error);
+      res.status(500).json({ error: "Failed to fetch provider contact" });
+    }
+  });
+
   // Update listing (PUT)
   app.put("/api/listings/:id", async (req, res) => {
     if (!req.isAuthenticated()) {

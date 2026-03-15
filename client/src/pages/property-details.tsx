@@ -87,7 +87,9 @@ export default function PropertyDetails() {
   });
   const [claimDocument, setClaimDocument] = useState<{ name: string; data: string } | null>(null);
   const [claimDocError, setClaimDocError] = useState("");
-  const user = { name: "Tenant User", email: "tenant@example.com" };
+  const authUser = getAuth();
+  const user = authUser ? { name: `${authUser.firstName || ''} ${authUser.lastName || ''}`.trim() || "User", email: authUser.email || "" } : { name: "Guest", email: "" };
+  const [providerContact, setProviderContact] = useState<{ phone?: string; email?: string; companyName?: string } | null>(null);
 
   const handleClaimDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setClaimDocError("");
@@ -153,6 +155,23 @@ export default function PropertyDetails() {
   });
 
   const isUnclaimed = listing && listing.isClaimed === false;
+
+  useEffect(() => {
+    if (listing?.providerId) {
+      fetch(`/api/listings/${listing.id}/provider-profile`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data) setProviderContact(prev => ({ ...prev, companyName: data.companyName }));
+        })
+        .catch(() => {});
+      fetch(`/api/listings/${listing.id}/provider-contact`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data) setProviderContact(prev => ({ ...prev, phone: data.phone, email: data.email }));
+        })
+        .catch(() => {});
+    }
+  }, [listing?.id, listing?.providerId]);
 
   useDocumentMeta({
     title: listing ? `${listing.propertyName} | Sober Living in ${listing.city}, ${listing.state}` : "Sober Living Home | Sober Stay",
@@ -559,31 +578,48 @@ export default function PropertyDetails() {
                         Apply Now
                       </Button>
                       <Button 
-                        onClick={() => setShowTourModal(true)} 
+                        onClick={() => {
+                          if (!isAuthenticated()) {
+                            setLocation(`/login?returnPath=/property/${listing.id}`);
+                            return;
+                          }
+                          setShowTourModal(true);
+                        }} 
                         variant="outline" 
                         className="w-full border-primary/30 text-primary hover:bg-primary/10 h-12"
                         data-testid="button-schedule-tour"
                       >
                         <Calendar className="w-4 h-4 mr-2" /> Schedule a Tour
                       </Button>
-                      <Link href={`/chat/${listing.id}`} className="block w-full" onClick={() => {
-                        if (listing?.id) trackInquiry(listing.id);
-                      }}>
-                        <Button variant="outline" className="w-full border-white/10 hover:bg-card h-10">
-                          <MessageSquare className="w-4 h-4 mr-2" /> Message Provider
-                        </Button>
-                      </Link>
+                      <Button 
+                        variant="outline" 
+                        className="w-full border-white/10 hover:bg-card h-10"
+                        onClick={() => {
+                          if (!isAuthenticated()) {
+                            setLocation(`/login?returnPath=/property/${listing.id}`);
+                            return;
+                          }
+                          if (listing?.id) trackInquiry(listing.id);
+                          setLocation(`/chat/${listing.id}`);
+                        }}
+                      >
+                        <MessageSquare className="w-4 h-4 mr-2" /> Message Provider
+                      </Button>
                     </div>
 
                     <div className="pt-6 border-t border-border space-y-4">
                       <h4 className="font-bold text-white text-sm">Contact Information</h4>
                       <div className="flex items-center gap-3 text-sm text-gray-300">
                         <Phone className="w-4 h-4 text-primary" />
-                        Contact via message
+                        {providerContact?.phone ? (
+                          <a href={`tel:${providerContact.phone}`} className="hover:text-primary transition-colors">{providerContact.phone}</a>
+                        ) : "Contact via message"}
                       </div>
                       <div className="flex items-center gap-3 text-sm text-gray-300">
                         <Mail className="w-4 h-4 text-primary" />
-                        Contact via message
+                        {providerContact?.email ? (
+                          <a href={`mailto:${providerContact.email}`} className="hover:text-primary transition-colors">{providerContact.email}</a>
+                        ) : "Contact via message"}
                       </div>
                     </div>
 

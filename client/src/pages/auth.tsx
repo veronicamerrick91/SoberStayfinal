@@ -20,7 +20,9 @@ interface AuthPageProps {
 export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
-  const [role, setRole] = useState<"tenant" | "provider" | "admin">(defaultRole as any);
+  const urlRole = new URLSearchParams(window.location.search).get("role");
+  const initialRole = (urlRole === "provider" || urlRole === "tenant") ? urlRole : defaultRole;
+  const [role, setRole] = useState<"tenant" | "provider" | "admin">(initialRole as any);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -36,7 +38,12 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [referralCode, setReferralCode] = useState("");
 
   useEffect(() => {
-    setRole(defaultRole as any);
+    const paramRole = new URLSearchParams(window.location.search).get("role");
+    if (paramRole === "provider" || paramRole === "tenant") {
+      setRole(paramRole);
+    } else {
+      setRole(defaultRole as any);
+    }
   }, [defaultRole]);
 
   // Clear any stale auth state when landing on signup page

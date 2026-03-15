@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Calendar, Clock, Video, MapPin, CheckCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Video, MapPin, CheckCircle } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 import { trackTourRequest } from "@/lib/analytics";
 
 interface TourScheduleModalProps {
@@ -34,9 +35,10 @@ export interface TourRequest {
 export function TourScheduleModal({ open, onClose, propertyName, propertyId, tenantName, tenantEmail }: TourScheduleModalProps) {
   const [step, setStep] = useState<"type" | "datetime" | "confirm" | "success">("type");
   const [tourType, setTourType] = useState<"virtual" | "in-person">("virtual");
-  const [date, setDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [time, setTime] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const date = selectedDate ? selectedDate.toISOString().split('T')[0] : "";
 
   const handleSubmit = async () => {
     if (!date || !time) {
@@ -79,18 +81,16 @@ export function TourScheduleModal({ open, onClose, propertyName, propertyId, ten
     }, 2500);
   };
 
-  const getMinDate = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
-  };
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md bg-card border-border">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
+            <CalendarIcon className="w-5 h-5 text-primary" />
             Schedule a Tour
           </DialogTitle>
           <DialogDescription>
@@ -162,14 +162,12 @@ export function TourScheduleModal({ open, onClose, propertyName, propertyId, ten
           <div className="space-y-4">
             <div className="space-y-2">
               <Label className="text-white">Preferred Date</Label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-3 w-4 h-4 text-muted-foreground pointer-events-none" />
-                <Input 
-                  type="date"
-                  min={getMinDate()}
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="bg-background/50 border-border pl-10"
+              <div className="flex justify-center border border-border rounded-lg p-2 bg-background/50">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  disabled={(d) => d < tomorrow}
                   data-testid="input-tour-date"
                 />
               </div>
@@ -207,7 +205,7 @@ export function TourScheduleModal({ open, onClose, propertyName, propertyId, ten
               <Button 
                 onClick={() => setStep("confirm")}
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                disabled={!date || !time || isSubmitting}
+                disabled={!selectedDate || !time || isSubmitting}
                 data-testid="button-confirm-datetime"
               >
                 Confirm
@@ -225,7 +223,7 @@ export function TourScheduleModal({ open, onClose, propertyName, propertyId, ten
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Date:</span>
-                <span className="text-white font-medium">{new Date(date).toLocaleDateString()}</span>
+                <span className="text-white font-medium">{selectedDate?.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Time:</span>
