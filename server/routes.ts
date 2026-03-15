@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
@@ -17,6 +17,15 @@ import { db } from "./db";
 import { seedTestData, cleanupTestData } from "./seedTestData";
 import { sendApplicationNotification as sendSmsApplicationNotification, sendApplicationApprovedNotification as sendSmsApproved, sendApplicationDeniedNotification as sendSmsDenied, sendNewMessageNotification as sendSmsMessage, send2FACode, generate2FACode, isTwilioConfigured, sendTourRequestNotification as sendSmsTourRequest, isValidPhoneNumber } from "./sms-service";
 import { getNearbyServicesForAddress, isGoogleMapsConfigured } from "./places-service";
+
+function getBaseUrl(req: Request): string {
+  if (process.env.APP_URL) return process.env.APP_URL.trim();
+  if (process.env.REPLIT_DOMAINS) return `https://${process.env.REPLIT_DOMAINS.split(',')[0]}`;
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  if (host) return `${protocol}://${host}`;
+  return 'http://localhost:5000';
+}
 
 const pending2FACodes: Map<string, { code: string; expiresAt: Date; phone: string }> = new Map();
 
@@ -1642,7 +1651,8 @@ Disallow: /for-tenants
       const providerListings = await storage.getListingsByProvider(user.id);
       const targetListing = providerListings.find(l => !l.stripeSubscriptionId && l.isClaimed);
 
-      const baseUrl = process.env.APP_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
+      const baseUrl = getBaseUrl(req);
+      console.log('[Checkout] Using base URL:', baseUrl);
       const session = await stripeService.createCheckoutSession(
         customerId,
         priceId,
@@ -1738,7 +1748,7 @@ Disallow: /for-tenants
         return res.status(400).json({ error: "No subscription found" });
       }
 
-      const baseUrl = process.env.APP_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
+      const baseUrl = getBaseUrl(req);
       const session = await stripeService.createCustomerPortalSession(
         user.stripeCustomerId,
         `${baseUrl}/provider-dashboard`
@@ -3910,7 +3920,7 @@ Disallow: /for-tenants
         return res.status(400).json({ error: "Featured Listing price not found in Stripe" });
       }
 
-      const baseUrl = process.env.APP_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
+      const baseUrl = getBaseUrl(req);
       const session = await stripeService.createAddOnCheckoutSession(
         customerId,
         priceId,
@@ -3953,7 +3963,7 @@ Disallow: /for-tenants
         return res.status(400).json({ error: "Verified Badge price not found in Stripe" });
       }
 
-      const baseUrl = process.env.APP_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
+      const baseUrl = getBaseUrl(req);
       const session = await stripeService.createAddOnCheckoutSession(
         customerId,
         priceId,
