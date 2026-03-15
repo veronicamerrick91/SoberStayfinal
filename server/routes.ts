@@ -1670,8 +1670,11 @@ Disallow: /for-tenants
       );
 
       res.json({ url: session.url });
-    } catch (error) {
-      console.error("Error creating checkout session:", error);
+    } catch (error: any) {
+      console.error("Error creating checkout session:", error?.message || error);
+      if (error?.type === 'StripeInvalidRequestError') {
+        console.error("Stripe error details:", error?.raw?.message);
+      }
       res.status(500).json({ error: "Failed to create checkout session" });
     }
   });
