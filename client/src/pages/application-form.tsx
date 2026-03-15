@@ -27,6 +27,7 @@ export default function ApplicationForm() {
   const [match, params] = useRoute("/apply/:id");
   const [location, setLocation] = useLocation();
   const [idUploaded, setIdUploaded] = useState(false);
+  const [existingIdUrl, setExistingIdUrl] = useState<string | null>(null);
   const [employmentRequirement, setEmploymentRequirement] = useState("");
   const [section8Confirmed, setSection8Confirmed] = useState(false);
   const [section9Confirmed, setSection9Confirmed] = useState(false);
@@ -250,6 +251,7 @@ export default function ApplicationForm() {
           if (appData.moveInDate) setMoveInDate(appData.moveInDate);
           if (profile.idPhotoUrl) {
             setIdUploaded(true);
+            setExistingIdUrl(profile.idPhotoUrl);
           }
         } else if (user) {
           // If no profile exists, still use user account data
@@ -618,20 +620,29 @@ export default function ApplicationForm() {
               <CardContent className="space-y-4">
                 <div className={`bg-primary/5 border rounded-lg p-6 ${idUploaded ? 'border-primary/20' : 'border-destructive/30'}`}>
                   <div className="text-center">
-                    <Upload className="w-12 h-12 mx-auto mb-3 text-primary/60" />
+                    {existingIdUrl ? (
+                      <>
+                        <div className="mb-3 inline-block rounded-lg overflow-hidden border border-primary/20">
+                          <img src={existingIdUrl} alt="Government ID" className="max-h-32 object-contain" data-testid="img-existing-id" />
+                        </div>
+                        <p className="text-xs text-primary mb-3">✓ Using ID from your profile</p>
+                      </>
+                    ) : (
+                      <Upload className="w-12 h-12 mx-auto mb-3 text-primary/60" />
+                    )}
                     <p className="text-sm text-gray-300 mb-4">Upload a government-issued photo ID <span className="text-destructive">*</span></p>
                     <p className="text-xs text-muted-foreground mb-4">Accepted: Driver's License, State ID, Passport</p>
-                    <input type="file" accept="image/*,.pdf" onChange={handleFileUpload} className="hidden" id="id-upload" data-testid="input-id-upload" />
+                    <input type="file" accept="image/*,.pdf" onChange={() => { handleFileUpload(); setExistingIdUrl(null); }} className="hidden" id="id-upload" data-testid="input-id-upload" />
                     <label htmlFor="id-upload">
                       <Button type="button" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10" onClick={() => document.getElementById('id-upload')?.click()} data-testid="button-upload-id">
-                        <Upload className="w-4 h-4 mr-2" /> Choose File
+                        <Upload className="w-4 h-4 mr-2" /> {existingIdUrl ? 'Replace ID' : 'Choose File'}
                       </Button>
                     </label>
-                    {idUploaded ? (
-                      <p className="text-xs text-primary mt-2">✓ File selected</p>
-                    ) : (
+                    {idUploaded && !existingIdUrl ? (
+                      <p className="text-xs text-primary mt-2">✓ New file selected</p>
+                    ) : !idUploaded ? (
                       <p className="text-xs text-destructive/70 mt-2">Required for application submission</p>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </CardContent>
