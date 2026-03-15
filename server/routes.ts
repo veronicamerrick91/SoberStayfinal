@@ -1642,7 +1642,7 @@ Disallow: /for-tenants
       const providerListings = await storage.getListingsByProvider(user.id);
       const targetListing = providerListings.find(l => !l.stripeSubscriptionId && l.isClaimed);
 
-      const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      const baseUrl = process.env.APP_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
       const session = await stripeService.createCheckoutSession(
         customerId,
         priceId,
@@ -1736,7 +1736,7 @@ Disallow: /for-tenants
         return res.status(400).json({ error: "No subscription found" });
       }
 
-      const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      const baseUrl = process.env.APP_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
       const session = await stripeService.createCustomerPortalSession(
         user.stripeCustomerId,
         `${baseUrl}/provider-dashboard`
