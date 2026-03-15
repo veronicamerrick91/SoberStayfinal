@@ -260,7 +260,7 @@ export function ForProviders() {
             <div className="max-w-lg mx-auto">
               <Card className="bg-card border-primary relative">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white px-4 py-1 rounded-full text-sm font-medium">
-                  All Features Included
+                  Everything You Need
                 </div>
                 <CardContent className="p-8">
                   <h3 className="text-xl font-bold text-white mb-2">Per Listing</h3>
@@ -292,6 +292,9 @@ export function ForProviders() {
                     <li className="flex items-center gap-2 text-muted-foreground">
                       <CheckCircle className="w-4 h-4 text-green-500" />
                       Cancel anytime
+                    </li>
+                    <li className="flex items-center gap-2 text-muted-foreground/70 text-sm italic mt-1">
+                      Verified Badge available as $15/mo add-on
                     </li>
                   </ul>
                   <Link href="/signup?role=provider">

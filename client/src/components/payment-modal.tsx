@@ -47,7 +47,7 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
       <DialogContent className="max-w-md bg-card border-border" data-testid="payment-modal">
         <DialogHeader>
           <DialogTitle className="text-white">Subscribe to List Properties</DialogTitle>
-          <DialogDescription>$49/month per listing — all features included</DialogDescription>
+          <DialogDescription>$49/month per listing — everything you need to get started</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -73,6 +73,7 @@ export function PaymentModal({ open, onClose, onSuccess, providerId, listingCoun
                 <li>✓ Direct tenant messaging</li>
                 <li>✓ Application management tools</li>
                 <li>✓ Analytics dashboard</li>
+                <li className="text-gray-400 italic">Verified Badge available as $15/mo add-on</li>
               </ul>
             </CardContent>
           </Card>
