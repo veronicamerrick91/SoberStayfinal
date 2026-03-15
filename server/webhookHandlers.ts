@@ -121,18 +121,35 @@ export class WebhookHandlers {
       case 'checkout.session.completed': {
         if (data.mode === 'subscription' && data.subscription) {
           const checkoutMetadata = data.metadata || {};
+          const checkoutType = checkoutMetadata.checkoutType || 'listing';
+          const providerId = checkoutMetadata.providerId ? parseInt(checkoutMetadata.providerId) : null;
           const listingId = checkoutMetadata.listingId ? parseInt(checkoutMetadata.listingId) : null;
           
-          if (listingId) {
+          if (checkoutType === 'featured_listing' && listingId && providerId) {
+            const startDate = new Date();
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() + 30);
+            
+            await storage.createFeaturedListing({
+              listingId,
+              providerId,
+              boostLevel: 2,
+              amountPaid: 10000,
+              durationDays: 30,
+              startDate,
+              endDate,
+              isActive: true,
+            });
+            console.log(`[Webhook] Created featured listing for listing ${listingId}, subscription ${data.subscription}`);
+          } else if (checkoutType === 'verified_badge' && providerId) {
+            console.log(`[Webhook] Verified Badge subscription ${data.subscription} activated for provider ${providerId}`);
+          } else if (listingId) {
             await storage.updateListing(listingId, { 
               stripeSubscriptionId: data.subscription as string 
             });
             console.log(`[Webhook] Linked subscription ${data.subscription} to listing ${listingId}`);
-          } else {
-            const providerId = checkoutMetadata.providerId ? parseInt(checkoutMetadata.providerId) : null;
-            if (providerId) {
-              console.log(`[Webhook] checkout.session.completed for provider ${providerId} without listingId in metadata; subscription ${data.subscription} not linked to a specific listing`);
-            }
+          } else if (providerId) {
+            console.log(`[Webhook] checkout.session.completed for provider ${providerId} without listingId in metadata; subscription ${data.subscription} not linked to a specific listing`);
           }
         }
         break;

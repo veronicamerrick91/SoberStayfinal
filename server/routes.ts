@@ -83,6 +83,35 @@ const registerSchema = z.object({
 
 const FOUNDING_MEMBER_CAP = 50;
 
+async function findPriceForProduct(productName: string, interval: string): Promise<string | null> {
+  try {
+    const result = await db.execute(sql`
+      SELECT pr.id as price_id
+      FROM stripe.prices pr
+      JOIN stripe.products p ON pr.product = p.id
+      WHERE p.name ILIKE ${productName}
+      AND pr.active = true
+      AND pr.recurring->>'interval' = ${interval}
+      LIMIT 1
+    `);
+    if (result.rows.length > 0) {
+      return (result.rows[0] as any).price_id;
+    }
+    const { getUncachableStripeClient } = await import('./stripeClient');
+    const stripe = await getUncachableStripeClient();
+    const products = await stripe.products.search({ query: `name~'${productName}' AND active:'true'` });
+    for (const product of products.data) {
+      const prices = await stripe.prices.list({ product: product.id, active: true });
+      const match = prices.data.find(p => p.recurring?.interval === interval);
+      if (match) return match.id;
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error finding price for ${productName}:`, error);
+    return null;
+  }
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -1620,9 +1649,11 @@ Disallow: /for-tenants
         customerId = customer.id;
       }
 
-      // Check if provider is a founding member for discount
       const providerProfile = await storage.getProviderProfile(user.id);
       const isFoundingMember = providerProfile?.isFoundingMember || false;
+
+      const referralTracking = await storage.getReferralTrackingForUser(user.id);
+      const isReferred = !!referralTracking && referralTracking.status === 'pending';
 
       const providerListings = await storage.getListingsByProvider(user.id);
       const targetListing = providerListings.find(l => !l.stripeSubscriptionId && l.isClaimed);
@@ -1633,8 +1664,9 @@ Disallow: /for-tenants
         priceId,
         `${baseUrl}/provider-dashboard`,
         `${baseUrl}/provider-dashboard`,
-        { providerId: String(user.id), ...(targetListing ? { listingId: String(targetListing.id) } : {}) },
-        isFoundingMember
+        { providerId: String(user.id), checkoutType: 'listing', ...(targetListing ? { listingId: String(targetListing.id) } : {}) },
+        isFoundingMember,
+        isReferred
       );
 
       res.json({ url: session.url });
@@ -3858,49 +3890,94 @@ Disallow: /for-tenants
       return res.status(401).json({ error: "Unauthorized" });
     }
     try {
-      const { listingId, boostLevel, durationDays } = req.body;
+      const { listingId } = req.body;
       
-      // Check if provider is verified before allowing purchase
       const isVerified = await storage.isProviderVerified(user.id);
       if (!isVerified) {
         return res.status(403).json({ error: "Your documents must be verified before purchasing featured listings. Please submit verification documents." });
       }
       
-      // Validate listing belongs to provider
       const listing = await storage.getListing(listingId);
       if (!listing || listing.providerId !== user.id) {
         return res.status(403).json({ error: "Listing not found or access denied" });
       }
       
-      // Check if listing is already featured
       const existingFeatured = await storage.getFeaturedListingByListingId(listingId);
       if (existingFeatured) {
         return res.status(400).json({ error: "Listing is already featured" });
       }
       
-      // Calculate pricing: $7/day for 2x, $10/day for 3x, $15/day for 5x
-      const pricePerDay = boostLevel === 5 ? 1500 : boostLevel === 3 ? 1000 : 700;
-      const amountPaid = pricePerDay * durationDays;
+      const freshUser = await storage.getUser(user.id);
+      if (!freshUser) return res.status(404).json({ error: "User not found" });
       
-      const startDate = new Date();
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() + durationDays);
+      let customerId = freshUser.stripeCustomerId;
+      if (!customerId) {
+        const customer = await stripeService.createCustomer(freshUser.email, freshUser.id);
+        await storage.updateUserStripeCustomerId(freshUser.id, customer.id);
+        customerId = customer.id;
+      }
+
+      const priceId = await findPriceForProduct('Featured Listing', 'month');
+      if (!priceId) {
+        return res.status(400).json({ error: "Featured Listing price not found in Stripe" });
+      }
+
+      const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      const session = await stripeService.createAddOnCheckoutSession(
+        customerId,
+        priceId,
+        `${baseUrl}/provider-dashboard`,
+        `${baseUrl}/provider-dashboard`,
+        { providerId: String(user.id), listingId: String(listingId), checkoutType: 'featured_listing' }
+      );
       
-      const featured = await storage.createFeaturedListing({
-        listingId,
-        providerId: user.id,
-        boostLevel: boostLevel || 2,
-        amountPaid,
-        durationDays: durationDays || 7,
-        startDate,
-        endDate,
-        isActive: true,
-      });
-      
-      res.json(featured);
+      res.json({ url: session.url });
     } catch (error) {
-      console.error("Error creating featured listing:", error);
-      res.status(500).json({ error: "Failed to create featured listing" });
+      console.error("Error creating featured listing checkout:", error);
+      res.status(500).json({ error: "Failed to create checkout session" });
+    }
+  });
+
+  // Purchase Verified Badge (provider) - Stripe checkout
+  app.post("/api/provider/verified-badge/checkout", async (req, res) => {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || user?.role !== "provider") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    try {
+      const isVerified = await storage.isProviderVerified(user.id);
+      if (!isVerified) {
+        return res.status(403).json({ error: "Your documents must be verified before purchasing the Verified Badge." });
+      }
+      
+      const freshUser = await storage.getUser(user.id);
+      if (!freshUser) return res.status(404).json({ error: "User not found" });
+      
+      let customerId = freshUser.stripeCustomerId;
+      if (!customerId) {
+        const customer = await stripeService.createCustomer(freshUser.email, freshUser.id);
+        await storage.updateUserStripeCustomerId(freshUser.id, customer.id);
+        customerId = customer.id;
+      }
+
+      const priceId = await findPriceForProduct('Verified Badge', 'month');
+      if (!priceId) {
+        return res.status(400).json({ error: "Verified Badge price not found in Stripe" });
+      }
+
+      const baseUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}`;
+      const session = await stripeService.createAddOnCheckoutSession(
+        customerId,
+        priceId,
+        `${baseUrl}/provider-dashboard`,
+        `${baseUrl}/provider-dashboard`,
+        { providerId: String(user.id), checkoutType: 'verified_badge' }
+      );
+      
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error("Error creating verified badge checkout:", error);
+      res.status(500).json({ error: "Failed to create checkout session" });
     }
   });
 

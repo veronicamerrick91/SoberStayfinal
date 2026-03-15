@@ -193,6 +193,7 @@ export interface IStorage {
   getReferralTrackingByProvider(providerId: number): Promise<(ReferralTracking & { referredUser?: { name: string; email: string; role: string } })[]>;
   trackReferralSignup(referralCodeId: number, referredUserId: number): Promise<ReferralTracking>;
   completeReferral(trackingId: number, rewardAmount: number): Promise<ReferralTracking | undefined>;
+  getReferralTrackingForUser(userId: number): Promise<ReferralTracking | undefined>;
   
   sessionStore: session.Store;
 }
@@ -1877,6 +1878,15 @@ The Sober Stay Team`,
       totals[r.eventType] = r.count;
     }
     return totals;
+  }
+
+  async getReferralTrackingForUser(userId: number): Promise<ReferralTracking | undefined> {
+    const [result] = await db
+      .select()
+      .from(referralTracking)
+      .where(eq(referralTracking.referredUserId, userId))
+      .limit(1);
+    return result;
   }
 }
 

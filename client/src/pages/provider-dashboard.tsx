@@ -679,25 +679,45 @@ function ProviderDashboardContent() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          listingId: selectedListingToBoost.id,
-          boostLevel,
-          durationDays: boostDuration
+          listingId: selectedListingToBoost.id
         })
       });
       if (res.ok) {
-        const newFeatured = await res.json();
-        setFeaturedListings(prev => [...prev, newFeatured]);
-        setShowBoostModal(false);
-        setSelectedListingToBoost(null);
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        }
       } else {
         const error = await res.json();
-        alert(error.error || 'Failed to boost listing');
+        alert(error.error || 'Failed to start checkout');
       }
     } catch (err) {
       console.error("Error boosting listing:", err);
-      alert('Failed to boost listing');
+      alert('Failed to start checkout');
     } finally {
       setIsBoostLoading(false);
+    }
+  };
+
+  const handleVerifiedBadgeCheckout = async () => {
+    try {
+      const res = await fetch('/api/provider/verified-badge/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      } else {
+        const error = await res.json();
+        alert(error.error || 'Failed to start checkout');
+      }
+    } catch (err) {
+      console.error("Error starting verified badge checkout:", err);
+      alert('Failed to start checkout');
     }
   };
 
@@ -2531,6 +2551,33 @@ function ProviderDashboardContent() {
                     <li className="flex items-center gap-2 text-sm text-gray-300"><Check className="w-4 h-4 text-primary" /> Higher tenant trust — tenants prefer verified providers</li>
                   </ul>
                 </div>
+
+                {isDocumentsVerified && (
+                  <div className="pt-4 border-t border-border">
+                    <div className="p-4 rounded-lg bg-gradient-to-r from-green-500/10 to-teal-500/10 border border-green-500/30">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-white text-sm flex items-center gap-2">
+                            <ShieldCheck className="w-4 h-4 text-green-400" /> Verified Badge
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Display a verified checkmark on all your listings to build trust with tenants.
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-lg font-bold text-green-400">$15<span className="text-sm font-normal text-muted-foreground">/mo</span></span>
+                        </div>
+                      </div>
+                      <Button 
+                        className="mt-3 w-full bg-green-600 hover:bg-green-700 text-white gap-2"
+                        onClick={handleVerifiedBadgeCheckout}
+                        data-testid="button-purchase-verified-badge"
+                      >
+                        <ShieldCheck className="w-4 h-4" /> Get Verified Badge
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -3141,10 +3188,10 @@ function ProviderDashboardContent() {
                   data-testid="button-confirm-boost"
                 >
                   {isBoostLoading ? (
-                    <span className="animate-pulse">Processing...</span>
+                    <span className="animate-pulse">Redirecting to checkout...</span>
                   ) : (
                     <>
-                      <Zap className="w-4 h-4" /> Feature Now — $100
+                      <Zap className="w-4 h-4" /> Proceed to Checkout — $100/mo
                     </>
                   )}
                 </Button>

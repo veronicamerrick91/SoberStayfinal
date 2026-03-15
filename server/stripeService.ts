@@ -2,6 +2,7 @@ import { storage } from './storage';
 import { getUncachableStripeClient } from './stripeClient';
 
 const FOUNDING_MEMBER_COUPON_ID = 'FOUNDING_MEMBER_50';
+const REFERRAL_COUPON_ID = 'R2EWiPIP';
 
 export class StripeService {
   async createCustomer(email: string, userId: number) {
@@ -37,8 +38,9 @@ export class StripeService {
     priceId: string, 
     successUrl: string, 
     cancelUrl: string,
-    metadata?: { providerId: string; listingId?: string },
-    isFoundingMember?: boolean
+    metadata?: Record<string, string>,
+    isFoundingMember?: boolean,
+    isReferred?: boolean
   ) {
     const stripe = await getUncachableStripeClient();
     
@@ -53,12 +55,13 @@ export class StripeService {
     };
     
     if (isFoundingMember) {
-      // Founding members get 3 months free trial, then 50% off forever
       const couponId = await this.getOrCreateFoundingMemberCoupon();
       sessionParams.discounts = [{ coupon: couponId }];
       sessionParams.subscription_data = {
-        trial_period_days: 90, // 3 months free
+        trial_period_days: 90,
       };
+    } else if (isReferred) {
+      sessionParams.discounts = [{ coupon: REFERRAL_COUPON_ID }];
     }
     
     return await stripe.checkout.sessions.create(sessionParams);
@@ -93,6 +96,33 @@ export class StripeService {
       console.error(`[Stripe] Failed to remove founding member discount:`, error);
       return false;
     }
+  }
+
+  async createAddOnCheckoutSession(
+    customerId: string,
+    priceId: string,
+    successUrl: string,
+    cancelUrl: string,
+    metadata: Record<string, string>,
+    isReferred?: boolean
+  ) {
+    const stripe = await getUncachableStripeClient();
+    
+    const sessionParams: any = {
+      customer: customerId,
+      payment_method_types: ['card'],
+      line_items: [{ price: priceId, quantity: 1 }],
+      mode: 'subscription',
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata,
+    };
+    
+    if (isReferred) {
+      sessionParams.discounts = [{ coupon: REFERRAL_COUPON_ID }];
+    }
+    
+    return await stripe.checkout.sessions.create(sessionParams);
   }
 
   async createCustomerPortalSession(customerId: string, returnUrl: string) {
