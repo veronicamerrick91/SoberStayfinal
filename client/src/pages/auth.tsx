@@ -20,9 +20,10 @@ interface AuthPageProps {
 export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
+  type RoleType = "tenant" | "provider" | "admin";
   const urlRole = new URLSearchParams(window.location.search).get("role");
-  const initialRole = (urlRole === "provider" || urlRole === "tenant") ? urlRole : defaultRole;
-  const [role, setRole] = useState<"tenant" | "provider" | "admin">(initialRole as any);
+  const initialRole: RoleType = (urlRole === "provider" || urlRole === "tenant") ? urlRole : defaultRole;
+  const [role, setRole] = useState<RoleType>(initialRole);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -42,7 +43,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
     if (paramRole === "provider" || paramRole === "tenant") {
       setRole(paramRole);
     } else {
-      setRole(defaultRole as any);
+      setRole(defaultRole);
     }
   }, [defaultRole]);
 
@@ -291,7 +292,7 @@ export function AuthPage({ type, defaultRole = "tenant" }: AuthPageProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs value={role} onValueChange={(v) => setRole(v as any)} className="w-full mb-6">
+            <Tabs value={role} onValueChange={(v) => setRole(v as RoleType)} className="w-full mb-6">
               <TabsList className={`grid w-full ${type === "login" ? "grid-cols-3" : "grid-cols-2"} bg-background/50`}>
                 <TabsTrigger value="tenant">I'm a Tenant</TabsTrigger>
                 <TabsTrigger value="provider">I'm a Provider</TabsTrigger>

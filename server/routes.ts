@@ -742,13 +742,19 @@ Disallow: /for-tenants
         return res.status(400).json({ error: "Invalid listing ID" });
       }
       const listing = await storage.getListing(id);
-      if (!listing || !listing.providerId) {
+      if (!listing) {
         return res.json({ phone: null, email: null });
       }
-      const profile = await storage.getProviderProfile(listing.providerId);
-      const user = await storage.getUser(listing.providerId);
-      const phone = profile?.phone || null;
-      const email = user?.email || null;
+      let phone: string | null = null;
+      let email: string | null = null;
+      if (listing.providerId) {
+        const profile = await storage.getProviderProfile(listing.providerId);
+        const user = await storage.getUser(listing.providerId);
+        phone = profile?.phone || null;
+        email = user?.email || null;
+      }
+      phone = phone || listing.phone || null;
+      email = email || null;
       res.json({ phone, email });
     } catch (error) {
       console.error("Error fetching provider contact:", error);
