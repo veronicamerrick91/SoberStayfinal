@@ -1,0 +1,14 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "VGJrN5iAptSu5LyTBr2uX"
+uri = "file://sober_stay_prospects_california.xlsx"
+type = "table"
+title = "Sober Stay California Prospects"
+
+[[outputs]]
+id = "UCs1fflGlCrYn0ohieU5f"
+uri = "file://sober_stay_prospects_california.csv"
+type = "table"
+title = "Sober Stay California Prospects (CSV)"
