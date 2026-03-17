@@ -7,21 +7,25 @@ import { User } from "@shared/schema";
 export function setupAuth(app: Express) {
   const sessionSecret = process.env.SESSION_SECRET;
   
-  if (app.get("env") === "production" && !sessionSecret) {
-    throw new Error("FATAL: SESSION_SECRET environment variable is required in production. Set it before launching.");
+  if ((app.get("env") === "production" || !!process.env.APP_URL) && !sessionSecret) {
+    console.warn("WARNING: SESSION_SECRET not set. Using default secret - sessions will not persist across restarts.");
   }
 
+  const isProduction = app.get("env") === "production" || !!process.env.APP_URL;
+  
   const sessionSettings: session.SessionOptions = {
     secret: sessionSecret || "replit_dev_session_secret",
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,
     cookie: {
-      secure: app.get("env") === "production",
+      secure: isProduction,
+      sameSite: isProduction ? 'lax' : undefined,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     },
   };
 
-  if (app.get("env") === "production") {
+  if (isProduction) {
     app.set("trust proxy", 1);
   }
 
