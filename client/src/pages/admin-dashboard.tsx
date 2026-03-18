@@ -5075,6 +5075,7 @@ the actual document file stored on the server.
 
         {editingUser && (
           <UserEditModal
+            key={editingUser.id}
             open={showEditModal}
             onClose={() => setShowEditModal(false)}
             user={editingUser}
