@@ -313,6 +313,7 @@ export function AdminDashboard() {
   const [showBlogModal, setShowBlogModal] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<any | null>(null);
   const [editingListing, setEditingListing] = useState<any | null>(null);
+  const [showImportedListings, setShowImportedListings] = useState(false);
   const [showNewCampaignModal, setShowNewCampaignModal] = useState(false);
   const [newCampaignName, setNewCampaignName] = useState("");
   const [newCampaignRecipients, setNewCampaignRecipients] = useState("All Tenants");
@@ -810,6 +811,8 @@ Thank you for being part of our recovery community!`
             providerId: l.providerId,
             createdAt: l.createdAt,
             isVerified: l.providerVerified || false,
+            isImported: l.isImported || false,
+            isClaimed: l.isClaimed !== false,
             image: l.photos?.[0] || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=400&h=300&fit=crop'
           }));
           setListings(formattedListings);
@@ -2373,23 +2376,31 @@ the actual document file stored on the server.
                 <p className="text-sm text-muted-foreground">Review, approve, reject, and manage all property listings</p>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-2 mb-4">
-                  <Badge variant="outline" className="text-xs">
-                    {listings.filter(l => l.status === "Pending").length} Pending
-                  </Badge>
-                  <Badge className="bg-green-500/20 text-green-400 text-xs">
-                    {listings.filter(l => l.status === "Approved").length} Approved
-                  </Badge>
-                  <Badge className="bg-red-500/20 text-red-400 text-xs">
-                    {listings.filter(l => l.status === "Rejected").length} Rejected
-                  </Badge>
-                  <Badge className="bg-slate-500/20 text-slate-400 text-xs">
-                    {listings.filter(l => l.status === "Draft").length} Draft
-                  </Badge>
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-xs">
+                      {listings.filter(l => !l.isImported && l.status === "Pending").length} Pending
+                    </Badge>
+                    <Badge className="bg-green-500/20 text-green-400 text-xs">
+                      {listings.filter(l => !l.isImported && l.status === "Approved").length} Approved
+                    </Badge>
+                    <Badge className="bg-red-500/20 text-red-400 text-xs">
+                      {listings.filter(l => !l.isImported && l.status === "Rejected").length} Rejected
+                    </Badge>
+                    <Badge className="bg-slate-500/20 text-slate-400 text-xs">
+                      {listings.filter(l => !l.isImported && l.status === "Draft").length} Draft
+                    </Badge>
+                  </div>
+                  <button
+                    onClick={() => setShowImportedListings(prev => !prev)}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${showImportedListings ? 'bg-primary/20 border-primary/40 text-primary' : 'border-border text-muted-foreground hover:border-primary/30'}`}
+                  >
+                    {showImportedListings ? '✓ Showing' : 'Show'} Imported ({listings.filter(l => l.isImported).length})
+                  </button>
                 </div>
                 
                 <div className="space-y-3">
-                  {listings.map((listing) => (
+                  {listings.filter(l => showImportedListings ? true : !l.isImported).map((listing) => (
                     <div key={listing.id} className={`p-4 rounded-lg border transition-all ${
                       listing.status === "Pending" ? "bg-amber-500/5 border-amber-500/20" :
                       listing.status === "Approved" ? "bg-green-500/5 border-green-500/20" :
@@ -2417,6 +2428,7 @@ the actual document file stored on the server.
                             listing.status === "Draft" ? "bg-gray-500/80" :
                             "bg-amber-500/80"
                           }>{listing.status}</Badge>
+                          {listing.isImported && !listing.isClaimed && <Badge variant="outline" className="text-xs border-yellow-500/30 text-yellow-400">Imported</Badge>}
                           {flaggedListings.has(listing.id) && <Badge className="bg-red-500/80 text-xs">⚠ Flagged</Badge>}
                           {listing.isHidden && <Badge variant="outline" className="text-xs border-gray-500/30 text-gray-400">Hidden</Badge>}
                         </div>
