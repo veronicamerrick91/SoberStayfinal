@@ -1,6 +1,6 @@
 import type { Listing } from "@shared/schema";
 
-const BASE_URL = "https://soberstay.com";
+const BASE_URL = "https://www.soberstayhomes.com";
 
 function escapeHtml(str: string): string {
   return str
