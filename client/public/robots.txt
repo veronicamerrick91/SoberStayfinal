@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin-dashboard
+Disallow: /provider-dashboard
+Disallow: /tenant-dashboard
+Disallow: /tenant-profile
+Disallow: /provider-profile
+Disallow: /create-listing
+Disallow: /edit-listing/
+Disallow: /apply/
+Disallow: /chat/
+Disallow: /analytics
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /api/
+
+Sitemap: https://www.soberstayhomes.com/sitemap.xml

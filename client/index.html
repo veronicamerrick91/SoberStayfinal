@@ -20,14 +20,48 @@
     <meta name="twitter:image" content="https://www.soberstayhomes.com/opengraph.jpg" />
 
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Sober Stay",
-      "url": "https://www.soberstayhomes.com",
-      "description": "Sober Stay helps people find sober living homes and recovery housing.",
-      "applicationCategory": "HealthApplication"
-    }
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Sober Stay",
+        "url": "https://www.soberstayhomes.com",
+        "logo": "https://www.soberstayhomes.com/favicon.jpg",
+        "description": "Sober Stay is a marketplace connecting people in recovery with verified sober living homes across California and beyond.",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer support",
+          "email": "support@soberstayhomes.com"
+        },
+        "sameAs": []
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Sober Stay",
+        "url": "https://www.soberstayhomes.com",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://www.soberstayhomes.com/browse?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "RealEstateAgent",
+        "name": "Sober Stay",
+        "url": "https://www.soberstayhomes.com",
+        "description": "Find sober living homes and recovery housing near you. Browse 456+ verified California sober living homes.",
+        "areaServed": {
+          "@type": "State",
+          "name": "California"
+        },
+        "serviceType": "Sober Living Home Directory"
+      }
+    ]
     </script>
 
     <link rel="icon" type="image/jpeg" href="/favicon.jpg?v=2" />
@@ -38,27 +72,6 @@
   </head>
   <body>
     <div id="root">
-      <!-- SEO content for search engines - hidden from users, shown only to crawlers -->
-      <div id="seo-content" style="position: absolute; left: -9999px; top: -9999px; visibility: hidden;">
-        <header>
-          <h1>Find Sober Living Homes Near You</h1>
-          <p>Sober Stay helps people find safe, supportive sober living homes. Browse recovery housing, learn the rules, and connect with providers.</p>
-        </header>
-        <main>
-          <section>
-            <h2>What Is a Sober Living Home?</h2>
-            <p>A sober living home is a safe, substance-free residence designed for people in recovery from addiction. These homes provide structure, peer support, and accountability while residents work, attend school, or transition back into independent living.</p>
-          </section>
-          <section>
-            <h2>How Sober Stay Helps You Find the Right Home</h2>
-            <p>Sober Stay makes it easy to find sober living homes that match your needs. Our platform lets you search by location, price, gender, amenities, and more. Contact providers directly, schedule tours, and submit applications online.</p>
-          </section>
-          <section>
-            <h2>Who Sober Stay Is For</h2>
-            <p>Sober Stay is for individuals in recovery seeking safe housing, families helping loved ones find sober living, and providers looking to connect with prospective residents.</p>
-          </section>
-        </main>
-      </div>
       <noscript>
         <div style="padding: 20px; text-align: center;">
           <p>Please enable JavaScript to use the full features of Sober Stay. You can still browse our <a href="/browse">sober living directory</a> and learn more about <a href="/what-is-sober-living">what sober living is</a>.</p>
