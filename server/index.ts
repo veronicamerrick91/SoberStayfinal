@@ -21,9 +21,13 @@ process.on('unhandledRejection', (reason) => {
 // Bot detection for SSR
 function isBot(userAgent: string): boolean {
   const botPatterns = [
-    'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
+    'googlebot', 'google-inspectiontool', 'google-structured-data-testing-tool',
+    'google-site-verification', 'googlelightspeed', 'lighthouse',
+    'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
     'yandexbot', 'facebookexternalhit', 'twitterbot', 'linkedinbot',
-    'pinterest', 'whatsapp', 'applebot', 'semrushbot', 'ahrefsbot'
+    'pinterest', 'whatsapp', 'applebot', 'semrushbot', 'ahrefsbot',
+    'msnbot', 'teoma', 'ia_archiver', 'alexa', 'curl', 'wget',
+    'python-requests', 'go-http-client', 'node-fetch', 'axios'
   ];
   const ua = userAgent.toLowerCase();
   return botPatterns.some(bot => ua.includes(bot));
@@ -222,14 +226,20 @@ app.use((req, res, next) => {
     if (isBot(userAgent)) {
       try {
         const listingId = parseInt(req.params.id, 10);
-        if (!isNaN(listingId)) {
-          const listing = await storage.getListing(listingId);
-          if (listing && listing.status === 'approved' && listing.isVisible) {
-            const html = generatePropertyPageHtml(listing);
-            res.setHeader('Content-Type', 'text/html');
-            return res.send(html);
-          }
+        if (isNaN(listingId)) {
+          return res.status(404).send('<html><head><title>Not Found</title><meta name="robots" content="noindex"></head><body><h1>404 - Page Not Found</h1></body></html>');
         }
+        const listing = await storage.getListing(listingId);
+        if (!listing) {
+          return res.status(404).send('<html><head><title>Not Found</title><meta name="robots" content="noindex"></head><body><h1>404 - Listing Not Found</h1></body></html>');
+        }
+        if (listing.status === 'approved' && listing.isVisible) {
+          const html = generatePropertyPageHtml(listing);
+          res.setHeader('Content-Type', 'text/html');
+          return res.send(html);
+        }
+        // Listing exists but not visible — tell Google not to index
+        return res.status(404).send('<html><head><title>Not Found</title><meta name="robots" content="noindex"></head><body><h1>404 - Listing Not Available</h1></body></html>');
       } catch (error) {
         console.error('SSR property error:', error);
       }
