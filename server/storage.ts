@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, type TenantFavorite, type TenantViewedHome, type ListingAnalyticsEvent, type InsertListingAnalyticsEvent, type ListingAnalyticsDaily, type EmailTemplate, type InsertEmailTemplate, type EmailWorkflow, type InsertEmailWorkflow, type WorkflowStep, type InsertWorkflowStep, type WorkflowEnrollment, type InsertWorkflowEnrollment, type SiteVisit, type InsertSiteVisit, type ProviderReferral, type ReferralTracking, type ClaimRequest, type InsertClaimRequest, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners, tenantFavorites, tenantViewedHomes, listingAnalyticsEvents, listingAnalyticsDaily, emailTemplates, emailWorkflows, workflowSteps, workflowEnrollments, siteVisits, providerReferrals, referralTracking, claimRequests } from "@shared/schema";
+import { type User, type InsertUser, type Listing, type InsertListing, type Subscription, type InsertSubscription, type PasswordResetToken, type TenantProfile, type InsertTenantProfile, type ProviderProfile, type InsertProviderProfile, type Application, type InsertApplication, type PromoCode, type InsertPromoCode, type FeaturedListing, type InsertFeaturedListing, type BlogPost, type InsertBlogPost, type Partner, type InsertPartner, type TenantFavorite, type TenantViewedHome, type ListingAnalyticsEvent, type InsertListingAnalyticsEvent, type ListingAnalyticsDaily, type EmailTemplate, type InsertEmailTemplate, type EmailWorkflow, type InsertEmailWorkflow, type WorkflowStep, type InsertWorkflowStep, type WorkflowEnrollment, type InsertWorkflowEnrollment, type SiteVisit, type InsertSiteVisit, type ClaimRequest, type InsertClaimRequest, users, listings, subscriptions, passwordResetTokens, tenantProfiles, providerProfiles, applications, promoCodes, featuredListings, blogPosts, partners, tenantFavorites, tenantViewedHomes, listingAnalyticsEvents, listingAnalyticsDaily, emailTemplates, emailWorkflows, workflowSteps, workflowEnrollments, siteVisits, claimRequests } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gt, lt, isNull, or, desc, count, inArray, gte, lte, sql } from "drizzle-orm";
 import session from "express-session";
@@ -185,15 +185,6 @@ export interface IStorage {
   
   // Listing analytics for admin (per-listing totals)
   getListingAnalyticsTotals(listingId: number, startDate?: Date, endDate?: Date): Promise<Record<string, number>>;
-  
-  // Referral Program
-  getOrCreateReferralCode(providerId: number): Promise<ProviderReferral>;
-  getReferralByCode(code: string): Promise<ProviderReferral | undefined>;
-  getReferralStats(providerId: number): Promise<ProviderReferral | undefined>;
-  getReferralTrackingByProvider(providerId: number): Promise<(ReferralTracking & { referredUser?: { name: string; email: string; role: string } })[]>;
-  trackReferralSignup(referralCodeId: number, referredUserId: number): Promise<ReferralTracking>;
-  completeReferral(trackingId: number, rewardAmount: number): Promise<ReferralTracking | undefined>;
-  getReferralTrackingForUser(userId: number): Promise<ReferralTracking | undefined>;
   
   sessionStore: session.Store;
 }
@@ -1752,91 +1743,6 @@ The Sober Stay Team`,
     return { totalVisits, uniqueVisitors, topPages, visitsByDay };
   }
 
-  async getOrCreateReferralCode(providerId: number): Promise<ProviderReferral> {
-    const [existing] = await db
-      .select()
-      .from(providerReferrals)
-      .where(eq(providerReferrals.referrerId, providerId));
-    if (existing) return existing;
-
-    const code = 'SS-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-    const [created] = await db
-      .insert(providerReferrals)
-      .values({ referrerId: providerId, referralCode: code })
-      .returning();
-    return created;
-  }
-
-  async getReferralByCode(code: string): Promise<ProviderReferral | undefined> {
-    const [result] = await db
-      .select()
-      .from(providerReferrals)
-      .where(eq(providerReferrals.referralCode, code));
-    return result;
-  }
-
-  async getReferralStats(providerId: number): Promise<ProviderReferral | undefined> {
-    const [result] = await db
-      .select()
-      .from(providerReferrals)
-      .where(eq(providerReferrals.referrerId, providerId));
-    return result;
-  }
-
-  async getReferralTrackingByProvider(providerId: number): Promise<(ReferralTracking & { referredUser?: { name: string; email: string; role: string } })[]> {
-    const referral = await this.getReferralStats(providerId);
-    if (!referral) return [];
-
-    const trackingRecords = await db
-      .select()
-      .from(referralTracking)
-      .where(eq(referralTracking.referralCodeId, referral.id))
-      .orderBy(desc(referralTracking.createdAt));
-
-    const results = [];
-    for (const record of trackingRecords) {
-      const user = await this.getUser(record.referredUserId);
-      results.push({
-        ...record,
-        referredUser: user ? { name: user.name, email: user.email, role: user.role } : undefined
-      });
-    }
-    return results;
-  }
-
-  async trackReferralSignup(referralCodeId: number, referredUserId: number): Promise<ReferralTracking> {
-    const [tracking] = await db
-      .insert(referralTracking)
-      .values({ referralCodeId, referredUserId, status: 'pending' })
-      .returning();
-
-    await db
-      .update(providerReferrals)
-      .set({ totalReferrals: sql`${providerReferrals.totalReferrals} + 1` })
-      .where(eq(providerReferrals.id, referralCodeId));
-
-    return tracking;
-  }
-
-  async completeReferral(trackingId: number, rewardAmount: number): Promise<ReferralTracking | undefined> {
-    const [updated] = await db
-      .update(referralTracking)
-      .set({ status: 'completed', rewardCredited: true, rewardAmount, completedAt: new Date() })
-      .where(eq(referralTracking.id, trackingId))
-      .returning();
-    
-    if (updated) {
-      await db
-        .update(providerReferrals)
-        .set({
-          successfulReferrals: sql`${providerReferrals.successfulReferrals} + 1`,
-          creditsEarned: sql`${providerReferrals.creditsEarned} + ${rewardAmount}`
-        })
-        .where(eq(providerReferrals.id, updated.referralCodeId));
-    }
-    return updated;
-  }
-
   async createClaimRequest(claim: InsertClaimRequest): Promise<ClaimRequest> {
     const [result] = await db.insert(claimRequests).values(claim).returning();
     return result;
@@ -1880,14 +1786,6 @@ The Sober Stay Team`,
     return totals;
   }
 
-  async getReferralTrackingForUser(userId: number): Promise<ReferralTracking | undefined> {
-    const [result] = await db
-      .select()
-      .from(referralTracking)
-      .where(eq(referralTracking.referredUserId, userId))
-      .limit(1);
-    return result;
-  }
 }
 
 export const storage = new DatabaseStorage();

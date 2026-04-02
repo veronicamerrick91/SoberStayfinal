@@ -87,7 +87,6 @@ const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   role: z.enum(["tenant", "provider"]),
-  referralCode: z.string().optional(),
 });
 
 const FOUNDING_MEMBER_CAP = 50;
@@ -272,19 +271,6 @@ Disallow: /for-tenants
           }
         } catch (err) {
           console.error("Failed to auto-assign founding member status:", err);
-        }
-      }
-
-      // Track referral if a valid referral code was provided
-      if (referralCode) {
-        try {
-          const referral = await storage.getReferralByCode(referralCode.trim().toUpperCase());
-          if (referral) {
-            await storage.trackReferralSignup(referral.id, user.id);
-            console.log(`[Referral] Tracked signup via code ${referralCode} for user ${user.id}`);
-          }
-        } catch (err) {
-          console.error("Failed to track referral signup:", err);
         }
       }
 
@@ -1283,59 +1269,6 @@ Disallow: /for-tenants
     }
   });
 
-  // Provider: Get or create referral code
-  app.get("/api/provider/referral", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const user = req.user as any;
-    if (user.role !== "provider") {
-      return res.status(403).json({ error: "Provider access required" });
-    }
-    try {
-      const referral = await storage.getOrCreateReferralCode(user.id);
-      res.json(referral);
-    } catch (error) {
-      console.error("Failed to get referral code:", error);
-      res.status(500).json({ error: "Failed to get referral code" });
-    }
-  });
-
-  // Provider: Get referral tracking details
-  app.get("/api/provider/referral/tracking", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const user = req.user as any;
-    if (user.role !== "provider") {
-      return res.status(403).json({ error: "Provider access required" });
-    }
-    try {
-      const tracking = await storage.getReferralTrackingByProvider(user.id);
-      res.json(tracking);
-    } catch (error) {
-      console.error("Failed to get referral tracking:", error);
-      res.status(500).json({ error: "Failed to get referral tracking" });
-    }
-  });
-
-  // Admin: Complete a referral (mark as rewarded)
-  app.post("/api/admin/referrals/:id/complete", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    const user = req.user as any;
-    if (user.role !== "admin") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-    const trackingId = parseInt(req.params.id);
-    if (isNaN(trackingId)) return res.status(400).json({ error: "Invalid tracking ID" });
-
-    const rewardAmount = req.body.rewardAmount ?? 1;
-    try {
-      const updated = await storage.completeReferral(trackingId, rewardAmount);
-      if (!updated) return res.status(404).json({ error: "Referral tracking not found" });
-      res.json({ success: true, tracking: updated });
-    } catch (error) {
-      console.error("Failed to complete referral:", error);
-      res.status(500).json({ error: "Failed to complete referral" });
-    }
-  });
-
   // ============ CLAIM REQUESTS ============
 
   app.post("/api/claim-requests", async (req, res) => {
@@ -1659,9 +1592,6 @@ Disallow: /for-tenants
       const providerProfile = await storage.getProviderProfile(user.id);
       const isFoundingMember = providerProfile?.isFoundingMember || false;
 
-      const referralTracking = await storage.getReferralTrackingForUser(user.id);
-      const isReferred = !!referralTracking && referralTracking.status === 'pending';
-
       const providerListings = await storage.getListingsByProvider(user.id);
       const targetListing = providerListings.find(l => !l.stripeSubscriptionId && l.isClaimed);
 
@@ -1678,7 +1608,7 @@ Disallow: /for-tenants
           `${baseUrl}/provider-dashboard`,
           checkoutMeta,
           isFoundingMember,
-          isReferred
+          false
         );
         res.json({ url: session.url });
       } catch (checkoutErr: any) {
@@ -1693,7 +1623,7 @@ Disallow: /for-tenants
             `${baseUrl}/provider-dashboard`,
             checkoutMeta,
             isFoundingMember,
-            isReferred
+            false
           );
           res.json({ url: session.url });
         } else {

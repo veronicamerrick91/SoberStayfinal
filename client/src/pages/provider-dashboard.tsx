@@ -27,7 +27,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { HelpCircle, Gift, Copy } from "lucide-react";
+import { HelpCircle, Copy } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { PaymentModal } from "@/components/payment-modal";
@@ -1133,7 +1133,6 @@ function ProviderDashboardContent() {
               <Calendar className="w-4 h-4" /> Tour Requests {getUnseenToursCount() > 0 && <Badge className="bg-amber-500 text-white ml-1">{getUnseenToursCount()}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="billing" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><CreditCard className="w-4 h-4" /> Billing</TabsTrigger>
-            <TabsTrigger value="referrals" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Gift className="w-4 h-4" /> Referrals</TabsTrigger>
             <TabsTrigger value="settings" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><Settings className="w-4 h-4" /> Settings</TabsTrigger>
             <TabsTrigger value="support" className="gap-2 px-4 py-2.5 text-sm font-medium data-[state=active]:bg-primary/20 data-[state=active]:text-primary hover:bg-white/5 rounded-md transition-all"><HelpCircle className="w-4 h-4" /> Support</TabsTrigger>
           </TabsList>
@@ -2582,11 +2581,6 @@ function ProviderDashboardContent() {
             </Card>
           </TabsContent>
 
-          {/* REFERRALS TAB */}
-          <TabsContent value="referrals" className="space-y-6">
-            <ReferralTab />
-          </TabsContent>
-
           {/* SETTINGS TAB */}
           <TabsContent value="settings" className="space-y-6">
             <div className="grid lg:grid-cols-2 gap-6">
@@ -3623,190 +3617,6 @@ function ProviderDashboardContent() {
         />
       </div>
     </Layout>
-  );
-}
-
-function ReferralTab() {
-  const [referral, setReferral] = useState<any>(null);
-  const [tracking, setTracking] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    Promise.all([
-      fetch('/api/provider/referral', { credentials: 'include' }).then(r => r.ok ? r.json() : null),
-      fetch('/api/provider/referral/tracking', { credentials: 'include' }).then(r => r.ok ? r.json() : null),
-    ]).then(([ref, track]) => {
-      setReferral(ref);
-      setTracking(track || []);
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, []);
-
-  const copyCode = () => {
-    if (referral?.referralCode) {
-      navigator.clipboard.writeText(referral.referralCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  const shareUrl = referral ? `${window.location.origin}/auth?ref=${referral.referralCode}` : '';
-
-  const copyLink = () => {
-    navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <Card className="bg-card border-border">
-        <CardHeader>
-          <CardTitle className="text-xl font-bold flex items-center gap-2">
-            <Gift className="w-5 h-5 text-primary" />
-            Referral Program
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 space-y-3">
-            <p className="text-sm text-foreground/80">
-              Refer other sober living providers to Sober Stay Homes and earn rewards when they list their first property.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                <p className="text-xs font-medium text-primary mb-1">You earn</p>
-                <p className="text-sm text-white font-semibold">1 month free listing</p>
-                <p className="text-xs text-muted-foreground">Applied as a credit to your next billing cycle</p>
-              </div>
-              <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-                <p className="text-xs font-medium text-primary mb-1">They get</p>
-                <p className="text-sm text-white font-semibold">First month 50% off</p>
-                <p className="text-xs text-muted-foreground">Discount applied automatically at checkout</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-foreground/70">Your Referral Code</label>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 bg-background border border-border rounded-lg px-4 py-3 font-mono text-lg font-bold tracking-wider" data-testid="text-referral-code">
-                {referral?.referralCode || '—'}
-              </div>
-              <Button onClick={copyCode} variant="outline" className="gap-2" data-testid="button-copy-code">
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                {copied ? 'Copied!' : 'Copy'}
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-foreground/70">Shareable Link</label>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 bg-background border border-border rounded-lg px-4 py-3 text-sm text-foreground/60 truncate" data-testid="text-referral-link">
-                {shareUrl}
-              </div>
-              <Button onClick={copyLink} variant="outline" className="gap-2" data-testid="button-copy-link">
-                <Share2 className="w-4 h-4" />
-                Share
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid md:grid-cols-3 gap-4">
-        <Card className="bg-card border-border">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-500/20">
-                <Users className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold" data-testid="text-total-referrals">{referral?.totalReferrals || 0}</p>
-                <p className="text-xs text-muted-foreground">Total Referrals</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-500/20">
-                <CheckCircle className="w-5 h-5 text-green-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold" data-testid="text-successful-referrals">{referral?.successfulReferrals || 0}</p>
-                <p className="text-xs text-muted-foreground">Successful Referrals</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/20">
-                <TrendingUp className="w-5 h-5 text-amber-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold" data-testid="text-credits-earned">{referral?.creditsEarned || 0}</p>
-                <p className="text-xs text-muted-foreground">Free Months Earned</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {tracking.length > 0 && (
-        <Card className="bg-card border-border">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">Referral History</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="divide-y divide-border">
-              {tracking.map((t: any) => (
-                <div key={t.id} className="flex items-center justify-between py-3" data-testid={`row-referral-${t.id}`}>
-                  <div>
-                    <p className="font-medium">{t.referredUser?.name || 'Unknown User'}</p>
-                    <p className="text-sm text-muted-foreground">{t.referredUser?.role || 'provider'}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(t.createdAt).toLocaleDateString()}
-                    </span>
-                    <Badge className={
-                      t.status === 'completed' 
-                        ? 'bg-green-500/20 text-green-400' 
-                        : 'bg-amber-500/20 text-amber-400'
-                    }>
-                      {t.status === 'completed' ? 'Rewarded' : 'Pending'}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {tracking.length === 0 && (
-        <Card className="bg-card border-border">
-          <CardContent className="py-12 text-center">
-            <Gift className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
-            <p className="text-foreground/60 font-medium">No referrals yet</p>
-            <p className="text-sm text-muted-foreground mt-1">Share your referral code to start earning free months!</p>
-          </CardContent>
-        </Card>
-      )}
-    </div>
   );
 }
 

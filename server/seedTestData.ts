@@ -14,8 +14,6 @@ import {
   passwordResetTokens,
   subscriptions,
   workflowEnrollments,
-  referralTracking,
-  providerReferrals,
   siteVisits,
 } from "@shared/schema";
 import { inArray, eq, and, sql, not, count } from "drizzle-orm";
@@ -133,12 +131,6 @@ export async function cleanupTestData(): Promise<{ deleted: Record<string, numbe
 
     const rwe = await tx.delete(workflowEnrollments).where(inArray(workflowEnrollments.userId, testUserIds));
     deleted.workflowEnrollments = rwe.rowCount ?? 0;
-
-    const rrt = await tx.delete(referralTracking).where(inArray(referralTracking.referredUserId, testUserIds));
-    deleted.referralTracking = rrt.rowCount ?? 0;
-
-    const rpr = await tx.delete(providerReferrals).where(inArray(providerReferrals.referrerId, testUserIds));
-    deleted.providerReferrals = rpr.rowCount ?? 0;
 
     const rsub = await tx.delete(subscriptions).where(inArray(subscriptions.providerId, testUserIds));
     deleted.subscriptions = rsub.rowCount ?? 0;
