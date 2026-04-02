@@ -497,11 +497,6 @@ export default function Browse() {
                             <Zap className="w-3 h-3" /> Featured
                           </Badge>
                         )}
-                        {listing.isClaimed === false && (
-                          <Badge className="bg-amber-500/90 text-black border-none shadow-lg flex gap-1 items-center text-xs">
-                            Unclaimed
-                          </Badge>
-                        )}
                         {listing.isClaimed !== false && listing.status === "approved" && (
                           <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center text-xs">
                             <ShieldCheck className="w-3 h-3" /> Verified
@@ -511,8 +506,8 @@ export default function Browse() {
                       
                       <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end">
                         {listing.isClaimed === false ? (
-                          <div className="text-sm font-bold text-amber-400 drop-shadow-md">
-                            Contact for Pricing
+                          <div className="text-sm font-medium text-gray-300 drop-shadow-md">
+                            Call for Pricing
                           </div>
                         ) : (
                           <div className="text-sm font-bold text-white drop-shadow-md">
@@ -531,7 +526,7 @@ export default function Browse() {
                         </div>
                         
                         <div className="flex flex-wrap gap-1">
-                          <Badge variant="secondary" className="bg-secondary/60 text-xs py-0 px-2">{listing.gender}</Badge>
+                          <Badge variant="secondary" className="bg-secondary/60 text-xs py-0 px-2">{listing.isClaimed === false ? "Not Specified" : listing.gender}</Badge>
                           <Badge variant="outline" className="border-primary/30 text-primary text-xs py-0 px-2">{listing.roomType}</Badge>
                           {listing.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary text-xs py-0 px-2">MAT</Badge>}
                           {listing.acceptsCouples && <Badge variant="outline" className="border-rose-500/30 text-rose-300 text-xs py-0 px-2">Couples</Badge>}
@@ -577,11 +572,6 @@ export default function Browse() {
                               <Zap className="w-3 h-3" /> Featured
                             </Badge>
                           )}
-                          {listing.isClaimed === false && (
-                            <Badge className="bg-amber-500/90 text-black border-none shadow-lg flex gap-1 items-center text-xs">
-                              Unclaimed
-                            </Badge>
-                          )}
                           {listing.isClaimed !== false && listing.status === "approved" && (
                             <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center text-xs">
                               <ShieldCheck className="w-3 h-3" /> Verified
@@ -595,7 +585,7 @@ export default function Browse() {
                           <div className="flex justify-between items-start gap-4 mb-2">
                             <h3 className="font-bold text-sm text-white group-hover:text-primary transition-colors line-clamp-1">{listing.propertyName}</h3>
                             {listing.isClaimed === false ? (
-                              <div className="text-sm font-bold text-amber-400 shrink-0">Contact for Pricing</div>
+                              <div className="text-sm font-medium text-gray-400 shrink-0">Call for Pricing</div>
                             ) : (
                               <div className="text-sm font-bold text-primary shrink-0">
                                 ${listing.monthlyPrice}<span className="text-xs font-normal text-gray-300">/month</span>
@@ -613,7 +603,7 @@ export default function Browse() {
                           </p>
 
                           <div className="flex flex-wrap gap-2">
-                            <Badge variant="secondary" className="bg-secondary/60">{listing.gender}</Badge>
+                            <Badge variant="secondary" className="bg-secondary/60">{listing.isClaimed === false ? "Not Specified" : listing.gender}</Badge>
                             <Badge variant="outline" className="border-primary/30 text-primary text-xs">{listing.roomType}</Badge>
                             <Badge variant="outline" className="border-primary/30 text-primary text-xs">{listing.supervisionType}</Badge>
                             {listing.isMatFriendly && <Badge variant="outline" className="border-primary/30 text-primary">MAT Friendly</Badge>}

@@ -7,7 +7,7 @@ import {
   MapPin, ShieldCheck, Check, ArrowLeft, Share2, Heart, Flag,
   Wifi, Car, Utensils, Tv, Dumbbell, Calendar,
   Info, Mail, Phone, MessageSquare, Bus, ShoppingCart, Stethoscope, Users,
-  Video, Lock, Loader2, Home, ExternalLink, AlertTriangle, Globe, Building2
+  Video, Lock, Loader2, Home, ExternalLink, Globe, Building2
 } from "lucide-react";
 import { useRoute, Link, useLocation } from "wouter";
 import { isAuthenticated, getAuth } from "@/lib/auth";
@@ -286,8 +286,8 @@ export default function PropertyDetails() {
               <img src={listing.photos?.[0] || placeholderHome} loading="lazy" className="w-full h-full object-cover" alt={listing.propertyName} />
               <div className="absolute top-4 left-4 flex gap-2">
                 {isUnclaimed ? (
-                  <Badge className="bg-amber-500/90 text-black border-none flex gap-1 items-center px-3 py-1.5 shadow-lg">
-                    <AlertTriangle className="w-3 h-3" /> Unclaimed Listing
+                  <Badge className="bg-slate-600/90 text-white border-none flex gap-1 items-center px-3 py-1.5 shadow-lg">
+                    Directory Listing
                   </Badge>
                 ) : (
                   listing.status === "approved" && (
@@ -484,11 +484,10 @@ export default function PropertyDetails() {
                   <>
                     <div className="text-center border-b border-border pb-6">
                       <div className="flex items-center justify-center gap-2 mb-2">
-                        <AlertTriangle className="w-5 h-5 text-amber-400" />
-                        <span className="text-lg font-bold text-amber-400">Unclaimed Listing</span>
+                        <span className="text-lg font-bold text-white">Directory Listing</span>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        This listing was created using publicly available business information. Claim this listing to update details.
+                        This facility appears in our California directory. Contact them directly using the information below.
                       </p>
                     </div>
 
