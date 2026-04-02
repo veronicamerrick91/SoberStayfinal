@@ -497,6 +497,11 @@ export default function Browse() {
                             <Zap className="w-3 h-3" /> Featured
                           </Badge>
                         )}
+                        {listing.isClaimed === false && (
+                          <Badge className="bg-slate-500/90 text-white border-none shadow-lg flex gap-1 items-center text-xs">
+                            Unverified
+                          </Badge>
+                        )}
                         {listing.isClaimed !== false && listing.status === "approved" && (
                           <Badge className="bg-primary text-white border-none shadow-lg flex gap-1 items-center text-xs">
                             <ShieldCheck className="w-3 h-3" /> Verified
@@ -570,6 +575,11 @@ export default function Browse() {
                           {isListingFeatured(listing.id) && (
                             <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-none shadow-lg flex gap-1 items-center text-xs">
                               <Zap className="w-3 h-3" /> Featured
+                            </Badge>
+                          )}
+                          {listing.isClaimed === false && (
+                            <Badge className="bg-slate-500/90 text-white border-none shadow-lg flex gap-1 items-center text-xs">
+                              Unverified
                             </Badge>
                           )}
                           {listing.isClaimed !== false && listing.status === "approved" && (

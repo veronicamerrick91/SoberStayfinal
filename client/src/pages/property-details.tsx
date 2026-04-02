@@ -286,8 +286,8 @@ export default function PropertyDetails() {
               <img src={listing.photos?.[0] || placeholderHome} loading="lazy" className="w-full h-full object-cover" alt={listing.propertyName} />
               <div className="absolute top-4 left-4 flex gap-2">
                 {isUnclaimed ? (
-                  <Badge className="bg-slate-600/90 text-white border-none flex gap-1 items-center px-3 py-1.5 shadow-lg">
-                    Directory Listing
+                  <Badge className="bg-slate-500/90 text-white border-none flex gap-1 items-center px-3 py-1.5 shadow-lg">
+                    Unverified
                   </Badge>
                 ) : (
                   listing.status === "approved" && (
