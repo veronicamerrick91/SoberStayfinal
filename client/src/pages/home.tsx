@@ -76,7 +76,7 @@ export default function Home() {
             </h2>
 
             <p className="text-lg text-gray-400 max-w-lg">
-              Sober Stay is a nationwide directory connecting individuals in recovery with safe, supportive sober living homes.
+              Sober Stay is California's sober living directory — connecting individuals in recovery with safe, supportive housing across 53 cities.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
@@ -131,16 +131,16 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-12 text-center">
             <div className="space-y-2">
-              <div className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">100+</div>
+              <div className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">456+</div>
               <p className="text-lg text-gray-300 font-medium">Sober Living Homes</p>
             </div>
             <div className="space-y-2">
-              <div className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">50</div>
-              <p className="text-lg text-gray-300 font-medium">States Covered</p>
+              <div className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">53</div>
+              <p className="text-lg text-gray-300 font-medium">California Cities</p>
             </div>
             <div className="space-y-2">
-              <div className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">5k+</div>
-              <p className="text-lg text-gray-300 font-medium">People Helped</p>
+              <div className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">$0</div>
+              <p className="text-lg text-gray-300 font-medium">Cost for Tenants</p>
             </div>
           </div>
         </div>

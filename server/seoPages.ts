@@ -29,7 +29,7 @@ export const seoPages: SEOPage[] = [
         <h2>Why Choose Sober Stay?</h2>
         <ul>
           <li><strong>Verified Listings:</strong> Every sober living home on our platform is reviewed for quality and safety standards.</li>
-          <li><strong>Nationwide Coverage:</strong> Find recovery housing in any state, from California to New York and everywhere in between.</li>
+          <li><strong>California Coverage:</strong> Browse 456+ verified sober living homes across 53 California cities — the most comprehensive CA directory available.</li>
           <li><strong>Easy Search:</strong> Filter by location, price, amenities, gender, and more to find your perfect match.</li>
           <li><strong>Direct Connection:</strong> Contact providers directly, schedule tours, and submit applications online.</li>
         </ul>
