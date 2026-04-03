@@ -380,6 +380,11 @@ function ProviderDashboardWrapper(props: any) {
 // Applications will be fetched from the database - no test data
 
 function ProviderDashboardContent() {
+  const user = getAuth();
+  const lsTabsKey = `provider_last_seen_tabs_${user?.id}`;
+  const lsToursKey = `tour_requests_${user?.id}`;
+  const lsNotifsKey = `provider_notification_prefs_${user?.id}`;
+
   const [location, setLocation] = useLocation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -400,7 +405,7 @@ function ProviderDashboardContent() {
   
   // Notification tracking - track when provider last viewed each tab
   const [lastSeenTimes, setLastSeenTimes] = useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem("provider_last_seen_tabs");
+    const saved = localStorage.getItem(lsTabsKey);
     return saved ? JSON.parse(saved) : {};
   });
   
@@ -435,7 +440,7 @@ function ProviderDashboardContent() {
       const tabKey = tab === "inbox" ? "applications" : tab;
       const newLastSeen = { ...lastSeenTimes, [tabKey]: Date.now() };
       setLastSeenTimes(newLastSeen);
-      localStorage.setItem("provider_last_seen_tabs", JSON.stringify(newLastSeen));
+      localStorage.setItem(lsTabsKey, JSON.stringify(newLastSeen));
     }
   };
   
@@ -482,7 +487,7 @@ function ProviderDashboardContent() {
   
   // Notification preferences with localStorage persistence
   const [notificationPrefs, setNotificationPrefs] = useState(() => {
-    const saved = localStorage.getItem("provider_notification_prefs");
+    const saved = localStorage.getItem(lsNotifsKey);
     if (saved) return JSON.parse(saved);
     return {
       newInquiries: true,
@@ -505,8 +510,6 @@ function ProviderDashboardContent() {
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
   const [customDocName, setCustomDocName] = useState("");
   const [showCustomDocInput, setShowCustomDocInput] = useState(false);
-
-  const user = getAuth();
 
   const handleViewApplication = (app: ApplicationData) => {
     setSelectedApplication(app);
@@ -771,7 +774,7 @@ function ProviderDashboardContent() {
     };
 
     // Load tour requests from localStorage
-    const storedTours = localStorage.getItem("tour_requests");
+    const storedTours = localStorage.getItem(lsToursKey);
     if (storedTours) {
       try {
         const tours = JSON.parse(storedTours) as TourRequest[];
@@ -1035,7 +1038,7 @@ function ProviderDashboardContent() {
       } : tour
     );
     setTourRequests(updatedTours);
-    localStorage.setItem("tour_requests", JSON.stringify(updatedTours));
+    localStorage.setItem(lsToursKey, JSON.stringify(updatedTours));
   };
 
   const [showRescheduleDialog, setShowRescheduleDialog] = useState(false);
@@ -2699,7 +2702,7 @@ function ProviderDashboardContent() {
                           onCheckedChange={(checked) => {
                             const newPrefs = { ...notificationPrefs, [notif.key]: checked };
                             setNotificationPrefs(newPrefs);
-                            localStorage.setItem("provider_notification_prefs", JSON.stringify(newPrefs));
+                            localStorage.setItem(lsNotifsKey, JSON.stringify(newPrefs));
                           }}
                           data-testid={`checkbox-notif-${notif.key}`}
                         />
@@ -2727,7 +2730,7 @@ function ProviderDashboardContent() {
                             }
                             const newPrefs = { ...notificationPrefs, smsNotifications: checked };
                             setNotificationPrefs(newPrefs);
-                            localStorage.setItem("provider_notification_prefs", JSON.stringify(newPrefs));
+                            localStorage.setItem(lsNotifsKey, JSON.stringify(newPrefs));
                             
                             try {
                               await fetch('/api/provider/profile', {
