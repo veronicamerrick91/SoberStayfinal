@@ -139,8 +139,8 @@ export default function Home() {
               <p className="text-lg text-gray-300 font-medium">California Cities</p>
             </div>
             <div className="space-y-2">
-              <div className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">$0</div>
-              <p className="text-lg text-gray-300 font-medium">Cost for Tenants</p>
+              <div className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-300">Free</div>
+              <p className="text-lg text-gray-300 font-medium">to Browse & Apply</p>
             </div>
           </div>
         </div>
