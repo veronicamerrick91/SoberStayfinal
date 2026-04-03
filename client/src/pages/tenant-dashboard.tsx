@@ -95,11 +95,10 @@ function TenantDashboardContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [serverApplicationData, setServerApplicationData] = useState<Record<string, any> | null>(null);
   
+  const profileKey = user?.id ? `tenant_profile_${user.id}` : null;
+
   const [profile, setProfile] = useState<TenantProfile>(() => {
-    const saved = localStorage.getItem("tenant_profile");
-    if (saved) {
-      return JSON.parse(saved);
-    }
+    // Always start blank — server data will fill in after fetch
     return {
       name: user?.name || "",
       email: user?.email || "",
@@ -115,7 +114,7 @@ function TenantDashboardContent() {
   });
 
   const handleProfileSave = async () => {
-    localStorage.setItem("tenant_profile", JSON.stringify(profile));
+    if (profileKey) localStorage.setItem(profileKey, JSON.stringify(profile));
     if (user) {
       saveAuth({ ...user, name: profile.name, email: profile.email });
     }
@@ -337,8 +336,7 @@ function TenantDashboardContent() {
             };
             setProfile(prev => {
               const merged = { ...prev, ...updatedProfile };
-              // Sync to localStorage so recovery stats stay consistent
-              localStorage.setItem("tenant_profile", JSON.stringify(merged));
+              if (profileKey) localStorage.setItem(profileKey, JSON.stringify(merged));
               return merged;
             });
           } else if (profileData.phone || profileData.bio) {
@@ -425,13 +423,7 @@ function TenantDashboardContent() {
           setTourRequests(getTourRequests());
         }
       } finally {
-        // Load recovery badges based on profile sobriety date
-        const savedProfile = localStorage.getItem("tenant_profile");
-        if (savedProfile) {
-          const parsed = JSON.parse(savedProfile);
-          setRecoveryBadges(getRecoveryBadges(parsed.sobrietyDate));
-          setDaysClean(getDaysClean(parsed.sobrietyDate));
-        }
+        // Recovery badges are loaded after server profile fetch updates sobriety date
         setIsLoading(false);
       }
     };
